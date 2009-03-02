@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+* This XML file is what gfire plugin for pidgin uses
+* to determine which games you have that can be
+* joined, and how exactly to launch them.
+-->
+
+<launchinfo>
+	<game id="4097" name="Wolfenstein: Enemy Territory">
+		<xqf name="Enemy Territory" />
+		<command>
+			<bin>et</bin>
+			<dir>/archive/games/enemy-territory/</dir>
+			<gamemod>+set fs_game @mod@</gamemod>
+			<connect>+connect @ip@:@port@</connect>
+			<launch>@options@ @gamemod@ @connect@</launch>
+		</command>
+	</game>
+	<game id="5080" name="Enemy Territory: QUAKE Wars">
+		<xqf name="ET: Quake Wars" />
+		<command>
+			<bin>/usr/local/games/etqw/etqw</bin>
+			<dir>/usr/local/games/etqw/</dir>
+			<connect>+connect @ip@:@port@</connect>
+			<launch>@connect@</launch>
+		</command>
+	</game>
+	<game id="4331" name="Counter-Strike: Source">
+		<xqf name="Half-Life 2" modlist="cstrike" />
+		<command>
+			<bin>/home/kgeffert/bin/cs-gaim</bin>
+			<dir>/home/kgeffert</dir>
+			<!-- <gamemod>-game @mod@</gamemod> -->
+			<options>-applaunch 240 -game cstrike</options>
+			<connect>+connect @ip@:@port@</connect>
+			<launch>@options@ @gamemod@ @connect@</launch>
+		</command>
+	</game>
+	<game id="4578" name="Battlefield 2">
+		<xqf name="Battlefield 2" />
+		<command>
+			<bin>/home/kgeffert/tmp/foo</bin>
+			<dir>/home/kgeffert/tmp/</dir>
+			<gamemod>+set fs_game @mod@</gamemod>
+			<options>-w -x --use-window</options>
+			<connect>+connect @ip@:@port@</connect>
+			<launch>@options@ @gamemod@ @connect@</launch>
+		</command>
+	</game>
+	<game id="5" name="Counter-Strike 1.6">
+		<xqf name="Half-Life" modlist="cstrike" />
+		<command>
+			<bin>/home/kgeffert/bin/cs-gaim</bin>
+			<dir>/home/kgeffert</dir>
+			<!-- <gamemod>-game @mod@</gamemod> -->
+			<options>-applaunch 010 -game cstrike</options>
+			<connect>+connect @ip@:@port@</connect>
+			<launch>@options@ @gamemod@ @connect@</launch>
+		</command>
+	</game>
+	<game id="4181" name="Unreal Tournament 2004">
+		<xqf name="UT 2004" modlist="ONSOnslaughtGame xDeathMatch xTeamGame Invasion xBombingRun xCTFGame InstagibCTF xDoubleDom ROTeamGame" />
+		<command>
+			<bin>ut2004</bin>
+			<dir>/archive/games/ut2004</dir>
+			<!-- <gamemod>-game @mod@</gamemod> -->
+			<options> </options>
+			<connect>@ip@:@port@</connect>
+			<launch>@options@ @gamemod@ @connect@</launch>
+		</command>
+	</game>
+	<game id="4174" name="Return to Castle Wolfenstein: Multiplayer">
+		<xqf name="Wolfenstein" modlist="wolfmp, WolfSW" />
+		<command>
+			<bin>wolf</bin>
+			<dir>/archive/games/wolfenstein</dir>
+			<!-- <gamemod>-game @mod@</gamemod> -->
+			<options> </options>
+			<connect>+connect @ip@:@port@</connect>
+			<launch>@options@ @gamemod@ @connect@</launch>
+		</command>
+	</game>
+	<game id="4578" name="Battlefield 2">
+		<xqf name="Battlefield 2" modlist="conquest" />
+		<command>
+			<bin>/home/kgeffert/bin/bf2-gaim</bin>
+			<dir>/home/kgeffert</dir>
+			<!-- <gamemod>-game @mod@</gamemod> -->
+			<options>+restart 1</options>
+			<connect>+connect @ip@:@port@</connect>
+			<launch>@options@ @gamemod@ @connect@</launch>
+		</command>
+	</game>
+</launchinfo>

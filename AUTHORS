@@ -1,0 +1,17 @@
+Authors
+=======
+Wolf Beat <asraniel@fryx.ch>
+Keith Geffert <keith@penguingurus.com>
+Laurent De Marez <laurentdemarez@gmail.com>
+
+Special Thanks
+==============
+The folks in #pidgin (previously #gaim), especially rlaager, Paco-Paco and grim (thx grim for the build system :-))
+And a big thx to keamos which gave me many many packet dumps because i dont
+have windows and xfire doesent work with wine
+A big thx to Brian "TLM" Davenport, he helped me with the win32 release and some bugs :-)
+Huge thanks to Keith Geffert which sent me patches for features i would never been able to do myself, thanks!
+
+Special thank to all the guys who helped testing the beta of 0.7.0!
+Also want to thank Flames who made a nice converter for the game id list.
+Finaly want to thank Chewit who is also in the dev team, he hosts the site and make sures that the game list always is up-to-date.

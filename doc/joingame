@@ -1,0 +1,189 @@
+Joining Xfire buddies in games
+===============================
+
+You can now join buddies in game by right clicking on an in-game
+buddy and selecting join game.  "but I don't see that when I 
+click on the buddy.  How come?"
+
+We have introduced a new file that needs to reside in your
+purple preferences directory.  (along side the gfire_games.xml)
+
+gfire_launch.xml is parsed when we start the plugin and tells gfire
+exactly how to launch games and with the correct options to get you
+to join your buddies game.  There is an example file in the data/
+subdirectory of the distribution.
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+* This XML file is what gfire plugin for pidgin uses
+* to determine which games you have that can be
+* joined, and how exactly to launch them.
+-->
+
+<launchinfo>
+	<game id="4097" name="Wolfenstein: Enemy Territory">
+		<xqf name="Enemy Territory" />
+		<command>
+			<bin>et</bin>
+			<dir>/archive/games/enemy-territory/</dir>
+			<gamemod>+set fs_game @mod@</gamemod>
+			<connect>+connect @ip@:@port@</connect>
+			<launch>@options@ @gamemod@ @connect@</launch>
+		</command>
+	</game>
+</launchinfo>
+
+
+explanation:
+
+@ip@ and @port@ will be replaced by the actual ip and port number Xfire
+sends us with buddy updates.
+
+game id       = xfire game id (look it up in gfire_games.xml)
+xqf name      = this is the name xqf uses in the LaunchInfo.txt status file
+bin           = program name to run (full path if not in your path)
+dir           = working directory program will start from this directory
+gamemod       = This really isn't used yet.
+options       = any static options need for the game to run properly
+connect       = command line options to bin, so it will connect to ip:port
+launch        = this mapping allows us to put the entire command line together
+                in the correct order.  the @something@ is replaced by the
+                options above.
+
+
+How does this work?
+====================
+
+When you right click a buddy in pidgin and that buddy is in a game, we check
+this xml file for the game id that xfire sent us for that buddy.  Xfire also
+sends us an ip address and port.  If you have a <game></game> entry in
+your gfire_launch.xml that matches the game id of your buddy we assume you
+can play this game.  If you *DO NOT* have a matching <game> entry with the
+same id number, we assume you can't play this game.
+
+If you can play the game, we show you the right click menu "Join Game...".
+if you can't play the game we don't.
+
+If you click the "Join Game..." menu option.  We create a commmand line to
+run the game with the options you specified in the <game> entry.  The above
+entry would run something like this: (assuming ip and port were sent below)
+
+/archive/games/enemy-territory/et +connect 127.0.0.1:26659
+
+We execute this line using the glib api and watch in from within pidgin.
+When the process dies (your game quits).  We are notified and then we notify
+the Xfire network that you are out of the game.
+
+"I've got it working but everytime I launch the game, it works, but I'm only
+listed as 'in game' for a few seconds and then I'm not 'in game' anymore".
+
+Simple the game your launching, is spawing a new process to handle the game.
+We can only reasonably monitor the program/process that we created.  When it
+ends we take you out of game.  The trick is to keep it running for as long
+as you are in the game.  Don't run the game directly, create a script that
+runs the game for you, and watches the actual game proccess. Using sleep and
+a bash while loop comes in handy here.  Launch this script via the gfire
+plugin.  So that the process never dies until your actaully out of game.
+
+This is especially true for "cedega" run games.
+
+UT, UT200x, Quake, Doom3 etc, and all the Linux native games I play do not
+have this issue.
+
+
+
+What is this XQF Stuff in the launch xml file?
+===============================================
+
+It's all well and good that we can join our buddies, but what about telling
+them our game status.  We accomplish this with a specially formatted file.
+
+We use the LaunchInfo.txt file created by XQF.  XQF is a game server browser
+for Linux.  One of its options is to create a LaunchInfo.txt file.  This
+file is created in the XQF preferences directory $HOME/.qf.  Here is an
+example.
+
+GameType Wolfenstein
+ServerName OGI-MojoJojo
+ServerAddr 192.168.1.102:27960
+ServerMod wolfmp, WolfSW
+
+How does gfire employ this?  Since XQF doesn't delete this file we need
+to know when the game ends.  Instead of running the game directly from XQF
+use a script which copys the .qf/LaunchInfo.txt file to .purple/ingame.tmp.
+
+When the game ends, simply delete the .purple/ingame.tmp file.
+
+How gfire parses the ingame.tmp file. Lets look at another excerpt from
+gfire_launch.xml:
+
+	<game id="4174" name="Return to Castle Wolfenstein: Multiplayer">
+		<xqf name="Wolfenstein" modlist="wolfmp, WolfSW" />
+		<command>
+			<bin>wolf</bin>
+			<dir>/archive/games/wolfenstein</dir>
+			<!-- <gamemod>-game @mod@</gamemod> -->
+			<options> </options>
+			<connect>+connect @ip@:@port@</connect>
+			<launch>@options@ @gamemod@ @connect@</launch>
+		</command>
+	</game>
+
+Notice the xqf element in the xml snippet.  the xqf name is matched against
+the LaunchInfo.txt GameType field.  We match the ServerMod field against
+the xml modlist.
+
+If the ServerMod field in the LaunchInfo.txt file is empty or does not exist
+we match against just the xqf name, and GameType fields.
+
+If we find a match.  We use the corresponding game id, and send the server
+connection information the xfire network.
+
+Xfire can use multiple game id's for the same game engine with for different
+mods.  Make sure to match the correct id with the correct modlist.
+
+here's an example of UT2004:
+
+	<game id="4181" name="Unreal Tournament 2004">
+		<xqf name="UT 2004" modlist="ONSOnslaughtGame xDeathMatch xTeamGame
+					Invasion xBombingRun xCTFGame InstagibCTF xDoubleDom" />
+		<command>
+			<bin>ut2004</bin>
+			<dir>/archive/games/ut2004</dir>
+			<!-- <gamemod>-game @mod@</gamemod> -->
+			<options> </options>
+			<connect>@ip@:@port@</connect>
+			<launch>@options@ @gamemod@ @connect@</launch>
+		</command>
+	</game>
+
+The LaunchInfo.txt/ingame.tmp file might look something like this:
+
+GameType UT 2004
+ServerName A random UT2004 Server
+ServerAddr 192.168.1.102:7777
+ServerMod xCTFGame
+
+The modlist match is done using a haystack search, as long as the ServerMod
+field in the ingame.tmp file matches *somewhere* in the modlist we consider
+that <game> entry to have matched the mod we are looking for.  So the above
+entry matches all game modes of UT2004.
+
+Some mods are considered entirely different games by xfire.  Such as
+counter-strike.  It is shown under XQF as a game type of "Half-Life" and
+ServerMod of "cstrike".
+
+You can also create your own ingame.tmp file. With the only line of
+GameType your game name
+
+As long as the gfire_launch.xml has a corresponding game entry with the xqf
+name field as "your game name". Gfire will detect this and say that
+you are playing that game.
+
+When you remove the ingame.tmp, within 15 seconds gfire will detect
+that the file has been removed and send the proper out of game network
+message.
+
+
+
+
