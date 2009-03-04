@@ -1640,7 +1640,7 @@ void gfire_read_chat_motd_change(PurpleConnection *gc, int packet_len)
 
 	if (!cl || !(gfchat = (gfire_chat *)cl->data)) return;
 	
-	purple_conv_chat_set_topic(PURPLE_CONV_CHAT(c), "", motd);
+	purple_conv_chat_set_topic(PURPLE_CONV_CHAT(gfchat->c), "", motd);
 	tmpmsg = g_strdup_printf("Today's message changed to:\n%s", motd);
 	purple_conv_chat_write(PURPLE_CONV_CHAT(gfchat->c), "", tmpmsg, PURPLE_MESSAGE_SYSTEM, time(NULL));
 	g_free(tmpmsg);
