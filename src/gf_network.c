@@ -359,14 +359,13 @@ void gfire_parse_packet(PurpleConnection *gc, int packet_len, int packet_id)
 			gfire_read_alias_change(gc, packet_len);
 		break;
 
-//		case 174:
-//			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received avatar info packet\n");
-//			gfire_read_avatar_info(gc, packet_len);
-//		break;
+		case 174:
+			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received avatar info packet\n");
+
+		break;
 
 		case 351:
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received group chat info\n");
-//			gfire_read_join_chat(gc, packet_len);
 		case 353:
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received group chat, user join message\n");
 			gcm = gfire_read_chat_user_join(gc, packet_len);
