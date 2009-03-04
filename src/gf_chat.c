@@ -287,6 +287,7 @@ void gfire_chat_joined(PurpleConnection *gc, GList *members, guint8 *chat_id, gc
 	g_free(tmpmsg);
 
 	if (NULL != motd) {
+		purple_conv_chat_set_topic(PURPLE_CONV_CHAT(c), "", motd);
 		tmpmsg = g_strdup_printf("Today's Message:\n%s", motd);
 		purple_conv_chat_write(PURPLE_CONV_CHAT(c), "", tmpmsg, PURPLE_MESSAGE_SYSTEM, time(NULL));
 		g_free(tmpmsg);
