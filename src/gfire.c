@@ -276,8 +276,10 @@ void gfire_close(PurpleConnection *gc)
 {
 	gfire_data *gfire = NULL;
 	GList *buddies = NULL;
+	GList *chats = NULL;
 	gfire_buddy *b = NULL;
-
+	gfire_chat *gf_chat = NULL;
+	
 	purple_debug(PURPLE_DEBUG_MISC, "gfire", "CONNECTION: close requested.\n");
 	if (!gc || !(gfire = (gfire_data *)gc->proto_data)) {
 		purple_debug(PURPLE_DEBUG_MISC, "gfire", "CONN: closing, but either no GC or ProtoData.\n");
@@ -320,6 +322,22 @@ void gfire_close(PurpleConnection *gc)
 		buddies->data = NULL;
  		buddies = g_list_next(buddies);
 	}
+	
+	purple_debug(PURPLE_DEBUG_MISC, "gfire", "CONN: freeing chat sturct\n");
+	chats = gfire->chats;
+	while (NULL != buddies) {
+		gf_chat = (gfire_chat *)chats->data;
+		if (NULL != gf_chat->purple_id) g_free(gf_chat->purple_id);
+		if (NULL != gf_chat->members) g_free(gf_chat->members);
+		if (NULL != gf_chat->chat_id) g_free(gf_chat->chat_id);
+		if (NULL != gf_chat->topic) g_free(gf_chat->topic);
+		if (NULL != gf_chat->motd) g_free(gf_chat->motd);
+		if (NULL != gf_chat->c) g_free(gf_chat->c);
+		g_free(gf_chat);
+		chats->data = NULL;
+ 		chats = g_list_next(chats);
+	}
+	
 
 	purple_debug(PURPLE_DEBUG_MISC, "gfire", "CONN: freeing gfire struct\n");
 	if (NULL != gfire->im) {
@@ -327,10 +345,13 @@ void gfire_close(PurpleConnection *gc)
 		if (NULL != gfire->im->im_str) g_free(gfire->im->im_str);
 		g_free(gfire->im); gfire->im = NULL;
 	}
+	
+	if (NULL != gfire->chat) g_free(gfire->chat);
 	if (NULL != gfire->email) g_free(gfire->email);
 	if (NULL != gfire->buff_out) g_free(gfire->buff_out);
 	if (NULL != gfire->buff_in) g_free(gfire->buff_in);
 	if (NULL != gfire->buddies) g_list_free(gfire->buddies);
+	if (NULL != gfire->chats) g_list_free(gfire->chats);
 	if (NULL != gfire->xml_games_list) xmlnode_free(gfire->xml_games_list);
 	if (NULL != gfire->xml_launch_info) xmlnode_free(gfire->xml_launch_info);
 	if (NULL != gfire->userid) g_free(gfire->userid);
@@ -964,6 +985,8 @@ GList * gfire_node_menu(PurpleBlistNode *node)
 	GList *l = NULL;
 	PurpleConnection *gc = NULL;
 	gfire_data *gfire = NULL;
+
+	if (PURPLE_BLIST_NODE_IS_CHAT(node)) return NULL;
 
 	if (!b || !b->account || !(gc = purple_account_get_connection(b->account)) ||
 					     !(gfire = (gfire_data *) gc->proto_data))
