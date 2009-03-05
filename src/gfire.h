@@ -27,7 +27,7 @@
 
 #include <stddef.h>
 #include <stdlib.h>
-#include <glib-object.h>
+//#include <glib-object.h>
 #include <glib.h>
 #include <glib/gprintf.h>
 #include <unistd.h>
