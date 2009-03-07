@@ -1092,18 +1092,20 @@ static void gfire_action_nick_change_cb(PurplePluginAction *action)
 static void gfire_action_manage_games_cb(PurplePluginAction *action)
 {
 	PurpleConnection *gc = (PurpleConnection *)action->context;
+	GtkBuilder *builder = gtk_builder_new();
+	
 	if(!gc) {
 		purple_debug_error("gfire: gfire_action_manage_games_cb", "GC not set.\n");
 		return;
-	}	
-		
-	GtkBuilder *builder = gtk_builder_new();
-	gtk_builder_add_from_file(builder, g_build_filename(purple_user_dir(), "manage.ui", NULL), NULL);
+	}
+
+	gfire_reload_lconfig(gc);
+	gtk_builder_add_from_file(builder, g_build_filename(purple_user_dir(), "gfire_manage.ui", NULL), NULL);
 	if(!builder) {
 		purple_debug_error("gfire: gfire_action_manage_games_cb", "Couldn't build interface.\n");
 		return;
 	}
-	
+
 	GtkWidget *manage_games_window = GTK_WIDGET(gtk_builder_get_object(builder, "manage_games_window"));
 	GtkWidget *add_path_label = GTK_WIDGET(gtk_builder_get_object(builder, "add_path_label"));
 	GtkWidget *add_type_combo_box = GTK_WIDGET(gtk_builder_get_object(builder, "add_type_combo_box"));
@@ -1115,8 +1117,8 @@ static void gfire_action_manage_games_cb(PurplePluginAction *action)
 	GtkWidget *edit_apply_button = GTK_WIDGET(gtk_builder_get_object(builder, "edit_apply_button"));
 	GtkWidget *edit_remove_button = GTK_WIDGET(gtk_builder_get_object(builder, "edit_remove_button"));
 
-	gfire_reload_lconfig(gc);
 	manage_games_callback_args *args;
+	
 	args = g_new0(manage_games_callback_args, 1);
 	args->gc = gc;
 	args->builder = builder;
@@ -1130,14 +1132,17 @@ static void gfire_action_manage_games_cb(PurplePluginAction *action)
 	g_signal_connect_swapped(edit_remove_button, "clicked", G_CALLBACK(gfire_remove_game_cb), args);
 	
 	xmlnode *gfire_launch = purple_util_read_xml_from_file("gfire_launch.xml", "gfire_launch.xml");
+	
 	if(gfire_launch)
 	{
 		GtkTreeIter iter;
 		xmlnode *node_child;
+		
 		for(node_child = xmlnode_get_child(gfire_launch, "game"); node_child != NULL;
 			node_child = xmlnode_get_next_twin(node_child))
 		{
 			const char *game_name = xmlnode_get_attrib(node_child, "name");
+			
 			gtk_list_store_append(GTK_LIST_STORE(edit_games_list_store), &iter);
 			gtk_list_store_set(GTK_LIST_STORE(edit_games_list_store), &iter, 0, game_name, -1);
 		}
