@@ -58,9 +58,7 @@ gboolean check_process(char *process);
 
 static PurplePlugin *_gfire_plugin = NULL;
 
-
-static const char *gfire_blist_icon(PurpleAccount *a, PurpleBuddy *b)
-{
+static const char *gfire_blist_icon(PurpleAccount *a, PurpleBuddy *b) {
 	return "gfire";
 }
 
@@ -1664,7 +1662,6 @@ int gfire_detect_running_games_cb(PurpleConnection *gc)
 	return TRUE;
 }
 
-
 /*
  * Checks if a process is running.
  *
@@ -1676,17 +1673,19 @@ int gfire_detect_running_games_cb(PurpleConnection *gc)
 gboolean check_process(char *process)
 {
 	#if IS_WINDOWS
+	return FALSE;
 	#else
-	char *pgrep = "pgrep";
 	char command[256];
-	sprintf(command, "%s %s", pgrep, process);
 	
+	strlwr(process);
+	sprintf(command, "ps -ef | grep -i %s | grep -v grep", process);	
+
 	char buf[256];
-	memset(buf, 0, sizeof(buf));
-	FILE *cmd = popen(command, "r");
-	
 	int c;
 	int count = 0;
+	
+	memset(buf, 0, sizeof(buf));
+	FILE *cmd = popen(command, "r");
 	while(((c = getc(cmd)) != EOF) && (count < (sizeof(buf) - 1))) {
 		if(c == '\n') break;
 		buf[count++] = c;
@@ -1698,6 +1697,23 @@ gboolean check_process(char *process)
 	#endif
 }
 
+/*
+ * Converts a string to lowercase.
+ *
+ * @param string	Pointer to the string to convert
+ *
+*/
+void strlwr(char string[])
+{
+	int i = 0;
+		
+	while(string[i]) {
+		string[i] = tolower(string[i]);
+		i++;
+	}
+	
+   return;
+}
 
 static void gfire_action_reload_lconfig_cb(PurplePluginAction *action)
 {
