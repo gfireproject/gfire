@@ -39,7 +39,7 @@ void gfire_join_chat(PurpleConnection *gc, GHashTable *components)
 
 	name = gfire->alias ? gfire->alias : (gchar *)purple_account_get_username(gc->account);
 	room = g_hash_table_lookup(components, "room");
-	pass = g_hash_table_lookup(components, "passphrase");
+	pass = g_hash_table_lookup(components, "password");
 	if (!(xid = g_hash_table_lookup(components, "chat_id"))) {
 		/* no xid we need to create this room */
 		purple_debug(PURPLE_DEBUG_MISC, "gfire","Attempting to create chat room %s\n", NN(room));
@@ -160,6 +160,12 @@ GList *gfire_chat_info(PurpleConnection *gc)
 	pce->identifier = "room";
 	pce->required = TRUE;
 	m = g_list_append(m, pce);
+	
+	pce = g_new0(struct proto_chat_entry, 1);
+	pce->label = "_Password:";
+	pce->identifier = "password";
+	pce->secret = TRUE;
+	m = g_list_append(m, pce);
 
 	return m;
 }
@@ -261,6 +267,7 @@ void gfire_chat_joined(PurpleConnection *gc, GList *members, guint8 *chat_id, gc
 	GList *cl = NULL;
 	gfire_data *gfire = NULL;
 	PurpleConversation *c = NULL;
+	PurpleConvChatBuddyFlags f;
 
 	if (!gc || !(gfire = (gfire_data *)gc->proto_data) || !chat_id) return;
 
@@ -296,7 +303,32 @@ void gfire_chat_joined(PurpleConnection *gc, GList *members, guint8 *chat_id, gc
 	for (cl = members; NULL != cl; cl = g_list_next(cl)) {
 		m = (gfire_buddy *)cl->data;
 		if (!m) continue;
-		purple_conv_chat_add_user(PURPLE_CONV_CHAT(c), m->name, NULL, PURPLE_CBFLAGS_NONE, FALSE);
+		switch(m->chatperm) {
+			case 01:
+				f = PURPLE_CBFLAGS_VOICE;
+			break;
+				
+			case 02:
+				f = PURPLE_CBFLAGS_NONE;
+			break;
+			
+			case 03:
+				f = PURPLE_CBFLAGS_HALFOP;
+			break;
+			
+			case 04:
+				f = PURPLE_CBFLAGS_OP;
+			break;
+			
+			case 05:
+				f = PURPLE_CBFLAGS_FOUNDER;
+			break;
+			
+			default:
+				f = PURPLE_CBFLAGS_NONE;
+		}
+		purple_conv_chat_add_user(PURPLE_CONV_CHAT(c), m->name, NULL, f, FALSE);
+
 	}	
 
 	return;
@@ -399,6 +431,7 @@ void gfire_chat_user_join(PurpleConnection *gc, gfire_chat_msg *gcm)
 	gfire_chat *gfchat = NULL;
 	GList *t = NULL;
 	gfire_buddy *m = NULL;
+	PurpleConvChatBuddyFlags f;
 	
 	if (!gc || !(gfire = (gfire_data *)gc->proto_data) || !gfire->chats
 		|| !gcm ||!(gcm->chat_id)) return;
@@ -408,7 +441,31 @@ void gfire_chat_user_join(PurpleConnection *gc, gfire_chat_msg *gcm)
 		m = gcm->b;
 		/* we need to supress our own join messages, otherwise we show up on the userlist twice */
 		if (memcmp(m->userid, gfire->userid, XFIRE_USERID_LEN) != 0) {
-			purple_conv_chat_add_user(PURPLE_CONV_CHAT(gfchat->c), m->name, NULL, PURPLE_CBFLAGS_NONE, TRUE);
+			switch(m->chatperm) {
+				case 01:
+					f = PURPLE_CBFLAGS_VOICE;
+				break;
+					
+				case 02:
+					f = PURPLE_CBFLAGS_NONE;
+				break;
+			
+				case 03:
+					f = PURPLE_CBFLAGS_HALFOP;
+				break;
+			
+				case 04:
+					f = PURPLE_CBFLAGS_OP;
+				break;
+			
+				case 05:
+					f = PURPLE_CBFLAGS_FOUNDER;
+				break;
+			
+				default:
+					f = PURPLE_CBFLAGS_NONE;
+		}
+			purple_conv_chat_add_user(PURPLE_CONV_CHAT(gfchat->c), m->name, NULL, f, TRUE);
 			gfchat->members = g_list_append(gfchat->members, m);
 		} else {
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "(group chat): supressing own join message\n");
