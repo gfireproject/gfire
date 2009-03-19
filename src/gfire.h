@@ -23,6 +23,10 @@
 #ifndef _GFIRE_H
 #define _GFIRE_H
 
+#ifdef HAVE_CONFIG_H
+# include <gfire_config.h>
+#endif
+
 #define PURPLE_PLUGINS
 
 #include <stddef.h>
