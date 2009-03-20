@@ -305,7 +305,7 @@ void gfire_chat_joined(PurpleConnection *gc, GList *members, guint8 *chat_id, gc
 		if (!m) continue;
 		switch(m->chatperm) {
 			case 01:
-				f = PURPLE_CBFLAGS_VOICE;
+				f = PURPLE_CBFLAGS_NONE;
 			break;
 				
 			case 02:
@@ -313,15 +313,15 @@ void gfire_chat_joined(PurpleConnection *gc, GList *members, guint8 *chat_id, gc
 			break;
 			
 			case 03:
-				f = PURPLE_CBFLAGS_HALFOP;
+				f = PURPLE_CBFLAGS_VOICE;
 			break;
 			
 			case 04:
-				f = PURPLE_CBFLAGS_OP;
+				f = PURPLE_CBFLAGS_HALFOP;
 			break;
 			
 			case 05:
-				f = PURPLE_CBFLAGS_FOUNDER;
+				f = PURPLE_CBFLAGS_OP;
 			break;
 			
 			default:
@@ -443,7 +443,7 @@ void gfire_chat_user_join(PurpleConnection *gc, gfire_chat_msg *gcm)
 		if (memcmp(m->userid, gfire->userid, XFIRE_USERID_LEN) != 0) {
 			switch(m->chatperm) {
 				case 01:
-					f = PURPLE_CBFLAGS_VOICE;
+					f = PURPLE_CBFLAGS_NONE;
 				break;
 					
 				case 02:
@@ -451,15 +451,15 @@ void gfire_chat_user_join(PurpleConnection *gc, gfire_chat_msg *gcm)
 				break;
 			
 				case 03:
-					f = PURPLE_CBFLAGS_HALFOP;
+					f = PURPLE_CBFLAGS_VOICE;
 				break;
 			
 				case 04:
-					f = PURPLE_CBFLAGS_OP;
+					f = PURPLE_CBFLAGS_HALFOP;
 				break;
 			
 				case 05:
-					f = PURPLE_CBFLAGS_FOUNDER;
+					f = PURPLE_CBFLAGS_OP;
 				break;
 			
 				default:
