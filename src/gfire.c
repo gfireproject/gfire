@@ -1213,11 +1213,12 @@ static void gfire_add_game_cb(manage_games_callback_args *args, GtkWidget *butto
 					xmlnode_insert_child(gfire_launch_new, node_child);
 				}
 			}
-			char *unix_process;
-			char *windows_process;
-
+			
+			char *unix_process = "";
+			char *windows_process = "";
 			xmlnode *gfire_processes = purple_util_read_xml_from_file("gfire_processes.xml", "gfire_processes.xml");
 			xmlnode *node_child;
+			
 			for(node_child = xmlnode_get_child(gfire_processes, "game"); node_child != NULL;
 				node_child = xmlnode_get_next_twin(node_child)) {
 					char *game_id_processes = xmlnode_get_attrib(node_child, "id");
@@ -1240,7 +1241,7 @@ static void gfire_add_game_cb(manage_games_callback_args *args, GtkWidget *butto
 				gboolean write_xml = purple_util_write_data_to_file("gfire_launch.xml", gfire_launch_new_str, -1);
 				if(!write_xml) {
 					purple_notify_message(NULL, PURPLE_NOTIFY_MSG_ERROR, "Manage games: error",
-						"Couldn't add game'", "Please try again. An error occured while adding the game.", NULL, NULL);
+						"Couldn't add game", "Please try again. An error occured while adding the game.", NULL, NULL);
 				}
 				else
 				{
