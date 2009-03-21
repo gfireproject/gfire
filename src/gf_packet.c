@@ -1650,3 +1650,84 @@ void gfire_read_chat_motd_change(PurpleConnection *gc, int packet_len)
 	return;
 
 }
+
+void read_groupchat_buddy_permission_change(PurpleConnection *gc, int packet_len)
+{
+	guint8 uid[XFIRE_USERID_LEN] = {0x0,0x0,0x0,0x0};
+	guint8 chat_id[XFIRE_CHATID_LEN];
+	guint32 perm = 0;
+	gfire_data *gfire = NULL;
+	int index = 7; /* start of uid in packet */
+	GList *gfbl = NULL;
+	gfire_buddy *gbuddy = NULL;
+	gfire_chat *gfchat = NULL;
+	GList *t = NULL;
+	PurpleConvChatBuddyFlags f;
+
+	if (!gc || !(gfire = (gfire_data *)gc->proto_data) || (index > packet_len)) return;
+
+	/* grab the chat id */
+	memcpy(chat_id, gfire->buff_in + index, XFIRE_CHATID_LEN);
+	index += XFIRE_CHATID_LEN + 2;
+
+	/* grab the userid */
+	memcpy(uid, gfire->buff_in + index, XFIRE_USERID_LEN);
+	index += XFIRE_USERID_LEN + 2;
+
+	/* grab the new permission level */
+	memcpy(&perm, gfire->buff_in + index, sizeof(perm));
+	perm = GUINT32_FROM_LE(perm);
+
+	
+	gfbl = gfire_find_buddy_in_list(gfire->buddies, (gpointer) &uid, GFFB_UIDBIN);
+	if (NULL == gfbl) {
+		purple_debug(PURPLE_DEBUG_ERROR, "gfire", "(groupchat perm change): uid not found in buddy list\n");
+		if (0 != perm) perm = 0;
+		return;
+	}
+
+	gbuddy = (gfire_buddy *)gfbl->data;
+	if (NULL == gbuddy) {
+		purple_debug(PURPLE_DEBUG_ERROR, "gfire", "(groupchat perm change): uid found but gbuddy is {NULL}\n");
+		if (0 != perm) perm = 0;
+		return;
+	}
+
+	purple_debug(PURPLE_DEBUG_MISC, "gfire", "(groupchat perm change): user %s changed permission\n",
+			NN(gbuddy->name));
+
+	if (0 != gbuddy->chatperm) gbuddy->chatperm = 0;
+	if (0 != perm) gbuddy->chatperm = perm;
+	
+	t = gfire_find_chat(gfire->chats, chat_id, GFFC_CID);
+	if (t && (gfchat = (gfire_chat *)t->data)) {
+		switch(gbuddy->chatperm) {
+				case 01:
+					f = PURPLE_CBFLAGS_NONE;
+				break;
+					
+				case 02:
+					f = PURPLE_CBFLAGS_NONE;
+				break;
+			
+				case 03:
+					f = PURPLE_CBFLAGS_VOICE;
+				break;
+			
+				case 04:
+					f = PURPLE_CBFLAGS_HALFOP;
+				break;
+			
+				case 05:
+					f = PURPLE_CBFLAGS_OP;
+				break;
+			
+				default:
+					f = PURPLE_CBFLAGS_NONE;
+		}
+	}
+	
+	purple_conv_chat_user_set_flags(PURPLE_CONV_CHAT(gfchat->c), gbuddy->name, f);
+	
+	return;
+}

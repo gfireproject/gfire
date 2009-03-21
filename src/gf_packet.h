@@ -56,5 +56,6 @@ gfire_chat_msg *gfire_read_chat_user_join(PurpleConnection *gc, int packet_len);
 int gfire_create_chat_invite(PurpleConnection *gc, const guint8 *cid, const guint8 *sid);
 int gfire_create_change_motd(PurpleConnection *gc, const guint8 *cid, gchar* motd);
 void gfire_read_chat_motd_change(PurpleConnection *gc, int packet_len);
+void read_groupchat_buddy_permission_change(PurpleConnection *gc, int packet_len);
 
 #endif /* _GF_PACKET_H */

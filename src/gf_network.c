@@ -392,6 +392,11 @@ void gfire_parse_packet(PurpleConnection *gc, int packet_len, int packet_id)
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received group chat invite\n");
 			gfire_read_chat_invite(gc, packet_len);
 		break;
+		
+		case 357:
+			purple_debug(PURPLE_DEBUG_MISC, "gfire", "groupchat buddy permission changed\n");
+			read_groupchat_buddy_permission_change(gc, packet_len);
+		break;
 
 		case 368:
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received group chat channel info, member list\n");
