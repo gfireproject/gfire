@@ -1571,8 +1571,6 @@ int gfire_create_chat_invite(PurpleConnection *gc, const guint8 *cid, const guin
 	memcpy(gfire->buff_out + index, userid, XFIRE_USERID_LEN);
 	index += XFIRE_USERID_LEN;
 
-
-
 	gfire_add_header(gfire->buff_out, index, 25 , 2);
 
 	return index;
@@ -1582,7 +1580,7 @@ int gfire_create_change_motd(PurpleConnection *gc, const guint8 *cid, gchar* mot
 {
 	int index = XFIRE_HEADER_LEN;
 	gfire_data *gfire = NULL;
-	guint16 *slen = 0;
+	guint16 slen = 0;
 	
 	if (!gc || !(gfire = (gfire_data *)gc->proto_data) || !cid 
 		|| !motd || (strlen(motd) == 0)) return 0;
@@ -1602,12 +1600,16 @@ int gfire_create_change_motd(PurpleConnection *gc, const guint8 *cid, gchar* mot
 	index += XFIRE_CHATID_LEN;
 	gfire->buff_out[index++] = 0x2e;
 	gfire->buff_out[index++] = 0x01;
+	slen = strlen(motd);
 	slen = GUINT16_TO_LE(slen);
 	memcpy(gfire->buff_out + index, &slen, sizeof(slen));
 	index += sizeof(slen);
 	memcpy(gfire->buff_out + index, motd, strlen(motd));
 	index += strlen(motd);
-		
+	
+	gfire_add_header(gfire->buff_out, index, 25 , 2);
+	
+	return index;		
 }
 
 void gfire_read_chat_motd_change(PurpleConnection *gc, int packet_len)
@@ -1615,7 +1617,7 @@ void gfire_read_chat_motd_change(PurpleConnection *gc, int packet_len)
 	int index = XFIRE_HEADER_LEN + 2;
 	gfire_data *gfire = NULL;
 	gchar *motd = NULL;
-	guint16 *slen = 0;
+	guint16 slen = 0;
 	GList *cl = NULL;
 	guint8 chat_id[XFIRE_CHATID_LEN];
 	gfire_chat *gfchat = NULL;
@@ -1626,8 +1628,8 @@ void gfire_read_chat_motd_change(PurpleConnection *gc, int packet_len)
 	memcpy(chat_id, gfire->buff_in + index, XFIRE_CHATID_LEN);
 	index += XFIRE_CHATID_LEN + 2;
 	
-	memcpy(&slen, gfire->buff_in + index, 2);
-	index += 2;
+	memcpy(&slen, gfire->buff_in + index, sizeof(slen));
+	index += sizeof(slen);
 	slen = GUINT16_FROM_LE(slen);
 	if (slen > 0) {
 		motd = g_malloc0(slen + 1);
