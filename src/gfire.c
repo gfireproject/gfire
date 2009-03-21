@@ -51,7 +51,7 @@ static void gfire_manage_games_edit_update_fields_cb(GtkBuilder *builder, GtkWid
 static void gfire_remove_game_cb(manage_games_callback_args *args, GtkWidget *button);
 static void gfire_reload_lconfig(PurpleConnection *gc);
 xmlnode *gfire_manage_game_xml(char *game_id, char *game_name, char *game_type, char *game_bin,
-	char *game_dir, char *game_mod, char *game_connect, char *game_launch);
+	char *game_dir, char *game_mod, char *game_connect, char *game_launch, char *unix_process, char *windows_process);
 
 gboolean separe_path(char *path, char **file);
 gboolean check_process(char *process);
@@ -1162,6 +1162,7 @@ static void gfire_add_game_cb(manage_games_callback_args *args, GtkWidget *butto
 {
 	PurpleConnection *gc = args->gc;
 	GtkBuilder *builder = args->builder;
+	
 	if(!gc || !builder) {
 		purple_debug_error("gfire: gfire_add_game_cb", "GC not set and/or couldn't access interface.\n");
 		return;
@@ -1182,6 +1183,7 @@ static void gfire_add_game_cb(manage_games_callback_args *args, GtkWidget *butto
 	{
 		char *file;
 		char *path = path_value;
+		
 		if(strcmp(type_value, "Native game") == NULL)
 		{
 			gboolean separe = separe_path(path, &file);
@@ -1198,6 +1200,7 @@ static void gfire_add_game_cb(manage_games_callback_args *args, GtkWidget *butto
 		int game_id = atoi(id_value);
 		char *game_name = gfire_game_name(gc, game_id);
 		gboolean game_check = gfire_game_playable(gc, game_id);
+		
 		if(!game_check)
  		{
 			xmlnode *gfire_launch_new = xmlnode_new("launchinfo");
@@ -1210,9 +1213,22 @@ static void gfire_add_game_cb(manage_games_callback_args *args, GtkWidget *butto
 					xmlnode_insert_child(gfire_launch_new, node_child);
 				}
 			}
+			char *unix_process;
+			char *windows_process;
 
+			xmlnode *gfire_processes = purple_util_read_xml_from_file("gfire_processes.xml", "gfire_processes.xml");
+			xmlnode *node_child;
+			for(node_child = xmlnode_get_child(gfire_processes, "game"); node_child != NULL;
+				node_child = xmlnode_get_next_twin(node_child)) {
+					char *game_id_processes = xmlnode_get_attrib(node_child, "id");
+					if(game_id == atoi(game_id_processes)) {
+						unix_process = xmlnode_get_attrib(node_child, "unix_process");
+						windows_process = xmlnode_get_attrib(node_child, "windows_process");
+					}
+			}
+			
 			xmlnode *game_node = gfire_manage_game_xml(id_value, game_name, type_value, file, path,
-				"", connect_value, "@options@ @gamemod@ @connect@");
+				"", connect_value, "@options@ @gamemod@ @connect@", unix_process, windows_process);
 			if(!game_node) {
 				purple_debug_error("gfire: gfire_add_game_cb", "Couldn't create the new game node.\n");
 			}
@@ -1287,6 +1303,10 @@ static void gfire_edit_game_cb(manage_games_callback_args *args, GtkWidget *butt
 				int game_id_int = atoi(game_id);
 				char *game_name = gfire_game_name(gc, game_id_int);
 				const char *game_type = xmlnode_get_attrib(node_child, "type");
+				
+				xmlnode *processes_node = xmlnode_get_child(node_child, "processes");
+				char *unix_process = xmlnode_get_attrib(processes_node, "unix_process");
+				char *windows_process = xmlnode_get_attrib(processes_node, "windows_process");
 
 				if(strcmp(game_name, selected_item) == NULL)
 				{
@@ -1306,7 +1326,7 @@ static void gfire_edit_game_cb(manage_games_callback_args *args, GtkWidget *butt
 						game_path = "";
 					}
 
-					xmlnode *game_node = gfire_manage_game_xml(game_id, game_name, game_type, game_bin, game_path, "", edit_connect, edit_launch);
+					xmlnode *game_node = gfire_manage_game_xml(game_id, game_name, game_type, game_bin, game_path, "", edit_connect, edit_launch, unix_process, windows_process);
 					xmlnode_insert_child(gfire_launch_new, game_node);
 				}
 				else {
@@ -1505,19 +1525,21 @@ static void gfire_reload_lconfig(PurpleConnection *gc)
 /*
  * Creates a new xmlnode containing the game information, the returned node must be inserted in the main launchinfo node.
  *
- * @param game_id		The game ID
- * @param game_name		The game name
- * @param game_type		The game type (Native or Non-native)
- * @param game_bin		The game binary
- * @param game_dir		The game directory (to the binary)
- * @param game_connect	The game connection options
- * @param game_launch	The game launch structure
+ * @param game_id			The game ID
+ * @param game_name			The game name
+ * @param game_type			The game type (Native or Non-native)
+ * @param game_bin			The game binary
+ * @param game_dir			The game directory (to the binary)
+ * @param game_connect		The game connection options
+ * @param game_launch		The game launch structure
+ * @param unix_process		The game process for Unix
+ * @param windows_process	The game process for Windows
  *
  * @return the new xmlnode.
  *
 */
 xmlnode *gfire_manage_game_xml(char *game_id, char *game_name, char *game_type, char *game_bin,
-	char *game_dir, char *game_mod, char *game_connect, char *game_launch)
+	char *game_dir, char *game_mod, char *game_connect, char *game_launch, char *unix_process, char *windows_process)
 {
 	xmlnode *game_node = xmlnode_new("game");
 	xmlnode_set_attrib(game_node, "id", game_id);
@@ -1525,6 +1547,9 @@ xmlnode *gfire_manage_game_xml(char *game_id, char *game_name, char *game_type, 
 	xmlnode_set_attrib(game_node, "type", game_type);
 	xmlnode *xqf_node = xmlnode_new_child(game_node, "xqf");
 	xmlnode_set_attrib(xqf_node, "name", "");
+	xmlnode *processes_node = xmlnode_new_child(game_node, "processes");
+	xmlnode_set_attrib(processes_node, "unix_process", unix_process);
+	xmlnode_set_attrib(processes_node, "windows_process", windows_process);
 	xmlnode *command_node = xmlnode_new_child(game_node, "command");
 	xmlnode *bin_node = xmlnode_new_child(command_node, "bin");
 	xmlnode_insert_data(bin_node, game_bin, -1);
@@ -1589,11 +1614,11 @@ int gfire_detect_running_games_cb(PurpleConnection *gc)
 	norm = purple_account_get_bool(purple_connection_get_account(gc), "ingamedetectionnorm", TRUE);
 	if (!norm) return;
 
-	xmlnode *gfire_processes = purple_util_read_xml_from_file("gfire_processes.xml", "gfire_processes.xml");
-	if(gfire_processes)
+	xmlnode *gfire_launch = purple_util_read_xml_from_file("gfire_launch.xml", "gfire_launch.xml");
+	if(gfire_launch)
 	{
 		xmlnode *node_child;
-		for(node_child = xmlnode_get_child(gfire_processes, "game"); node_child != NULL;
+		for(node_child = xmlnode_get_child(gfire_launch, "game"); node_child != NULL;
 			node_child = xmlnode_get_next_twin(node_child))
 		{
 			const char *game_id = xmlnode_get_attrib(node_child, "id");
@@ -1698,9 +1723,9 @@ gboolean check_process(char *process)
 }
 
 /*
- * Converts a string to lowercase.
+ * Makes a string lowercase.
  *
- * @param string	Pointer to the string to convert
+ * @param string	String to make lowercase
  *
 */
 void strlwr(char string[])
