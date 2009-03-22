@@ -344,7 +344,6 @@ void gfire_close(PurpleConnection *gc)
 		g_free(gfire->im); gfire->im = NULL;
 	}
 
-	purple_debug(PURPLE_DEBUG_MISC, "gfire", "CONN: freeing gfire struct (test)\n");
 	if (NULL != gfire->email) g_free(gfire->email);
 	if (NULL != gfire->buff_out) g_free(gfire->buff_out);
 	if (NULL != gfire->buff_in) g_free(gfire->buff_in);
@@ -984,30 +983,13 @@ GList * gfire_node_menu(PurpleBlistNode *node)
 	PurpleConnection *gc = NULL;
 	gfire_data *gfire = NULL;
 
-	if (PURPLE_BLIST_NODE_IS_CHAT(node))
-	{
-		me = purple_menu_action_new("Set motd", NULL,NULL, NULL);
-
-			if (!me) {
-				return NULL;
-			}
-			ret = g_list_append(ret, me);
-
-		me = purple_menu_action_new("Set permissions", NULL,NULL, NULL);
-			if (!me) {
-				return NULL;
-			}
-			ret = g_list_append(ret, me);
-
-		return ret;
-	}
-
-	if (!b || !b->account || !(gc = purple_account_get_connection(b->account)) ||
-					     !(gfire = (gfire_data *) gc->proto_data))
-		return NULL;
-
 
 	if (PURPLE_BLIST_NODE_IS_BUDDY(node)) {
+		
+		if (!b || !b->account || !(gc = purple_account_get_connection(b->account)) ||
+				     !(gfire = (gfire_data *) gc->proto_data))
+		return NULL;
+		
 		l = gfire_find_buddy_in_list(gfire->buddies, (gpointer *)b->name, GFFB_NAME);
 		if (!l) return NULL; /* can't find the buddy? not our plugin? */
 		gb = (gfire_buddy *)l->data;
