@@ -1204,7 +1204,7 @@ int gfire_create_join_chat(PurpleConnection *gc, gchar *id, gchar *room, gchar *
 	index += strlen(room);
 	gfire->buff_out[index++] = 0x5f;
 	gfire->buff_out[index++] = 0x01;
-	if (!pass) {
+	if (!pass || sizeof(pass) > 1) {
 		gfire->buff_out[index++] = 0x00;
 		gfire->buff_out[index++] = 0x00;
 	} else {
