@@ -66,7 +66,7 @@
 #define GFIRE_WIKI "http://gfire.site40.net/?page_id=34"
 #define GFIRE_XQF_FILENAME "ingame.tmp"
 #define GFIRE_DEFAULT_GROUP_NAME "Xfire"
-#define GFIRE_VERSION "0.8.0a2"
+#define GFIRE_VERSION "0.8.0"
 #define GFIRE_GAMES_XML_URL "http://gfire.site40.net/files/gfire_games.xml"
 #define XFIRE_HEADER_LEN 5
 #define XFIRE_USERID_LEN 4
@@ -77,7 +77,7 @@
 #define XFIRE_CHATID_LEN 21
 #define XFIRE_SERVER "cs.xfire.com"
 #define XFIRE_PORT 25999
-#define XFIRE_PROTO_VERSION 104
+#define XFIRE_PROTO_VERSION 106
 #define XFIRE_CONNECT_STEPS 3
 #define XFIRE_SID_OFFLINE_STR "00000000000000000000000000000000"
 #define XFIRE_KEEPALIVE_TIME 300  // see gfire_keep_alive for more info
