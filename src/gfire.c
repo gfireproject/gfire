@@ -325,8 +325,7 @@ void gfire_close(PurpleConnection *gc)
 	chats = gfire->chats;
 	while (NULL != buddies) {
 		gf_chat = (gfire_chat *)chats->data;
-		if (NULL != gf_chat->purple_id) g_free(gf_chat->purple_id);
-		if (NULL != gf_chat->members) g_free(gf_chat->members);
+		if (NULL != gf_chat->members) g_list_free(gf_chat->members);
 		if (NULL != gf_chat->chat_id) g_free(gf_chat->chat_id);
 		if (NULL != gf_chat->topic) g_free(gf_chat->topic);
 		if (NULL != gf_chat->motd) g_free(gf_chat->motd);
@@ -474,7 +473,7 @@ static void gfire_get_info(PurpleConnection *gc, const char *who)
 
 	purple_notify_user_info_add_pair(user_info, "Nickname", gf_buddy->alias);
 	purple_notify_user_info_add_pair(user_info, "Status", status);
-	if ((NULL != gf_buddy->gameid) && (NULL != gf_buddy->away))
+	if ((0 != gf_buddy->gameid) && (gf_buddy->away))
 		purple_notify_user_info_add_pair(user_info, "Away", gf_buddy->away_msg);
 	magic = (guint32 *)gf_buddy->gameip;
 	if ((NULL != gf_buddy->gameip) && (0 != *magic)) {
@@ -669,13 +668,13 @@ void gfire_new_buddy(PurpleConnection *gc, gchar *uid_str, gchar *alias, gchar *
 			default_purple_group = purple_group_new(GFIRE_DEFAULT_GROUP_NAME);
 			purple_blist_add_group(default_purple_group, NULL);
 		}
-		buddy = purple_buddy_new(account, g_strdup(name), NULL);
+		buddy = purple_buddy_new(account, name, NULL);
 		purple_debug(PURPLE_DEBUG_MISC, "gfire", "(buddylist): buddy %s not found in Pidgin buddy list, adding.\n",
 				NN(name));
 		purple_blist_add_buddy(buddy, NULL, default_purple_group, NULL);
-		serv_got_alias(gc, g_strdup(name), g_strdup(alias));
+		serv_got_alias(gc, name, g_strdup(alias));
 	} else {
-		serv_got_alias(gc, g_strdup(name), g_strdup(alias));
+		serv_got_alias(gc, name, g_strdup(alias));
 	}
 }
 
@@ -685,15 +684,11 @@ void gfire_new_buddies(PurpleConnection *gc)
 	gfire_data *gfire = (gfire_data *)gc->proto_data;
 	gfire_buddy *b = NULL;
 	GList *tmp = gfire->buddies;
-	int packet_len = 0;
 
 	while (NULL != tmp) {
 		b = (gfire_buddy *)tmp->data;
 		if (!b) return;
 		gfire_new_buddy(gc, b->uid_str, b->alias, b->name);
-//		packet_len = gfire_request_avatar_info(gc, b);
-//		purple_debug(PURPLE_DEBUG_MISC, "gfire", "avatar: sending avatar info request\n");
-//		gfire_send(gc, gfire->buff_out, packet_len);
 		tmp = g_list_next(tmp);
 	}
 }
@@ -1435,25 +1430,25 @@ static void gfire_remove_game_cb(manage_games_callback_args *args, GtkWidget *bu
 	GtkWidget *manage_games_window = GTK_WIDGET(gtk_builder_get_object(builder, "manage_games_window"));
 	GtkWidget *edit_games_combo_box = GTK_WIDGET(gtk_builder_get_object(builder, "edit_games_combo_box"));
 
-	gchar *selected_game = gtk_combo_box_get_active_text(GTK_COMBO_BOX(edit_games_combo_box));
+	const char *selected_game = gtk_combo_box_get_active_text(GTK_COMBO_BOX(edit_games_combo_box));
 	if(selected_game)
 	{
 		xmlnode *gfire_launch_new = xmlnode_new("launchinfo");
 		const xmlnode *gfire_launch = purple_util_read_xml_from_file("gfire_launch.xml", "gfire_launch.xml");
 		if(gfire_launch)
 		{
-			xmlnode *node_child;
-			for(node_child = xmlnode_get_child(gfire_launch, "game"); node_child != NULL;
-				node_child = xmlnode_get_next_twin(node_child))
+			
+			xmlnode *node_child = xmlnode_get_child(gfire_launch, "game");	
+			while (NULL != node_child)
 			{
 				const char *game_name = xmlnode_get_attrib(node_child, "name");
-				if(strcasecmp(game_name, selected_game) != NULL) {
+				if(strcasecmp(game_name, selected_game) != 0)
 					xmlnode_insert_child(gfire_launch_new, node_child);
-				}
+				node_child = xmlnode_get_next_twin(node_child);
 			}
 
 			char *gfire_launch_new_str = xmlnode_to_formatted_str(gfire_launch_new, NULL);
-			purple_debug_info("gfire", "XML: %s", gfire_launch_new_str);
+			purple_debug_info("gfire", "XML: %s\n", gfire_launch_new_str);
 			gboolean write_xml = purple_util_write_data_to_file("gfire_launch.xml", gfire_launch_new_str, -1);
 			if(!write_xml) {
 				purple_notify_message(NULL, PURPLE_NOTIFY_MSG_ERROR, "Manage games: error",
@@ -2151,6 +2146,7 @@ static PurplePluginProtocolInfo prpl_info =
 	NULL,						/* attention_types */
 
 	/* padding */
+	NULL,
 	NULL
 };
 
