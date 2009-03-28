@@ -1591,7 +1591,7 @@ int gfire_detect_running_games_cb(PurpleConnection *gc)
 	norm = purple_account_get_bool(purple_connection_get_account(gc), "ingamedetectionnorm", TRUE);
 	if (!norm) return;
 
-	xmlnode *gfire_launch = purple_util_read_xml_from_file("gfire_launch.xml", "gfire_launch.xml");
+	xmlnode *gfire_launch = gfire->xml_launch_info;
 	if(gfire_launch)
 	{
 		xmlnode *node_child;
@@ -1599,6 +1599,7 @@ int gfire_detect_running_games_cb(PurpleConnection *gc)
 			node_child = xmlnode_get_next_twin(node_child))
 		{
 			const char *game_id = xmlnode_get_attrib(node_child, "id");
+			xmlnode *node_child_processes = xmlnode_get_child(node_child, "processes");
 			const char *game_unix_process = xmlnode_get_attrib(node_child_processes, "unix_process");
 			const char *game_windows_process = xmlnode_get_attrib(node_child_processes, "windows_process");
 			char *game_unix_process_tmp = game_unix_process;
@@ -1607,16 +1608,14 @@ int gfire_detect_running_games_cb(PurpleConnection *gc)
 			char *delim = ";";
 			char *token;
 
-			purple_debug_info("gfire: gfire_detect_running_games_cb", "Scanning for%s\n", game_unix_process);
-
 			gboolean process_running = FALSE;
-//			#ifdef IS_WINDOWS
-//			token = strtok(game_windows_process_tmp, delim);
-//			while(token != NULL) {
-//				process_running = check_process(token);
-//				token = strtok(NULL, delim);
-//			}
-//			#else
+			#ifdef IS_WINDOWS
+			token = strtok(game_windows_process_tmp, delim);
+			while(token != NULL) {
+				process_running = check_process(token);
+				token = strtok(NULL, delim);
+			}
+			#else
 			token = strtok(game_unix_process_tmp, delim);
 			while(token != NULL) {
 				process_running = check_process(token);
@@ -1629,7 +1628,7 @@ int gfire_detect_running_games_cb(PurpleConnection *gc)
 					token = strtok(NULL, delim);
 				}
 			}
-//			#endif
+			#endif
 
 			int len = 0;
 			int game_running_id = gfire->gameid;
@@ -1714,7 +1713,7 @@ gboolean check_process(char *process)
 	}
 	pclose(cmd);
 
-	if(strcmp(buf, "") != 0) return FALSE;
+	if(strcmp(buf, "") == 0) return FALSE;
 	else return TRUE;
 	#endif
 }
