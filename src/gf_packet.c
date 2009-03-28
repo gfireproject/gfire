@@ -319,7 +319,7 @@ void gfire_packet_131(PurpleConnection *gc, int packet_len)
 	}
 
 	g_list_free(friends);
-	g_list_free(userids);
+//	g_list_free(userids); /* segfaults if we free this? why? */ //FIXME
 	g_list_free(nicks);
 
 	n = gfire->buddies;
