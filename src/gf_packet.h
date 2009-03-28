@@ -23,6 +23,7 @@
 #ifndef _GF_PACKET_H
 #define _GF_PACKET_H
 
+#include "gfire.h"
 
 void gfire_add_header(guint8 *packet, int length, int type, int atts);
 int gfire_add_att_name(guint8 *packet,int packet_length, char *att);

@@ -22,6 +22,8 @@
 #ifndef _GF_GAMES_H
 #define _GF_GAMES_H
 
+#include "gfire.h"
+
 typedef struct _gfire_linfo gfire_linfo;
 typedef struct _gfire_xqf_linfo gfire_xqf_linfo;
 

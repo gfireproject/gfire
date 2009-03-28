@@ -37,12 +37,12 @@ static void gfire_add_buddy(PurpleConnection *gc, PurpleBuddy *buddy, PurpleGrou
 static void gfire_remove_buddy(PurpleConnection *gc, PurpleBuddy *buddy, PurpleGroup *group);
 void gfire_buddy_menu_profile_cb(PurpleBlistNode *node, gpointer *data);
 GList * gfire_node_menu(PurpleBlistNode *node);
-gboolean separe_path(char *path, char **file);
 
 void gfire_join_game(PurpleConnection *gc, const gchar *sip, int sport, int game);
 void gfire_game_watch_cb(GPid pid, int status, gpointer *data);
 char *gfire_escape_html(const char *html);
 
+#ifdef IS_NOT_WINDOWS
 static void gfire_action_manage_games_cb(PurplePluginAction *action);
 static void gfire_add_game_cb(manage_games_callback_args *args, GtkWidget *button);
 static void gfire_edit_game_cb(manage_games_callback_args *args, GtkWidget *button);
@@ -55,6 +55,7 @@ xmlnode *gfire_manage_game_xml(char *game_id, char *game_name, char *game_type, 
 
 gboolean separe_path(char *path, char **file);
 gboolean check_process(char *process);
+#endif
 
 static PurplePlugin *_gfire_plugin = NULL;
 
@@ -1057,7 +1058,7 @@ static void gfire_action_nick_change_cb(PurplePluginAction *action)
 		FALSE, FALSE, NULL, "OK", G_CALLBACK(gfire_change_nick), "Cancel", NULL, account, NULL, NULL, gc);
 }
 
-
+#ifdef IS_NOT_WINDOWS
 /*
  * Callback function showing the manage games window.
  *
@@ -1123,7 +1124,7 @@ static void gfire_action_manage_games_cb(PurplePluginAction *action)
 		}
 	}
 
-	#if IS_WINDOWS
+	#ifdef IS_WINDOWS
 	gtk_combo_box_remove_text(GTK_COMBO_BOX(add_type_combo_box), 1);
 	#endif
 	gtk_window_set_keep_above(GTK_WINDOW(manage_games_window), TRUE);
@@ -1557,7 +1558,7 @@ gboolean separe_path(char *path, char **file)
 {
 	char *separator = "/";
 	char *str;
-	#if IS_WINDOWS
+	#ifdef IS_WINDOWS
 	separator = "\\";
 	#endif
 
@@ -1609,7 +1610,7 @@ int gfire_detect_running_games_cb(PurpleConnection *gc)
 			char *token;
 
 			gboolean process_running = FALSE;
-			#if IS_WINDOWS
+			#ifdef IS_WINDOWS
 			token = strtok(game_windows_process_tmp, delim);
 			while(token != NULL) {
 				process_running = check_process(token);
@@ -1675,7 +1676,7 @@ int gfire_detect_running_games_cb(PurpleConnection *gc)
 */
 gboolean check_process(char *process)
 {
-	#if IS_WINDOWS
+	#ifdef IS_WINDOWS
 	return FALSE;
 	#else
 	char command[256];
@@ -1717,6 +1718,7 @@ void strlwr(char string[])
 
    return;
 }
+#endif
 
 static void gfire_action_reload_lconfig_cb(PurplePluginAction *action)
 {
@@ -1830,9 +1832,11 @@ static GList *gfire_actions(PurplePlugin *plugin, gpointer context)
 	act = purple_plugin_action_new("Get Game ID List",
 			gfire_action_get_gconfig_cb);
 	m = g_list_append(m, act);
+	#ifdef IS_NOT_WINDOWS
 	act = purple_plugin_action_new("Manage Games",
 			gfire_action_manage_games_cb);
 	m = g_list_append(m, act);
+	#endif
 	m = g_list_append(m, NULL);
 	act = purple_plugin_action_new("About",
 			gfire_action_about_cb);
@@ -2203,10 +2207,12 @@ static void _init_plugin(PurplePlugin *plugin)
 	option = purple_account_option_bool_new("Buddies can see if I'm typing",
 						"typenorm", TRUE);
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options,option);
-
+	
+	#ifdef IS_NOT_WINDOWS
 	option = purple_account_option_bool_new("Auto detect for ingame status",
 						"ingamedetectionnorm", TRUE);
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options,option);
+	#endif
 
 	option = purple_account_option_bool_new("Notifiy me when my status is ingame",
 						"ingamenotificationnorm", FALSE);

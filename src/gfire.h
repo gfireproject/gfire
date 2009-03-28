@@ -31,18 +31,27 @@
 
 #include <stddef.h>
 #include <stdlib.h>
-//#include <glib-object.h>
+#include <glib-object.h>
 #include <glib.h>
 #include <glib/gprintf.h>
 #include <unistd.h>
 #include <string.h>
-#include <gtk/gtk.h>
 
 #ifdef _WIN32
 #define IS_WINDOWS
 #else
+#define IS_NOT_WINDOWS
+#include <gtk/gtk.h>
 #include <errno.h>
 #endif /* _WIN32 */
+
+#ifndef G_GNUC_NULL_TERMINATED
+#	if __GNUC__ >= 4
+#		define G_GNUC_NULL_TERMINATED __attribute__((__sentinel__))
+#	else
+#		define G_GNUC_NULL_TERMINATED
+#	endif /* __GNUC__ >= 4 */
+#endif /* G_GNUC_NULL_TERMINATED */
 
 #include "util.h"
 #include "server.h"
@@ -149,6 +158,7 @@ struct _gfire_c_msg {
 	gfire_buddy *b;		/* for users joining the chat */
 };
 
+#ifdef IS_NOT_WINDOWS
 struct _manage_games_callback_args {
 	PurpleConnection *gc;
 	GtkBuilder *builder;
@@ -158,6 +168,7 @@ struct _path_extracted {
 	char *path;
 	char *file;
 };
+#endif
 
 
 /* gfire_find_buddy_in_list MODES */

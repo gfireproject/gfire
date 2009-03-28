@@ -23,6 +23,8 @@
 #ifndef _GF_NETWORK_H
 #define _GF_NETWORK_H
 
+#include "gfire.h"
+
 #define GFIRE_BUFFOUT_SIZE 65535
 #define GFIRE_BUFFIN_SIZE 65535
 

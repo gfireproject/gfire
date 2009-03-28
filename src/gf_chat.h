@@ -22,6 +22,7 @@
 #ifndef _GF_CHAT_H
 #define _GF_CHAT_H
 
+#include "gfire.h"
 
 typedef struct _gfire_chat	gfire_chat;
 
