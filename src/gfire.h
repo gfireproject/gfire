@@ -176,7 +176,7 @@ struct _path_extracted {
 
 void gfire_close(PurpleConnection *gc);
 GList *gfire_find_buddy_in_list( GList *blist, gpointer *data, int mode );
-void gfire_new_buddy(PurpleConnection *gc, gchar *uid_str, gchar *alias, gchar *name);
+void gfire_new_buddy(PurpleConnection *gc, gchar *alias, gchar *name);
 void gfire_new_buddies(PurpleConnection *gc);
 void gfire_handle_im(PurpleConnection *gc);
 void gfire_update_buddy_status(PurpleConnection *gc, GList *buddies, int status);

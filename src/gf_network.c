@@ -361,7 +361,6 @@ void gfire_parse_packet(PurpleConnection *gc, int packet_len, int packet_id)
 
 		case 174:
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received avatar info packet\n");
-
 		break;
 
 		case 351:
@@ -407,6 +406,10 @@ void gfire_parse_packet(PurpleConnection *gc, int packet_len, int packet_id)
 		case 374:
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "groupchat motd changed\n");
 			gfire_read_chat_motd_change(gc, packet_len);
+		break;
+		
+		case 387:
+			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received chat reject confirmation\n");
 		break;
 
 		default:

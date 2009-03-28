@@ -410,8 +410,8 @@ GList *gfire_read_buddy_online(PurpleConnection *gc, int packet_len)
 		purple_prpl_got_user_status(gc->account, gf_buddy->name, "available", NULL);
 
 
-		purple_debug(PURPLE_DEBUG_MISC, "gfire", "(on/offline): got info for %s -> %s\n", NN(gf_buddy->name),
-					NN(gf_buddy->sid_str));
+		purple_debug(PURPLE_DEBUG_MISC, "gfire", "(on/offline): got info for %s -> %s, %s\n", NN(gf_buddy->name),
+					NN(gf_buddy->sid_str), NN(gf_buddy->uid_str));
 
 	}
 
@@ -1204,14 +1204,14 @@ int gfire_create_join_chat(PurpleConnection *gc, gchar *id, gchar *room, gchar *
 	index += strlen(room);
 	gfire->buff_out[index++] = 0x5f;
 	gfire->buff_out[index++] = 0x01;
-	if (!pass || sizeof(pass) > 1) {
+	if (!pass || strlen(pass) == 0) {
 		gfire->buff_out[index++] = 0x00;
 		gfire->buff_out[index++] = 0x00;
 	} else {
 		slen = GUINT16_TO_LE(slen);
 		memcpy(gfire->buff_out + index, &slen, sizeof(slen));
 		index += sizeof(slen);
-		memcpy(gfire->buff_out + index, room, strlen(pass));
+		memcpy(gfire->buff_out + index, pass, strlen(pass));
 		index += strlen(pass);
 	}
 	gfire->buff_out[index++] = 0xa7;
@@ -1730,4 +1730,34 @@ void read_groupchat_buddy_permission_change(PurpleConnection *gc, int packet_len
 	purple_conv_chat_user_set_flags(PURPLE_CONV_CHAT(gfchat->c), gbuddy->name, f);
 	
 	return;
+}
+
+int gfire_create_reject_chat(PurpleConnection *gc, const guint8 *cid)
+{
+	int index = XFIRE_HEADER_LEN;
+	gfire_data *gfire = NULL;
+	
+	if (!gc || !(gfire = (gfire_data *)gc->proto_data) || !cid) {
+		purple_debug(PURPLE_DEBUG_MISC, "gfire", "fail\n");
+		return 0;
+	}
+
+	index = gfire_add_att_name(gfire->buff_out, index, "climsg");
+	gfire->buff_out[index++] = 0x02;
+	gfire->buff_out[index++] = 0xff;
+	gfire->buff_out[index++] = 0x4c;
+	gfire->buff_out[index++] = 0x00;
+	gfire->buff_out[index++] = 0x00;
+	index = gfire_add_att_name(gfire->buff_out, index, "msg");
+	gfire->buff_out[index++] = 0x09;
+	gfire->buff_out[index++] = 0x01;
+	gfire->buff_out[index++] = 0x04;
+	gfire->buff_out[index++] = 0x06;
+	memcpy(gfire->buff_out + index, cid, XFIRE_CHATID_LEN);
+	index += XFIRE_CHATID_LEN;
+
+	gfire_add_header(gfire->buff_out, index, 25 , 2);
+	
+	return index;		
+	
 }

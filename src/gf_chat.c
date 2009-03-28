@@ -46,7 +46,6 @@ void gfire_join_chat(PurpleConnection *gc, GHashTable *components)
 		xid = g_malloc0(XFIRE_CHATID_LEN);
 		xid[0] = 0x00;
 		xid[1] = 0x00;
-		purple_debug(PURPLE_DEBUG_MISC, "gfire","Attempting to create chat room pass %s\n", NN(pass));
 		packet_len = gfire_create_join_chat(gc, xid, (room ? room : name), pass);
 		g_free(xid);
 	} else {
@@ -66,8 +65,19 @@ void gfire_join_chat(PurpleConnection *gc, GHashTable *components)
 
 void gfire_reject_chat(PurpleConnection *gc, GHashTable *components)
 {
-FIXME("gfire_reject_chat()");
-	return;
+	gfire_data *gfire = NULL;
+	guint8 *cid = NULL;
+	int packet_len = 0;
+	
+	if (!gc || !(gfire = (gfire_data *)gc->proto_data) || !components) return;
+
+	if ((cid = g_hash_table_lookup(components, "chat_id"))) packet_len = gfire_create_reject_chat(gc, cid);
+
+	if (packet_len > 0)	{
+		gfire_send(gc, gfire->buff_out, packet_len);
+		purple_debug(PURPLE_DEBUG_MISC, "gfire", "(chat): sending reject groupchat invitation\n");
+		return;
+	}
 
 }
 
@@ -144,8 +154,8 @@ void gfire_read_chat_invite(PurpleConnection *gc, int packet_len)
 	g_hash_table_replace(components, g_strdup("inv_uid"), inviter_uid);
 	g_hash_table_replace(components, g_strdup("members"), g_strdup_printf("%s\n", inviter_login));
 
-//	serv_got_chat_invite(gc, room, (inviter_alias ? inviter_alias : inviter_login), "", components);
-	serv_got_chat_invite(gc, room, inviter_login, "", components);
+	serv_got_chat_invite(gc, room, (inviter_alias ? inviter_alias : inviter_login), "", components);
+//	serv_got_chat_invite(gc, room, inviter_login, "", components);
 
 }
 
