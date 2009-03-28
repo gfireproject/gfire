@@ -126,7 +126,5 @@ fi
 echo;
 echo;
 echo Type make to compile
-echo;
-echo Make sure you copy data/gfire_games.xml to $HOME/.purple/
-echo;
-
+cp data/gfire_processes.xml $HOME/.purple/
+cp data/gfire_manage.ui $HOME/.purple/
