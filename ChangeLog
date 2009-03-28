@@ -1,8 +1,38 @@
 # ChangeLog for gfire
 # Copyright 2006 Wolf Beat, Keith Geffert, Laurent De Marez; Distributed under the GPL v2
-# $Id: ChangeLog,v 0.7.1
+# $Id: ChangeLog,v 0.8.0
 
 purple-xfire
+0.8.0
+- Buddy authorization improved.
+- My Profile Page in the menu.
+- Cleaned up the menu.
+- Nickname change bug fixed.
+- Nickname change without restarting pidgin.
+- Send typing notification (See it in action here!).
+- Receive typing notification bug fixed.
+- Added option to see if people can see if you are typing (privacy).
+- Now you can see the date of the gamelist you have in the about window.
+- Fixed the gameport bug correctly.
+- Added some mem clean up codes.
+- When buddy is blocked you can't receive im's of that buddy anymore, nor typing notifications.
+- Fixed status icon wrong updating bug.
+- Fixed ingame emblem icon wrong updating bug.
+- Fixed double-parsing error for buddies with ingame status.
+- Fixed join game.
+- Improvements to About Window.
+- Block people on your friend's list (will disable receiving messages from that buddy).
+- Fixed the bug that didn't show some buddies online.
+- Game detection by scanning processes.
+- Notification (disabled by default in the account settings) that pops up when your status changed to ingame.
+- Groupchat done with the folowing features:
+   - Invite buddies when you have the permission in the channel to do so.
+   - Chat in the channel when you have the permission to do so.
+   - Change the motd / topic again when you are allowed to do so in the channel.
+   - View the permissions icon next to the buddy.
+   - Make new groupchat channels.
+
+
 0.7.1
 - Minor bug fix
 - Download Game ID List function
