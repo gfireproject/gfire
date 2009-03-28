@@ -3,15 +3,13 @@ Gfire:
 
 About
 =====
-This is a complete rewrite of the plugin for pidgin 2.0.0, Gaim will not be 
-suported anymore. The source tarball you just downloaded contains source 
-to build against all supported versions.  For most users this will be easy 
-as running:
+Gfire 0.8.0 will need Pidgin 2.5.0 or higher because of all the new
+features that are implemented. To compile it from source it will be
+for most users easy as running:
 
 ./configure --prefix=/usr
 make
-cp data/gfire_games.xml ~/.purple/
-(as root) make install
+sudo make install
 
 Read the INSTALL file for more information on compiling this package
 correctly.
