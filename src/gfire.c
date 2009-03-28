@@ -654,7 +654,7 @@ GList *gfire_find_buddy_in_list( GList *blist, gpointer *data, int mode )
 }
 
 
-void gfire_new_buddy(PurpleConnection *gc, gchar *uid_str, gchar *alias, gchar *name)
+void gfire_new_buddy(PurpleConnection *gc, gchar *alias, gchar *name)
 {
 	PurpleBuddy *buddy = NULL;
 	PurpleAccount *account = NULL;
@@ -663,7 +663,7 @@ void gfire_new_buddy(PurpleConnection *gc, gchar *uid_str, gchar *alias, gchar *
 	account = purple_connection_get_account(gc);
 	default_purple_group = purple_find_group(GFIRE_DEFAULT_GROUP_NAME);
 	buddy = purple_find_buddy(account, name);
-	if (buddy == NULL) {
+	if (NULL == buddy) {
 		if (NULL == default_purple_group) {
 			default_purple_group = purple_group_new(GFIRE_DEFAULT_GROUP_NAME);
 			purple_blist_add_group(default_purple_group, NULL);
@@ -688,7 +688,7 @@ void gfire_new_buddies(PurpleConnection *gc)
 	while (NULL != tmp) {
 		b = (gfire_buddy *)tmp->data;
 		if (!b) return;
-		gfire_new_buddy(gc, b->uid_str, b->alias, b->name);
+		gfire_new_buddy(gc, b->alias, b->name);
 		tmp = g_list_next(tmp);
 	}
 }
