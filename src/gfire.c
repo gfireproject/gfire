@@ -32,7 +32,7 @@ static void gfire_blist_tooltip_text(PurpleBuddy *buddy, PurpleNotifyUserInfo *u
 static GList *gfire_status_types(PurpleAccount *account);
 static int gfire_im_send(PurpleConnection *gc, const char *who, const char *what, PurpleMessageFlags flags);
 static void gfire_login(PurpleAccount *account);
-static void gfire_login_cb(gpointer data, gint source, PurpleInputCondition cond);
+static void gfire_login_cb(gpointer data, gint source, const gchar *error_message);
 static void gfire_add_buddy(PurpleConnection *gc, PurpleBuddy *buddy, PurpleGroup *group);
 static void gfire_remove_buddy(PurpleConnection *gc, PurpleBuddy *buddy, PurpleGroup *group);
 void gfire_buddy_menu_profile_cb(PurpleBlistNode *node, gpointer *data);
@@ -220,23 +220,21 @@ static void gfire_login(PurpleAccount *account)
 	gfire_parse_games_file(gc, g_build_filename(purple_user_dir(), "gfire_games.xml", NULL));
 	gfire_parse_launchinfo_file(gc, g_build_filename(purple_user_dir(), "gfire_launch.xml", NULL));
 
-	err = purple_proxy_connect(
-				NULL,
-				account,
-				purple_account_get_string(account, "server", XFIRE_SERVER),
+	if (!purple_account_get_connection(account)) {
+			purple_connection_error(gc, "Couldn't create socket.");
+			return;
+	}
+
+	if (purple_proxy_connect(NULL, account, purple_account_get_string(account, "server", XFIRE_SERVER),
 				purple_account_get_int(account, "port", XFIRE_PORT),
-				gfire_login_cb, gc);
-	err = !err;
-
-
-	if (err || !purple_account_get_connection(account)) {
+				gfire_login_cb, gc) == NULL){
 			purple_connection_error(gc, "Couldn't create socket.");
 			return;
 	}
 }
 
 
-static void gfire_login_cb(gpointer data, gint source, PurpleInputCondition cond)
+static void gfire_login_cb(gpointer data, gint source, const gchar *error_message)
 {
 	PurpleConnection *gc = data;
 	guint8 packet[1024];
@@ -1152,10 +1150,10 @@ static void gfire_add_game_cb(manage_games_callback_args *args, GtkWidget *butto
 	GtkWidget *type_combo_box = GTK_WIDGET(gtk_builder_get_object(builder, "add_type_combo_box"));
 	GtkWidget *manage_games_window = GTK_WIDGET(gtk_builder_get_object(builder, "manage_games_window"));
 
-	const gchar *id_value = gtk_entry_get_text(GTK_ENTRY(id_entry));
-	const gchar *path_value = gtk_entry_get_text(GTK_ENTRY(path_entry));
-	const gchar *connect_value = gtk_entry_get_text(GTK_ENTRY(connect_entry));
-	gchar *type_value = gtk_combo_box_get_active_text(GTK_COMBO_BOX(type_combo_box));
+	const char *id_value = gtk_entry_get_text(GTK_ENTRY(id_entry));
+	const char *path_value = gtk_entry_get_text(GTK_ENTRY(path_entry));
+	const char *connect_value = gtk_entry_get_text(GTK_ENTRY(connect_entry));
+	char *type_value = gtk_combo_box_get_active_text(GTK_COMBO_BOX(type_combo_box));
 
 	if(id_value && path_value && connect_value && type_value)
 	{
@@ -1586,7 +1584,7 @@ int gfire_detect_running_games_cb(PurpleConnection *gc)
 	gfire_data *gfire = NULL;
 	if(!gc || !(gfire = (gfire_data *)gc->proto_data)) {
 		purple_debug_error("gfire: gfire_detect_running_games_cb", "GC not set.\n");
-		return;
+		return FALSE;
 	}
 
 	gboolean norm;
@@ -1601,22 +1599,24 @@ int gfire_detect_running_games_cb(PurpleConnection *gc)
 			node_child = xmlnode_get_next_twin(node_child))
 		{
 			const char *game_id = xmlnode_get_attrib(node_child, "id");
-			const char *game_unix_process = xmlnode_get_attrib(node_child, "unix_process");
-			const char *game_windows_process = xmlnode_get_attrib(node_child, "windows_process");
+			const char *game_unix_process = xmlnode_get_attrib(node_child_processes, "unix_process");
+			const char *game_windows_process = xmlnode_get_attrib(node_child_processes, "windows_process");
 			char *game_unix_process_tmp = game_unix_process;
 			char *game_windows_process_tmp = game_windows_process;
 
 			char *delim = ";";
 			char *token;
 
+			purple_debug_info("gfire: gfire_detect_running_games_cb", "Scanning for%s\n", game_unix_process);
+
 			gboolean process_running = FALSE;
-			#ifdef IS_WINDOWS
-			token = strtok(game_windows_process_tmp, delim);
-			while(token != NULL) {
-				process_running = check_process(token);
-				token = strtok(NULL, delim);
-			}
-			#else
+//			#ifdef IS_WINDOWS
+//			token = strtok(game_windows_process_tmp, delim);
+//			while(token != NULL) {
+//				process_running = check_process(token);
+//				token = strtok(NULL, delim);
+//			}
+//			#else
 			token = strtok(game_unix_process_tmp, delim);
 			while(token != NULL) {
 				process_running = check_process(token);
@@ -1629,7 +1629,7 @@ int gfire_detect_running_games_cb(PurpleConnection *gc)
 					token = strtok(NULL, delim);
 				}
 			}
-			#endif
+//			#endif
 
 			int len = 0;
 			int game_running_id = gfire->gameid;
@@ -1667,6 +1667,24 @@ int gfire_detect_running_games_cb(PurpleConnection *gc)
 }
 
 /*
+ * Makes a string lowercase.
+ *
+ * @param string	String to make lowercase
+ *
+*/
+void strlwr(char string[])
+{
+	int i = 0;
+
+	while(string[i]) {
+		string[i] = tolower(string[i]);
+		i++;
+	}
+
+   return;
+}
+
+/*
  * Checks if a process is running.
  *
  * @param process	The process name
@@ -1696,27 +1714,9 @@ gboolean check_process(char *process)
 	}
 	pclose(cmd);
 
-	if(strcmp(buf, "") == NULL) return FALSE;
+	if(strcmp(buf, "") != 0) return FALSE;
 	else return TRUE;
 	#endif
-}
-
-/*
- * Makes a string lowercase.
- *
- * @param string	String to make lowercase
- *
-*/
-void strlwr(char string[])
-{
-	int i = 0;
-
-	while(string[i]) {
-		string[i] = tolower(string[i]);
-		i++;
-	}
-
-   return;
 }
 #endif
 

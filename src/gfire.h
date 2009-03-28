@@ -121,7 +121,7 @@ struct _gfire_data {
 	guint32 gameid;				/* our current game id */
 	guint xqf_source;			/* g_timeout_add source number for xqf callback */
 	guint det_source;			/* g_timeout_add source number for game detection callback */
-	gboolean game_running		/* bool to know if a game has already been detected */
+	gboolean game_running;		/* bool to know if a game has already been detected */
 };
 
 struct _gfire_buddy {

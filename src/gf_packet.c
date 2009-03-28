@@ -1488,7 +1488,6 @@ gfire_chat_msg *gfire_read_chat_user_join(PurpleConnection *gc, int packet_len)
 	gchar *name = NULL;
 	gchar *alias = NULL;
 	guint8 userid[XFIRE_USERID_LEN];
-	guint8 sid[XFIRE_SID_LEN];
 	gfire_data *gfire = NULL;
 
 	if (!gc || !(gfire = (gfire_data *)gc->proto_data) || (packet_len == 0)) return NULL;
