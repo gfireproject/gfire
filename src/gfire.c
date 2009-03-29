@@ -1280,18 +1280,20 @@ static void gfire_edit_game_cb(manage_games_callback_args *args, GtkWidget *butt
 				int game_id_int = atoi(game_id);
 				char *game_name = gfire_game_name(gc, game_id_int);
 				const char *game_type = xmlnode_get_attrib(node_child, "type");
-				
+					
 				xmlnode *processes_node = xmlnode_get_child(node_child, "processes");
 				char *unix_process = xmlnode_get_attrib(processes_node, "unix_process");
 				char *windows_process = xmlnode_get_attrib(processes_node, "windows_process");
 
-				if(strcmp(game_name, selected_item) == NULL)
+				if(strcmp(game_name, selected_item) == 0)
 				{
 					char *game_path = edit_path;
 					char *game_bin;
 
-					if(strcmp(game_type, "Native game") == NULL)
+					
+					if(strcmp(game_type, "Native game") == 0)
 					{
+						
 						gboolean separe = separe_path(game_path, &game_bin);
 						if(!separe) {
 							purple_debug_error("gfire: gfire_add_game_cb", "Couldn't separe path and file.\n");
@@ -1389,6 +1391,13 @@ static void gfire_manage_games_edit_update_fields_cb(GtkBuilder *builder, GtkWid
 				const char *path_bin = xmlnode_get_data(bin_node);
 				const char *game_type = xmlnode_get_attrib(node_child, "type");
 
+				if (game_type == NULL) {
+					purple_debug_error("gfire: gfire_add_game_cb", "Could not find game type.\n");
+					purple_notify_message(NULL, PURPLE_NOTIFY_MSG_ERROR, "Manage games: error", "Couldn't edit game",
+						"This game is not configured with the game manager.\nPlease remove the launch config and generate him here.", NULL, NULL);
+					return;
+				}
+
 				gchar *path;
 				gchar *connect = xmlnode_get_data(connect_node);
 				gchar *launch = xmlnode_get_data(launch_node);
@@ -1451,7 +1460,7 @@ static void gfire_remove_game_cb(manage_games_callback_args *args, GtkWidget *bu
 			gboolean write_xml = purple_util_write_data_to_file("gfire_launch.xml", gfire_launch_new_str, -1);
 			if(!write_xml) {
 				purple_notify_message(NULL, PURPLE_NOTIFY_MSG_ERROR, "Manage games: error",
-					"Couldn't remove game'", "Please try again. An error occured while removing the game.", NULL, NULL);
+					"Couldn't remove game", "Please try again. An error occured while removing the game.", NULL, NULL);
 			}
 			else {
 				gfire_reload_lconfig(gc);
