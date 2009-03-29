@@ -484,7 +484,7 @@ void gfire_process_invitation(PurpleConnection *gc, GList *invites)
 		buddy->sid = (guint8 *)gc;
 
 		purple_account_request_authorization(account, buddy->name, NULL, buddy->alias, buddy->uid_str, 
-		purple_find_buddy(account, buddy->name) != NULL, gfire_buddy_add_authorize_cb, 
+		TRUE, gfire_buddy_add_authorize_cb, 
 		gfire_buddy_add_deny_cb, (void *)buddy);
 		i = g_list_next(i);
 	}
