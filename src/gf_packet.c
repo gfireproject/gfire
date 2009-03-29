@@ -290,7 +290,7 @@ void gfire_packet_131(PurpleConnection *gc, int packet_len)
 		//mem cleanup code
 		if (friends) g_list_free(friends);
 		if (nicks) g_list_free(nicks);
-		if (userids) g_list_free(userids);
+//		if (userids) g_list_free(userids);
 			return;
 	}	
 
