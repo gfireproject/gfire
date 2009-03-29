@@ -1391,10 +1391,10 @@ static void gfire_manage_games_edit_update_fields_cb(GtkBuilder *builder, GtkWid
 				const char *path_bin = xmlnode_get_data(bin_node);
 				const char *game_type = xmlnode_get_attrib(node_child, "type");
 
-				if (game_type == NULL) {
+				if (!game_type || !path_bin || !path_dir) {
 					purple_debug_error("gfire: gfire_add_game_cb", "Could not find game type.\n");
 					purple_notify_message(NULL, PURPLE_NOTIFY_MSG_ERROR, "Manage games: error", "Couldn't edit game",
-						"This game is not configured with the game manager.\nPlease remove the launch config and generate him here.", NULL, NULL);
+						"The configuration of this game is not compatible with the game manager. Please remove it and reconfigure it here.", NULL, NULL);
 					return;
 				}
 
