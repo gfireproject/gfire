@@ -5,19 +5,19 @@
  * Copyright (C) 2006,      Keith Geffert <keith@penguingurus.com>
  * Copyright (C) 2008,	    Laurent De Marez <laurentdemarez@gmail.com>
  *
- * This program is free software; you can redistribute it and/or modify
+ * This file is part of Gfire.
+ *
+ * Gfire is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * along with Gfire.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "gfire.h"
@@ -1364,6 +1364,7 @@ static void gfire_manage_games_edit_update_fields_cb(GtkBuilder *builder, GtkWid
 		return;
 	}
 
+	GtkWidget *manage_games_window = GTK_WIDGET(gtk_builder_get_object(builder, "manage_games_window"));
 	GtkWidget *edit_path_label = GTK_WIDGET(gtk_builder_get_object(builder, "edit_path_label"));
 	GtkWidget *edit_path = GTK_WIDGET(gtk_builder_get_object(builder, "edit_path_entry"));
 	GtkWidget *edit_connect = GTK_WIDGET(gtk_builder_get_object(builder, "edit_connect_entry"));
@@ -1395,6 +1396,7 @@ static void gfire_manage_games_edit_update_fields_cb(GtkBuilder *builder, GtkWid
 					purple_debug_error("gfire: gfire_add_game_cb", "Could not find game type.\n");
 					purple_notify_message(NULL, PURPLE_NOTIFY_MSG_ERROR, "Manage games: error", "Couldn't edit game",
 						"The configuration of this game is not compatible with the game manager. Please remove it and reconfigure it here.", NULL, NULL);
+					gtk_widget_destroy(manage_games_window);
 					return;
 				}
 
