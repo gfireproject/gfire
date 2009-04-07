@@ -3,7 +3,7 @@ Gfire:
 
 About
 =====
-Gfire 0.8.0 will need Pidgin 2.5.0 or higher because of all the new
+Gfire 0.8.1 will need Pidgin 2.5.0 or higher because of all the new
 features that are implemented. To compile it from source it will be
 for most users easy as running:
 
@@ -38,4 +38,3 @@ LICENSE
 =======
     This software is licensed under the GPL v2.  See COPYING for full text of
     license.
-

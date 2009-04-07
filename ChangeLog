@@ -1,8 +1,13 @@
 # ChangeLog for gfire
-# Copyright 2006 Wolf Beat, Keith Geffert, Laurent De Marez; Distributed under the GPL v2
-# $Id: ChangeLog,v 0.8.0
+# Copyright 2006 Wolf Beat, Keith Geffert, Laurent De Marez, Warren Dumortier;
+# Distributed under the GPLv3
+# $Id: ChangeLog, v0.8.1
 
 purple-xfire
+0.8.1
+- Fix crash on login with some Linux distros.
+- Small bugfixes/changes.
+
 0.8.0
 - Buddy authorization improved.
 - My Profile Page in the menu.
@@ -184,4 +189,3 @@ first release. Currently working:
 -chating
 -adding/removing buddys
 -seeing online state of buddys
- 
