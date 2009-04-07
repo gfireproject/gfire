@@ -75,7 +75,7 @@
 #define GFIRE_WIKI "http://gfire.site40.net/?page_id=34"
 #define GFIRE_XQF_FILENAME "ingame.tmp"
 #define GFIRE_DEFAULT_GROUP_NAME "Xfire"
-#define GFIRE_VERSION "0.8.0"
+#define GFIRE_VERSION "0.8.1"
 #define GFIRE_GAMES_XML_URL "http://gfire.site40.net/files/gfire_games.xml"
 #define XFIRE_HEADER_LEN 5
 #define XFIRE_USERID_LEN 4
