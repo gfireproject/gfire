@@ -1074,7 +1074,7 @@ static void gfire_action_manage_games_cb(PurplePluginAction *action)
 	}
 
 	gfire_reload_lconfig(gc);
-	gtk_builder_add_from_file(builder, g_build_filename(purple_user_dir(), "gfire_manage.ui", NULL), NULL);
+	gtk_builder_add_from_file(builder, g_build_filename(purple_user_dir(), "gfire_manage.glade", NULL), NULL);
 	if(!builder) {
 		purple_debug_error("gfire: gfire_action_manage_games_cb", "Couldn't build interface.\n");
 		return;
