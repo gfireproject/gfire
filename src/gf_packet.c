@@ -252,83 +252,87 @@ void gfire_packet_130(PurpleConnection *gc, int packet_len)
 /* reads buddy list from server and populates purple blist */
 void gfire_packet_131(PurpleConnection *gc, int packet_len)
 {
-	int index = 0;
-	int itmp = 0;
-	int i = 0;
+	int index, attrib, i = 0;
 	gfire_buddy *gf_buddy = NULL;
 	GList *friends = NULL;
 	GList *nicks = NULL;
 	GList *userids = NULL;
-	GList *f,*n,*u;
-	gchar uids[(XFIRE_USERID_LEN*2)+1];
+	GList *f, *n, *u;
+	gchar uids[(XFIRE_USERID_LEN * 2) + 1];
 	gfire_data *gfire = (gfire_data *)gc->proto_data;
 
 	if (packet_len < 16) {
-		purple_debug(PURPLE_DEBUG_MISC, "gfire", "ERROR: packet 131 recv'd but way too short?!? %d bytes\n",
-			packet_len);
+		purple_debug_error("gfire", "packet 131 received, but too short. (%d bytes)\n", packet_len);
 		return;
 	}
+
 	index = 6;
-	itmp = gfire_read_attrib(&friends, gfire->buff_in + index, packet_len - index, "friends", TRUE, FALSE, 0, 0, 0);
-	if (itmp < 1 ) {
-		//mem cleanup code
-		if (friends) g_list_free(friends);
-			return;
-	}	
-	index += itmp + 1;
-	itmp = gfire_read_attrib(&nicks, gfire->buff_in + index, packet_len - index, "nick", TRUE, FALSE, 0, 0, 0);
-	if (itmp < 1 ) {
-		//mem cleanup code
-		if (friends) g_list_free(friends);
-		if (nicks) g_list_free(nicks);
-			return;
-	}	
-	index+= itmp + 1;	
-	itmp = gfire_read_attrib(&userids, gfire->buff_in + index, packet_len - index, "userid", FALSE, TRUE, 0, 0, 
-							XFIRE_USERID_LEN);
-	if (itmp < 1 ) {
-		//mem cleanup code
-		if (friends) g_list_free(friends);
-		if (nicks) g_list_free(nicks);
-//		if (userids) g_list_free(userids);
-			return;
-	}	
+	attrib = gfire_read_attrib(&friends, gfire->buff_in + index, packet_len - index, "friends", TRUE, FALSE, 0, 0, 0);
+	if (attrib < 1 && friends != NULL) return;
+
+	index += attrib + 1;
+	attrib = gfire_read_attrib(&nicks, gfire->buff_in + index, packet_len - index, "nick", TRUE, FALSE, 0, 0, 0);
+	if (attrib < 1 ) {
+		if (friends != NULL) g_list_free(friends);
+		if (nicks != NULL) g_list_free(nicks);
+		return;
+	}
+
+	index+= attrib + 1;	
+	attrib = gfire_read_attrib(&userids, gfire->buff_in + index, packet_len - index, "userid", FALSE, TRUE, 0, 0, XFIRE_USERID_LEN);
+	if (attrib < 1 ) {
+		if (friends != NULL) g_list_free(friends);
+		if (nicks != NULL) g_list_free(nicks);
+		if (userids != NULL) g_list_free(userids);
+		return;
+	}
 
 	friends = g_list_first(friends);
 	nicks = g_list_first(nicks);
 	userids = g_list_first(userids);
 	
-	f = friends; u = userids; n = nicks;
-	while (NULL != f) {
+	f = friends;
+	n = nicks;
+	u = userids;
+	
+	while (f != NULL)
+	{
 		gf_buddy = g_malloc0(sizeof(gfire_buddy));
-		gfire->buddies = g_list_append(gfire->buddies, (gpointer *) gf_buddy);
+		gfire->buddies = g_list_append(gfire->buddies, (gpointer *)gf_buddy);
+
 		gf_buddy->name = (gchar *)f->data;
 		gf_buddy->alias = (gchar *)n->data;
 		gf_buddy->userid = (guint8 *)u->data;
-		if (NULL == gf_buddy->alias) gf_buddy->alias = g_strdup(gf_buddy->name);
-		/* make userid into string */
-		for(i = 0;i < XFIRE_USERID_LEN; i++) g_sprintf(uids + (i*2), "%02x", gf_buddy->userid[i]);
-		uids[(XFIRE_USERID_LEN*2)+1]=0x00;
+
+		if (gf_buddy->alias == NULL) gf_buddy->alias = g_strdup(gf_buddy->name);
+
+		/* cast userid into string */
+		for(i = 0; i < XFIRE_USERID_LEN; i++) g_sprintf(uids + (i * 2), "%02x", gf_buddy->userid[i]);
+
+		uids[(XFIRE_USERID_LEN * 2)] = 0x00;
 		gf_buddy->uid_str = g_strdup(uids);
+
 		f->data = NULL;
 		u->data = NULL;
-		n->data = NULL; /* so we don't free stuff we don't want to */
+		n->data = NULL;
+
 		f = g_list_next(f);
 		u = g_list_next(u);
 		n = g_list_next(n);
 	}
 
 	g_list_free(friends);
-//	g_list_free(userids); /* segfaults if we free this? why? */ //FIXME
 	g_list_free(nicks);
+	g_list_free(userids);
 
 	n = gfire->buddies;
-	while (n != NULL) {
+	while (n != NULL)
+	{
 		gf_buddy = (gfire_buddy *)n->data;
 		purple_debug(PURPLE_DEBUG_MISC, "gfire", "buddy info: %s, %s, %02x%02x%02x%02x, %s\n",
-					NN(gf_buddy->name), NN(gf_buddy->uid_str), NNA(gf_buddy->userid, gf_buddy->userid[0]),
-					NNA(gf_buddy->userid, gf_buddy->userid[1]), NNA(gf_buddy->userid, gf_buddy->userid[2]),
-					NNA(gf_buddy->userid, gf_buddy->userid[3]), NN(gf_buddy->alias));
+			     NN(gf_buddy->name), NN(gf_buddy->uid_str), NNA(gf_buddy->userid, gf_buddy->userid[0]),
+			     NNA(gf_buddy->userid, gf_buddy->userid[1]), NNA(gf_buddy->userid, gf_buddy->userid[2]),
+			     NNA(gf_buddy->userid, gf_buddy->userid[3]), NN(gf_buddy->alias));
 		n = g_list_next(n);
 	}
 }
