@@ -1,15 +1,8 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--
-* This XML file is what gfire plugin for pidgin uses
-* to detect which game is running. It will paste the
-* process name into the gfire_launch.xml which will be
-* scanned every 5 seconds.
--->
-
+<?xml version="1.0" encoding="utf-8"?>
 <games_processes>
 	<game id="5080" unix_process="etqw.x86" windows_process="" />
 	<game id="4920" unix_process="defcon.bin.x86" windows_process="" />
-	<game id="5374" unix_process="" windows_process="TmForever.exe" />
+	<game id="5374" unix_process="" windows_process="tmforever.exe" />
 	<game id="5185" unix_process="" windows_process="iw3sp.exe" />
 	<game id="5186" unix_process="" windows_process="iw3mp.exe" />
 	<game id="4111" unix_process="quake3.x86" windows_process="" />
@@ -17,24 +10,24 @@
 	<game id="4097" unix_process="et.x86" windows_process="et.exe" />
 	<game id="4611" unix_process="" windows_process="lfs.exe" />
 	<game id="4932" unix_process="" windows_process="shotonline.exe" />
-	<game id="4320" unix_process="" windows_process="ExeFile.exe" />
+	<game id="4320" unix_process="" windows_process="exefile.exe" />
 	<game id="4108" unix_process="nwmain" windows_process="" />
 	<game id="4276" unix_process="hl.exe" windows_process="hl.exe" />
 	<game id="4572" unix_process="gta_sa.exe" windows_process="gta_sa.exe" />
 	<game id="4107" unix_process="halo.exe" windows_process="halo.exe" />
 	<game id="4239" unix_process="haloce.exe" windows_process="haloce.exe" />
-	<game id="5128" unix_process="ioUrbanTerror.i386" windows_process=" " />
-	<game id="5579" unix_process="WorldofGoo.bin" windows_process="" />
+	<game id="5128" unix_process="iourbanterror.i386" windows_process=" " />
+	<game id="5579" unix_process="worldofgoo.bin" windows_process="" />
 	<game id="5329" unix_process="savage2.bin" windows_process="" />
 	<game id="5243" unix_process="game" windows_process="" />
-	<game id="4097" unix_process="et.x86" windows_process="ET.exe" />
+	<game id="4097" unix_process="et.x86" windows_process="et.exe" />
 	<game id="4160" unix_process="" windows_process="jk2mp.exe" />
 	<game id="4161" unix_process="" windows_process="jk2sp.exe" />
-	<game id="4216" unix_process="" windows_process="Wow.exe" />
+	<game id="4216" unix_process="" windows_process="wow.exe" />
 	<game id="4684" unix_process="" windows_process="cod2mp_s.exe" />
 	<game id="4850" unix_process="warsow.i386" windows_process="" />
 	<game id="5697" unix_process="nexuiz" windows_process="" />
 	<game id="5079" unix_process="tremulous" windows_process="" />
-	<game id="4594" unix_process="CounterStrike2D" windows_process="" />
+	<game id="4594" unix_process="counterstrike2d" windows_process="" />
 	<game id="4181" unix_process="ut2004-bin" windows_process="" />
 </games_processes>
