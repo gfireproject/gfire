@@ -127,4 +127,4 @@ echo;
 echo;
 echo Type make to compile
 cp data/gfire_processes.xml $HOME/.purple/
-cp data/gfire_manage.ui $HOME/.purple/
+cp data/gfire_manage.glade $HOME/.purple/
