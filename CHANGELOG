@@ -1,9 +1,9 @@
-# ChangeLog for gfire
-# Copyright 2006 Wolf Beat, Keith Geffert, Laurent De Marez, Warren Dumortier;
+# Changelog for Gfire
+# Copyright 2006-2009 Wolf Beat, Keith Geffert, Laurent De Marez, Warren Dumortier
 # Distributed under the GPLv3
-# $Id: ChangeLog, v0.8.1
+# $Id: CHANGELOG, v0.8.1
 
-purple-xfire
+Gfire:
 0.8.1
 - Fix crash on login with some Linux distros.
 - Small bugfixes/changes.
@@ -50,7 +50,7 @@ purple-xfire
 - Ported the gfire code from Gaim to Purple
 - Added new protocol icons
 - Added the about function (Will be used later to show the date of the game id list, so you know if you are out-dated or not.)
-- Fixed the “(AFK) Away From Keyboard” bug (typo)
+- Fixed the â€œ(AFK) Away From Keyboardâ€ bug (typo)
 - Fixed server port bug
 
 

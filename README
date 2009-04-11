@@ -1,40 +1,26 @@
 Gfire:
-	Protocol Plugin (prpl) for Pidgin to send messages via XFire.
+	Pidgin (Purple) plugin allowing users to connect to the Xfire gaming network.
 
 About
 =====
 Gfire 0.8.1 will need Pidgin 2.5.0 or higher because of all the new
-features that are implemented. To compile it from source it will be
+features that are implemented. To compile it from source, it will be
 for most users easy as running:
 
 ./configure --prefix=/usr
 make
-sudo make install
+sudo make install (or make install as root)
 
 Read the INSTALL file for more information on compiling this package
 correctly.
 
-Please read the joingame in the doc/ dir for information on how to join 
-your buddies in a game. And how to let gfire know how to update your
-in game status.
-
-Please read the UPGRADING text file for information about upgrading from
-previous versions of the plugin.
-
-After installation make sure you copy the data/gfire_games.xml to your purple
-data directory. On unix this is .purple/ by default.
-
-For joining games from gfire please read the README.joingame for more
-information. You will need to create a gfire_launch.xml in your purple data
-directory. An example is in the data/ directory. (The launch script is still a
-bit buggy.)
-
+Please read the files located in docs to know more about some Gfire features.
 
 INSTALL
 =======
-    Please see the INSTALL file
+See the INSTALL file.
 
 LICENSE
 =======
-    This software is licensed under the GPL v2.  See COPYING for full text of
-    license.
+This software is licensed under the GPLv3.
+See the COPYING file for the full license.
