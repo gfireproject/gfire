@@ -72,7 +72,7 @@
 #include "gf_debug.h"
 
 #define GFIRE_WEBSITE "http://gfire.sf.net"
-#define GFIRE_WIKI "http://gfire.site40.net/?page_id=34"
+#define GFIRE_WIKI "http://samjordan.co.uk/gFireWiki"
 #define GFIRE_XQF_FILENAME "ingame.tmp"
 #define GFIRE_DEFAULT_GROUP_NAME "Xfire"
 #define GFIRE_VERSION "0.8.1"
