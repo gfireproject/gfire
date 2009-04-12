@@ -9,6 +9,7 @@ EXTRA_DIST = 	COPYING \
 
 SUBDIRS = data pixmaps src
 
+AM_CFLAGS = -DDATADIR=\"$(datadir)\"
 BUILT_SOURCES = gfire_config.h
 $(OBJECTS): $(BUILT_SOURCES)
 

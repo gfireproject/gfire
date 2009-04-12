@@ -200,6 +200,7 @@ EXTRA_DIST = COPYING \
 		gfire_config.h
 
 SUBDIRS = data pixmaps src
+AM_CFLAGS = -DDATADIR=\"$(datadir)\"
 BUILT_SOURCES = gfire_config.h
 all: $(BUILT_SOURCES) pre_config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
