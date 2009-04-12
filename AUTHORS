@@ -8,14 +8,13 @@ Warren Dumortier <nwarrenfl@gmail.com>
 Special Thanks
 ==============
 The folks in #pidgin (previously #gaim), especially rlaager, Paco-Paco and grim (thx grim for the build system :-))
-And a big thx to keamos which gave me many many packet dumps because i dont
-have windows and xfire doesent work with wine
+And a big thx to keamos which gave me many many packet dumps because i don't have windows and Xfire doesent work with WINE.
 A big thx to Brian "TLM" Davenport, he helped me with the win32 release and some bugs :-)
 Huge thanks to Keith Geffert which sent me patches for features i would never been able to do myself, thanks!
 
 Special thank to all the guys who helped testing the beta of 0.8.0!
-Also want to thank Flames who made a nice converter for the game id list.
+Also want to thank Flames who made a nice converter for the games id list.
 Lots of kuddos to the GOD?GOD who made the patch for the buddies who don't appear online.
-And ofcourse want to thank nwarrenfl who made the beautifull game manager and made auto game detection possible.
-Thanks to Gamma and GODJonez who helped me with packet system.
-Finaly want to thank Chewit who is also in the dev team, he hosts the site and make sures that the game list always is up-to-date.
+And of course want to thank nwarrenfl who made the beautifull game manager and made auto game detection possible.
+Thanks to Gamma and GODJonez who helped me with the packet system.
+Finaly want to thank Chewit who is also in the dev team, he hosts the site and makes sure that the games list always is up-to-date.

@@ -7,11 +7,9 @@ EXTRA_DIST = \
 	gf_chat.h
 
 plugindir = $(libdir)/purple-2
-
 libxfire_la_LDFLAGS = -module -avoid-version
 
 if PLUGINS
-
 plugin_LTLIBRARIES = libxfire.la
 
 libxfire_la_SOURCES = \
@@ -23,7 +21,6 @@ libxfire_la_SOURCES = \
 
 libxfire_la_LIBADD = \
 	$(GLIB_LIBS) $(SSL_LIBS)
-
 endif
 
 AM_CPPFLAGS = \
@@ -34,5 +31,4 @@ AM_CPPFLAGS = \
 	$(SSL_CFLAGS) \
 	$(DEBUG_CFLAGS)
 
-AM_CFLAGS=-DPURPLE_PLUGINS
-
+AM_CFLAGS = -DPURPLE_PLUGINS

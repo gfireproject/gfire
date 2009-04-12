@@ -1,17 +1,15 @@
-EXTRA_DIST = \
-	COPYING \
-	ChangeLog \
-	INSTALL \
-	NEWS \
-	README \
-	VERSION \
-	gfire.spec \
-	gfire_config.h
+EXTRA_DIST = 	COPYING \
+		ChangeLog \
+		INSTALL \
+		NEWS \
+		README \
+		VERSION \
+		gfire.spec \
+		gfire_config.h
 
-SUBDIRS = src pixmaps
+SUBDIRS = data pixmaps src
 
 BUILT_SOURCES = gfire_config.h
-
 $(OBJECTS): $(BUILT_SOURCES)
 
 gfire_config.h: pre_config.h
