@@ -1067,6 +1067,7 @@ static void gfire_action_manage_games_cb(PurplePluginAction *action)
 {
 	PurpleConnection *gc = (PurpleConnection *)action->context;
 	GtkBuilder *builder = gtk_builder_new();
+	gchar *builder_file;
 
 	if(!gc) {
 		purple_debug_error("gfire: gfire_action_manage_games_cb", "GC not set.\n");
@@ -1074,7 +1075,10 @@ static void gfire_action_manage_games_cb(PurplePluginAction *action)
 	}
 
 	gfire_reload_lconfig(gc);
-	gtk_builder_add_from_file(builder, g_build_filename(purple_user_dir(), "gfire_manage.glade", NULL), NULL);
+	builder_file = g_build_filename(DATADIR, "purple", "gfire", "gfire_manage.glade", NULL);
+	gtk_builder_add_from_file(builder, builder_file, NULL);
+	g_free(builder_file);
+
 	if(!builder) {
 		purple_debug_error("gfire: gfire_action_manage_games_cb", "Couldn't build interface.\n");
 		return;
