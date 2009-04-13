@@ -1,10 +1,8 @@
 <?xml version="1.0"?>
+<!--Generated with glade3 3.4.5 on Sat Jan 17 23:23:37 2009 -->
 <interface>
-  <requires lib="gtk+" version="2.16"/>
-  <!-- interface-naming-policy toplevel-contextual -->
   <object class="GtkListStore" id="add_type_list_store">
     <columns>
-      <!-- column-name gchararray -->
       <column type="gchararray"/>
     </columns>
     <data>
@@ -18,7 +16,6 @@
   </object>
   <object class="GtkListStore" id="edit_games_list_store">
     <columns>
-      <!-- column-name gchararray -->
       <column type="gchararray"/>
     </columns>
   </object>
@@ -27,7 +24,7 @@
     <property name="height_request">280</property>
     <property name="visible">True</property>
     <property name="title" translatable="yes">Manage Games</property>
-    <property name="window_position">center</property>
+    <property name="window_position">GTK_WIN_POS_CENTER</property>
     <property name="destroy_with_parent">True</property>
     <child>
       <object class="GtkAlignment" id="window_alignment">
@@ -55,7 +52,6 @@
                   <packing>
                     <property name="expand">False</property>
                     <property name="padding">5</property>
-                    <property name="position">0</property>
                   </packing>
                 </child>
                 <child>
@@ -152,8 +148,8 @@
                 <child>
                   <object class="GtkComboBox" id="add_type_combo_box">
                     <property name="visible">True</property>
-                    <property name="model">add_type_list_store</property>
                     <property name="active">1</property>
+                    <property name="model">add_type_list_store</property>
                     <child>
                       <object class="GtkCellRendererText" id="renderer1"/>
                       <attributes>
@@ -180,22 +176,19 @@
                     <property name="visible">True</property>
                     <child>
                       <object class="GtkButton" id="add_close_button">
-                        <property name="label" translatable="yes">gtk-close</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
+                        <property name="label" translatable="yes">gtk-close</property>
                         <property name="use_stock">True</property>
                       </object>
-                      <packing>
-                        <property name="position">0</property>
-                      </packing>
                     </child>
                     <child>
                       <object class="GtkButton" id="add_add_button">
-                        <property name="label" translatable="yes">gtk-add</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
+                        <property name="label" translatable="yes">gtk-add</property>
                         <property name="use_stock">True</property>
                       </object>
                       <packing>
@@ -234,7 +227,6 @@
                   <packing>
                     <property name="expand">False</property>
                     <property name="padding">5</property>
-                    <property name="position">0</property>
                   </packing>
                 </child>
                 <child>
@@ -328,8 +320,8 @@
                 <child>
                   <object class="GtkComboBox" id="edit_games_combo_box">
                     <property name="visible">True</property>
-                    <property name="model">edit_games_list_store</property>
                     <property name="active">1</property>
+                    <property name="model">edit_games_list_store</property>
                     <child>
                       <object class="GtkCellRendererText" id="renderer2"/>
                       <attributes>
@@ -356,22 +348,19 @@
                     <property name="visible">True</property>
                     <child>
                       <object class="GtkButton" id="edit_close_button">
-                        <property name="label" translatable="yes">gtk-close</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
+                        <property name="label" translatable="yes">gtk-close</property>
                         <property name="use_stock">True</property>
                       </object>
-                      <packing>
-                        <property name="position">0</property>
-                      </packing>
                     </child>
                     <child>
                       <object class="GtkButton" id="edit_remove_button">
-                        <property name="label" translatable="yes">gtk-remove</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
+                        <property name="label" translatable="yes">gtk-remove</property>
                         <property name="use_stock">True</property>
                       </object>
                       <packing>
@@ -380,10 +369,10 @@
                     </child>
                     <child>
                       <object class="GtkButton" id="edit_apply_button">
-                        <property name="label" translatable="yes">gtk-apply</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
+                        <property name="label" translatable="yes">gtk-apply</property>
                         <property name="use_stock">True</property>
                       </object>
                       <packing>
@@ -397,9 +386,6 @@
                   </packing>
                 </child>
               </object>
-              <packing>
-                <property name="position">1</property>
-              </packing>
             </child>
             <child type="tab">
               <object class="GtkLabel" id="edit_label">
