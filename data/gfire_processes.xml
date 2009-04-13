@@ -16,7 +16,7 @@
 	<game id="4572" unix_process="gta_sa.exe" windows_process="gta_sa.exe" />
 	<game id="4107" unix_process="halo.exe" windows_process="halo.exe" />
 	<game id="4239" unix_process="haloce.exe" windows_process="haloce.exe" />
-	<game id="5128" unix_process="iourbanterror.i386" windows_process=" " />
+	<game id="5128" unix_process="iourbanterror.i" windows_process=" " />
 	<game id="5579" unix_process="worldofgoo.bin" windows_process="" />
 	<game id="5329" unix_process="savage2.bin" windows_process="" />
 	<game id="5243" unix_process="game" windows_process="" />
