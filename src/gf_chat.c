@@ -508,7 +508,12 @@ void gfire_chat_change_motd(PurpleConnection *gc, int id, const char *topic)
 	if (!t || !(gfchat = (gfire_chat *)t->data)) return -1;
 
 	topic = purple_unescape_html(topic);
-
+	
+	if (strlen(topic) > 200) {
+		purple_notify_message(NULL, PURPLE_NOTIFY_MSG_WARNING, "Xfire Groupchat", "Topic change failed", "The topic contains more than 200 characters.", NULL, NULL);
+		return -1;
+	}
+	
 	if ((len = gfire_create_change_motd(gc, gfchat->chat_id, topic))) {
 		gfire_send(gc, gfire->buff_out, len);
 		return 1;
