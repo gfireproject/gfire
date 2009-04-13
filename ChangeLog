@@ -8,6 +8,7 @@ Gfire:
 - Fix crash on login with some Linux distros.
 - Small bugfixes/changes.
 - Improve file paths.
+- Only 200 characters are allowed in a topic for groupchat.
 
 0.8.0
 - Buddy authorization improved.
