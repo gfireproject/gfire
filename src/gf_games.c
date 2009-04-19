@@ -35,6 +35,47 @@ void gfire_xml_download_cb(
 	const gchar *error_message
 	);
 
+/**
+ * returns the id of a game
+ *
+ * @param gc: the purple connection
+ * @param game_name: the game name
+ *
+ * @return: the game id, -1 if not found (unknown game)
+**/
+
+int gfire_game_id(PurpleConnection *gc, char *game_name)
+{
+	gfire_data *gfire = NULL;
+	if (gc == NULL || (gfire = (gfire_data *)gc->proto_data) == NULL) {
+		purple_debug_error("gfire: gfire_game_id", "GC not set or found.\n");
+		return;
+	}
+
+	xmlnode *gfire_games;
+	int game_id = -1;
+
+	gfire_games = gfire->xml_games_list;
+	if (gfire_games != NULL)
+	{
+		xmlnode *node_child;
+		const char *game_name_tmp;
+		const char *game_id_tmp;
+		
+		for (node_child = xmlnode_get_child(gfire_games, "game"); node_child != NULL;
+		     node_child = xmlnode_get_next_twin(node_child))
+		{
+			game_name_tmp = xmlnode_get_attrib(node_child, "name");
+			if (g_strcmp0(game_name_tmp, game_name) == NULL) {
+				game_id_tmp = xmlnode_get_attrib(node_child, "id");
+				game_id = atoi(game_id_tmp);
+			}
+		}
+	}
+	
+	return game_id;
+}
+
 
 /**
  * Returns via *buffer the name of the game identified by int game
@@ -289,15 +330,6 @@ gfire_linfo *gfire_linfo_new()
 void gfire_linfo_free(gfire_linfo *l)
 {
 	if (!l) return;
-	g_free(l->name);
-	g_free(l->xqfname);
-	g_free(l->xqfmods);
-	g_free(l->c_bin);
-	g_free(l->c_wdir);
-	g_free(l->c_gmod);
-	g_free(l->c_connect);
-	g_free(l->c_options);
-	g_free(l->c_cmd);
 	g_free(l);
 }
 
@@ -345,29 +377,26 @@ gfire_linfo *gfire_linfo_get(PurpleConnection *gc, int game)
 		l = gfire_linfo_new();
 		if (!l) return NULL; /* Out of Memory */
 		
-		l->gameid = game;
-		l->name = g_strdup(name);
+		l->game_id = game;
+		l->game_name = g_strdup(name);
 		for (cnode = node->child; cnode; cnode = cnode->next) {
 			if (cnode->type != XMLNODE_TYPE_TAG)
 				continue;
-			if (!strcmp(cnode->name, "xqf")) {
-				l->xqfname = g_strdup((gchar *)xmlnode_get_attrib(cnode, "name"));
-				l->xqfmods = g_strdup((gchar *)xmlnode_get_attrib(cnode, "modlist"));
-			}
 			
-			if (!strcmp(cnode->name, "command")) {
-				if ((command = xmlnode_get_child(cnode, "bin")))
-					l->c_bin = g_strdup(xmlnode_get_data(command));
-				if ((command = xmlnode_get_child(cnode, "dir")))
-					l->c_wdir = g_strdup(xmlnode_get_data(command));
-				if ((command = xmlnode_get_child(cnode, "gamemod")))
-					l->c_gmod = g_strdup(xmlnode_get_data(command));
-				if ((command = xmlnode_get_child(cnode, "options")))
-					l->c_options = g_strdup(xmlnode_get_data(command));
+			if (strcmp(cnode->name, "command") == NULL)
+			{
+				if ((command = xmlnode_get_child(cnode, "prefix"))) {
+					if(l->game_prefix == NULL) l->game_prefix = "";
+					else l->game_prefix = g_strdup(xmlnode_get_data(command));
+				}
+				if ((command = xmlnode_get_child(cnode, "path")))
+					l->game_path = g_strdup(xmlnode_get_data(command));
+				if ((command = xmlnode_get_child(cnode, "launch"))) {
+					if(l->game_launch == NULL) l->game_launch = "";
+					else l->game_launch = g_strdup(xmlnode_get_data(command));
+				}
 				if ((command = xmlnode_get_child(cnode, "connect")))
-					l->c_connect = g_strdup(xmlnode_get_data(command));
-				if ((command = xmlnode_get_child(cnode, "launch")))
-					l->c_cmd = g_strdup(xmlnode_get_data(command));
+					l->game_connect = g_strdup(xmlnode_get_data(command));
 			}
 		}
 	}
@@ -441,28 +470,28 @@ gchar *gfire_linfo_get_cmd(gfire_linfo *l, const guint8 *ip, int prt, const gcha
 	
 	port = g_strdup_printf("%d",prt);
 	sip = g_strdup_printf("%d.%d.%d.%d", ip[3], ip[2], ip[1], ip[0]);
-	connect = gfire_launch_parse(l->c_connect, sip, "@ip@");
+	connect = gfire_launch_parse(l->game_connect, sip, "[ip]");
 	old = connect;
-	connect = gfire_launch_parse(connect, port, "@port@");
+	connect = gfire_launch_parse(connect, port, "[port]");
 	g_free(old);
-	
-	if(l->c_gmod) {	
-	gamemod = gfire_launch_parse(l->c_gmod, mod, "@mod@");
+
+	cmd = "";
+
+	if (l->game_path == NULL || l->game_connect == NULL) {
+		purple_debug_error("gfire_linfo_get_cmd", "Couldn't get game path and/or game connection option.\n");
+		return;
 	}
 	
-	cmd =  gfire_launch_parse(l->c_cmd, connect, "@connect@");
-	old = cmd;
-	if(gamemod) {
-	cmd = gfire_launch_parse(cmd, gamemod, "@gamemod@");
-	g_free(old); old = cmd;
+	if (l->game_prefix != NULL) {
+		cmd = l->game_prefix;
+		cmd = g_strdup_printf("%s %s", cmd, l->game_path);
 	}
+	else cmd = l->game_path;
+
+	if (l->game_launch != NULL) cmd = g_strdup_printf("%s %s", cmd, l->game_launch);
+
+	cmd = g_strdup_printf("%s %s", cmd, connect);
 	
-	if(l->c_options) {
-		cmd = gfire_launch_parse(cmd, l->c_options, "@options@");
-		g_free(old); g_strstrip(cmd); old = cmd;
-	}
-	cmd = g_strdup_printf("%s %s", l->c_bin, cmd);
-	g_free(gamemod); g_free(options); g_free(connect); g_free(port); g_free(old); g_free(sip);
 	return cmd;	
 }
 

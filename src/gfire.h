@@ -42,6 +42,7 @@
 #else
 #define IS_NOT_WINDOWS
 #include <gtk/gtk.h>
+#include <gio/gio.h>
 #include <errno.h>
 #endif /* _WIN32 */
 

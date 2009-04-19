@@ -24,23 +24,17 @@
 
 #include "gfire.h"
 
-typedef struct _gfire_linfo gfire_linfo;
 typedef struct _gfire_xqf_linfo gfire_xqf_linfo;
-
-
+typedef struct _gfire_linfo gfire_linfo;
 
 struct _gfire_linfo
 {
-	int 	gameid;
-	gchar	*name;
-	gchar	*xqfname;
-	gchar	*xqfmods;
-	gchar	*c_bin;
-	gchar	*c_wdir;
-	gchar	*c_gmod;
-	gchar	*c_connect;
-	gchar	*c_options;
-	gchar	*c_cmd;
+	int game_id;
+	char *game_name;
+	char *game_prefix;
+	char *game_path;
+	char *game_launch;
+	char *game_connect;
 };
 
 struct _gfire_xqf_linfo

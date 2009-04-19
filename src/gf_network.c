@@ -252,7 +252,6 @@ void gfire_parse_packet(PurpleConnection *gc, int packet_len, int packet_id)
 			purple_connection_set_state(gc, PURPLE_CONNECTED);
 			gfire_packet_130(gc, packet_len);
 			if (gfire->alias) purple_connection_set_display_name(gc, g_strdup(gfire->alias));
-			gfire->xqf_source = g_timeout_add(15000, (GSourceFunc)gfire_check_xqf_cb, gc);
 			#ifdef IS_NOT_WINDOWS
 			gfire->det_source = g_timeout_add(5000, (GSourceFunc)gfire_detect_running_games_cb, gc);
 			#endif
