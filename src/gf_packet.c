@@ -304,6 +304,7 @@ void gfire_packet_131(PurpleConnection *gc, int packet_len)
 		gf_buddy->alias = (gchar *)n->data;
 		gf_buddy->userid = (guint8 *)u->data;
 		gf_buddy->type = (int )0;
+		gf_buddy->friend = (gboolean )TRUE;
 
 		if (gf_buddy->alias == NULL) gf_buddy->alias = g_strdup(gf_buddy->name);
 
@@ -325,6 +326,8 @@ void gfire_packet_131(PurpleConnection *gc, int packet_len)
 	g_list_free(friends);
 	g_list_free(nicks);
 	g_list_free(userids);
+	
+	gfire->blist_loaded = (gboolean )TRUE;
 
 	n = gfire->buddies;
 	while (n != NULL)

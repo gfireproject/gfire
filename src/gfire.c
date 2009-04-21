@@ -652,7 +652,7 @@ GList *gfire_find_buddy_in_list( GList *blist, gpointer *data, int mode )
 }
 
 
-void gfire_new_buddy(PurpleConnection *gc, gchar *alias, gchar *name, int type)
+void gfire_new_buddy(PurpleConnection *gc, gchar *alias, gchar *name, int type, gboolean friend)
 {
 	PurpleBuddy *buddy = NULL;
 	PurpleAccount *account = NULL;
@@ -662,9 +662,9 @@ void gfire_new_buddy(PurpleConnection *gc, gchar *alias, gchar *name, int type)
 	default_purple_group = purple_find_group(GFIRE_DEFAULT_GROUP_NAME);
 	default_clan_group = purple_find_group(GFIRE_CLAN_GROUP_NAME);
 	buddy = purple_find_buddy(account, name);
-	
+		
 	if (type == 0) {
-	if (NULL == buddy) {
+	if (NULL == buddy && friend == TRUE) {
 		if (NULL == default_purple_group) {
 			default_purple_group = purple_group_new(GFIRE_DEFAULT_GROUP_NAME);
 			purple_blist_add_group(default_purple_group, NULL);
@@ -679,7 +679,7 @@ void gfire_new_buddy(PurpleConnection *gc, gchar *alias, gchar *name, int type)
 	}
 	}
 	
-	if (type == 2) {
+	if (type == 2 && friend == FALSE) {
 		if (NULL == buddy) {
 		if (NULL == default_clan_group) {
 			default_clan_group = purple_group_new(GFIRE_CLAN_GROUP_NAME);
@@ -694,7 +694,6 @@ void gfire_new_buddy(PurpleConnection *gc, gchar *alias, gchar *name, int type)
 		serv_got_alias(gc, name, g_strdup(alias));
 	}
 	}
-
 }
 
 
@@ -707,7 +706,7 @@ void gfire_new_buddies(PurpleConnection *gc)
 	while (NULL != tmp) {
 		b = (gfire_buddy *)tmp->data;
 		if (!b) return;
-		gfire_new_buddy(gc, b->alias, b->name, b->type);
+		gfire_new_buddy(gc, b->alias, b->name, b->type, b->friend);
 		tmp = g_list_next(tmp);
 	}
 }

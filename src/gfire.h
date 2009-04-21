@@ -125,6 +125,7 @@ struct _gfire_data {
 	guint xqf_source;			/* g_timeout_add source number for xqf callback */
 	guint det_source;			/* g_timeout_add source number for game detection callback */
 	gboolean game_running;		/* bool to know if a game has already been detected */
+	gboolean blist_loaded;		/* TRUE == buddy list is loaded, we need this for the clan list */
 };
 
 struct _gfire_buddy {
@@ -145,6 +146,7 @@ struct _gfire_buddy {
 	int chatperm;			/* group chat permissions (only used for group chat members)*/
 	guint8 *clanid;			/* clanid (only used for group chat members)*/
 	int type;				/* 0: Regular buddy, 1: Groupchat buddy, 2: Clan buddy */
+	gboolean friend;		/* TRUE == buddy needs to be in friendlist and not in clan buddy list */
 
 };
 
@@ -192,7 +194,7 @@ struct _path_extracted {
 
 void gfire_close(PurpleConnection *gc);
 GList *gfire_find_buddy_in_list( GList *blist, gpointer *data, int mode );
-void gfire_new_buddy(PurpleConnection *gc, gchar *alias, gchar *name, int type);
+void gfire_new_buddy(PurpleConnection *gc, gchar *alias, gchar *name, int type, gboolean friend);
 void gfire_new_buddies(PurpleConnection *gc);
 void gfire_handle_im(PurpleConnection *gc);
 void gfire_update_buddy_status(PurpleConnection *gc, GList *buddies, int status);
