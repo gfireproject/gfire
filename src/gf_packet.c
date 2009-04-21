@@ -1842,7 +1842,7 @@ void gfire_read_clan_blist(PurpleConnection *gc, int packet_len)
 		/* cast userid into string */
 		for(i = 0; i < XFIRE_USERID_LEN; i++) g_sprintf(uids + (i * 2), "%02x", gf_buddy->userid[i]);
 
-		uids[(XFIRE_USERID_LEN * 2) + 1] = 0x00;
+		uids[(XFIRE_USERID_LEN * 2)] = 0x00;
 		gf_buddy->uid_str = g_strdup(uids);
 
 		f->data = NULL;
