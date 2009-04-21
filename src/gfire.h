@@ -76,10 +76,12 @@
 #define GFIRE_WIKI "http://samjordan.co.uk/gFireWiki"
 #define GFIRE_XQF_FILENAME "ingame.tmp"
 #define GFIRE_DEFAULT_GROUP_NAME "Xfire"
+#define GFIRE_CLAN_GROUP_NAME "Clan"
 #define GFIRE_VERSION "0.8.1"
 #define GFIRE_GAMES_XML_URL "http://gfire.site40.net/files/gfire_games.xml"
 #define XFIRE_HEADER_LEN 5
 #define XFIRE_USERID_LEN 4
+#define XFIRE_CLANID_LEN 4
 #define XFIRE_SID_LEN 16
 #define XFIRE_GAMEID_LEN 4
 #define XFIRE_GAMEPORT_LEN 4
@@ -141,6 +143,8 @@ struct _gfire_buddy {
 	gchar *avatartype;
 	guint16 *avatarnumber;
 	int chatperm;			/* group chat permissions (only used for group chat members)*/
+	guint8 *clanid;			/* clanid (only used for group chat members)*/
+	int type;				/* 0: Regular buddy, 1: Groupchat buddy, 2: Clan buddy */
 
 };
 
@@ -188,7 +192,7 @@ struct _path_extracted {
 
 void gfire_close(PurpleConnection *gc);
 GList *gfire_find_buddy_in_list( GList *blist, gpointer *data, int mode );
-void gfire_new_buddy(PurpleConnection *gc, gchar *alias, gchar *name);
+void gfire_new_buddy(PurpleConnection *gc, gchar *alias, gchar *name, int type);
 void gfire_new_buddies(PurpleConnection *gc);
 void gfire_handle_im(PurpleConnection *gc);
 void gfire_update_buddy_status(PurpleConnection *gc, GList *buddies, int status);

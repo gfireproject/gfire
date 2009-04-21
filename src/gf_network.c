@@ -354,6 +354,11 @@ void gfire_parse_packet(PurpleConnection *gc, int packet_len, int packet_id)
 			tlist = gfire_read_buddy_status(gc, packet_len);
 			if (NULL != tlist) gfire_update_buddy_status(gc, tlist, GFIRE_STATUS_AWAY);
 		break;
+		
+		case 159:
+			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received clan list\n");
+			gfire_read_clan_blist(gc, packet_len);
+		break;
 
 		case 161:
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received buddy nick change packet\n");

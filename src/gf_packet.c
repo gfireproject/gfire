@@ -278,7 +278,7 @@ void gfire_packet_131(PurpleConnection *gc, int packet_len)
 		return;
 	}
 
-	index+= attrib + 1;	
+	index += attrib + 1;	
 	attrib = gfire_read_attrib(&userids, gfire->buff_in + index, packet_len - index, "userid", FALSE, TRUE, 0, 0, XFIRE_USERID_LEN);
 	if (attrib < 1 ) {
 		if (friends != NULL) g_list_free(friends);
@@ -303,6 +303,7 @@ void gfire_packet_131(PurpleConnection *gc, int packet_len)
 		gf_buddy->name = (gchar *)f->data;
 		gf_buddy->alias = (gchar *)n->data;
 		gf_buddy->userid = (guint8 *)u->data;
+		gf_buddy->type = (int )0;
 
 		if (gf_buddy->alias == NULL) gf_buddy->alias = g_strdup(gf_buddy->name);
 
@@ -329,10 +330,12 @@ void gfire_packet_131(PurpleConnection *gc, int packet_len)
 	while (n != NULL)
 	{
 		gf_buddy = (gfire_buddy *)n->data;
+		if (gf_buddy->type == 0) {
 		purple_debug(PURPLE_DEBUG_MISC, "gfire", "buddy info: %s, %s, %02x%02x%02x%02x, %s\n",
 			     NN(gf_buddy->name), NN(gf_buddy->uid_str), NNA(gf_buddy->userid, gf_buddy->userid[0]),
 			     NNA(gf_buddy->userid, gf_buddy->userid[1]), NNA(gf_buddy->userid, gf_buddy->userid[2]),
 			     NNA(gf_buddy->userid, gf_buddy->userid[3]), NN(gf_buddy->alias));
+		}
 		n = g_list_next(n);
 	}
 }
@@ -1329,6 +1332,7 @@ GList *gfire_read_chat_info(PurpleConnection *gc, int packet_len, gchar **rtop, 
 		m->name = (gchar *)n->data;
 		m->alias = (gchar *)a->data;
 		m->userid = (guint8 *)u->data;
+		m->type = (int )1;
 		memcpy(&i32_perm, p->data, sizeof(i32_perm));
 		m->chatperm = GUINT32_FROM_LE(i32_perm);
 		g_free(p->data); p->data = NULL;
@@ -1763,4 +1767,104 @@ int gfire_create_reject_chat(PurpleConnection *gc, const guint8 *cid)
 	
 	return index;		
 	
+}
+
+void gfire_read_clan_blist(PurpleConnection *gc, int packet_len)
+{
+	int index, itmp, i, type = 0;
+	gfire_buddy *gf_buddy = NULL;
+	guint8 clanid[XFIRE_CLANID_LEN] = {0x0,0x0,0x0,0x0};
+	GList *userids = NULL;
+	GList *usernames = NULL;
+	GList *nicks = NULL;
+	gchar uids[(XFIRE_USERID_LEN * 2) + 1];
+	
+
+	GList *f, *n, *u;
+	gfire_data *gfire = (gfire_data *)gc->proto_data;
+
+	if (packet_len < 16) {
+		purple_debug_error("gfire", "packet 131 received, but too short. (%d bytes)\n", packet_len);
+		return;
+	}
+
+	index = 7;
+	memcpy(clanid, gfire->buff_in + index, XFIRE_CLANID_LEN);
+	index += XFIRE_CLANID_LEN + 3;
+	
+	itmp = gfire_read_attrib(&userids, gfire->buff_in + index, packet_len - index, NULL, FALSE, TRUE, 0, 0, XFIRE_USERID_LEN);
+	if (itmp < 1) {
+		if (userids != NULL) g_list_free(userids);
+		return;
+	}
+
+	index += itmp + 3;
+	itmp = gfire_read_attrib(&usernames, gfire->buff_in + index, packet_len - index, NULL, TRUE, FALSE, 0, 0, 0);
+	if (itmp < 1 ) {
+		if (userids != NULL) g_list_free(userids);
+		if (usernames != NULL) g_list_free(usernames);
+		return;
+	}
+
+	index += itmp + 3;	
+	itmp = gfire_read_attrib(&nicks, gfire->buff_in + index, packet_len - index, NULL, TRUE, FALSE, 0, 0, 0);
+	if (itmp < 1 ) {
+		if (userids != NULL) g_list_free(userids);
+		if (usernames != NULL) g_list_free(usernames);
+		if (nicks != NULL) g_list_free(nicks);
+		return;
+	}
+
+	userids = g_list_first(userids);
+	usernames = g_list_first(usernames);
+	nicks = g_list_first(nicks);
+	
+	u = userids;
+	f = usernames;
+	n = nicks;
+	
+	while (f != NULL)
+	{
+		gf_buddy = g_malloc0(sizeof(gfire_buddy));
+		gfire->buddies = g_list_append(gfire->buddies, (gpointer *)gf_buddy);
+
+		gf_buddy->name = (gchar *)f->data;
+		gf_buddy->alias = (gchar *)n->data;
+		gf_buddy->userid = (guint8 *)u->data;
+		gf_buddy->clanid = clanid;
+		gf_buddy->type = (int )2;
+
+		if (gf_buddy->alias == NULL) gf_buddy->alias = g_strdup(gf_buddy->name);
+
+		/* cast userid into string */
+		for(i = 0; i < XFIRE_USERID_LEN; i++) g_sprintf(uids + (i * 2), "%02x", gf_buddy->userid[i]);
+
+		uids[(XFIRE_USERID_LEN * 2) + 1] = 0x00;
+		gf_buddy->uid_str = g_strdup(uids);
+
+		f->data = NULL;
+		u->data = NULL;
+		n->data = NULL;
+
+		f = g_list_next(f);
+		u = g_list_next(u);
+		n = g_list_next(n);
+	}
+
+	g_list_free(userids);
+	g_list_free(usernames);
+	g_list_free(nicks);
+
+	n = gfire->buddies;
+	while (n != NULL)
+	{
+		gf_buddy = (gfire_buddy *)n->data;
+		purple_debug(PURPLE_DEBUG_MISC, "gfire", "clan buddy info: %s, %02x%02x%02x%02x, %s, %02x%02x%02x%02x\n",
+			     NN(gf_buddy->name), NNA(gf_buddy->userid, gf_buddy->userid[0]),
+			     NNA(gf_buddy->userid, gf_buddy->userid[1]), NNA(gf_buddy->userid, gf_buddy->userid[2]),
+			     NNA(gf_buddy->userid, gf_buddy->userid[3]), NN(gf_buddy->alias),
+			     NNA(gf_buddy->clanid, gf_buddy->clanid[0]), NNA(gf_buddy->clanid, gf_buddy->clanid[1]),
+			     NNA(gf_buddy->clanid, gf_buddy->clanid[2]), NNA(gf_buddy->clanid, gf_buddy->clanid[3]));
+		n = g_list_next(n);
+	}
 }
