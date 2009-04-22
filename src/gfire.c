@@ -314,6 +314,8 @@ void gfire_close(PurpleConnection *gc)
 		if (NULL != b->sid) g_free(b->sid);
 		if (NULL != b->sid_str) g_free(b->sid_str);
 		if (NULL != b->gameip) g_free(b->gameip);
+//		if (NULL != b->clanid) g_free(b->clanid);
+		
 		g_free(b);
 		buddies->data = NULL;
  		buddies = g_list_next(buddies);
@@ -652,7 +654,7 @@ GList *gfire_find_buddy_in_list( GList *blist, gpointer *data, int mode )
 }
 
 
-void gfire_new_buddy(PurpleConnection *gc, gchar *alias, gchar *name, int type, gboolean friend)
+void gfire_new_buddy(PurpleConnection *gc, gchar *alias, gchar *name, gboolean friend, gboolean clan)
 {
 	PurpleBuddy *buddy = NULL;
 	PurpleAccount *account = NULL;
@@ -662,9 +664,9 @@ void gfire_new_buddy(PurpleConnection *gc, gchar *alias, gchar *name, int type, 
 	default_purple_group = purple_find_group(GFIRE_DEFAULT_GROUP_NAME);
 	default_clan_group = purple_find_group(GFIRE_CLAN_GROUP_NAME);
 	buddy = purple_find_buddy(account, name);
-		
-	if (type == 0) {
-	if (NULL == buddy && friend == TRUE) {
+
+
+	if (buddy == NULL && friend == TRUE) {
 		if (NULL == default_purple_group) {
 			default_purple_group = purple_group_new(GFIRE_DEFAULT_GROUP_NAME);
 			purple_blist_add_group(default_purple_group, NULL);
@@ -677,10 +679,8 @@ void gfire_new_buddy(PurpleConnection *gc, gchar *alias, gchar *name, int type, 
 	} else {
 		serv_got_alias(gc, name, g_strdup(alias));
 	}
-	}
 	
-	if (type == 2 && friend == FALSE) {
-		if (NULL == buddy) {
+	if (buddy == NULL && clan == TRUE) {
 		if (NULL == default_clan_group) {
 			default_clan_group = purple_group_new(GFIRE_CLAN_GROUP_NAME);
 			purple_blist_add_group(default_clan_group, NULL);
@@ -693,8 +693,8 @@ void gfire_new_buddy(PurpleConnection *gc, gchar *alias, gchar *name, int type, 
 	} else {
 		serv_got_alias(gc, name, g_strdup(alias));
 	}
-	}
 }
+
 
 
 void gfire_new_buddies(PurpleConnection *gc)
@@ -706,7 +706,7 @@ void gfire_new_buddies(PurpleConnection *gc)
 	while (NULL != tmp) {
 		b = (gfire_buddy *)tmp->data;
 		if (!b) return;
-		gfire_new_buddy(gc, b->alias, b->name, b->type, b->friend);
+		gfire_new_buddy(gc, b->alias, b->name, b->friend, b->clan);
 		tmp = g_list_next(tmp);
 	}
 }

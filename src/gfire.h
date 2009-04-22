@@ -89,7 +89,7 @@
 #define XFIRE_CHATID_LEN 21
 #define XFIRE_SERVER "cs.xfire.com"
 #define XFIRE_PORT 25999
-#define XFIRE_PROTO_VERSION 106
+#define XFIRE_PROTO_VERSION 107
 #define XFIRE_CONNECT_STEPS 3
 #define XFIRE_SID_OFFLINE_STR "00000000000000000000000000000000"
 #define XFIRE_KEEPALIVE_TIME 300  // see gfire_keep_alive for more info
@@ -141,12 +141,11 @@ struct _gfire_buddy {
 	guint32 gameid;			/* int game id */
 	guint32	gameport;		/* int game port */
 	guint8 *gameip;			/* char[4] game port, each byte is an octet */
-	gchar *avatartype;
-	guint16 *avatarnumber;
 	int chatperm;			/* group chat permissions (only used for group chat members)*/
 	guint8 *clanid;			/* clanid (only used for group chat members)*/
-	int type;				/* 0: Regular buddy, 1: Groupchat buddy, 2: Clan buddy */
-	gboolean friend;		/* TRUE == buddy needs to be in friendlist and not in clan buddy list */
+	gboolean friend;		/* TRUE == buddy is in friendslist */
+	gboolean clan;			/* TRUE == buddy is in clanlist */
+	gboolean groupchat;		/* TRUE == buddy is in groupchat */
 
 };
 
@@ -194,7 +193,7 @@ struct _path_extracted {
 
 void gfire_close(PurpleConnection *gc);
 GList *gfire_find_buddy_in_list( GList *blist, gpointer *data, int mode );
-void gfire_new_buddy(PurpleConnection *gc, gchar *alias, gchar *name, int type, gboolean friend);
+void gfire_new_buddy(PurpleConnection *gc, gchar *alias, gchar *name, gboolean friend, gboolean clan);
 void gfire_new_buddies(PurpleConnection *gc);
 void gfire_handle_im(PurpleConnection *gc);
 void gfire_update_buddy_status(PurpleConnection *gc, GList *buddies, int status);

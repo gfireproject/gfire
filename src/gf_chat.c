@@ -476,7 +476,7 @@ void gfire_chat_user_join(PurpleConnection *gc, gfire_chat_msg *gcm)
 					f = PURPLE_CBFLAGS_NONE;
 		}
 			purple_conv_chat_add_user(PURPLE_CONV_CHAT(gfchat->c), m->name, NULL, f, TRUE);
-			m->type = (int )2;
+			m->groupchat = (gboolean )TRUE;
 			gfchat->members = g_list_append(gfchat->members, m);
 		} else {
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "(group chat): supressing own join message\n");

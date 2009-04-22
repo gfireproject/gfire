@@ -358,7 +358,7 @@ void gfire_parse_packet(PurpleConnection *gc, int packet_len, int packet_id)
 		case 159:
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received clan list\n");
 			gfire_read_clan_blist(gc, packet_len);
-			if (gfire->blist_loaded == TRUE && gfire->blist_loaded != NULL) gfire_new_buddies(gc);
+			if (gfire->blist_loaded == TRUE) gfire_new_buddies(gc);
 		break;
 
 		case 161:

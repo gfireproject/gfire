@@ -303,7 +303,6 @@ void gfire_packet_131(PurpleConnection *gc, int packet_len)
 		gf_buddy->name = (gchar *)f->data;
 		gf_buddy->alias = (gchar *)n->data;
 		gf_buddy->userid = (guint8 *)u->data;
-		gf_buddy->type = (int )0;
 		gf_buddy->friend = (gboolean )TRUE;
 
 		if (gf_buddy->alias == NULL) gf_buddy->alias = g_strdup(gf_buddy->name);
@@ -333,7 +332,7 @@ void gfire_packet_131(PurpleConnection *gc, int packet_len)
 	while (n != NULL)
 	{
 		gf_buddy = (gfire_buddy *)n->data;
-		if (gf_buddy->type == 0) {
+		if (!gf_buddy->friend) {
 		purple_debug(PURPLE_DEBUG_MISC, "gfire", "buddy info: %s, %s, %02x%02x%02x%02x, %s\n",
 			     NN(gf_buddy->name), NN(gf_buddy->uid_str), NNA(gf_buddy->userid, gf_buddy->userid[0]),
 			     NNA(gf_buddy->userid, gf_buddy->userid[1]), NNA(gf_buddy->userid, gf_buddy->userid[2]),
@@ -1335,7 +1334,7 @@ GList *gfire_read_chat_info(PurpleConnection *gc, int packet_len, gchar **rtop, 
 		m->name = (gchar *)n->data;
 		m->alias = (gchar *)a->data;
 		m->userid = (guint8 *)u->data;
-		m->type = (int )1;
+		m->groupchat = (gboolean )TRUE;
 		memcpy(&i32_perm, p->data, sizeof(i32_perm));
 		m->chatperm = GUINT32_FROM_LE(i32_perm);
 		g_free(p->data); p->data = NULL;
@@ -1832,10 +1831,13 @@ void gfire_read_clan_blist(PurpleConnection *gc, int packet_len)
 		gfire->buddies = g_list_append(gfire->buddies, (gpointer *)gf_buddy);
 
 		gf_buddy->name = (gchar *)f->data;
-		gf_buddy->alias = (gchar *)n->data;
+		
+		/* No specific clan names for buddies who are already in our buddy list */
+		if (!gf_buddy->friend) gf_buddy->alias = (gchar *)n->data;
+
 		gf_buddy->userid = (guint8 *)u->data;
 		gf_buddy->clanid = clanid;
-		gf_buddy->type = (int )2;
+		gf_buddy->clan = (gboolean )TRUE;
 
 		if (gf_buddy->alias == NULL) gf_buddy->alias = g_strdup(gf_buddy->name);
 
@@ -1862,12 +1864,14 @@ void gfire_read_clan_blist(PurpleConnection *gc, int packet_len)
 	while (n != NULL)
 	{
 		gf_buddy = (gfire_buddy *)n->data;
+		if (gf_buddy->clan) {
 		purple_debug(PURPLE_DEBUG_MISC, "gfire", "clan buddy info: %s, %02x%02x%02x%02x, %s, %02x%02x%02x%02x\n",
 			     NN(gf_buddy->name), NNA(gf_buddy->userid, gf_buddy->userid[0]),
 			     NNA(gf_buddy->userid, gf_buddy->userid[1]), NNA(gf_buddy->userid, gf_buddy->userid[2]),
 			     NNA(gf_buddy->userid, gf_buddy->userid[3]), NN(gf_buddy->alias),
 			     NNA(gf_buddy->clanid, gf_buddy->clanid[0]), NNA(gf_buddy->clanid, gf_buddy->clanid[1]),
 			     NNA(gf_buddy->clanid, gf_buddy->clanid[2]), NNA(gf_buddy->clanid, gf_buddy->clanid[3]));
+		}
 		n = g_list_next(n);
 	}
 }
