@@ -1,0 +1,176 @@
+<?xml version="1.0"?>
+<interface>
+  <!-- interface-requires gtk+ 2.12 -->
+  <!-- interface-naming-policy project-wide -->
+  <object class="GtkWindow" id="server_browser_window">
+    <property name="title" translatable="yes">Server Browser</property>
+    <child>
+      <object class="GtkVBox" id="vbox">
+        <property name="visible">True</property>
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="GtkToolbar" id="actions_tool_bar">
+            <property name="visible">True</property>
+            <property name="toolbar_style">icons</property>
+            <child>
+              <object class="GtkToolButton" id="refresh_button">
+                <property name="visible">True</property>
+                <property name="use_underline">True</property>
+                <property name="stock_id">gtk-refresh</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="homogeneous">True</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkToolButton" id="connect_button">
+                <property name="visible">True</property>
+                <property name="use_underline">True</property>
+                <property name="stock_id">gtk-connect</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="homogeneous">True</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkToolButton" id="favorite_button">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">Add to favorites</property>
+                <property name="use_underline">True</property>
+                <property name="icon_name">address-book-new</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="homogeneous">True</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkSeparatorToolItem" id="actions_separator">
+                <property name="visible">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="homogeneous">True</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkToolButton" id="informations_button">
+                <property name="visible">True</property>
+                <property name="use_underline">True</property>
+                <property name="stock_id">gtk-info</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="homogeneous">True</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkToolButton" id="favorites_button">
+                <property name="visible">True</property>
+                <property name="use_underline">True</property>
+                <property name="icon_name">emblem-favorite</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="homogeneous">True</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkSeparatorToolItem" id="actions_separator2">
+                <property name="visible">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="homogeneous">True</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkToolButton" id="quit_button">
+                <property name="visible">True</property>
+                <property name="use_underline">True</property>
+                <property name="stock_id">gtk-quit</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="homogeneous">True</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkToolItem" id="game_tool_item">
+                <property name="visible">True</property>
+                <child>
+                  <object class="GtkComboBox" id="game_combo">
+                    <property name="visible">True</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="homogeneous">True</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkTreeView" id="servers_tree_view">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="model">servers_list_store</property>
+            <child>
+              <object class="GtkTreeViewColumn" id="name_column">
+                <property name="resizable">True</property>
+                <property name="title">Name</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkTreeViewColumn" id="adress_column">
+                <property name="title">Adress</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkTreeViewColumn" id="ping_column">
+                <property name="title">Ping</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkTreeViewColumn" id="players_column">
+                <property name="title">Players</property>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkStatusbar" id="servers_status_bar">
+            <property name="visible">True</property>
+            <property name="spacing">2</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+  </object>
+  <object class="GtkListStore" id="servers_list_store">
+    <columns>
+      <!-- column-name server_name -->
+      <column type="gchararray"/>
+      <!-- column-name server_ip -->
+      <column type="gchararray"/>
+      <!-- column-name server_ping -->
+      <column type="gchararray"/>
+      <!-- column-name server_players -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
+</interface>
