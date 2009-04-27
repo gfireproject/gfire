@@ -951,7 +951,7 @@ void gfire_buddy_menu_profile_cb(PurpleBlistNode *node, gpointer *data)
   * @param node		BuddyList node provided by interface
   * @param data		Gpointer data (not used)
 */
- void gfire_buddy_menu_joingame_cb(PurpleBlistNode *node, gpointer *data)
+void gfire_buddy_menu_joingame_cb(PurpleBlistNode *node, gpointer *data)
 {
  	int game = 0;
 	gchar *serverip = NULL;
@@ -968,7 +968,7 @@ void gfire_buddy_menu_profile_cb(PurpleBlistNode *node, gpointer *data)
 
  		gfire_join_game(gc, serverip, serverport, game);
  	}
- }
+}
 
 /*
  *	purple callback function.  Not used directly.  Purple calls this callback
@@ -1191,7 +1191,7 @@ static void gfire_add_game_cb(manage_games_callback_args *args, GtkWidget *butto
 	
 	const gchar *game_name = gtk_entry_get_text(GTK_ENTRY(add_game_entry));
 	gchar *game_path = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(add_path_button));
-	gboolean game_executable_use_path = gtk_toggle_button_get_active(GTK_CHECK_BUTTON(add_executable_check_button));
+	gboolean game_executable_use_path = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(add_executable_check_button));
 	gchar *game_executable = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(add_executable_button));
 	const gchar *game_connect = gtk_entry_get_text(GTK_ENTRY(add_connect_entry));
 
@@ -1222,10 +1222,10 @@ static void gfire_add_game_cb(manage_games_callback_args *args, GtkWidget *butto
 			}
 
 			if (game_executable_use_path == TRUE) {
-				game_node = gfire_manage_game_xml(game_id, game_name, game_path, "", game_path, "", game_connect);
+				game_node = gfire_manage_game_xml(game_id, (char *)game_name, (char *)game_path, "", game_path, "", (char *)game_connect);
 			}
-			else game_node = gfire_manage_game_xml(game_id, game_name, game_executable,
-			                                                "", game_path, "", game_connect);
+			else game_node = gfire_manage_game_xml(game_id, (char *)game_name, (char *)game_executable,
+			                                                "", game_path, "", (char *)game_connect);
 			 
 			g_free(game_path);
 
@@ -1290,7 +1290,7 @@ static void gfire_edit_game_cb(manage_games_callback_args *args, GtkWidget *butt
 	
 	const gchar *game_name = gtk_combo_box_get_active_text(GTK_COMBO_BOX(edit_game_combo));
 	gchar *game_path = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(edit_path_button));
-	gboolean game_executable_use_path = gtk_toggle_button_get_active(GTK_CHECK_BUTTON(edit_executable_check_button));
+	gboolean game_executable_use_path = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(edit_executable_check_button));
 	gchar *game_executable = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(edit_executable_button));
 	const gchar *game_connect = gtk_entry_get_text(GTK_ENTRY(edit_connect_entry));
 	const gchar *game_prefix = gtk_entry_get_text(GTK_ENTRY(edit_prefix_entry));
@@ -1321,11 +1321,11 @@ static void gfire_edit_game_cb(manage_games_callback_args *args, GtkWidget *butt
 					else game_native = FALSE;
 
 					if (game_executable_use_path == TRUE) {
-						game_node = gfire_manage_game_xml(game_id, game_name, game_path, game_prefix,
-						                                  game_path, game_launch, game_connect);
+						game_node = gfire_manage_game_xml((char *)game_id, (char *)game_name, (char *)game_path, (char *)game_prefix,
+						                                  game_path, (char *)game_launch, (char *)game_connect);
 					}
-					else game_node = gfire_manage_game_xml(game_id, game_name, game_executable, game_prefix,
-					                                       game_path, game_launch, game_connect);
+					else game_node = gfire_manage_game_xml((char *)game_id, (char *)game_name, (char *)game_executable, (char *)game_prefix,
+					                                       game_path, (char *)game_launch, (char *)game_connect);
 					
 					xmlnode_insert_child(gfire_launch_new, game_node);
 					g_free(game_path);
@@ -1403,9 +1403,9 @@ static void gfire_manage_games_edit_update_fields_cb(GtkBuilder *builder, GtkWid
 				char *game_connect = xmlnode_get_data(connect_node);
 
 				if (g_strcmp0(game_path, game_executable) == NULL) {
-					gtk_toggle_button_set_active(GTK_CHECK_BUTTON(edit_executable_check_button), TRUE);
+					gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(edit_executable_check_button), TRUE);
 				}
-				else gtk_toggle_button_set_active(GTK_CHECK_BUTTON(edit_executable_check_button), FALSE);
+				else gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(edit_executable_check_button), FALSE);
 				
 				gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(edit_executable_button), game_executable);
 				gtk_entry_set_text(GTK_ENTRY(edit_prefix_entry), game_prefix);
@@ -1580,11 +1580,11 @@ int gfire_detect_running_games_cb(PurpleConnection *gc)
 			gchar *game_process;
 			gchar *game_id = xmlnode_get_attrib(node_child, "id");
 
-			if (game_executable == NULL) game_process = g_path_get_basename(game_path);
-			else game_process = g_path_get_basename(game_executable);
+			/* if (game_executable == NULL) game_process = g_path_get_basename(game_path);
+			else game_process = g_path_get_basename(game_executable); */
 
 			gboolean process_running = FALSE;
-			process_running = check_process(game_process);
+			process_running = check_process(game_executable);
 
 			int len = 0;
 			int game_running_id = gfire->gameid;
@@ -1595,8 +1595,7 @@ int gfire_detect_running_games_cb(PurpleConnection *gc)
 			{
 				if (game_running == FALSE)
 				{
-					gboolean norm = purple_account_get_bool(purple_connection_get_account(gc),
-															"ingamenotificationnorm", FALSE);
+					gboolean norm = purple_account_get_bool(purple_connection_get_account(gc), "ingamenotificationnorm", FALSE);
 					purple_debug_info("gfire: gfire_detect_running_games_cb",
 									  "%s is running. Telling Xfire ingame status.\n", game_name);
 
@@ -1643,8 +1642,9 @@ gboolean check_process(char *process)
 	#else
 	char command[256];
 
-	sprintf(command, "ps -ef | grep -i %s | grep -v grep", process);
-
+	/* sprintf(command, "ps -ef | grep -i %s | grep -v grep", process); */
+	sprintf(command, "lsof %s", process);
+	
 	char buf[256];
 	int c;
 	int count = 0;
@@ -1787,80 +1787,39 @@ static GList *gfire_actions(PurplePlugin *plugin, gpointer context)
 	return m;
 }
 
-
- /**
-  * Joins a game in progress with buddy. spawns process, puts us in game with xfire
-  * and adds a gsource watch on the child process so when it exits we can take
-  * ourselves out of game.
-  *
-  * @param gc			pointer to our PurpleConnection for sending network traffic.
-  * @param sip			server ip (quad dotted notation) of where the game is
-  * @param sport		server port of where the game is located
-  * @param game			the xfire game ID to join (looked up in launch options)
-  *
-  * asking to join a game that is not playable (not configured through launch options
-  * or any other reason for an unplayable game is not defined.  You must check
-  * the game playability with gfire_game_playable()
-  *
-  * @see gfire_game_playable
- */
-
- void gfire_join_game(PurpleConnection *gc, const gchar *sip, int sport, int game)
- {
-
- 	gfire_linfo *linfo =NULL;
- 	gchar *command = NULL;
-
-
+/*
+ * Joins the game of a buddy.
+ * This function launches the game and tells the game to connect to the corresponding server if needed.
+ *
+ * @param gc: the purple connection
+ * @param server_ip: the server ip to join (quad dotted notation)
+ * @param server_port: the server port
+ * @param game_id: the game ID to launch
+ *
+*/
+void gfire_join_game(PurpleConnection *gc, const gchar *server_ip, int server_port, int game_id)
+{
 	gfire_data *gfire = NULL;
-	const gchar nullip[4] = {0x00, 0x00, 0x00, 0x00};
-	 
-	if (!gc || !(gfire = (gfire_data *)gc->proto_data)) return;
+	if ((gfire = (gfire_data *)gc->proto_data) == NULL) {
+		purple_debug_error("gfire: gfire_join_game()", "Couldn't access gfire data.\n");
+		return;
+	}
+	
+	gfire_linfo *game_launch_info = NULL;
+	const char null_ip[4] = {0x00, 0x00, 0x00, 0x00};
+	gchar *game_launch_command;
 
- 	linfo = gfire_linfo_get(gc, game);
- 	if (!linfo) {
- 		purple_debug(PURPLE_DEBUG_ERROR, "gfire", "Launch info struct not defined!\n");
+ 	game_launch_info = gfire_linfo_get(gc, game_id);
+ 	if (game_launch_info == NULL) {
+ 		purple_debug_error("gfire: gfire_join_game()", "Game launch info struct not defined!\n");
  		return;
  	}
- 	if (!sip) sip = (char *)&nullip;
- 	command = gfire_linfo_get_cmd(linfo, (guint8 *)sip, sport, NULL);
+	
+ 	if (server_ip == NULL) server_ip = (char *)&null_ip;
 
-	 purple_debug_info("small test", "%s", command);
-	 g_spawn_command_line_sync(command, NULL, NULL, NULL, NULL);
+	game_launch_command = gfire_linfo_get_cmd(game_launch_info, (guint8 *)server_ip, server_port, NULL);
 
-
-}
-
-
- /**
-  *  GSource watch pid callback for glib.  This function waits for a join game
-  *  PID to exit.  This tells gfire to remove user out of game when the user
-  *  quits the game. This function is not called directly but by glib.  The
-  *  function prototype is set by glib.  This function does not return anything
-  *
-  *  @param      pid     Integer PID of the process to watch (wait for to die)
-  *  @param      status  status of exiting pid
-  *  @param      data    Pointer to data passed in by setup function
-  *
- */
-void gfire_game_watch_cb(GPid pid, int status, gpointer *data)
-{
- 	/* were now out of game, clean up pid send network message */
-
- 	int len = 0;
-	PurpleConnection *gc = (PurpleConnection *)data;
-	gfire_data *gfire = NULL;
-
-	purple_debug(PURPLE_DEBUG_MISC, "gfire", "(game_watch_cb): Child has exited, reaping pid.\n");
- 	g_spawn_close_pid(pid);
-	/* we could have been disconnected */
-	if ( PURPLE_CONNECTION_IS_VALID(gc) && PURPLE_CONNECTION_IS_CONNECTED(gc) ) {
-		if (!gc || !(gfire = (gfire_data *)gc->proto_data)) return;
-
-		len = gfire_join_game_create(gc, 0, 0, NULL);
-		if (len) gfire_send(gc, gfire->buff_out, len);
-		gfire->gameid = 0;
-	}
+	g_spawn_command_line_async(game_launch_command, NULL);
 }
 
 char *gfire_escape_html(const char *html)
