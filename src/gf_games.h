@@ -24,7 +24,6 @@
 
 #include "gfire.h"
 
-typedef struct _gfire_xqf_linfo gfire_xqf_linfo;
 typedef struct _gfire_linfo gfire_linfo;
 
 struct _gfire_linfo
@@ -36,16 +35,6 @@ struct _gfire_linfo
 	char *game_launch;
 	char *game_connect;
 };
-
-struct _gfire_xqf_linfo
-{
-	gchar	*gtype;			/* qstat/xqf game type ie: xqfname in gfire_launch.xml */
-	gchar	*sname;			/* server name */
-	gchar	*ip;			/* ip address of server */
-	int		port;			/* port to connect to game */
-	gchar	*mod;			/* game mod ie: xqf modlist in gfire_launch.xml */
-};
-
 
 void gfire_xml_download_cb(PurpleUtilFetchUrlData *url_data, gpointer data, const char *buf, gsize len, const gchar *error_message);
 gboolean gfire_parse_games_file(PurpleConnection *gc, const char *filename);
@@ -59,10 +48,6 @@ gfire_linfo *gfire_linfo_new();
 void gfire_linfo_free(gfire_linfo *l);
 gfire_linfo *gfire_linfo_get(PurpleConnection *gc, int game);
 gchar *gfire_linfo_get_cmd(gfire_linfo *l, const guint8 *ip, int prt, const gchar *mod);
-gfire_xqf_linfo *gfire_xqf_linfo_new();
-void gfire_xqf_linfo_free(gfire_xqf_linfo *l);
-int gfire_xqf_search(PurpleConnection *gc, gfire_xqf_linfo *xqfs);
-gfire_xqf_linfo *gfire_linfo_parse_xqf(gchar *fname);
 gchar *gfire_ipstr_to_bin(const gchar *ip);
 
 

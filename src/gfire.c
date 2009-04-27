@@ -287,11 +287,6 @@ void gfire_close(PurpleConnection *gc)
 		purple_input_remove(gc->inpa);
 	}
 
-	if (gfire->xqf_source > 0) {
-		purple_debug(PURPLE_DEBUG_MISC, "gfire", "CONN: removing xqf file watch callback\n");
-		g_source_remove(gfire->xqf_source);
-	}
-
 	if (gfire->det_source > 0) {
 		purple_debug(PURPLE_DEBUG_MISC, "gfire", "CONN: removing game detection callback\n");
 		g_source_remove(gfire->det_source);
@@ -1095,7 +1090,7 @@ static void gfire_action_manage_games_cb(PurplePluginAction *action)
 	}
 
 	gfire_reload_lconfig(gc);
-	builder_file = g_build_filename(DATADIR, "purple", "gfire", "manage_games.glade", NULL);
+	builder_file = g_build_filename(DATADIR, "purple", "gfire", "gfire_manage.glade", NULL);
 	gtk_builder_add_from_file(builder, builder_file, NULL);
 	g_free(builder_file);
 
@@ -1867,88 +1862,6 @@ void gfire_game_watch_cb(GPid pid, int status, gpointer *data)
 		gfire->gameid = 0;
 	}
 }
-
-
-/**
- *	g_timeout_add callback function to watch for $HOME/.purple/ingame.tmp
- *	file.  If this file is found we send join_game data to xfire network
- *	if we are in game and then the file is no longer present then take
- *	client out of game.  Only do this when in game status was met using
- *	ingame.tmp file.  The ingame.tmp file is a copied LaunchInfo.txt file
- *	from XQF.  The user must create a script to copy this file and then
- *	remove it once the game is quit.  We match the contents of the XQF
- *	file against our launch.xml.  Find the game and then send the network
- *	message.  This function is not called directy. It is called by glib.
- *
- *	@param		gc		pointer to purple connection struct for this connection
- *
- *	@return				returns TRUE always, except if gc connection state
- *						is set to disconnected.
-**/
-int gfire_check_xqf_cb(PurpleConnection *gc)
-{
-
- 	static char *filename = NULL;
- 	static gboolean found = FALSE;
- 	gfire_xqf_linfo *xqfs = NULL;
-	int len = 0;
- 	int game = 0;
-	gfire_data *gfire = NULL;
-	char *ipbin = NULL;
-	char *game_name = NULL;
-
-	if (!gc || !(gfire = (gfire_data *)gc->proto_data)) return FALSE;
-
- 	if (purple_connection_get_state(gc) != PURPLE_DISCONNECTED) {
- 		if ((0 != gfire->gameid) && !found) return TRUE;
- 		if (!filename) {
-			filename = g_build_filename(purple_user_dir(), GFIRE_XQF_FILENAME, NULL);
- 		}
- 		if (g_file_test(filename, G_FILE_TEST_EXISTS)){
- 			if (found) return TRUE;
- 			/* file was found, but not previously */
- 			found = TRUE;
- 			xqfs = gfire_linfo_parse_xqf(filename);
- 			if (!xqfs) return TRUE;
- 			game = gfire_xqf_search(gc, xqfs);
- 			if (!game) {
- 				purple_debug(PURPLE_DEBUG_WARNING, "gfire", "(XQF cb): parsed ingame.tmp. No game match found.\n");
- 				gfire_xqf_linfo_free(xqfs);
- 				return TRUE;
- 			}
-
- 			game_name = gfire_game_name(gc, game);
-
- 			gboolean norm = purple_account_get_bool(purple_connection_get_account(gc), "ingamenotificationnorm", FALSE);
-			if (norm) purple_notify_message(NULL, PURPLE_NOTIFY_MSG_INFO, "Ingame status",
-			game_name, "Your status has been changed.", NULL, NULL);
-
-			/* turn ip string into ip binary string in xfire format */
-			ipbin = gfire_ipstr_to_bin(xqfs->ip);
- 			len = gfire_join_game_create(gc, game, xqfs->port, ipbin);
- 			if (len) gfire_send(gc, gfire->buff_out, len);
-			g_free(ipbin);
- 			gfire->gameid = game;
- 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "(XQF cb): Detected game join (%d) at (%s:%d)\n", game,
-						NN(xqfs->ip), xqfs->port );
- 			gfire_xqf_linfo_free(xqfs);
- 		} else {
- 			if (!found) return TRUE;
- 			if (gfire->gameid) {
- 				purple_debug(PURPLE_DEBUG_MISC, "gfire", "(XQF cb): Status file removed, sending out of game msg\n");
- 				gfire->gameid = 0;
- 				len = gfire_join_game_create(gc, 0, 0, NULL);
- 				if (len) gfire_send(gc, gfire->buff_out, len);
- 			}
- 			found = FALSE;
- 		}
- 		return TRUE;
- 	}
- 	purple_debug(PURPLE_DEBUG_ERROR, "gfire", "(XQF cb): Still running but GC says not connected!\n");
- 	return FALSE;
-}
-
-
 
 char *gfire_escape_html(const char *html)
 {

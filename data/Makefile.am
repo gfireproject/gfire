@@ -1,5 +1,5 @@
-EXTRA_DIST = 	gfire_manage.glade \
-		scripts/server_detection/4097.py
+EXTRA_DIST = gfire_manage.glade \
+			 scripts/server_detection/4097.py
 
 gfire_datadir = $(datadir)/purple/gfire
 gfire_data_scriptsdir = $(gfire_datadir)/scripts
