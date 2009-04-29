@@ -53,7 +53,7 @@ xmlnode *gfire_manage_game_xml(char *game_id, char *game_name, gboolean game_nat
 	char *game_prefix, char *game_path, char *game_mod, char *game_connect);
 
 gboolean separe_path(char *path, char **file);
-gboolean check_process(char *process);
+gboolean check_process(char *process, char *process_argument);
 #endif
 
 static PurplePlugin *_gfire_plugin = NULL;
@@ -1070,13 +1070,12 @@ static void gfire_action_nick_change_cb(PurplePluginAction *action)
 		FALSE, FALSE, NULL, "OK", G_CALLBACK(gfire_change_nick), "Cancel", NULL, account, NULL, NULL, gc);
 }
 
-#ifdef IS_NOT_WINDOWS
-/*
+/**
  * shows the manage games window
  *
  * @param action: the menu action, passed by the signal connection function
  *
-*/
+**/
 static void gfire_action_manage_games_cb(PurplePluginAction *action)
 {
 	PurpleConnection *gc = (PurpleConnection *)action->context;
@@ -1163,15 +1162,14 @@ static void gfire_action_manage_games_cb(PurplePluginAction *action)
 		return;
 	}
 
-	gtk_window_set_keep_above(GTK_WINDOW(manage_games_window), TRUE);
 	gtk_widget_show_all(manage_games_window);
 }
 
 
-/*
+/**
  * adds a game by getting the values from the manage games window
  * 
-*/
+**/
 static void gfire_add_game_cb(manage_games_callback_args *args, GtkWidget *button)
 {
 	PurpleConnection *gc = args->gc;
@@ -1263,12 +1261,11 @@ static void gfire_add_game_cb(manage_games_callback_args *args, GtkWidget *butto
 	gtk_widget_destroy(manage_games_window);
 }
 
-
-/*
+/**
  * edits a game in gfire_launch.xml by getting the new values from
  * the manage games window
  *
-*/
+**/
 static void gfire_edit_game_cb(manage_games_callback_args *args, GtkWidget *button)
 {
 	PurpleConnection *gc = args->gc;
@@ -1357,11 +1354,11 @@ static void gfire_edit_game_cb(manage_games_callback_args *args, GtkWidget *butt
 	gtk_widget_destroy(manage_games_window);
 }
 
-/*
+/**
  * gets and shows the current values from gfire_launch.xml
  * for editing the selected game in the manage games window
  *
-*/
+**/
 static void gfire_manage_games_edit_update_fields_cb(GtkBuilder *builder, GtkWidget *edit_game_combo)
 {
 	if (builder == NULL) {
@@ -1419,10 +1416,10 @@ static void gfire_manage_games_edit_update_fields_cb(GtkBuilder *builder, GtkWid
 	}
 }
 
-/*
+/**
  * removes the selected game from gfire_launch.xml in the manage games window
  *
-*/
+**/
 static void gfire_remove_game_cb(manage_games_callback_args *args, GtkWidget *button)
 {
 	PurpleConnection *gc = args->gc;
@@ -1476,13 +1473,13 @@ static void gfire_remove_game_cb(manage_games_callback_args *args, GtkWidget *bu
 }
 
 
-/*
+/**
  * reloads gfire_launch.xml, the difference with gfire_action_reload_gconfig_cb()
  * is that this function doesn't give feedback to the user
  *
  * @param gc: the purple connection
  *
-*/
+**/
 static void gfire_reload_lconfig(PurpleConnection *gc)
 {
 	gfire_data *gfire = NULL;
@@ -1502,7 +1499,7 @@ static void gfire_reload_lconfig(PurpleConnection *gc)
 	else purple_debug_info("gfire: gfire_reload_lconfig", "Launch config successfully reloaded.\n");
 }
 
-/*
+/**
  * creates a new xmlnode containing the game information, the returned node must be inserted
  * in the main launchinfo node
  *
@@ -1516,7 +1513,7 @@ static void gfire_reload_lconfig(PurpleConnection *gc)
  * 
  * @return: the new xmlnode
  *
-*/
+**/
 xmlnode *gfire_manage_game_xml(char *game_id, char *game_name, gboolean game_executable,
 	char *game_prefix, char *game_path, char *game_launch, char *game_connect)
 {
@@ -1542,14 +1539,14 @@ xmlnode *gfire_manage_game_xml(char *game_id, char *game_name, gboolean game_exe
 	return game_node;
 }
 
-/*
+/**
  * detects running games by checking running processes
  *
  * @param gc: the purple connection
  *
  * @return: TRUE (this function always returns TRUE)
  *
-*/
+**/
 int gfire_detect_running_games_cb(PurpleConnection *gc)
 {
 	gfire_data *gfire = NULL;
@@ -1558,9 +1555,7 @@ int gfire_detect_running_games_cb(PurpleConnection *gc)
 		return;
 	}
 
-	gboolean norm;
-	norm = purple_account_get_bool(purple_connection_get_account(gc), "ingamedetectionnorm", TRUE);
-	
+	gboolean norm = purple_account_get_bool(purple_connection_get_account(gc), "ingamedetectionnorm", TRUE);
 	if (norm == FALSE) return;
 
 	xmlnode *gfire_launch = gfire->xml_launch_info;
@@ -1575,22 +1570,18 @@ int gfire_detect_running_games_cb(PurpleConnection *gc)
 			xmlnode *path_node = xmlnode_get_child(command_node, "path");
 			
 			const char *game_executable = xmlnode_get_data(executable_node);
+			const char *game_executable_argument = xmlnode_get_attrib(executable_node, "argument");
 			const char *game_path = xmlnode_get_data(path_node);
-
-			gchar *game_process;
 			gchar *game_id = xmlnode_get_attrib(node_child, "id");
 
-			/* if (game_executable == NULL) game_process = g_path_get_basename(game_path);
-			else game_process = g_path_get_basename(game_executable); */
-
-			gboolean process_running = FALSE;
-			process_running = check_process(game_executable);
-
+			gboolean process_running = check_process(game_executable, game_executable_argument);
+			
 			int len = 0;
 			int game_running_id = gfire->gameid;
 			int game_id_int = atoi(game_id);
 			char *game_name = gfire_game_name(gc, game_id_int);
 			gboolean game_running = gfire->game_running;
+			
 			if (process_running == TRUE)
 			{
 				if (game_running == FALSE)
@@ -1604,6 +1595,7 @@ int gfire_detect_running_games_cb(PurpleConnection *gc)
 
 					len = gfire_join_game_create(gc, game_id_int, 0, NULL);
 					if (len != FALSE) gfire_send(gc, gfire->buff_out, len);
+					
 					gfire->game_running = TRUE;
 					gfire->gameid = game_id_int;
 				}
@@ -1618,6 +1610,7 @@ int gfire_detect_running_games_cb(PurpleConnection *gc)
 				
 					len = gfire_join_game_create(gc, 0, 0, NULL);
 					if(len) gfire_send(gc, gfire->buff_out, len);
+					
 					gfire->game_running = FALSE;
 				}
 			}
@@ -1627,15 +1620,50 @@ int gfire_detect_running_games_cb(PurpleConnection *gc)
 	return TRUE;
 }
 
-/*
- * checks if a process is running
+/**
+ * Checks if an argument has been used on a running process.
+ * This function was made to find game mods.
+ *
+ * @param process_id: the process id
+ * @param process_argument: the argument to check
+ *
+ * @return: TRUE if the process has been launched with the given argument, FALSE if not or if an error occured.
+ *
+**/ 
+gboolean check_process_argument(int process_id, char *process_argument)
+{
+	char command[256];
+	sprintf(command, "cat /proc/%d/cmdline | gawk -F[[:cntrl:]] \'{ for (i = 1; i < NF + 1; i++) printf(\"%%s \", $i) }\'", process_id);
+
+	char buf[256];
+	int c;
+	int count = 0;
+
+	memset(buf, 0, sizeof(buf));
+	FILE *cmd = popen(command, "r");
+	
+	while(((c = getc(cmd)) != EOF) && (count < (sizeof(buf) - 1))) {
+		if(c == '\n') break;
+		buf[count++] = c;
+	}
+	
+	pclose(cmd);
+
+	char *argument_match = strstr(&buf, process_argument);
+	if (argument_match == NULL) return FALSE;
+	else return TRUE;
+}
+
+
+/**
+ * Checks if a process is running.
  *
  * @param process: the process name
  *
- * @return: TRUE if the process is running, FALSE if not or if an error occured
+ * @return: TRUE if the process is running, FALSE if not or if an error occured.
  *
-*/
-gboolean check_process(char *process)
+**/
+gboolean check_process(char *process, char *process_argument)
 {
 	#ifdef IS_WINDOWS
 	return FALSE;
@@ -1643,7 +1671,7 @@ gboolean check_process(char *process)
 	char command[256];
 
 	/* sprintf(command, "ps -ef | grep -i %s | grep -v grep", process); */
-	sprintf(command, "lsof %s", process);
+	sprintf(command, "lsof \"%s\"", process);
 	
 	char buf[256];
 	int c;
@@ -1655,13 +1683,36 @@ gboolean check_process(char *process)
 		if(c == '\n') break;
 		buf[count++] = c;
 	}
+	
 	pclose(cmd);
 
-	if(strcmp(buf, "") == 0) return FALSE;
-	else return TRUE;
+	if (g_strcmp0(buf, "") != NULL)
+	{
+		if (process_argument != NULL)
+		{
+			int process_id;
+
+			sprintf(command, "pidof %s", g_path_get_basename(process));
+			memset(buf, 0, sizeof(buf));
+			FILE *cmd = popen(command, "r");
+
+			count = 0;
+			while(((c = getc(cmd)) != EOF) && (count < (sizeof(buf) - 1))) {
+				if(c == '\n') break;
+				buf[count++] = c;
+			}
+
+			pclose(cmd);
+			process_id = atoi(&buf);
+			gboolean process_running_argument = check_process_argument(process_id, process_argument);
+
+			return process_running_argument;
+		}
+		else return TRUE;
+	}
+	else return FALSE;
 	#endif
 }
-#endif
 
 static void gfire_action_reload_lconfig_cb(PurplePluginAction *action)
 {
@@ -1696,8 +1747,9 @@ static void gfire_action_reload_gconfig_cb(PurplePluginAction *action)
 
 	if (NULL == gfire->xml_games_list) {
 		purple_notify_message((void *)_gfire_plugin, PURPLE_NOTIFY_MSG_ERROR, "Gfire XML Reload", "Reloading gfire_games.xml", "Operation failed. File not found or content was incorrect.", NULL, NULL);
-	} else {
-purple_notify_message((void *)_gfire_plugin, PURPLE_NOTIFY_MSG_INFO, "Gfire XML Reload", "Reloading gfire_games.xml","Reloading was successful.", NULL, NULL);
+	}
+	else {
+		purple_notify_message((void *)_gfire_plugin, PURPLE_NOTIFY_MSG_INFO, "Gfire XML Reload", "Reloading gfire_games.xml","Reloading was successful.", NULL, NULL);
 	}
 }
 
@@ -1717,16 +1769,13 @@ static void gfire_action_about_cb(PurplePluginAction *action)
 	if(strcmp(gfire_game_name(gc, 100), "100")) {
 		msg = g_strdup_printf("Gfire Version:\t\t%s\nGame List Version:\t%s", GFIRE_VERSION, gfire_game_name(gc, 100));
 	}
-	else {
-		msg = g_strdup_printf("Gfire Version: %s", GFIRE_VERSION);
-	}
+	else msg = g_strdup_printf("Gfire Version: %s", GFIRE_VERSION);
 
 	purple_request_action(gc, "About Gfire", "Xfire Plugin for Pidgin", msg, PURPLE_DEFAULT_ACTION_NONE,
-		purple_connection_get_account(gc), NULL, NULL, gc, 3, "Close", NULL,
-		"Website", G_CALLBACK(gfire_action_website_cb),
-		"Wiki", G_CALLBACK(gfire_action_wiki_cb));
+						  purple_connection_get_account(gc), NULL, NULL, gc, 3, "Close", NULL,
+						  "Website", G_CALLBACK(gfire_action_website_cb),
+						  "Wiki", G_CALLBACK(gfire_action_wiki_cb));
 }
-
 
 static void gfire_action_get_gconfig_cb(PurplePluginAction *action)
 {
@@ -1775,11 +1824,9 @@ static GList *gfire_actions(PurplePlugin *plugin, gpointer context)
 	act = purple_plugin_action_new("Get Game ID List",
 			gfire_action_get_gconfig_cb);
 	m = g_list_append(m, act);
-	#ifdef IS_NOT_WINDOWS
 	act = purple_plugin_action_new("Manage Games",
 			gfire_action_manage_games_cb);
 	m = g_list_append(m, act);
-	#endif
 	m = g_list_append(m, NULL);
 	act = purple_plugin_action_new("About",
 			gfire_action_about_cb);
@@ -1787,8 +1834,8 @@ static GList *gfire_actions(PurplePlugin *plugin, gpointer context)
 	return m;
 }
 
-/*
- * Joins the game of a buddy.
+/**
+ * Joins the game a buddy is playing.
  * This function launches the game and tells the game to connect to the corresponding server if needed.
  *
  * @param gc: the purple connection
@@ -1796,7 +1843,7 @@ static GList *gfire_actions(PurplePlugin *plugin, gpointer context)
  * @param server_port: the server port
  * @param game_id: the game ID to launch
  *
-*/
+**/
 void gfire_join_game(PurpleConnection *gc, const gchar *server_ip, int server_port, int game_id)
 {
 	gfire_data *gfire = NULL;
@@ -1818,7 +1865,6 @@ void gfire_join_game(PurpleConnection *gc, const gchar *server_ip, int server_po
  	if (server_ip == NULL) server_ip = (char *)&null_ip;
 
 	game_launch_command = gfire_linfo_get_cmd(game_launch_info, (guint8 *)server_ip, server_port, NULL);
-
 	g_spawn_command_line_async(game_launch_command, NULL);
 }
 
@@ -1857,17 +1903,17 @@ char *gfire_escape_html(const char *html)
 		escaped = ret->str;
 		g_string_free(ret, FALSE);
 	}
+	
 	return escaped;
 }
 
-
-
-/*
- * Plugin Initialization section
+/**
+ *
+ * Plugin initialization section
+ *
 */
 static PurplePluginProtocolInfo prpl_info =
 {
-
 	OPT_PROTO_CHAT_TOPIC,		/* Protocol options  */
 	NULL,						/* user_splits */
 	NULL,						/* protocol_options */
@@ -1945,24 +1991,24 @@ static PurplePluginInfo info =
 	PURPLE_PLUGIN_MAGIC,
 	PURPLE_MAJOR_VERSION,
 	PURPLE_MINOR_VERSION,
-	PURPLE_PLUGIN_PROTOCOL,		/**< type           */
-	NULL,						/**< ui_requirement */
-	0,							/**< flags          */
-	NULL,						/**< dependencies   */
-	PURPLE_PRIORITY_DEFAULT,	/**< priority       */
-	"prpl-xfire",				/**< id             */
-	"Xfire",					/**< name           */
-	GFIRE_VERSION,				/**< version        */
-	"Xfire Protocol Plugin",	/**  summary        */
-	"Xfire Protocol Plugin",	/**  description    */
-	NULL,						/**< author         */
-	GFIRE_WEBSITE,				/**< homepage       */
-	NULL,						/**< load           */
-	NULL,						/**< unload         */
-	NULL,						/**< destroy        */
-	NULL,						/**< ui_info        */
-	&prpl_info,					/**< extra_info     */
-	NULL,						/**< prefs_info     */
+	PURPLE_PLUGIN_PROTOCOL,		/* type */
+	NULL,						/* ui_requirement */
+	0,							/*flags */
+	NULL,						/* dependencies */
+	PURPLE_PRIORITY_DEFAULT,	/* priority */
+	"prpl-xfire",				/* id */
+	"Xfire",					/* name */
+	GFIRE_VERSION,				/* version */
+	"Xfire Protocol Plugin",	/* summary */
+	"Xfire Protocol Plugin",	/*  description */
+	NULL,						/* author */
+	GFIRE_WEBSITE,				/* homepage */
+	NULL,						/* load */
+	NULL,						/* unload */
+	NULL,						/* destroy */
+	NULL,						/* ui_info */
+	&prpl_info,					/* extra_info */
+	NULL,						/* prefs_info */
 	gfire_actions,
 
 	/* padding */
@@ -1985,29 +2031,19 @@ static void _init_plugin(PurplePlugin *plugin)
 	option = purple_account_option_int_new("Version", "version", XFIRE_PROTO_VERSION);
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options,option);
 
-	option = purple_account_option_bool_new("Don't delete buddies from server",
-						"buddynorm", TRUE);
+	option = purple_account_option_bool_new("Don't delete buddies from server", "buddynorm", TRUE);
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options,option);
 
-	option = purple_account_option_bool_new("Buddies can see if I'm typing",
-						"typenorm", TRUE);
+	option = purple_account_option_bool_new("Buddies can see if I'm typing", "typenorm", TRUE);
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options,option);
 	
-	#ifdef IS_NOT_WINDOWS
-	option = purple_account_option_bool_new("Auto detect for ingame status",
-						"ingamedetectionnorm", TRUE);
-	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options,option);
-	#endif
-
-	option = purple_account_option_bool_new("Notifiy me when my status is ingame",
-						"ingamenotificationnorm", FALSE);
+	option = purple_account_option_bool_new("Auto detect for ingame status", "ingamedetectionnorm", TRUE);
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options,option);
 
+	option = purple_account_option_bool_new("Notifiy me when my status is ingame", "ingamenotificationnorm", FALSE);
+	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options,option);
 
 	_gfire_plugin = plugin;
 }
 
 PURPLE_INIT_PLUGIN(gfire, _init_plugin, info);
-
-
-
