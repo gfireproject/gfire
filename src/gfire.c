@@ -1089,7 +1089,7 @@ static void gfire_action_manage_games_cb(PurplePluginAction *action)
 	}
 
 	gfire_reload_lconfig(gc);
-	builder_file = g_build_filename(DATADIR, "purple", "gfire", "gfire_manage.glade", NULL);
+	builder_file = g_build_filename(DATADIR, "purple", "gfire", "games.glade", NULL);
 	gtk_builder_add_from_file(builder, builder_file, NULL);
 	g_free(builder_file);
 
