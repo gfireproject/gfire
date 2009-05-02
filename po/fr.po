@@ -1,0 +1,71 @@
+# French translations for gfire package
+# Warren Dumortier <nwarrenfl@gmail.com>, 2009.
+
+msgid "Manage Games"
+msgstr "Gérer les jeux"
+
+msgid "Game:"
+msgstr "Jeu:"
+
+msgid "Game path:"
+msgstr "Chemin:"
+
+msgid "Game executable:"
+msgstr "Exécutable:"
+
+msgid "Connect option:"
+msgstr "Option de connexion:"
+
+msgid "Use game path"
+msgstr "Chemin vers le jeu"
+
+msgid "<b>Options basiques</b>"
+msgstr ""
+
+msgid "Launch prefix:"
+msgstr "Préfixe de lancement:"
+
+msgid "Launch options:"
+msgstr "Options de lancement:"
+
+msgid "Required argument:"
+msgstr "Argument réquis:"
+
+msgid "<b>Options avancés</b>"
+msgstr ""
+
+msgid "gtk-add"
+msgstr ""
+
+msgid "gtk-close"
+msgstr ""
+
+msgid "Add a game"
+msgstr "Ajouter un jeu"
+
+msgid "gtk-apply"
+msgstr ""
+
+msgid "gtk-remove"
+msgstr ""
+
+msgid "Edit or remove a game"
+msgstr "Éditer ou enlever un jeu"
+
+msgid "Change Nickname"
+msgstr "Changer l'alias..."
+
+msgid "My Profile Page"
+msgstr "Consulter mon profil"
+
+msgid "Reload Launch Config"
+msgstr "Réinitialiser la configuration des jeux"
+
+msgid "Reload Game ID List"
+msgstr "Mettre à jour la liste des jeux"
+
+msgid "Get Game ID List"
+msgstr "Obtenir la liste des jeux"
+
+msgid "About"
+msgstr "À propos de"

@@ -1,0 +1,7 @@
+../data/games.glade
+
+../src/gf_chat.c
+../src/gf_games.c
+../src/gfire.c
+../src/gf_network.c
+../src/gf_packet.c
