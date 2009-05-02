@@ -21,10 +21,11 @@
 */
 
 #ifndef _GFIRE_H
+
 #define _GFIRE_H
 
 #ifdef HAVE_CONFIG_H
-# include <gfire_config.h>
+	#include <gfire_config.h>
 #endif
 
 #define PURPLE_PLUGINS
@@ -37,21 +38,28 @@
 #include <unistd.h>
 #include <string.h>
 
+#include <libintl.h>
+#include <locale.h>
+
+#define _(string) gettext (string)
+#define gettext_noop(string) string
+#define N_(string) gettext (string)
+
 #ifdef _WIN32
-#define IS_WINDOWS
+	#define IS_WINDOWS
 #else
-#define IS_NOT_WINDOWS
-#include <gtk/gtk.h>
-#include <gio/gio.h>
-#include <errno.h>
+	#define IS_NOT_WINDOWS
+	#include <gtk/gtk.h>
+	#include <gio/gio.h>
+	#include <errno.h>
 #endif /* _WIN32 */
 
 #ifndef G_GNUC_NULL_TERMINATED
-#	if __GNUC__ >= 4
-#		define G_GNUC_NULL_TERMINATED __attribute__((__sentinel__))
-#	else
-#		define G_GNUC_NULL_TERMINATED
-#	endif /* __GNUC__ >= 4 */
+	#if __GNUC__ >= 4
+		#define G_GNUC_NULL_TERMINATED __attribute__((__sentinel__))
+	#else
+		#define G_GNUC_NULL_TERMINATED
+	#endif /* __GNUC__ >= 4 */
 #endif /* G_GNUC_NULL_TERMINATED */
 
 #include "util.h"
@@ -96,14 +104,12 @@
 #define XFIRE_PROFILE_URL "http://www.xfire.com/profile/"
 #define XFIRE_SEND_TYPING_TIMEOUT 10
 
-
 typedef struct _gfire_data	gfire_data;
 typedef struct _gfire_buddy	gfire_buddy;
 typedef struct _gfire_im	gfire_im;
 typedef struct _gfire_c_msg	gfire_chat_msg;
 typedef struct _manage_games_callback_args manage_games_callback_args;
 typedef struct _path_extracted path_extracted;
-
 
 struct _gfire_data { 
 	int fd; 
@@ -176,7 +182,6 @@ struct _path_extracted {
 };
 #endif
 
-
 /* gfire_find_buddy_in_list MODES */
 #define GFFB_NAME		0	/* by name, pass pointer to string */
 #define GFFB_ALIAS		1	/* by alias, pass pointer to string */
@@ -189,7 +194,6 @@ struct _path_extracted {
 #define GFIRE_STATUS_ONLINE		0	/* set buddies online / offline */
 #define	GFIRE_STATUS_GAME		1	/* update game information */
 #define	GFIRE_STATUS_AWAY		2	/* update away status */
-
 
 void gfire_close(PurpleConnection *gc);
 GList *gfire_find_buddy_in_list( GList *blist, gpointer *data, int mode );

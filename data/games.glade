@@ -37,7 +37,7 @@
                             <property name="n_columns">2</property>
                             <child>
                               <object class="GtkLabel" id="add_game_label">
-                                <property name="width_request">135</property>
+                                <property name="width_request">145</property>
                                 <property name="visible">True</property>
                                 <property name="xalign">0</property>
                                 <property name="label" translatable="yes">Game:</property>
@@ -48,7 +48,6 @@
                             </child>
                             <child>
                               <object class="GtkLabel" id="add_path_label">
-                                <property name="width_request">135</property>
                                 <property name="visible">True</property>
                                 <property name="xalign">0</property>
                                 <property name="label" translatable="yes">Game path:</property>
@@ -61,7 +60,6 @@
                             </child>
                             <child>
                               <object class="GtkLabel" id="add_executable_label">
-                                <property name="width_request">135</property>
                                 <property name="visible">True</property>
                                 <property name="xalign">0</property>
                                 <property name="label" translatable="yes">Game executable:</property>
@@ -74,7 +72,6 @@
                             </child>
                             <child>
                               <object class="GtkLabel" id="add_connect_label">
-                                <property name="width_request">135</property>
                                 <property name="visible">True</property>
                                 <property name="xalign">0</property>
                                 <property name="label" translatable="yes">Connect option:</property>
@@ -192,7 +189,7 @@
                             <property name="n_columns">2</property>
                             <child>
                               <object class="GtkLabel" id="add_prefix_label">
-                                <property name="width_request">135</property>
+                                <property name="width_request">145</property>
                                 <property name="visible">True</property>
                                 <property name="xalign">0</property>
                                 <property name="label" translatable="yes">Launch prefix:</property>
@@ -203,7 +200,6 @@
                             </child>
                             <child>
                               <object class="GtkLabel" id="add_launch_label">
-                                <property name="width_request">135</property>
                                 <property name="visible">True</property>
                                 <property name="xalign">0</property>
                                 <property name="label" translatable="yes">Launch options:</property>
@@ -216,7 +212,6 @@
                             </child>
                             <child>
                               <object class="GtkLabel" id="add_argument_label">
-                                <property name="width_request">135</property>
                                 <property name="visible">True</property>
                                 <property name="xalign">0</property>
                                 <property name="label" translatable="yes">Required argument:</property>
@@ -360,7 +355,7 @@
                             <property name="n_columns">2</property>
                             <child>
                               <object class="GtkLabel" id="edit_game_label">
-                                <property name="width_request">135</property>
+                                <property name="width_request">145</property>
                                 <property name="visible">True</property>
                                 <property name="xalign">0</property>
                                 <property name="label" translatable="yes">Game:</property>
@@ -371,7 +366,6 @@
                             </child>
                             <child>
                               <object class="GtkLabel" id="edit_game_path">
-                                <property name="width_request">135</property>
                                 <property name="visible">True</property>
                                 <property name="xalign">0</property>
                                 <property name="label" translatable="yes">Game path:</property>
@@ -384,7 +378,6 @@
                             </child>
                             <child>
                               <object class="GtkLabel" id="edit_executable_label">
-                                <property name="width_request">135</property>
                                 <property name="visible">True</property>
                                 <property name="xalign">0</property>
                                 <property name="label" translatable="yes">Game executable:</property>
@@ -397,7 +390,6 @@
                             </child>
                             <child>
                               <object class="GtkLabel" id="edit_connect_label">
-                                <property name="width_request">135</property>
                                 <property name="visible">True</property>
                                 <property name="xalign">0</property>
                                 <property name="label" translatable="yes">Connect option:</property>
@@ -522,7 +514,7 @@
                             <property name="n_columns">2</property>
                             <child>
                               <object class="GtkLabel" id="edit_prefix_label">
-                                <property name="width_request">135</property>
+                                <property name="width_request">145</property>
                                 <property name="visible">True</property>
                                 <property name="xalign">0</property>
                                 <property name="label" translatable="yes">Launch prefix:</property>
@@ -533,7 +525,6 @@
                             </child>
                             <child>
                               <object class="GtkLabel" id="edit_launch_label">
-                                <property name="width_request">135</property>
                                 <property name="visible">True</property>
                                 <property name="xalign">0</property>
                                 <property name="label" translatable="yes">Launch options:</property>
@@ -546,7 +537,6 @@
                             </child>
                             <child>
                               <object class="GtkLabel" id="edit_argument_label">
-                                <property name="width_request">135</property>
                                 <property name="visible">True</property>
                                 <property name="xalign">0</property>
                                 <property name="label" translatable="yes">Required argument:</property>

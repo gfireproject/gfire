@@ -1808,27 +1808,27 @@ static GList *gfire_actions(PurplePlugin *plugin, gpointer context)
 	GList *m = NULL;
 	PurplePluginAction *act;
 
-	act = purple_plugin_action_new("Change Nickname",
+	act = purple_plugin_action_new(N_("Change Nickname"),
 			gfire_action_nick_change_cb);
 	m = g_list_append(m, act);
-	act = purple_plugin_action_new("My Profile Page",
+	act = purple_plugin_action_new(N_("My Profile Page"),
 			gfire_action_profile_page_cb);
 	m = g_list_append(m, act);
 	m = g_list_append(m, NULL);
-	act = purple_plugin_action_new("Reload Launch Config",
+	act = purple_plugin_action_new(N_("Reload Launch Config"),
 			gfire_action_reload_lconfig_cb);
 	m = g_list_append(m, act);
-	act = purple_plugin_action_new("Reload Game ID List",
+	act = purple_plugin_action_new(N_("Reload Game ID List"),
 			gfire_action_reload_gconfig_cb);
 	m = g_list_append(m, act);
-	act = purple_plugin_action_new("Get Game ID List",
+	act = purple_plugin_action_new(N_("Get Game ID List"),
 			gfire_action_get_gconfig_cb);
 	m = g_list_append(m, act);
-	act = purple_plugin_action_new("Manage Games",
+	act = purple_plugin_action_new(N_("Manage Games"),
 			gfire_action_manage_games_cb);
 	m = g_list_append(m, act);
 	m = g_list_append(m, NULL);
-	act = purple_plugin_action_new("About",
+	act = purple_plugin_action_new(N_("About"),
 			gfire_action_about_cb);
 	m = g_list_append(m, act);
 	return m;
@@ -2042,6 +2042,10 @@ static void _init_plugin(PurplePlugin *plugin)
 
 	option = purple_account_option_bool_new("Notifiy me when my status is ingame", "ingamenotificationnorm", FALSE);
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options,option);
+
+	setlocale(LC_ALL, "");
+	bindtextdomain("gfire", LOCALEDIR);
+	textdomain("gfire");
 
 	_gfire_plugin = plugin;
 }

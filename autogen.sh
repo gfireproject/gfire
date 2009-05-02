@@ -11,5 +11,7 @@ automake --add-missing --copy || exit;
 autoconf || exit;
 automake || exit;
 
+intltoolize --copy --force --automake || exit;
+
 echo;
 echo "Done."

@@ -6,6 +6,10 @@ EXTRA_DIST = \
 	gf_games.h \
 	gf_chat.h
 
+INCLUDES = \
+	-I$(top_srcdir) \
+    -DLOCALEDIR=\""$(localedir)"\"
+
 plugindir = $(libdir)/purple-2
 libxfire_la_LDFLAGS = -module -avoid-version
 

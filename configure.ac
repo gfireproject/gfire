@@ -2,22 +2,32 @@
 # Most of this configure script was ripped from gaim-netsoul,
 # thank you guys!!!
 #
-
 GFIRE_VERSION="`cat ./VERSION`"
 
 AC_INIT(src/gfire.c)
 AC_PREREQ(2.50)
 
-AM_INIT_AUTOMAKE([Gfire], "$GFIRE_VERSION", "")
-AC_DEFINE_UNQUOTED(GFIRE_VERSION, "$GFIRE_VERSION", [Gfire Version])
+AM_INIT_AUTOMAKE([gfire], "$GFIRE_VERSION", "")
+AC_DEFINE_UNQUOTED(GFIRE_VERSION, "$GFIRE_VERSION", [Gfire version])
+AC_DEFINE_UNQUOTED(PAKAGE, "$PACKAGE", [PACKAGE])
+
 AC_PATH_PROG(sedpath, sed)
+AC_CONFIG_MACRO_DIR([m4])
+
+#
+# Internationalisation support
+#
+GETTEXT_PACKAGE="$PACKAGE"
+AC_SUBST(GETTEXT_PACKAGE)
+AM_GLIB_GNU_GETTEXT
+AM_GLIB_DEFINE_LOCALEDIR(LOCALEDIR)
 
 #
 # Define Gfire header
 #
 AH_TOP([
 #ifndef _GFIRE_CONFIG_H
-#define _GFIRE_CONFIG_H
+	#define _GFIRE_CONFIG_H
 ])
 AH_BOTTOM([#endif])
 
@@ -36,7 +46,7 @@ if test "$enable_debug"="yes"; then
 fi
 
 AC_SUBST(DEBUG_CFLAGS)
-
+ 
 if test "x$GCC"="xyes"; then
 	CFLAGS="$CFLAGS -Wall -g3"
 fi
@@ -65,7 +75,6 @@ AC_SUBST(GLIB_LIBS)
 #
 want_plugins=yes
 AM_CONDITIONAL(PLUGINS, test "$want_plugins"="yes")
-# AM_GLIB_GNU_GETTEXT
 
 #
 # Setup libtool
@@ -78,12 +87,15 @@ LIBTOOL="$LIBTOOL --silent"
 #
 AM_CONFIG_HEADER(pre_config.h)
 
-AC_OUTPUT([
+AC_CONFIG_FILES([
 Makefile
-data/Makefile
-pixmaps/Makefile
 src/Makefile
+data/Makefile
+po/Makefile.in
+pixmaps/Makefile
 ])
+
+AC_OUTPUT
 
 echo;
 echo "Configuration complete."
