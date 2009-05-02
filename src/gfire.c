@@ -1803,6 +1803,30 @@ static void gfire_action_profile_page_cb(PurplePluginAction *action)
 	purple_notify_uri((void *)_gfire_plugin, uri);
 }
 
+
+static void gfire_get_server_list(PurpleConnection *gc, const char *entry)
+{
+	gfire_data *gfire = NULL;
+	int packet_len = 0;
+
+	if (!gc || !(gfire = (gfire_data *)gc->proto_data)) return;
+
+	int gameid = atoi(entry);
+	packet_len = gfire_create_serverlist_request(gc, gameid);
+	if (packet_len) gfire_send(gc, gfire->buff_out, packet_len);
+
+}
+
+
+static void gfire_action_get_serverlist_cb(PurplePluginAction *action)
+{
+	PurpleConnection *gc = (PurpleConnection *)action->context;
+	PurpleAccount *account = purple_connection_get_account(gc);
+
+	purple_request_input(gc, NULL, "Server List", "Give the Game ID to get the server list of that game.", NULL,
+		FALSE, FALSE, NULL, "OK", G_CALLBACK(gfire_get_server_list), "Cancel", NULL, account, NULL, NULL, gc);
+}
+
 static GList *gfire_actions(PurplePlugin *plugin, gpointer context)
 {
 	GList *m = NULL;
@@ -1826,6 +1850,9 @@ static GList *gfire_actions(PurplePlugin *plugin, gpointer context)
 	m = g_list_append(m, act);
 	act = purple_plugin_action_new(N_("Manage Games"),
 			gfire_action_manage_games_cb);
+	m = g_list_append(m, act);
+	act = purple_plugin_action_new(N_("Get Game ID Server List"),
+			gfire_action_get_serverlist_cb);
 	m = g_list_append(m, act);
 	m = g_list_append(m, NULL);
 	act = purple_plugin_action_new(N_("About"),

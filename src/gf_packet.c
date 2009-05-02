@@ -1875,3 +1875,87 @@ void gfire_read_clan_blist(PurpleConnection *gc, int packet_len)
 		n = g_list_next(n);
 	}
 }
+
+
+int gfire_create_serverlist_request (PurpleConnection *gc, int game)
+{
+	int index = XFIRE_HEADER_LEN;
+	gfire_data *gfire = NULL;
+	guint32 gameid = game;
+
+	if (!gc || !(gfire = (gfire_data *)gc->proto_data)) return 0;
+
+	gameid = GUINT32_TO_LE(gameid);
+
+	gfire->buff_out[index++] = 0x21;
+	gfire->buff_out[index++] = 0x02;
+	memcpy(gfire->buff_out + index, &gameid, sizeof(gameid));
+	index += sizeof(gameid);
+
+	gfire_add_header(gfire->buff_out, index, 22, 1);
+
+	return index;
+}
+
+
+void gfire_read_serverlist(PurpleConnection *gc, int packet_len)
+{
+	gfire_data *gfire = NULL;
+	int index, itmp = 0;
+	guint32 gameid;
+	GList *ips = NULL;
+	GList *ports = NULL;
+	GList *i, *p = NULL;
+	guint8 *ip = NULL;
+	guint32 port;
+	
+
+	if (!gc || !(gfire = (gfire_data *)gc->proto_data)) return 0;
+
+	if (packet_len < 16) {
+		purple_debug_error("gfire", "packet 131 received, but too short. (%d bytes)\n", packet_len);
+		return;
+	}
+
+	index = 7;
+	memcpy(&(gameid), gfire->buff_in + index, XFIRE_GAMEID_LEN);
+	gameid = GUINT32_FROM_LE(gameid);
+	index += XFIRE_GAMEID_LEN + 3;
+
+	itmp = gfire_read_attrib(&ips, gfire->buff_in + index, packet_len - index, NULL, FALSE, TRUE, 0, 0, 
+							XFIRE_GAMEIP_LEN);
+	if (itmp < 1 ) {
+		//mem cleanup code
+		if (ips) g_list_free(ips);
+			return NULL;
+	}	
+	index += itmp + 3;
+	itmp = gfire_read_attrib(&ports, gfire->buff_in + index, packet_len - index, NULL, FALSE, TRUE, 0, 0, 
+							XFIRE_GAMEPORT_LEN);
+	if (itmp < 1 ) {
+		//mem cleanup code
+		if (ips) g_list_free(ips);
+		if (ports) g_list_free(ports);
+			return NULL;
+	}
+
+	ips = g_list_first(ips); ports = g_list_first(ports);
+	i = ips; p = ports;
+
+	purple_debug(PURPLE_DEBUG_MISC, "gfire", "(serverlist): got the server list for %d\n", gameid);
+
+	while ( NULL != i ){
+		ip = (guint8 *)i->data;
+		memcpy(&(port),p->data, XFIRE_GAMEPORT_LEN);
+		port = GUINT32_FROM_LE(port);
+		port &= 0xFFFF;
+
+		purple_debug(PURPLE_DEBUG_MISC, "gfire", "(serverlist): server: %d.%d.%d.%d:%d\n",
+					NNA(ip, ip[3]), NNA(ip, ip[2]), NNA(ip, ip[1]), NNA(ip, ip[0]), port);
+
+		g_free(p->data); p->data = NULL;
+		i = g_list_next(i); p = g_list_next(p);
+	}
+	
+
+}

@@ -21,7 +21,7 @@ GETTEXT_PACKAGE = gfire
 PACKAGE = gfire
 VERSION = 
 
-SHELL = /bin/sh
+SHELL = /bin/bash
 
 srcdir = .
 top_srcdir = ..
@@ -36,7 +36,7 @@ libdir = ${exec_prefix}/lib
 DATADIRNAME = share
 itlocaledir = $(prefix)/$(DATADIRNAME)/locale
 subdir = po
-install_sh = $(SHELL) /home/warren/Projets/Gfire/trunk/install-sh
+install_sh = $(SHELL) /home/laurent/Documents/Gfire/svn/trunk/install-sh
 # Automake >= 1.8 provides /bin/mkdir -p.
 # Until it can be supposed, use the safe fallback:
 mkdir_p = $(install_sh) -d
@@ -66,6 +66,12 @@ DISTFILES = Makefile.in.in POTFILES.in $(POFILES)
 EXTRA_DISTFILES = ChangeLog POTFILES.skip Makevars LINGUAS
 
 POTFILES = \
+	../../data/games.glade \
+	../../src/gf_chat.c \
+	../../src/gf_games.c \
+	../../src/gfire.c \
+	../../src/gf_network.c \
+	../../src/gf_packet.c
 # This comment gets stripped out
 
 CATALOGS=$(shell LINGUAS="$(USE_LINGUAS)"; for lang in $$LINGUAS; do printf "$$lang.gmo "; done)

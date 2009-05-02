@@ -348,6 +348,11 @@ void gfire_parse_packet(PurpleConnection *gc, int packet_len, int packet_id)
 			gc->wants_to_die = TRUE;
 			purple_connection_error(gc, "You have signed on from another location.");	
 		break;
+		
+		case 150:
+			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received serverlist\n");
+			gfire_read_serverlist(gc, packet_len);
+		break;
 
 		case 154:
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received away status packet.\n");

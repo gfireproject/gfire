@@ -21,7 +21,7 @@ GETTEXT_PACKAGE = gfire
 PACKAGE = gfire
 VERSION = 
 
-SHELL = /bin/sh
+SHELL = /bin/bash
 
 srcdir = .
 top_srcdir = ..
@@ -36,7 +36,7 @@ libdir = ${exec_prefix}/lib
 DATADIRNAME = share
 itlocaledir = $(prefix)/$(DATADIRNAME)/locale
 subdir = po
-install_sh = $(SHELL) /home/warren/Projets/Gfire/trunk/install-sh
+install_sh = $(SHELL) /home/laurent/Documents/Gfire/svn/trunk/install-sh
 # Automake >= 1.8 provides /bin/mkdir -p.
 # Until it can be supposed, use the safe fallback:
 mkdir_p = $(install_sh) -d
