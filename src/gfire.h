@@ -109,7 +109,6 @@ typedef struct _gfire_buddy	gfire_buddy;
 typedef struct _gfire_im	gfire_im;
 typedef struct _gfire_c_msg	gfire_chat_msg;
 typedef struct _manage_games_callback_args manage_games_callback_args;
-typedef struct _path_extracted path_extracted;
 
 struct _gfire_data { 
 	int fd; 
@@ -132,6 +131,8 @@ struct _gfire_data {
 	guint det_source;			/* g_timeout_add source number for game detection callback */
 	gboolean game_running;		/* bool to know if a game has already been detected */
 	gboolean blist_loaded;		/* TRUE == buddy list is loaded, we need this for the clan list */
+	GtkBuilder *server_browser;
+	GList *server_list;
 };
 
 struct _gfire_buddy {
@@ -170,17 +171,10 @@ struct _gfire_c_msg {
 	gfire_buddy *b;		/* for users joining the chat */
 };
 
-#ifdef IS_NOT_WINDOWS
 struct _manage_games_callback_args {
 	PurpleConnection *gc;
 	GtkBuilder *builder;
 };
-
-struct _path_extracted {
-	char *path;
-	char *file;
-};
-#endif
 
 /* gfire_find_buddy_in_list MODES */
 #define GFFB_NAME		0	/* by name, pass pointer to string */

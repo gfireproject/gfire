@@ -429,7 +429,6 @@ void gfire_parse_packet(PurpleConnection *gc, int packet_len, int packet_id)
 	}
 }
 
-
 void gfire_send_away(PurpleConnection *gc, const char *msg)
 {
 	int index = 5;
@@ -457,8 +456,6 @@ void gfire_send_away(PurpleConnection *gc, const char *msg)
 	gfire_send(gc, gfire->buff_out, index);
 	
 }
-
-
 
 void gfire_process_invitation(PurpleConnection *gc, GList *invites)
 {

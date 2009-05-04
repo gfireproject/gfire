@@ -1897,7 +1897,6 @@ int gfire_create_serverlist_request (PurpleConnection *gc, int game)
 	return index;
 }
 
-
 void gfire_read_serverlist(PurpleConnection *gc, int packet_len)
 {
 	gfire_data *gfire = NULL;
@@ -1909,6 +1908,8 @@ void gfire_read_serverlist(PurpleConnection *gc, int packet_len)
 	guint8 *ip = NULL;
 	guint32 port;
 	
+	GList *server_list = NULL;
+	gchar *server;
 
 	if (!gc || !(gfire = (gfire_data *)gc->proto_data)) return 0;
 
@@ -1944,18 +1945,43 @@ void gfire_read_serverlist(PurpleConnection *gc, int packet_len)
 
 	purple_debug(PURPLE_DEBUG_MISC, "gfire", "(serverlist): got the server list for %d\n", gameid);
 
-	while ( NULL != i ){
+	while (i != NULL)
+	{
 		ip = (guint8 *)i->data;
 		memcpy(&(port),p->data, XFIRE_GAMEPORT_LEN);
 		port = GUINT32_FROM_LE(port);
 		port &= 0xFFFF;
 
-		purple_debug(PURPLE_DEBUG_MISC, "gfire", "(serverlist): server: %d.%d.%d.%d:%d\n",
-					NNA(ip, ip[3]), NNA(ip, ip[2]), NNA(ip, ip[1]), NNA(ip, ip[0]), port);
-
-		g_free(p->data); p->data = NULL;
-		i = g_list_next(i); p = g_list_next(p);
+		/* purple_debug(PURPLE_DEBUG_MISC, "gfire", "(serverlist): server: %d.%d.%d.%d:%d\n",
+					NNA(ip, ip[3]), NNA(ip, ip[2]), NNA(ip, ip[1]), NNA(ip, ip[0]), port); */
+		
+		gchar *ipstr = g_strdup_printf("%d.%d.%d.%d", ip[3], ip[2], ip[1], ip[0]);
+		gchar *server = g_strdup_printf("%s:%d", ipstr, port);
+		server_list = g_list_append(server_list, server);		
+		
+		g_free(p->data);
+		p->data = NULL;
+		i = g_list_next(i);
+		p = g_list_next(p);
 	}
-	
 
+	gfire->server_list = server_list;
+	server_list = gfire->server_list;
+	
+	GtkBuilder *builder = gfire->server_browser;
+	GtkListStore *list_store = GTK_LIST_STORE(gtk_builder_get_object(builder, "servers_list_store"));
+	
+	GtkTreeIter iter;
+	if (server_list != NULL)
+	{
+		server_list = g_list_first(server_list);
+		while (server_list != NULL)
+		{
+			server_list = g_list_next(server_list);
+			gtk_list_store_append(list_store, &iter);
+			gtk_list_store_set(list_store, &iter, 0, server_list->data, 1, server_list->data, 2, "N/A", 3, "N/A", -1);
+			server_list = g_list_next(server_list);
+		}
+	}
+	else purple_debug_error("gfire_read_serverlist", "Couldn't get server list.\n");
 }

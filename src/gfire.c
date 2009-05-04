@@ -1475,7 +1475,7 @@ static void gfire_remove_game_cb(manage_games_callback_args *args, GtkWidget *bu
 
 /**
  * reloads gfire_launch.xml, the difference with gfire_action_reload_gconfig_cb()
- * is that this function doesn't give feedback to the user
+ * is that this function doesn't give feedback to the user.
  *
  * @param gc: the purple connection
  *
@@ -1527,6 +1527,7 @@ xmlnode *gfire_manage_game_xml(char *game_id, char *game_name, gboolean game_exe
 	xmlnode *command_node = xmlnode_new_child(game_node, "command");
 	xmlnode *executable_node = xmlnode_new_child(command_node, "executable");
 	xmlnode_insert_data(executable_node, game_executable, -1);
+	xmlnode_set_attrib(executable_node, "argument", "");
 	xmlnode *prefix_node = xmlnode_new_child(command_node, "prefix");
 	xmlnode_insert_data(prefix_node, game_prefix, -1);
 	xmlnode *path_node = xmlnode_new_child(command_node, "path");
@@ -1540,7 +1541,7 @@ xmlnode *gfire_manage_game_xml(char *game_id, char *game_name, gboolean game_exe
 }
 
 /**
- * detects running games by checking running processes
+ * detects running games by checking running processes.
  *
  * @param gc: the purple connection
  *
@@ -1656,7 +1657,7 @@ gboolean check_process_argument(int process_id, char *process_argument)
 
 
 /**
- * Checks if a process is running.
+ * checks if a process is running.
  *
  * @param process: the process name
  *
@@ -1803,28 +1804,101 @@ static void gfire_action_profile_page_cb(PurplePluginAction *action)
 	purple_notify_uri((void *)_gfire_plugin, uri);
 }
 
-
-static void gfire_get_server_list(PurpleConnection *gc, const char *entry)
+static void gfire_query_server_list_cb(manage_games_callback_args *args, GtkWidget *button)
 {
+	PurpleConnection *gc = args->gc;
+	GtkBuilder *builder = args->builder;
+	
+	if (!gc || !builder) {
+		purple_debug_error("gfire_query_server_list_cb", "GC not set and/or couldn't get interface.\n");
+		return;
+	}
+
 	gfire_data *gfire = NULL;
-	int packet_len = 0;
+	if (!(gfire = (gfire_data *)gc->proto_data)) {
+		purple_debug_error("gfire_query_server_list_cb", "Couldn't access gfire data.\n");
+		return;
+	}
 
-	if (!gc || !(gfire = (gfire_data *)gc->proto_data)) return;
+	GtkWidget *server_browser_window = GTK_WIDGET(gtk_builder_get_object(builder, "server_browser_window"));
+	GtkWidget *game_combo = GTK_WIDGET(gtk_builder_get_object(builder, "game_combo"));
 
-	int gameid = atoi(entry);
-	packet_len = gfire_create_serverlist_request(gc, gameid);
-	if (packet_len) gfire_send(gc, gfire->buff_out, packet_len);
+	const gchar *game_name;
+	int game_id;
 
+	game_name = gtk_combo_box_get_active_text(GTK_COMBO_BOX(game_combo));
+	game_id = gfire_game_id(gc, game_name);
+	
+	if (game_id != 0)
+	{
+        int packet_len = 0; 
+		
+		gfire->server_browser = builder;
+		packet_len = gfire_create_serverlist_request(gc, game_id); 
+		if (packet_len != 0) gfire_send(gc, gfire->buff_out, packet_len);
+	}
 }
 
-
-static void gfire_action_get_serverlist_cb(PurplePluginAction *action)
+/**
+ * shows the server browser window.
+ *
+ * @param action: the menu action, passed by the signal connection function
+ *
+**/
+static void gfire_action_server_browser_cb(PurplePluginAction *action)
 {
 	PurpleConnection *gc = (PurpleConnection *)action->context;
-	PurpleAccount *account = purple_connection_get_account(gc);
+	gfire_data *gfire = NULL;
 
-	purple_request_input(gc, NULL, "Server List", "Give the Game ID to get the server list of that game.", NULL,
-		FALSE, FALSE, NULL, "OK", G_CALLBACK(gfire_get_server_list), "Cancel", NULL, account, NULL, NULL, gc);
+	if (gc == NULL || (gfire = (gfire_data *)gc->proto_data) == NULL) {
+		purple_debug_error("gfire: gfire_action_manage_games_cb", "GC not set and/or couldn't access gfire data.\n");
+		return;
+	}
+
+	GtkBuilder *builder = gtk_builder_new();
+	gchar *builder_file;
+
+	builder_file = g_build_filename(DATADIR, "purple", "gfire", "servers.glade", NULL);
+	gtk_builder_add_from_file(builder, builder_file, NULL);
+	g_free(builder_file);
+
+	if (builder == NULL) {
+		purple_debug_error("gfire: gfire_action_manage_games_cb", "Couldn't build interface.\n");
+		return;
+	}
+
+	GtkWidget *server_browser_window = GTK_WIDGET(gtk_builder_get_object(builder, "server_browser_window"));
+	GtkWidget *refresh_button = GTK_WIDGET(gtk_builder_get_object(builder, "refresh_button"));
+	GtkWidget *connect_button = GTK_WIDGET(gtk_builder_get_object(builder, "connect_button"));
+	GtkWidget *favorite_button = GTK_WIDGET(gtk_builder_get_object(builder, "favorite_button"));
+	GtkWidget *informations_button = GTK_WIDGET(gtk_builder_get_object(builder, "informations_button"));
+	GtkWidget *favorites_button = GTK_WIDGET(gtk_builder_get_object(builder, "favorites_button"));
+	GtkWidget *quit_button = GTK_WIDGET(gtk_builder_get_object(builder, "quit_button"));
+	GtkWidget *game_combo = GTK_WIDGET(gtk_builder_get_object(builder, "game_combo"));
+	GtkWidget *status_bar = GTK_WIDGET(gtk_builder_get_object(builder, "status_bar"));
+
+	manage_games_callback_args *args;
+
+	args = g_new0(manage_games_callback_args, 1);
+	args->gc = gc;
+	args->builder = builder;
+	
+	g_signal_connect_swapped(quit_button, "clicked", G_CALLBACK(gtk_widget_destroy), server_browser_window);
+	g_signal_connect_swapped(refresh_button, "clicked", G_CALLBACK(gfire_query_server_list_cb), args);
+
+	xmlnode *gfire_launch = gfire->xml_launch_info;
+	if (gfire_launch != NULL)
+	{
+		xmlnode *node_child;
+		for (node_child = xmlnode_get_child(gfire_launch, "game"); node_child != NULL;
+		    node_child = xmlnode_get_next_twin(node_child))
+		{
+			const char *game_name = xmlnode_get_attrib(node_child, "name");
+			gtk_combo_box_append_text(GTK_COMBO_BOX(game_combo), game_name);
+		}
+	}
+
+	gtk_widget_show_all(server_browser_window);
 }
 
 static GList *gfire_actions(PurplePlugin *plugin, gpointer context)
@@ -1851,8 +1925,8 @@ static GList *gfire_actions(PurplePlugin *plugin, gpointer context)
 	act = purple_plugin_action_new(N_("Manage Games"),
 			gfire_action_manage_games_cb);
 	m = g_list_append(m, act);
-	act = purple_plugin_action_new(N_("Get Game ID Server List"),
-			gfire_action_get_serverlist_cb);
+	act = purple_plugin_action_new(N_("Server Browser"),
+		gfire_action_server_browser_cb);
 	m = g_list_append(m, act);
 	m = g_list_append(m, NULL);
 	act = purple_plugin_action_new(N_("About"),
