@@ -36,10 +36,9 @@ static void gfire_login_cb(gpointer data, gint source, const gchar *error_messag
 static void gfire_add_buddy(PurpleConnection *gc, PurpleBuddy *buddy, PurpleGroup *group);
 static void gfire_remove_buddy(PurpleConnection *gc, PurpleBuddy *buddy, PurpleGroup *group);
 void gfire_buddy_menu_profile_cb(PurpleBlistNode *node, gpointer *data);
-GList * gfire_node_menu(PurpleBlistNode *node);
+GList *gfire_node_menu(PurpleBlistNode *node);
 
-void gfire_join_game(PurpleConnection *gc, const gchar *sip, int sport, int game);
-void gfire_game_watch_cb(GPid pid, int status, gpointer *data);
+void gfire_join_game(PurpleConnection *gc, const gchar *server_ip, int server_port, int game_id);
 char *gfire_escape_html(const char *html);
 
 #ifdef IS_NOT_WINDOWS
@@ -1839,6 +1838,53 @@ static void gfire_query_server_list_cb(manage_games_callback_args *args, GtkWidg
 	}
 }
 
+static void gfire_server_browser_connect_cb(manage_games_callback_args *args, GtkWidget *sender)
+{
+	PurpleConnection *gc = args->gc;
+	GtkBuilder *builder = args->builder;
+	
+	if (!gc || !builder) {
+		purple_debug_error("gfire_server_browser_connect_cb", "GC not set and/or couldn't get interface.\n");
+		return;
+	}
+
+	gfire_data *gfire = NULL;
+	if (!(gfire = (gfire_data *)gc->proto_data)) {
+		purple_debug_error("gfire_server_browser_connect_cb", "Couldn't access gfire data.\n");
+		return;
+	}
+
+	GtkWidget *server_browser_window = GTK_WIDGET(gtk_builder_get_object(builder, "server_browser_window"));
+	GtkWidget *game_combo = GTK_WIDGET(gtk_builder_get_object(builder, "game_combo"));
+	GtkWidget *servers_tree_view = GTK_WIDGET(gtk_builder_get_object(builder, "servers_tree_view"));
+	
+	GtkTreeSelection *selection;
+	GtkTreeModel *model;
+	GtkTreeIter iter;
+	
+	gchar *game = gtk_combo_box_get_active_text(GTK_COMBO_BOX(game_combo));
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(servers_tree_view));
+	model = gtk_tree_view_get_model(GTK_TREE_VIEW(servers_tree_view));
+	
+	if (gtk_tree_selection_get_selected(selection, &model, &iter))
+	{
+		gchar *server;
+		gchar *server_ip;
+		gchar **server_tok;
+		int server_port, game_id;
+		
+		gtk_tree_model_get(model, &iter, 0, &server, -1);
+		server_tok = g_strsplit(server, ":", -1);
+		
+		server_ip = g_strdup_printf("%s", server_tok[0]);
+		server_port = atoi(server_tok[1]);
+		game_id = gfire_game_id(gc, game);
+		
+		gfire_join_game(gc, server_ip, server_port, game_id);
+	}
+	else purple_debug_error("gfire_server_browser_connect_cb", "Couldn't get selected server.\n");
+}
+
 /**
  * shows the server browser window.
  *
@@ -1885,6 +1931,7 @@ static void gfire_action_server_browser_cb(PurplePluginAction *action)
 	
 	g_signal_connect_swapped(quit_button, "clicked", G_CALLBACK(gtk_widget_destroy), server_browser_window);
 	g_signal_connect_swapped(refresh_button, "clicked", G_CALLBACK(gfire_query_server_list_cb), args);
+	g_signal_connect_swapped(connect_button, "clicked", G_CALLBACK(gfire_server_browser_connect_cb), args);
 
 	xmlnode *gfire_launch = gfire->xml_launch_info;
 	if (gfire_launch != NULL)
@@ -1962,10 +2009,13 @@ void gfire_join_game(PurpleConnection *gc, const gchar *server_ip, int server_po
  		purple_debug_error("gfire: gfire_join_game()", "Game launch info struct not defined!\n");
  		return;
  	}
-	
+	printf("---------------------> %s", server_ip);		
  	if (server_ip == NULL) server_ip = (char *)&null_ip;
 
-	game_launch_command = gfire_linfo_get_cmd(game_launch_info, (guint8 *)server_ip, server_port, NULL);
+	gchar *tmp = gfire_ipstr_to_bin(server_ip);
+	
+	game_launch_command = gfire_linfo_get_cmd(game_launch_info, (guint8 *)tmp, server_port, NULL);
+	printf("---> %s", game_launch_command);
 	g_spawn_command_line_async(game_launch_command, NULL);
 }
 

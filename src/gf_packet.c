@@ -1979,7 +1979,7 @@ void gfire_read_serverlist(PurpleConnection *gc, int packet_len)
 		{
 			server_list = g_list_next(server_list);
 			gtk_list_store_append(list_store, &iter);
-			gtk_list_store_set(list_store, &iter, 0, server_list->data, 1, server_list->data, 2, "N/A", 3, "N/A", -1);
+			gtk_list_store_set(list_store, &iter, 0, "63.211.110.136:27960", 1, "63.211.110.136:27960", -1);
 			server_list = g_list_next(server_list);
 		}
 	}
