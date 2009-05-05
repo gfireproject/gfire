@@ -257,6 +257,7 @@ void gfire_packet_131(PurpleConnection *gc, int packet_len)
 	GList *friends = NULL;
 	GList *nicks = NULL;
 	GList *userids = NULL;
+	GList *btmp = NULL;
 	GList *f, *n, *u;
 	gchar uids[(XFIRE_USERID_LEN * 2) + 1];
 	gfire_data *gfire = (gfire_data *)gc->proto_data;
@@ -297,8 +298,13 @@ void gfire_packet_131(PurpleConnection *gc, int packet_len)
 	
 	while (f != NULL)
 	{
-		gf_buddy = g_malloc0(sizeof(gfire_buddy));
-		gfire->buddies = g_list_append(gfire->buddies, (gpointer *)gf_buddy);
+		btmp = gfire_find_buddy_in_list(gfire->buddies, f->data, GFFB_NAME);
+		if (NULL == btmp) {
+			gf_buddy = g_malloc0(sizeof(gfire_buddy));
+			gfire->buddies = g_list_append(gfire->buddies, (gpointer *)gf_buddy);
+		} else {
+			gf_buddy = (gfire_buddy *)btmp->data;
+		}
 
 		gf_buddy->name = (gchar *)f->data;
 		gf_buddy->alias = (gchar *)n->data;
@@ -1779,6 +1785,7 @@ void gfire_read_clan_blist(PurpleConnection *gc, int packet_len)
 	GList *userids = NULL;
 	GList *usernames = NULL;
 	GList *nicks = NULL;
+	GList *btmp = NULL;
 	gchar uids[(XFIRE_USERID_LEN * 2) + 1];
 	
 
@@ -1827,8 +1834,14 @@ void gfire_read_clan_blist(PurpleConnection *gc, int packet_len)
 	
 	while (f != NULL)
 	{
-		gf_buddy = g_malloc0(sizeof(gfire_buddy));
-		gfire->buddies = g_list_append(gfire->buddies, (gpointer *)gf_buddy);
+		
+		btmp = gfire_find_buddy_in_list(gfire->buddies, f->data, GFFB_NAME);
+		if (NULL == btmp) {
+			gf_buddy = g_malloc0(sizeof(gfire_buddy));
+			gfire->buddies = g_list_append(gfire->buddies, (gpointer *)gf_buddy);
+		} else {
+			gf_buddy = (gfire_buddy *)btmp->data;
+		}
 
 		gf_buddy->name = (gchar *)f->data;
 		

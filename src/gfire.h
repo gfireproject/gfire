@@ -107,6 +107,7 @@
 typedef struct _gfire_data	gfire_data;
 typedef struct _gfire_buddy	gfire_buddy;
 typedef struct _gfire_im	gfire_im;
+typedef struct _gfire_clans	gfire_clans;
 typedef struct _gfire_c_msg	gfire_chat_msg;
 typedef struct _manage_games_callback_args manage_games_callback_args;
 
@@ -170,6 +171,7 @@ struct _gfire_c_msg {
 	gchar *im_str;		/* im text */
 	gfire_buddy *b;		/* for users joining the chat */
 };
+
 
 struct _manage_games_callback_args {
 	PurpleConnection *gc;
