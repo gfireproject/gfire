@@ -1972,16 +1972,13 @@ void gfire_read_serverlist(PurpleConnection *gc, int packet_len)
 	GtkListStore *list_store = GTK_LIST_STORE(gtk_builder_get_object(builder, "servers_list_store"));
 	
 	GtkTreeIter iter;
-	if (server_list != NULL)
-	{
-		server_list = g_list_first(server_list);
-		while (server_list != NULL)
-		{
-			server_list = g_list_next(server_list);
-			gtk_list_store_append(list_store, &iter);
-			gtk_list_store_set(list_store, &iter, 0, "63.211.110.136:27960", 1, "63.211.110.136:27960", -1);
-			server_list = g_list_next(server_list);
-		}
-	}
-	else purple_debug_error("gfire_read_serverlist", "Couldn't get server list.\n");
+	GList *i_tmp = server_list;
+	
+	for (i_tmp = g_list_first(i_tmp); i_tmp != NULL; i_tmp = g_list_next(i_tmp))
+    {
+		gtk_list_store_append(list_store, &iter);
+		gtk_list_store_set(list_store, &iter, 0, i_tmp->data, 1, i_tmp->data, 2, "N/A", 3, "N/A", -1);
+    }
+	
+	// g_list_free (list);
 }
