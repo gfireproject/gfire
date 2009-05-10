@@ -1873,7 +1873,7 @@ static void gfire_server_browser_connect_cb(manage_games_callback_args *args, Gt
 		gchar **server_tok;
 		int server_port, game_id;
 		
-		gtk_tree_model_get(model, &iter, 0, &server, -1);
+		gtk_tree_model_get(model, &iter, 1, &server, -1);
 		server_tok = g_strsplit(server, ":", -1);
 		
 		server_ip = g_strdup_printf("%s", server_tok[0]);
