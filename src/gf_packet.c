@@ -26,9 +26,27 @@
 #include "gf_packet.h"
 #include "gf_chat.h"
 
+#ifdef WIN32
+    #include <winsock.h>
+    #include <windows.h>
+    #include <direct.h>
+    #include <io.h>
+    #include "winerr.h"
+#else
+    #include <unistd.h>
+    #include <sys/socket.h>
+    #include <sys/types.h>
+    #include <sys/param.h>
+    #include <arpa/inet.h>
+    #include <netinet/in.h>
+    #include <netdb.h>
+    #include <sys/times.h>
+    #include <sys/timeb.h>
+    #include <pthread.h>
+#endif
+
+#include "miniquery.h"
 #include "cipher.h"
-
-
 
 void gfire_add_header(guint8 *packet, int length, int type, int atts)
 {
@@ -1910,6 +1928,43 @@ int gfire_create_serverlist_request (PurpleConnection *gc, int game)
 	return index;
 }
 
+static void update_server_list(GtkListStore *server_list_store)
+{
+	GtkTreeIter iter;
+	gboolean valid_iter;
+
+	ipdata_t server_data;
+	gchar **server_tok;
+	int query_result;
+
+	for (valid_iter = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(server_list_store), &iter); valid_iter == TRUE;
+	     valid_iter = gtk_tree_model_iter_next(GTK_TREE_MODEL(server_list_store), &iter))
+	{	
+		gchar *server_ip;
+		
+		gtk_tree_model_get(GTK_TREE_MODEL(server_list_store), &iter, 0, &server_ip, -1);
+		server_tok = g_strsplit(server_ip, ":", -1);
+		query_result = miniquery(&server_data, 1, inet_addr(server_tok[0]), atoi(server_tok[1]));
+		
+		if (query_result != 0) {
+			gchar *server_name, *server_ping, *server_players;
+			
+			server_name = g_strdup_printf("%s", server_data.name);
+			server_ping = g_strdup_printf("%d", server_data.ping);
+			server_players = g_strdup_printf("%d", server_data.players);
+			
+			if (server_name != NULL && server_ping != NULL && server_players != NULL) {
+				gtk_list_store_set(server_list_store, &iter, 0, server_name, 2, server_ping, 3, server_players, -1);
+			}
+			
+			// g_free(server_name); g_free(server_ping); g_free(server_players);
+		}
+
+		ipdata_free(&server_data);
+		// g_strfreev(server_tok);
+	}
+}
+
 void gfire_read_serverlist(PurpleConnection *gc, int packet_len)
 {
 	gfire_data *gfire = NULL;
@@ -1964,9 +2019,6 @@ void gfire_read_serverlist(PurpleConnection *gc, int packet_len)
 		memcpy(&(port),p->data, XFIRE_GAMEPORT_LEN);
 		port = GUINT32_FROM_LE(port);
 		port &= 0xFFFF;
-
-		/* purple_debug(PURPLE_DEBUG_MISC, "gfire", "(serverlist): server: %d.%d.%d.%d:%d\n",
-					NNA(ip, ip[3]), NNA(ip, ip[2]), NNA(ip, ip[1]), NNA(ip, ip[0]), port); */
 		
 		gchar *ipstr = g_strdup_printf("%d.%d.%d.%d", ip[3], ip[2], ip[1], ip[0]);
 		gchar *server = g_strdup_printf("%s:%d", ipstr, port);
@@ -1986,12 +2038,14 @@ void gfire_read_serverlist(PurpleConnection *gc, int packet_len)
 	
 	GtkTreeIter iter;
 	GList *i_tmp = server_list;
-	
-	for (i_tmp = g_list_first(i_tmp); i_tmp != NULL; i_tmp = g_list_next(i_tmp))
-    {
+
+	for (i_tmp = g_list_first(i_tmp); i_tmp != NULL; i_tmp = g_list_next(i_tmp)) {
 		gtk_list_store_append(list_store, &iter);
 		gtk_list_store_set(list_store, &iter, 0, i_tmp->data, 1, i_tmp->data, 2, "N/A", 3, "N/A", -1);
-    }
+   	}
 	
-	// g_list_free (list);
+	// Create a thread to update the server list
+	GThread *update_server_list_thread;
+	
+	g_thread_create(update_server_list, list_store, FALSE, NULL);
 }

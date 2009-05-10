@@ -35,6 +35,7 @@
 #include <glib-object.h>
 #include <glib.h>
 #include <glib/gprintf.h>
+#include <glib/gthread.h>
 #include <unistd.h>
 #include <string.h>
 
