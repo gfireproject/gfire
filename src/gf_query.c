@@ -61,7 +61,7 @@ typedef uint32_t    u32;
 
 #define QUERYSZ         8192
 //#define mychrdup        strdup
-#define TIMEOUT         2   // set it to 0 to avoid to wait for other possible replies, not good with gs3
+#define TIMEOUT         1   // set it to 0 to avoid to wait for other possible replies, not good with gs3
 
 #define QUAKE3_QUERY    "\xff\xff\xff\xff" "getstatus xxx\n"
 #define MOH_QUERY       "\xff\xff\xff\xff" "\x02" "getstatus xxx\n"
@@ -82,8 +82,6 @@ typedef uint32_t    u32;
 #define GSLIST_QUERY_T(X)       int (X)(u8 *data, int len, generic_query_data_t *gqd)
 #define GSLIST_QUERY_PAR_T(X)   int (X)(u8 *data, int skip)
 #define GSLIST_QUERY_VAL_T(X)   int (X)(u8 *data, int ipbit, ipdata_t *ipdata)
-
-
 
 #pragma pack(1)             // save tons of memory
 
@@ -119,8 +117,6 @@ typedef struct {
 } generic_query_data_t;
 
 #pragma pack()
-
-
 
 #define FREEX(X)    freex((void *)&X)
 void freex(void **buff) {
@@ -170,11 +166,7 @@ void *mychrdupn(u8 *str, int n) {
     return(ret);
 }
 
-
-
-    /* multi_query.h */
-
-
+// multi_query.h
 
 void show_unicode(u8 *data, u32 size) {
     u8      *limit = data + size;
@@ -185,7 +177,6 @@ void show_unicode(u8 *data, u32 size) {
     }
     fputc('\n', stdout);
 }
-
 
 
 GSLIST_QUERY_PAR_T(handle_query_par) {
@@ -252,8 +243,6 @@ GSLIST_QUERY_PAR_T(handle_query_par) {
     return(0);
 }
 
-
-
 GSLIST_QUERY_VAL_T(handle_query_val) {
     int     ret = 0;
 
@@ -277,21 +266,15 @@ GSLIST_QUERY_VAL_T(handle_query_val) {
     return(ret);
 }
 
-
-
 GSLIST_QUERY_PAR_T(print_query_par) {
     printf("%28s ", data);
     return(0);
 }
 
-
-
 GSLIST_QUERY_VAL_T(print_query_val) {
     printf("%s\n", data);
     return(0);
 }
-
-
 
 GSLIST_QUERY_T(generic_query) {
     GSLIST_QUERY_PAR_T(*par);   /* the usage of function pointers */
@@ -371,8 +354,6 @@ GSLIST_QUERY_T(generic_query) {
     return(0);
 }
 
-
-
 GSLIST_QUERY_T(source_query) {
     ipdata_t   *ipdata;
 
@@ -408,8 +389,6 @@ GSLIST_QUERY_T(source_query) {
     }
     return(0);
 }
-
-
 
 GSLIST_QUERY_T(tribes2_query) {
     ipdata_t    *ipdata;
@@ -447,8 +426,6 @@ GSLIST_QUERY_T(tribes2_query) {
 #undef TRIBES2STR
     return(0);
 }
-
-
 
 GSLIST_QUERY_T(dplay8info) {
     ipdata_t    *ipdata;
@@ -579,8 +556,6 @@ GSLIST_QUERY_T(dplay8info) {
     return(0);
 }
 
-
-
 GSLIST_QUERY_T(ase_query) {
     ipdata_t    *ipdata;
     int     num = 0;
@@ -648,8 +623,6 @@ GSLIST_QUERY_T(ase_query) {
     return(0);
 }
 
-
-
 u8 *switch_type_query(int type, int *querylen, generic_query_data_t *gqd, GSLIST_QUERY_T(**func), int info) {
     u8      *query,
             *msg;
@@ -696,9 +669,7 @@ u8 *switch_type_query(int type, int *querylen, generic_query_data_t *gqd, GSLIST
     return(query);
 }
 
-
-
-    /* this is the code called when you use the -i, -I or -d option */
+/* this is the code called when you use the -i, -I or -d option */
 int miniquery(ipdata_t *gip, int type, in_addr_t ip, u16 port) {
 #ifdef WIN32
 #else
@@ -753,12 +724,11 @@ int miniquery(ipdata_t *gip, int type, in_addr_t ip, u16 port) {
             }
             (*func)(buff, len, &gqd);
         }
+	// break;
     }
     close(sd);
     return(pcks);
 }
-
-
 
 void ipdata_free(ipdata_t *ipdata) {
     FREEX(ipdata->name);
