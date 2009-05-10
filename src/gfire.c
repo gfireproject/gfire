@@ -696,12 +696,15 @@ void gfire_new_buddies(PurpleConnection *gc)
 	gfire_data *gfire = (gfire_data *)gc->proto_data;
 	gfire_buddy *b = NULL;
 	GList *tmp = gfire->buddies;
+	int packet_len = 0;
 
 	while (NULL != tmp) {
 		b = (gfire_buddy *)tmp->data;
 		if (!b) return;
 		gfire_new_buddy(gc, b->alias, b->name, b->friend, b->clan);
 		tmp = g_list_next(tmp);
+		packet_len = gfire_request_avatar_info(gc, b);
+		if (packet_len > 0)	gfire_send(gc, gfire->buff_out, packet_len);
 	}
 }
 

@@ -44,7 +44,6 @@ int gfire_remove_buddy_create(PurpleConnection *gc, gfire_buddy *b);
 int gfire_create_change_alias(PurpleConnection *gc, char *name);
 int gfire_join_game_create(PurpleConnection *gc, int game, int port, const char *ip);
 int gfire_request_avatar_info(PurpleConnection *gc, gfire_buddy *b);
-//void gfire_read_avatar_info(PurpleConnection *gc, int packet_len);
 int gfire_send_typing_packet(PurpleConnection *gc, gfire_buddy *buddy);
 void gfire_read_alias_change(PurpleConnection *gc, int packet_len);
 int gfire_create_join_chat(PurpleConnection *gc, gchar *id, gchar *room, gchar *pass);
