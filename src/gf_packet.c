@@ -25,27 +25,8 @@
 #include "gf_network.h"
 #include "gf_packet.h"
 #include "gf_chat.h"
+#include "gf_query.c"
 
-#ifdef WIN32
-    #include <winsock.h>
-    #include <windows.h>
-    #include <direct.h>
-    #include <io.h>
-    #include "winerr.h"
-#else
-    #include <unistd.h>
-    #include <sys/socket.h>
-    #include <sys/types.h>
-    #include <sys/param.h>
-    #include <arpa/inet.h>
-    #include <netinet/in.h>
-    #include <netdb.h>
-    #include <sys/times.h>
-    #include <sys/timeb.h>
-    #include <pthread.h>
-#endif
-
-#include "miniquery.h"
 #include "cipher.h"
 
 void gfire_add_header(guint8 *packet, int length, int type, int atts)

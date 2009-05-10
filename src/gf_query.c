@@ -1,5 +1,5 @@
 /*
-    Copyright 2009 Luigi Auriemma
+    Copyright (C) 2009, Luigi Auriemma
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,6 +22,25 @@
 
 #include <stdint.h>
 
+#ifdef _WIN32
+    #include <winsock.h>
+    #include <windows.h>
+    #include <direct.h>
+    #include <io.h>
+    #include "winerr.h"
+#else
+    #include <unistd.h>
+    #include <sys/socket.h>
+    #include <sys/types.h>
+    #include <sys/param.h>
+    #include <arpa/inet.h>
+    #include <netinet/in.h>
+    #include <netdb.h>
+    #include <sys/times.h>
+    #include <sys/timeb.h>
+    #include <pthread.h>
+#endif
+
 typedef int8_t      i8;
 typedef uint8_t     u8;
 typedef uint16_t    u16;
@@ -42,7 +61,7 @@ typedef uint32_t    u32;
 
 #define QUERYSZ         8192
 //#define mychrdup        strdup
-#define TIMEOUT         0   // set it to 0 to avoid to wait for other possible replies, not good with gs3
+#define TIMEOUT         2   // set it to 0 to avoid to wait for other possible replies, not good with gs3
 
 #define QUAKE3_QUERY    "\xff\xff\xff\xff" "getstatus xxx\n"
 #define MOH_QUERY       "\xff\xff\xff\xff" "\x02" "getstatus xxx\n"
@@ -734,7 +753,6 @@ int miniquery(ipdata_t *gip, int type, in_addr_t ip, u16 port) {
             }
             (*func)(buff, len, &gqd);
         }
-		// break;
     }
     close(sd);
     return(pcks);
