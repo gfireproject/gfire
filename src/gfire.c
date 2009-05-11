@@ -2012,14 +2012,106 @@ void gfire_join_game(PurpleConnection *gc, const gchar *server_ip, int server_po
  		purple_debug_error("gfire: gfire_join_game()", "Game launch info struct not defined!\n");
  		return;
  	}
-	printf("---------------------> %s", server_ip);		
+
  	if (server_ip == NULL) server_ip = (char *)&null_ip;
 
 	gchar *tmp = gfire_ipstr_to_bin(server_ip);
 	
 	game_launch_command = gfire_linfo_get_cmd(game_launch_info, (guint8 *)tmp, server_port, NULL);
-	printf("---> %s", game_launch_command);
 	g_spawn_command_line_async(game_launch_command, NULL);
+}
+
+/**
+ * Replaces a substring by another substring in a string
+ * and returns the new string.
+**/
+char *str_replace (char *string, char *before, char *after)
+{
+	const char *pos;
+	char *replaced;
+	size_t replaced_pos;
+
+	size_t len;
+	size_t allocated_size;
+
+	pos = strstr(string, before);
+	if (pos == NULL) return string;
+
+	len = (size_t)pos - (size_t)string;
+	allocated_size = len + strlen (after) + 1;
+	replaced = malloc (allocated_size);
+	replaced_pos = 0;
+
+	strncpy (replaced + replaced_pos, string, len);
+	replaced_pos += len;
+	string = pos + strlen (before);
+
+	len = strlen (after);
+	strncpy (replaced + replaced_pos, after, len);
+	replaced_pos += len;
+
+	pos = strstr (string, before);
+	while (pos != NULL)
+	{
+		len = (size_t)pos - (size_t)string;
+		allocated_size += len + strlen (after);
+		replaced = (char *)realloc (replaced, allocated_size);
+
+		strncpy (replaced + replaced_pos, string, len);
+		replaced_pos += len;
+
+		string = pos + strlen (before);
+
+		len = strlen (after);
+		strncpy (replaced + replaced_pos, after, len);
+		replaced_pos += len;
+
+		pos = strstr (string, before);
+	}
+
+	len = strlen (string) + 1;
+	allocated_size += len;
+	replaced = realloc (replaced, allocated_size);
+	strncpy (replaced + replaced_pos, string, len);
+
+	return replaced;
+}
+
+/**
+ * Removes color codes from a string,
+ * used in the server browser to display the server names properly.
+**/
+char *gfire_escape_color_codes(char *string)
+{
+	char color_codes[] = {
+		'0', 'P', '9', 'Y', 'Z', '7', 'W',
+		'J', '1', 'Q', 'I',
+		'H', '2', 'R', 'G',
+		'M', '3', 'S', 'O', 'N',
+		'F', 'D', '4', 'T',
+		'B', '5', 'U',
+		'C', 'E', '6', 'V',
+		'K', 'L', '8', 'Y', 'A',
+		'?', '+', '@', '-', '/',
+		'n', '&' // Non-standard Q3 color codes.
+	};
+	
+	gchar *escaped = g_strdup_printf("%s", string);
+
+	if (escaped != NULL)
+	{	
+		int i;
+		for (i = 0; i < 41; i++)
+		{
+			gchar *code;
+			char *empty = "";
+
+			code = g_strdup_printf("^%c", color_codes[i]);
+			escaped = str_replace(escaped, code, empty);
+		}
+	}
+
+	return escaped;
 }
 
 char *gfire_escape_html(const char *html)

@@ -1935,7 +1935,11 @@ static void update_server_list(GtkListStore *server_list_store)
 			server_players = g_strdup_printf("%d", server_data.players);
 			
 			if (server_name != NULL && server_ping != NULL && server_players != NULL) {
-				gtk_list_store_set(server_list_store, &iter, 0, server_name, 2, server_ping, 3, server_players, -1);
+				gchar *server_name_tmp = gfire_escape_color_codes(server_name);
+				if (server_name_tmp != NULL) {
+					gtk_list_store_set(server_list_store, &iter, 0, server_name_tmp, 2, server_ping,
+							   3, server_players, -1);
+				}
 			}
 			
 			// g_free(server_name); g_free(server_ping); g_free(server_players);
@@ -1963,7 +1967,7 @@ void gfire_read_serverlist(PurpleConnection *gc, int packet_len)
 	if (!gc || !(gfire = (gfire_data *)gc->proto_data)) return 0;
 
 	if (packet_len < 16) {
-		purple_debug_error("gfire", "packet 131 received, but too short. (%d bytes)\n", packet_len);
+		purple_debug_error("gfire_read_serverlist", "Packet 131 received, but too short (%d bytes).\n", packet_len);
 		return;
 	}
 

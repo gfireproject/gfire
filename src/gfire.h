@@ -201,5 +201,6 @@ void gfire_update_buddy_status(PurpleConnection *gc, GList *buddies, int status)
 void gfire_buddy_add_authorize_cb(void *data);
 void gfire_buddy_add_deny_cb(void *data);
 int gfire_check_xqf_cb(PurpleConnection *gc);
+char *gfire_escape_color_codes(char *string);
 
 #endif /* _GFIRE_H */
