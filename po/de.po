@@ -1,0 +1,71 @@
+# German translations for gfire package
+# Oliver Ney <oliver@dryder.de>, 2009.
+
+msgid "Manage Games"
+msgstr "Spiele verwalten"
+
+msgid "Game:"
+msgstr "Spiel:"
+
+msgid "Game path:"
+msgstr "Pfad:"
+
+msgid "Game executable:"
+msgstr "Ausführbare Datei:"
+
+msgid "Connect option:"
+msgstr "Verbindungsoptionen:"
+
+msgid "Use game path"
+msgstr "Nutze Spielpfad"
+
+msgid "<b>Options basiques</b>"
+msgstr ""
+
+msgid "Launch prefix:"
+msgstr "Ausführungsprefix:"
+
+msgid "Launch options:"
+msgstr "Ausführungsoptionen:"
+
+msgid "Required argument:"
+msgstr "Benötigtes Argument:"
+
+msgid "<b>Options avancés</b>"
+msgstr ""
+
+msgid "gtk-add"
+msgstr ""
+
+msgid "gtk-close"
+msgstr ""
+
+msgid "Add a game"
+msgstr "Spiel hinzufügen"
+
+msgid "gtk-apply"
+msgstr ""
+
+msgid "gtk-remove"
+msgstr ""
+
+msgid "Edit or remove a game"
+msgstr "Spiel ändern oder entfernen"
+
+msgid "Change Nickname"
+msgstr "Spitznamen ändern..."
+
+msgid "My Profile Page"
+msgstr "Meine Profilseite"
+
+msgid "Reload Launch Config"
+msgstr "Ausführungskonfigaration neu laden"
+
+msgid "Reload Game ID List"
+msgstr "Spiel-ID Liste neu laden"
+
+msgid "Get Game ID List"
+msgstr "Spiel-ID List holen"
+
+msgid "About"
+msgstr "Über GFire"
