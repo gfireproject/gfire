@@ -432,7 +432,7 @@ static void gfire_get_info_parse_gamerig_cb(PurpleUtilFetchUrlData *url_data, gp
 	get_info_callback_args *args = (get_info_callback_args*)data;
 
 	if (!args || !buf || !len) {
-		purple_debug(PURPLE_DEBUG_ERROR, "gfire: User Info Gamerig XML Download", "Download failed.\n");
+		purple_debug(PURPLE_DEBUG_ERROR, "gfire", "User Info Gamerig XML Download: Download failed.\n");
 		if(args)
 		{
 			purple_notify_user_info_add_section_break(args->user_info);
@@ -509,7 +509,7 @@ static void gfire_get_info_parse_gamerig_cb(PurpleUtilFetchUrlData *url_data, gp
 		}
 	}
 
-	purple_debug(PURPLE_DEBUG_MISC, "gfire: User Info Gamerig XML Download", "Download successful.\n");
+	purple_debug(PURPLE_DEBUG_MISC, "gfire", "User Info Gamerig XML Download: Download successful.\n");
 
 	if(args)
 	{
@@ -525,7 +525,7 @@ static void gfire_get_info_parse_profile_cb(PurpleUtilFetchUrlData *url_data, gp
 	get_info_callback_args *args = (get_info_callback_args*)data;
 
 	if (!args || !buf || !len) {
-		purple_debug(PURPLE_DEBUG_ERROR, "gfire: User Info Profile XML Download", "Download failed.\n");
+		purple_debug(PURPLE_DEBUG_ERROR, "gfire", "User Info Profile XML Download: Download failed.\n");
 		if(args)
 		{
 			purple_notify_user_info_add_section_break(args->user_info);
@@ -586,12 +586,13 @@ static void gfire_get_info_parse_profile_cb(PurpleUtilFetchUrlData *url_data, gp
 		}
 	}
 
-	purple_debug(PURPLE_DEBUG_MISC, "gfire: User Info Profile XML Download", "Download successful.\n");
+	purple_debug(PURPLE_DEBUG_MISC, "gfire", "User Info Profile XML Download: Download successful.\n");
 
 	if(args)
 	{
+		// Fetch Gamerig XML Data
 		gchar *infoURL = g_strdup_printf(XFIRE_XML_INFO_URL, args->gf_buddy->name, "gamerig");
-		purple_debug(PURPLE_DEBUG_MISC, "gfire: User Info Gamerig XML Download", "Starting download from %s.\n", infoURL);
+		purple_debug(PURPLE_DEBUG_MISC, "gfire", "User Info Gamerig XML Download: Starting download from %s.\n", infoURL);
 		purple_util_fetch_url(infoURL, TRUE, "Purple-xfire", TRUE, gfire_get_info_parse_gamerig_cb, (void *)args);
 		g_free(infoURL);
 	}
@@ -656,7 +657,7 @@ static void gfire_get_info(PurpleConnection *gc, const char *who)
 
 	// Fetch Profile XML data
 	infoURL = g_strdup_printf(XFIRE_XML_INFO_URL, gf_buddy->name, "profile");
-	purple_debug(PURPLE_DEBUG_MISC, "gfire: User Info Profile XML Download", "Starting download from %s.\n", infoURL);
+	purple_debug(PURPLE_DEBUG_MISC, "gfire", "User Info Profile XML Download: Starting download from %s.\n", infoURL);
 	purple_util_fetch_url(infoURL, TRUE, "Purple-xfire", TRUE, gfire_get_info_parse_profile_cb, (void *)download_args);
 	g_free(infoURL);
 }
@@ -870,6 +871,7 @@ void gfire_new_buddies(PurpleConnection *gc)
 {
 	gfire_data *gfire = (gfire_data *)gc->proto_data;
 	gfire_buddy *b = NULL;
+	PurpleBuddy *gbuddy = NULL;
 	GList *tmp = gfire->buddies;
 	int packet_len = 0;
 
@@ -878,6 +880,9 @@ void gfire_new_buddies(PurpleConnection *gc)
 		if (!b) return;
 		gfire_new_buddy(gc, b->alias, b->name, b->friend, b->clan);
 		tmp = g_list_next(tmp);
+		gbuddy = purple_find_buddy(purple_connection_get_account(gc), b->name);
+		if(gbuddy != NULL)
+			b->avatarnumber = purple_blist_node_get_int(&(gbuddy->node), "avatarnumber");
 		packet_len = gfire_request_avatar_info(gc, b);
 		if (packet_len > 0)	gfire_send(gc, gfire->buff_out, packet_len);
 	}
@@ -975,6 +980,7 @@ void gfire_update_buddy_status(PurpleConnection *gc, GList *buddies, int status)
 	gfire_buddy *gf_buddy = NULL;
 	GList *b = g_list_first(buddies);
 	PurpleBuddy *gbuddy = NULL;
+	int len = 0;
 
 	if (!buddies || !gc || !gc->account) {
 		if (buddies) g_list_free(buddies);
@@ -990,7 +996,6 @@ void gfire_update_buddy_status(PurpleConnection *gc, GList *buddies, int status)
 			{
 				case GFIRE_STATUS_ONLINE:
 					if ( 0 == g_ascii_strcasecmp(XFIRE_SID_OFFLINE_STR,gf_buddy->sid_str)) {
-
 						purple_prpl_got_user_status(gc->account, gf_buddy->name, "offline", NULL);
 					} else {
 						if ( gf_buddy->away ) {
@@ -2194,6 +2199,41 @@ void gfire_join_game(PurpleConnection *gc, const gchar *server_ip, int server_po
 	
 	game_launch_command = gfire_linfo_get_cmd(game_launch_info, (guint8 *)tmp, server_port, NULL);
 	g_spawn_command_line_async(game_launch_command, NULL);
+}
+
+void gfire_avatar_download_cb( PurpleUtilFetchUrlData *url_data, gpointer data, const char *buf, gsize len, const gchar *error_message)
+{
+	PurpleConnection *gc = NULL;
+	PurpleBuddy *pbuddy = (PurpleBuddy*)data;
+	PurpleBuddyIcon *buddy_icon = NULL;
+	guchar *temp = NULL;
+
+	if (data == NULL || buf == NULL || len == 0)
+	{
+		purple_debug(PURPLE_DEBUG_ERROR, "gfire", "gfire_avatar_download_cb: download of avatar failed (%s)\n", NN(error_message));
+		return;
+	}
+
+	if((unsigned char)buf[0] != 0xFF || (unsigned char)buf[1] != 0xD8)
+	{
+		purple_debug(PURPLE_DEBUG_ERROR, "gfire", "gfire_avatar_download_cb: invalid jpeg file (first two bytes: %02x%02x)\n", buf[0], buf[1]);
+		return;
+	}
+
+	gc = pbuddy->account->gc;
+	if ( PURPLE_CONNECTION_IS_VALID(gc) && PURPLE_CONNECTION_IS_CONNECTED(gc) )
+	{
+		temp = g_new0(guchar, len);
+		memcpy(temp, buf, len);
+
+		buddy_icon = purple_buddy_get_icon(pbuddy);
+		if(buddy_icon == NULL)
+			buddy_icon = purple_buddy_icon_new(gc->account, pbuddy->name, temp, len, NULL);
+		else
+			purple_buddy_icon_set_data(buddy_icon, temp, len, NULL);
+
+		purple_debug(PURPLE_DEBUG_MISC, "gfire", "gfire_avatar_download_cb: avatar successfully changed\n");
+	}
 }
 
 /**

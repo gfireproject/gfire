@@ -104,6 +104,7 @@
 #define XFIRE_KEEPALIVE_TIME 300  // see gfire_keep_alive for more info
 #define XFIRE_PROFILE_URL "http://www.xfire.com/profile/"
 #define XFIRE_XML_INFO_URL "http://www.xfire.com/xml/%s/%s/" // username, info-type
+#define XFIRE_AVATAR_URL "http://screenshot.xfire.com/avatar/%s.jpg?%d" // username, revision number
 #define XFIRE_SEND_TYPING_TIMEOUT 10
 
 typedef struct _gfire_data	gfire_data;
@@ -157,7 +158,7 @@ struct _gfire_buddy {
 	gboolean friend;		/* TRUE == buddy is in friendslist */
 	gboolean clan;			/* TRUE == buddy is in clanlist */
 	gboolean groupchat;		/* TRUE == buddy is in groupchat */
-
+	guint32 avatarnumber;	/* xfire avatar revision number */
 };
 
 struct _gfire_im {
@@ -209,6 +210,7 @@ void gfire_update_buddy_status(PurpleConnection *gc, GList *buddies, int status)
 void gfire_buddy_add_authorize_cb(void *data);
 void gfire_buddy_add_deny_cb(void *data);
 int gfire_check_xqf_cb(PurpleConnection *gc);
+void gfire_avatar_download_cb( PurpleUtilFetchUrlData *url_data, gpointer data, const char *buf, gsize len, const gchar *error_message);
 char *gfire_escape_color_codes(char *string);
 
 #endif /* _GFIRE_H */

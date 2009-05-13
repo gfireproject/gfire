@@ -61,5 +61,6 @@ int gfire_create_reject_chat(PurpleConnection *gc, const guint8 *cid);
 void gfire_read_clan_blist(PurpleConnection *gc, int packet_len);
 int gfire_create_serverlist_request (PurpleConnection *gc, int game);
 void gfire_read_serverlist(PurpleConnection *gc, int packet_len);
+void gfire_changed_avatar(PurpleConnection *gc, int packet_len);
 
 #endif /* _GF_PACKET_H */

@@ -373,6 +373,7 @@ void gfire_parse_packet(PurpleConnection *gc, int packet_len, int packet_id)
 
 		case 174:
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received avatar info packet\n");
+			gfire_changed_avatar(gc, packet_len);
 		break;
 
 		case 351:

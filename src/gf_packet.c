@@ -2034,3 +2034,78 @@ void gfire_read_serverlist(PurpleConnection *gc, int packet_len)
 	
 	g_thread_create(update_server_list, list_store, FALSE, NULL);
 }
+
+void gfire_changed_avatar(PurpleConnection *gc, int packet_len)
+{
+	guint8 uid[XFIRE_USERID_LEN] = {0x0,0x0,0x0,0x0};
+	guint8 avatarType = 0x0;
+	guint32 avatarNum = 0x0;
+	gfire_data *gfire = NULL;
+	int index = 7;
+	GList *gfbl = NULL;
+	gfire_buddy *gf_buddy = NULL;
+	PurpleBuddy *pbuddy = NULL;
+	PurpleBuddyIcon *buddy_icon = NULL;
+	gchar *avatar_url = NULL;
+
+	if (!gc || !(gfire = (gfire_data *)gc->proto_data) || (index > packet_len)) return;
+
+	/* grab the userid */
+	memcpy(uid, gfire->buff_in + index, XFIRE_USERID_LEN);
+	index += XFIRE_USERID_LEN + 2;
+
+	/* grab the avatarType */
+	memcpy(&avatarType, gfire->buff_in + index, sizeof(avatarType));
+	index += sizeof(avatarType) + 2;
+
+	/* grab the avatarNum */
+	memcpy(&avatarNum, gfire->buff_in + index, sizeof(avatarNum));
+
+	gfbl = gfire_find_buddy_in_list(gfire->buddies, (gpointer) &uid, GFFB_UIDBIN);
+	if(gfbl == NULL)
+	{
+		purple_debug(PURPLE_DEBUG_ERROR, "gfire", "(changed avatar): uid not found in buddy list\n");
+		return;
+	}
+
+	gf_buddy = (gfire_buddy*)gfbl->data;
+	if (!gf_buddy)
+	{
+		purple_debug(PURPLE_DEBUG_ERROR, "gfire", "(changed avatar): uid found but gf_buddy is {NULL}\n");
+		return;
+	}
+
+	pbuddy = purple_find_buddy(gc->account, gf_buddy->name);
+	if(pbuddy == NULL)
+	{
+		purple_debug(PURPLE_DEBUG_ERROR, "gfire", "(changed avatar): no buddy with name %s in buddy list\n", NN(gf_buddy->name));
+		return;
+	}
+
+
+	if(avatarType == 2 && avatarNum == gf_buddy->avatarnumber)
+	{
+		purple_debug(PURPLE_DEBUG_MISC, "gfire", "(changed avatar): avatar did not change. skipping download.\n");
+	}
+	else if(avatarType == 2)
+	{
+		avatar_url = g_strdup_printf(XFIRE_AVATAR_URL, gf_buddy->name, avatarNum);
+		purple_debug(PURPLE_DEBUG_MISC, "gfire", "(changed avatar): trying to download avatar from: %s\n", NN(avatar_url));
+		purple_util_fetch_url(avatar_url, TRUE, "Purple-xfire", TRUE, gfire_avatar_download_cb, (void *)pbuddy);
+		g_free(avatar_url);
+
+		gf_buddy->avatarnumber = avatarNum;
+		purple_blist_node_set_int(&pbuddy->node, "avatarnumber", avatarNum);
+	}
+	else
+	{
+		buddy_icon = purple_buddy_get_icon(pbuddy);
+		if(buddy_icon != NULL)
+		{
+			purple_debug(PURPLE_DEBUG_MISC, "gfire", "(changed avatar): removing %s's avatar\n", NN(gf_buddy->name));
+			purple_buddy_icon_set_data(buddy_icon, NULL, 0, NULL);
+		}
+		else
+			purple_debug(PURPLE_DEBUG_MISC, "gfire", "(changed avatar): %s has no avatar\n", NN(gf_buddy->name));
+	}
+}
