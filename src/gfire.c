@@ -427,6 +427,175 @@ static unsigned int gfire_send_typing(PurpleConnection *gc, const char *who, Pur
 	return XFIRE_SEND_TYPING_TIMEOUT;
 }
 
+static void gfire_get_info_parse_gamerig_cb(PurpleUtilFetchUrlData *url_data, gpointer data, const gchar *buf, gsize len, const gchar *error_message)
+{
+	get_info_callback_args *args = (get_info_callback_args*)data;
+
+	if (!args || !buf || !len) {
+		purple_debug(PURPLE_DEBUG_ERROR, "gfire: User Info Gamerig XML Download", "Download failed.\n");
+		if(args)
+		{
+			purple_notify_user_info_add_section_break(args->user_info);
+			purple_notify_user_info_add_pair(args->user_info, "Error", "Retrieving gamerig data failed!");
+		}
+	}
+	else
+	{
+		purple_notify_user_info_add_section_break(args->user_info);
+		xmlnode *gamerig = xmlnode_from_str(buf, len);
+		if(!gamerig)
+		{
+			purple_notify_user_info_add_pair(args->user_info, "Error", "Invalid gamerig data received!");
+		}
+		else
+		{
+			// Manufacturer
+			xmlnode *data = xmlnode_get_child(gamerig, "manufacturer");
+			purple_notify_user_info_add_pair(args->user_info, "Manufacturer", xmlnode_get_data(data) ? xmlnode_get_data(data) : "Unknown");
+
+			// CPU
+			data = xmlnode_get_child(gamerig, "processor");
+			purple_notify_user_info_add_pair(args->user_info, "Processor", xmlnode_get_data(data) ? xmlnode_get_data(data) : "Unknown");
+
+			// Memory
+			data = xmlnode_get_child(gamerig, "memory");
+			purple_notify_user_info_add_pair(args->user_info, "Memory", xmlnode_get_data(data) ? xmlnode_get_data(data) : "Unknown");
+
+			// Video Card
+			data = xmlnode_get_child(gamerig, "videocard");
+			purple_notify_user_info_add_pair(args->user_info, "Video Card", xmlnode_get_data(data) ? xmlnode_get_data(data) : "Unknown");
+
+			// Sound Card
+			data = xmlnode_get_child(gamerig, "soundcard");
+			purple_notify_user_info_add_pair(args->user_info, "Sound Card", xmlnode_get_data(data) ? xmlnode_get_data(data) : "Unknown");
+
+			// Mainboard
+			data = xmlnode_get_child(gamerig, "mainboard");
+			purple_notify_user_info_add_pair(args->user_info, "Mainboard", xmlnode_get_data(data) ? xmlnode_get_data(data) : "Unknown");
+
+			// Hard Drive
+			data = xmlnode_get_child(gamerig, "harddrive");
+			purple_notify_user_info_add_pair(args->user_info, "Hard Drive", xmlnode_get_data(data) ? xmlnode_get_data(data) : "Unknown");
+
+			// Monitor
+			data = xmlnode_get_child(gamerig, "monitor");
+			purple_notify_user_info_add_pair(args->user_info, "Monitor", xmlnode_get_data(data) ? xmlnode_get_data(data) : "Unknown");
+
+			// Keyboard
+			data = xmlnode_get_child(gamerig, "keyboard");
+			purple_notify_user_info_add_pair(args->user_info, "Keyboard", xmlnode_get_data(data) ? xmlnode_get_data(data) : "Unknown");
+
+			// Mouse
+			data = xmlnode_get_child(gamerig, "mouse");
+			purple_notify_user_info_add_pair(args->user_info, "Mouse", xmlnode_get_data(data) ? xmlnode_get_data(data) : "Unknown");
+
+			// Mouse Surface
+			data = xmlnode_get_child(gamerig, "mousesurface");
+			purple_notify_user_info_add_pair(args->user_info, "Mouse Surface", xmlnode_get_data(data) ? xmlnode_get_data(data) : "Unknown");
+
+			// Speakers
+			data = xmlnode_get_child(gamerig, "speakers");
+			purple_notify_user_info_add_pair(args->user_info, "Speakers", xmlnode_get_data(data) ? xmlnode_get_data(data) : "Unknown");
+
+			// Computer Case
+			data = xmlnode_get_child(gamerig, "computer_case");
+			purple_notify_user_info_add_pair(args->user_info, "Computer Case", xmlnode_get_data(data) ? xmlnode_get_data(data) : "Unknown");
+
+			// Operating System
+			data = xmlnode_get_child(gamerig, "operatingsystem");
+			purple_notify_user_info_add_pair(args->user_info, "Operating System", xmlnode_get_data(data) ? xmlnode_get_data(data) : "Unknown");
+
+			xmlnode_free(gamerig);
+		}
+	}
+
+	purple_debug(PURPLE_DEBUG_MISC, "gfire: User Info Gamerig XML Download", "Download successful.\n");
+
+	if(args)
+	{
+		purple_notify_userinfo(args->gc, args->gf_buddy->name, args->user_info, NULL, NULL);
+
+		purple_notify_user_info_destroy(args->user_info);
+		g_free(args);
+	}
+}
+
+static void gfire_get_info_parse_profile_cb(PurpleUtilFetchUrlData *url_data, gpointer data, const gchar *buf, gsize len, const gchar *error_message)
+{
+	get_info_callback_args *args = (get_info_callback_args*)data;
+
+	if (!args || !buf || !len) {
+		purple_debug(PURPLE_DEBUG_ERROR, "gfire: User Info Profile XML Download", "Download failed.\n");
+		if(args)
+		{
+			purple_notify_user_info_add_section_break(args->user_info);
+			purple_notify_user_info_add_pair(args->user_info, "Error", "Retrieving profile data failed!");
+		}
+	}
+	else
+	{
+		purple_notify_user_info_add_section_break(args->user_info);
+		xmlnode *profile = xmlnode_from_str(buf, len);
+		if(!profile)
+		{
+			purple_notify_user_info_add_pair(args->user_info, "Error", "Invalid profile data received!");
+		}
+		else
+		{
+			// Real Name
+			xmlnode *data = xmlnode_get_child(profile, "realname");
+			purple_notify_user_info_add_pair(args->user_info, "Real Name", xmlnode_get_data(data) ? xmlnode_get_data(data) : "Unknown");
+
+			// Age
+			data = xmlnode_get_child(profile, "age");
+			purple_notify_user_info_add_pair(args->user_info, "Age", xmlnode_get_data(data));
+
+			// Gender
+			data = xmlnode_get_child(profile, "gender");
+			purple_notify_user_info_add_pair(args->user_info, "Gender", (xmlnode_get_data(data)[0] == 'm') ? "Male" : "Female");
+
+			// Occupation
+			data = xmlnode_get_child(profile, "occupation");
+			purple_notify_user_info_add_pair(args->user_info, "Occupation", xmlnode_get_data(data) ? xmlnode_get_data(data) : "None");
+
+			// Country
+			data = xmlnode_get_child(profile, "country");
+			purple_notify_user_info_add_pair(args->user_info, "Country", xmlnode_get_data(data));
+
+			// Location
+			data = xmlnode_get_child(profile, "location");
+			purple_notify_user_info_add_pair(args->user_info, "Location", xmlnode_get_data(data) ? xmlnode_get_data(data) : "Unknown");
+
+			// Gaming style
+			data = xmlnode_get_child(profile, "gaming_style");
+			purple_notify_user_info_add_pair(args->user_info, "Gaming style", xmlnode_get_data(data) ? xmlnode_get_data(data) : "None");
+
+			// Interests
+			data = xmlnode_get_child(profile, "interests");
+			purple_notify_user_info_add_pair(args->user_info, "Interests", xmlnode_get_data(data) ? xmlnode_get_data(data) : "None");
+
+			// Friends
+			data = xmlnode_get_child(profile, "friends_count");
+			purple_notify_user_info_add_pair(args->user_info, "Friends", xmlnode_get_data(data));
+
+			// Join date
+			data = xmlnode_get_child(profile, "joindate");
+			purple_notify_user_info_add_pair(args->user_info, "Join date", xmlnode_get_data(data));
+
+			xmlnode_free(profile);
+		}
+	}
+
+	purple_debug(PURPLE_DEBUG_MISC, "gfire: User Info Profile XML Download", "Download successful.\n");
+
+	if(args)
+	{
+		gchar *infoURL = g_strdup_printf(XFIRE_XML_INFO_URL, args->gf_buddy->name, "gamerig");
+		purple_debug(PURPLE_DEBUG_MISC, "gfire: User Info Gamerig XML Download", "Starting download from %s.\n", infoURL);
+		purple_util_fetch_url(infoURL, TRUE, "Purple-xfire", TRUE, gfire_get_info_parse_gamerig_cb, (void *)args);
+		g_free(infoURL);
+	}
+}
 
 static void gfire_get_info(PurpleConnection *gc, const char *who)
 {
@@ -441,6 +610,8 @@ static void gfire_get_info(PurpleConnection *gc, const char *who)
 	guint32 *magic = NULL;
 	gchar ipstr[16] = "";
 	char *server = NULL;
+	gchar *infoURL = NULL;
+	get_info_callback_args *download_args = NULL;
 
 	account = purple_connection_get_account(gc);
 	buddy = purple_find_buddy(account, who);
@@ -478,12 +649,16 @@ static void gfire_get_info(PurpleConnection *gc, const char *who)
 		g_free(server);
 	}
 
-	purple_notify_user_info_add_section_break(user_info);
+	download_args = g_new0(get_info_callback_args, 1);
+	download_args->gc = gc;
+	download_args->user_info = user_info;
+	download_args->gf_buddy = gf_buddy;
 
-
-	purple_notify_userinfo(gc, who, user_info, NULL, NULL);
-	purple_notify_user_info_destroy(user_info);
-
+	// Fetch Profile XML data
+	infoURL = g_strdup_printf(XFIRE_XML_INFO_URL, gf_buddy->name, "profile");
+	purple_debug(PURPLE_DEBUG_MISC, "gfire: User Info Profile XML Download", "Starting download from %s.\n", infoURL);
+	purple_util_fetch_url(infoURL, TRUE, "Purple-xfire", TRUE, gfire_get_info_parse_profile_cb, (void *)download_args);
+	g_free(infoURL);
 }
 
 static void gfire_set_status(PurpleAccount *account, PurpleStatus *status)
