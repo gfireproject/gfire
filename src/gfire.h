@@ -103,6 +103,7 @@
 #define XFIRE_SID_OFFLINE_STR "00000000000000000000000000000000"
 #define XFIRE_KEEPALIVE_TIME 300  // see gfire_keep_alive for more info
 #define XFIRE_PROFILE_URL "http://www.xfire.com/profile/"
+#define XFIRE_XML_INFO_URL "http://www.xfire.com/xml/%s/%s/" // username, info-type
 #define XFIRE_SEND_TYPING_TIMEOUT 10
 
 typedef struct _gfire_data	gfire_data;
@@ -111,6 +112,7 @@ typedef struct _gfire_im	gfire_im;
 typedef struct _gfire_clans	gfire_clans;
 typedef struct _gfire_c_msg	gfire_chat_msg;
 typedef struct _manage_games_callback_args manage_games_callback_args;
+typedef struct _get_info_callback_args get_info_callback_args;
 
 struct _gfire_data { 
 	int fd; 
@@ -177,6 +179,12 @@ struct _gfire_c_msg {
 struct _manage_games_callback_args {
 	PurpleConnection *gc;
 	GtkBuilder *builder;
+};
+
+struct _get_info_callback_args {
+	PurpleConnection *gc;
+	PurpleNotifyUserInfo *user_info;
+	gfire_buddy *gf_buddy;
 };
 
 /* gfire_find_buddy_in_list MODES */
