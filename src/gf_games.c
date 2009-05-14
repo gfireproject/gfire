@@ -550,7 +550,7 @@ void gfire_xml_download_cb( PurpleUtilFetchUrlData *url_data, gpointer data, con
 	const char *filename = g_build_filename(purple_user_dir(), "gfire_games.xml", NULL);
 
 	if (! data || !buf || !len) {
-		purple_notify_message(NULL, PURPLE_NOTIFY_MSG_ERROR, "XFire games Download", "Will attempt to download gfire_games.xml from the Gfire server.", "Unable to download gfire_games.xml", NULL, NULL);
+		purple_notify_message(NULL, PURPLE_NOTIFY_MSG_ERROR, N_("XFire games Download"), N_("Will attempt to download gfire_games.xml from the Gfire server."), N_("Unable to download gfire_games.xml"), NULL, NULL);
 		return;
 	}	 
 	gc = (PurpleConnection *)data;
@@ -560,14 +560,14 @@ void gfire_xml_download_cb( PurpleUtilFetchUrlData *url_data, gpointer data, con
 			gfire_parse_games_file(gc, filename);
 		}
 		if(strcmp(gfire_game_name(gc, 100), "100")) {
-			successmsg = g_strdup_printf("Successfully downloaded gfire_games.xml\nNew Games List Version: %s", gfire_game_name(gc, 100));
+			successmsg = g_strdup_printf(N_("Successfully downloaded gfire_games.xml\nNew Games List Version: %s"), gfire_game_name(gc, 100));
 		} else {
-			successmsg = g_strdup_printf("Successfully downloaded gfire_games.xml");
+			successmsg = g_strdup_printf(N_("Successfully downloaded gfire_games.xml"));
 		}
-		purple_notify_message(NULL, PURPLE_NOTIFY_MSG_INFO, "XFire games Download", "Will attempt to download gfire_games.xml from the Gfire server.", successmsg, NULL, NULL);
+		purple_notify_message(NULL, PURPLE_NOTIFY_MSG_INFO, N_("XFire games Download"), "Will attempt to download gfire_games.xml from the Gfire server.", successmsg, NULL, NULL);
 		
 	} else {
-		purple_notify_message(NULL, PURPLE_NOTIFY_MSG_ERROR, "XFire games Download", "Will attempt to download gfire_games.xml from the Gfire server.", "Unable to write gfire_games.xml", NULL, NULL);
+		purple_notify_message(NULL, PURPLE_NOTIFY_MSG_ERROR, N_("XFire games Download"), N_("Will attempt to download gfire_games.xml from the Gfire server."), N_("Unable to write gfire_games.xml"), NULL, NULL);
 	}
 }
 

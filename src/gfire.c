@@ -112,7 +112,7 @@ static char *gfire_status_text(PurpleBuddy *buddy)
 	if (TRUE == purple_presence_is_online(p)) {
 		if (0 != gf_buddy->gameid) {
 			game_name = gfire_game_name(gc, gf_buddy->gameid);
-			g_sprintf(msg, "Playing %s", game_name);
+			g_sprintf(msg, N_("Playing %s"), game_name);
 			g_free(game_name);
 			return g_strdup(msg);
 		}
@@ -151,7 +151,7 @@ static void gfire_blist_tooltip_text(PurpleBuddy *buddy, PurpleNotifyUserInfo *u
 		if (0 != gf_buddy->gameid) {
 			game_name = gfire_game_name(gc, gf_buddy->gameid);
 
-				purple_notify_user_info_add_pair(user_info,"Game",game_name);
+				purple_notify_user_info_add_pair(user_info,N_("Game"),game_name);
 
 			g_free(game_name);
 			magic = (guint32 *)gf_buddy->gameip;
@@ -161,7 +161,7 @@ static void gfire_blist_tooltip_text(PurpleBuddy *buddy, PurpleNotifyUserInfo *u
 						gf_buddy->gameip[1], gf_buddy->gameip[0]);
 
 					gchar * value = g_strdup_printf("%s:%d", ipstr, gf_buddy->gameport);
-					purple_notify_user_info_add_pair(user_info,"Server",value);
+					purple_notify_user_info_add_pair(user_info,N_("Server"),value);
 					g_free(value);
 
 			}
@@ -169,7 +169,7 @@ static void gfire_blist_tooltip_text(PurpleBuddy *buddy, PurpleNotifyUserInfo *u
 		if (gf_buddy->away) {
 			char * escaped_away = gfire_escape_html(gf_buddy->away_msg);
 
-				purple_notify_user_info_add_pair(user_info,"Away",escaped_away);
+			purple_notify_user_info_add_pair(user_info,N_("Away"),escaped_away);
 
 			g_free(escaped_away);
 		}
@@ -209,7 +209,7 @@ static void gfire_login(PurpleAccount *account)
 	gc->flags |=  PURPLE_CONNECTION_NO_BGCOLOR | PURPLE_CONNECTION_NO_FONTSIZE
 				| PURPLE_CONNECTION_NO_URLDESC | PURPLE_CONNECTION_NO_IMAGES;
 
-	purple_connection_update_progress(gc, "Connecting", 0, XFIRE_CONNECT_STEPS);
+	purple_connection_update_progress(gc, N_("Connecting"), 0, XFIRE_CONNECT_STEPS);
 
 	gc->proto_data = gfire = g_new0(gfire_data, 1);
 	gfire->fd = -1;
@@ -219,14 +219,14 @@ static void gfire_login(PurpleAccount *account)
 	gfire_parse_launchinfo_file(gc, g_build_filename(purple_user_dir(), "gfire_launch.xml", NULL));
 
 	if (!purple_account_get_connection(account)) {
-			purple_connection_error(gc, "Couldn't create socket.");
+			purple_connection_error(gc, N_("Couldn't create socket."));
 			return;
 	}
 
 	if (purple_proxy_connect(NULL, account, purple_account_get_string(account, "server", XFIRE_SERVER),
 				purple_account_get_int(account, "port", XFIRE_PORT),
 				gfire_login_cb, gc) == NULL){
-			purple_connection_error(gc, "Couldn't create socket.");
+			purple_connection_error(gc, N_("Couldn't create socket."));
 			return;
 	}
 }
@@ -248,7 +248,7 @@ static void gfire_login_cb(gpointer data, gint source, const gchar *error_messag
 	}
 
 	if (source < 0) {
-		purple_connection_error(gc, "Unable to connect to host.");
+		purple_connection_error(gc, N_("Unable to connect to host."));
 		return;
 	}
 
@@ -373,7 +373,7 @@ static int gfire_im_send(PurpleConnection *gc, const char *who, const char *what
 	account = purple_connection_get_account(gc);
 	buddy = purple_find_buddy(account, gf_buddy->name);
 	if(buddy == NULL){
-		purple_conv_present_error(who, account, "Message could not be sent. Buddy not in contact list");
+		purple_conv_present_error(who, account, N_("Message could not be sent. Buddy not in contact list"));
 		return 1;
 	}
 
@@ -389,7 +389,7 @@ static int gfire_im_send(PurpleConnection *gc, const char *who, const char *what
 		g_free((void *)what);
 		return 1;
 	} else {
-		purple_conv_present_error(who, account, "Message could not be sent. Buddy offline");
+		purple_conv_present_error(who, account, N_("Message could not be sent. Buddy offline"));
 		return 1;
 	}
 
@@ -436,7 +436,7 @@ static void gfire_get_info_parse_gamerig_cb(PurpleUtilFetchUrlData *url_data, gp
 		if(args)
 		{
 			purple_notify_user_info_add_section_break(args->user_info);
-			purple_notify_user_info_add_pair(args->user_info, "Error", "Retrieving gamerig data failed!");
+			purple_notify_user_info_add_pair(args->user_info, N_("Error"), N_("Retrieving gamerig data failed!"));
 		}
 	}
 	else
@@ -445,7 +445,7 @@ static void gfire_get_info_parse_gamerig_cb(PurpleUtilFetchUrlData *url_data, gp
 		xmlnode *gamerig = xmlnode_from_str(buf, len);
 		if(!gamerig)
 		{
-			purple_notify_user_info_add_pair(args->user_info, "Error", "Invalid gamerig data received!");
+			purple_notify_user_info_add_pair(args->user_info, N_("Error"), N_("Invalid gamerig data received!"));
 		}
 		else if(xmlnode_get_child(gamerig, "error"))
 		{
@@ -456,59 +456,59 @@ static void gfire_get_info_parse_gamerig_cb(PurpleUtilFetchUrlData *url_data, gp
 		{
 			// Manufacturer
 			xmlnode *data = xmlnode_get_child(gamerig, "manufacturer");
-			purple_notify_user_info_add_pair(args->user_info, "Manufacturer", xmlnode_get_data(data) ? xmlnode_get_data(data) : "Unknown");
+			purple_notify_user_info_add_pair(args->user_info, N_("Manufacturer"), xmlnode_get_data(data) ? xmlnode_get_data(data) : N_("Unknown"));
 
 			// CPU
 			data = xmlnode_get_child(gamerig, "processor");
-			purple_notify_user_info_add_pair(args->user_info, "Processor", xmlnode_get_data(data) ? xmlnode_get_data(data) : "Unknown");
+			purple_notify_user_info_add_pair(args->user_info, N_("Processor"), xmlnode_get_data(data) ? xmlnode_get_data(data) : N_("Unknown"));
 
 			// Memory
 			data = xmlnode_get_child(gamerig, "memory");
-			purple_notify_user_info_add_pair(args->user_info, "Memory", xmlnode_get_data(data) ? xmlnode_get_data(data) : "Unknown");
+			purple_notify_user_info_add_pair(args->user_info, N_("Memory"), xmlnode_get_data(data) ? xmlnode_get_data(data) : N_("Unknown"));
 
 			// Video Card
 			data = xmlnode_get_child(gamerig, "videocard");
-			purple_notify_user_info_add_pair(args->user_info, "Video Card", xmlnode_get_data(data) ? xmlnode_get_data(data) : "Unknown");
+			purple_notify_user_info_add_pair(args->user_info, N_("Video Card"), xmlnode_get_data(data) ? xmlnode_get_data(data) : N_("Unknown"));
 
 			// Sound Card
 			data = xmlnode_get_child(gamerig, "soundcard");
-			purple_notify_user_info_add_pair(args->user_info, "Sound Card", xmlnode_get_data(data) ? xmlnode_get_data(data) : "Unknown");
+			purple_notify_user_info_add_pair(args->user_info, N_("Sound Card"), xmlnode_get_data(data) ? xmlnode_get_data(data) : N_("Unknown"));
 
 			// Mainboard
 			data = xmlnode_get_child(gamerig, "mainboard");
-			purple_notify_user_info_add_pair(args->user_info, "Mainboard", xmlnode_get_data(data) ? xmlnode_get_data(data) : "Unknown");
+			purple_notify_user_info_add_pair(args->user_info, N_("Mainboard"), xmlnode_get_data(data) ? xmlnode_get_data(data) : N_("Unknown"));
 
 			// Hard Drive
 			data = xmlnode_get_child(gamerig, "harddrive");
-			purple_notify_user_info_add_pair(args->user_info, "Hard Drive", xmlnode_get_data(data) ? xmlnode_get_data(data) : "Unknown");
+			purple_notify_user_info_add_pair(args->user_info, N_("Hard Drive"), xmlnode_get_data(data) ? xmlnode_get_data(data) : N_("Unknown"));
 
 			// Monitor
 			data = xmlnode_get_child(gamerig, "monitor");
-			purple_notify_user_info_add_pair(args->user_info, "Monitor", xmlnode_get_data(data) ? xmlnode_get_data(data) : "Unknown");
+			purple_notify_user_info_add_pair(args->user_info, N_("Monitor"), xmlnode_get_data(data) ? xmlnode_get_data(data) : N_("Unknown"));
 
 			// Keyboard
 			data = xmlnode_get_child(gamerig, "keyboard");
-			purple_notify_user_info_add_pair(args->user_info, "Keyboard", xmlnode_get_data(data) ? xmlnode_get_data(data) : "Unknown");
+			purple_notify_user_info_add_pair(args->user_info, N_("Keyboard"), xmlnode_get_data(data) ? xmlnode_get_data(data) : N_("Unknown"));
 
 			// Mouse
 			data = xmlnode_get_child(gamerig, "mouse");
-			purple_notify_user_info_add_pair(args->user_info, "Mouse", xmlnode_get_data(data) ? xmlnode_get_data(data) : "Unknown");
+			purple_notify_user_info_add_pair(args->user_info, N_("Mouse"), xmlnode_get_data(data) ? xmlnode_get_data(data) : N_("Unknown"));
 
 			// Mouse Surface
 			data = xmlnode_get_child(gamerig, "mousesurface");
-			purple_notify_user_info_add_pair(args->user_info, "Mouse Surface", xmlnode_get_data(data) ? xmlnode_get_data(data) : "Unknown");
+			purple_notify_user_info_add_pair(args->user_info, N_("Mouse Surface"), xmlnode_get_data(data) ? xmlnode_get_data(data) : N_("Unknown"));
 
 			// Speakers
 			data = xmlnode_get_child(gamerig, "speakers");
-			purple_notify_user_info_add_pair(args->user_info, "Speakers", xmlnode_get_data(data) ? xmlnode_get_data(data) : "Unknown");
+			purple_notify_user_info_add_pair(args->user_info, N_("Speakers"), xmlnode_get_data(data) ? xmlnode_get_data(data) : N_("Unknown"));
 
 			// Computer Case
 			data = xmlnode_get_child(gamerig, "computer_case");
-			purple_notify_user_info_add_pair(args->user_info, "Computer Case", xmlnode_get_data(data) ? xmlnode_get_data(data) : "Unknown");
+			purple_notify_user_info_add_pair(args->user_info, N_("Computer Case"), xmlnode_get_data(data) ? xmlnode_get_data(data) : N_("Unknown"));
 
 			// Operating System
 			data = xmlnode_get_child(gamerig, "operatingsystem");
-			purple_notify_user_info_add_pair(args->user_info, "Operating System", xmlnode_get_data(data) ? xmlnode_get_data(data) : "Unknown");
+			purple_notify_user_info_add_pair(args->user_info, N_("Operating System"), xmlnode_get_data(data) ? xmlnode_get_data(data) : N_("Unknown"));
 
 			xmlnode_free(gamerig);
 		}
@@ -534,7 +534,7 @@ static void gfire_get_info_parse_profile_cb(PurpleUtilFetchUrlData *url_data, gp
 		if(args)
 		{
 			purple_notify_user_info_add_section_break(args->user_info);
-			purple_notify_user_info_add_pair(args->user_info, "Error", "Retrieving profile data failed!");
+			purple_notify_user_info_add_pair(args->user_info, N_("Error"), N_("Retrieving profile data failed!"));
 		}
 	}
 	else
@@ -543,54 +543,54 @@ static void gfire_get_info_parse_profile_cb(PurpleUtilFetchUrlData *url_data, gp
 		xmlnode *profile = xmlnode_from_str(buf, len);
 		if(!profile)
 		{
-			purple_notify_user_info_add_pair(args->user_info, "Error", "Invalid profile data received!");
+			purple_notify_user_info_add_pair(args->user_info, N_("Error"), N_("Invalid profile data received!"));
 		}
 		else if(xmlnode_get_child(profile, "error"))
 		{
-			purple_notify_user_info_add_pair(args->user_info, "Profile", xmlnode_get_data(xmlnode_get_child(profile, "error")));
+			purple_notify_user_info_add_pair(args->user_info, N_("Profile"), xmlnode_get_data(xmlnode_get_child(profile, "error")));
 			xmlnode_free(profile);
 		}
 		else
 		{
 			// Real Name
 			xmlnode *data = xmlnode_get_child(profile, "realname");
-			purple_notify_user_info_add_pair(args->user_info, "Real Name", xmlnode_get_data(data) ? xmlnode_get_data(data) : "Unknown");
+			purple_notify_user_info_add_pair(args->user_info, N_("Real Name"), xmlnode_get_data(data) ? xmlnode_get_data(data) : "Unknown");
 
 			// Age
 			data = xmlnode_get_child(profile, "age");
-			purple_notify_user_info_add_pair(args->user_info, "Age", xmlnode_get_data(data));
+			purple_notify_user_info_add_pair(args->user_info, N_("Age"), xmlnode_get_data(data));
 
 			// Gender
 			data = xmlnode_get_child(profile, "gender");
-			purple_notify_user_info_add_pair(args->user_info, "Gender", (xmlnode_get_data(data)[0] == 'm') ? "Male" : "Female");
+			purple_notify_user_info_add_pair(args->user_info, N_("Gender"), (xmlnode_get_data(data)[0] == 'm') ? "Male" : "Female");
 
 			// Occupation
 			data = xmlnode_get_child(profile, "occupation");
-			purple_notify_user_info_add_pair(args->user_info, "Occupation", xmlnode_get_data(data) ? xmlnode_get_data(data) : "None");
+			purple_notify_user_info_add_pair(args->user_info, N_("Occupation"), xmlnode_get_data(data) ? xmlnode_get_data(data) : N_("None"));
 
 			// Country
 			data = xmlnode_get_child(profile, "country");
-			purple_notify_user_info_add_pair(args->user_info, "Country", xmlnode_get_data(data));
+			purple_notify_user_info_add_pair(args->user_info, N_("Country"), xmlnode_get_data(data));
 
 			// Location
 			data = xmlnode_get_child(profile, "location");
-			purple_notify_user_info_add_pair(args->user_info, "Location", xmlnode_get_data(data) ? xmlnode_get_data(data) : "Unknown");
+			purple_notify_user_info_add_pair(args->user_info, N_("Location"), xmlnode_get_data(data) ? xmlnode_get_data(data) : N_("Unknown"));
 
 			// Gaming style
 			data = xmlnode_get_child(profile, "gaming_style");
-			purple_notify_user_info_add_pair(args->user_info, "Gaming style", xmlnode_get_data(data) ? xmlnode_get_data(data) : "None");
+			purple_notify_user_info_add_pair(args->user_info, N_("Gaming Style"), xmlnode_get_data(data) ? xmlnode_get_data(data) : N_("None"));
 
 			// Interests
 			data = xmlnode_get_child(profile, "interests");
-			purple_notify_user_info_add_pair(args->user_info, "Interests", xmlnode_get_data(data) ? xmlnode_get_data(data) : "None");
+			purple_notify_user_info_add_pair(args->user_info, N_("Interests"), xmlnode_get_data(data) ? xmlnode_get_data(data) : N_("None"));
 
 			// Friends
 			data = xmlnode_get_child(profile, "friends_count");
-			purple_notify_user_info_add_pair(args->user_info, "Friends", xmlnode_get_data(data));
+			purple_notify_user_info_add_pair(args->user_info, N_("Friends"), xmlnode_get_data(data));
 
 			// Join date
 			data = xmlnode_get_child(profile, "joindate");
-			purple_notify_user_info_add_pair(args->user_info, "Join date", xmlnode_get_data(data));
+			purple_notify_user_info_add_pair(args->user_info, N_("Join date"), xmlnode_get_data(data));
 
 			xmlnode_free(profile);
 		}
@@ -647,16 +647,16 @@ static void gfire_get_info(PurpleConnection *gc, const char *who)
 		status = gfire_status_text(buddy);
 	}
 
-	purple_notify_user_info_add_pair(user_info, "Nickname", gfire_escape_html(gf_buddy->alias));
-	purple_notify_user_info_add_pair(user_info, "Status", gfire_escape_html(status));
+	purple_notify_user_info_add_pair(user_info, N_("Nickname"), gfire_escape_html(gf_buddy->alias));
+	purple_notify_user_info_add_pair(user_info, N_("Status"), gfire_escape_html(status));
 	if ((0 != gf_buddy->gameid) && (gf_buddy->away))
-		purple_notify_user_info_add_pair(user_info, "Away", gfire_escape_html(gf_buddy->away_msg));
+		purple_notify_user_info_add_pair(user_info, N_("Away"), gfire_escape_html(gf_buddy->away_msg));
 	magic = (guint32 *)gf_buddy->gameip;
 	if ((NULL != gf_buddy->gameip) && (0 != *magic)) {
 		g_sprintf(ipstr, "%d.%d.%d.%d", gf_buddy->gameip[3], gf_buddy->gameip[2],
 			gf_buddy->gameip[1], gf_buddy->gameip[0]);
 		server = g_strdup_printf("%s:%d", ipstr, gf_buddy->gameport);
-		purple_notify_user_info_add_pair(user_info,"Server",server);
+		purple_notify_user_info_add_pair(user_info,N_("Server"),server);
 		g_free(server);
 	}
 
@@ -695,7 +695,7 @@ static void gfire_set_status(PurpleAccount *account, PurpleStatus *status)
 		gfire->away = TRUE;
 		msg =(char *)purple_status_get_attr_string(status, "message");
 		if ((msg == NULL) || (*msg == '\0')) {
-			msg = "(AFK) Away From Keyboard";
+			msg = N_("(AFK) Away From Keyboard");
                 } else {
 			msg = purple_unescape_html(msg);
                         freemsg = 1;
@@ -743,10 +743,10 @@ static void gfire_remove_buddy(PurpleConnection *gc, PurpleBuddy *buddy, PurpleG
 
 	buddynorm = purple_account_get_bool(account, "buddynorm", TRUE);
 	if (buddynorm) {
-		g_sprintf(tmp, "Not Removing %s", NN(buddy->name));
+		g_sprintf(tmp, N_("Not Removing %s"), NN(buddy->name));
 		purple_debug(PURPLE_DEBUG_MISC, "gfire", "gfire_remove_buddy: buddynorm TRUE not removing buddy %s.\n",
 					NN(buddy->name));
-		purple_notify_message((void *)_gfire_plugin, PURPLE_NOTIFY_MSG_INFO, "Xfire Buddy Removal Denied", tmp, "Account settings are set to not remove buddies\n" "The buddy will be restored on your next login", NULL, NULL);
+		purple_notify_message((void *)_gfire_plugin, PURPLE_NOTIFY_MSG_INFO, N_("Xfire Buddy Removal Denied"), tmp, N_("Account settings are set to not remove buddies\n" "The buddy will be restored on your next login"), NULL, NULL);
 		return;
 	}
 
@@ -1197,7 +1197,7 @@ GList * gfire_node_menu(PurpleBlistNode *node)
 		if (gb && !gfire->gameid && gb->gameid && gfire_game_playable(gc, gb->gameid)){
 			 /* don't show menu if we are in game */
 
-			me = purple_menu_action_new("Join Game ...",
+			me = purple_menu_action_new(N_("Join Game ..."),
 					PURPLE_CALLBACK(gfire_buddy_menu_joingame_cb),NULL, NULL);
 
 			if (!me) {
@@ -1206,7 +1206,7 @@ GList * gfire_node_menu(PurpleBlistNode *node)
 			ret = g_list_append(ret, me);
 		}
 
-		me = purple_menu_action_new("Xfire Profile",
+		me = purple_menu_action_new(N_("Xfire Profile"),
 			PURPLE_CALLBACK(gfire_buddy_menu_profile_cb),NULL, NULL);
 
 		if (!me) {
@@ -1258,8 +1258,8 @@ static void gfire_action_nick_change_cb(PurplePluginAction *action)
 	PurpleConnection *gc = (PurpleConnection *)action->context;
 	PurpleAccount *account = purple_connection_get_account(gc);
 
-	purple_request_input(gc, NULL, "Change Xfire nickname", "Leaving empty will clear your current nickname.", purple_connection_get_display_name(gc),
-		FALSE, FALSE, NULL, "OK", G_CALLBACK(gfire_change_nick), "Cancel", NULL, account, NULL, NULL, gc);
+	purple_request_input(gc, NULL, N_("Change Xfire nickname"), N_("Leaving empty will clear your current nickname."), purple_connection_get_display_name(gc),
+		FALSE, FALSE, NULL, N_("OK"), G_CALLBACK(gfire_change_nick), N_("Cancel"), NULL, account, NULL, NULL, gc);
 }
 
 /**
@@ -1429,25 +1429,25 @@ static void gfire_add_game_cb(manage_games_callback_args *args, GtkWidget *butto
 
 				gboolean write_xml = purple_util_write_data_to_file("gfire_launch.xml", gfire_launch_new_str, -1);
 				if (write_xml == FALSE) {
-					purple_notify_message(NULL, PURPLE_NOTIFY_MSG_ERROR, "Manage Games: error",
-						"Couldn't add game", "Please try again. An error occured while adding the game.", NULL, NULL);
+					purple_notify_message(NULL, PURPLE_NOTIFY_MSG_ERROR, N_("Manage Games: error"),
+						N_("Couldn't add game"), N_("Please try again. An error occured while adding the game."), NULL, NULL);
 				}
 				else {
 					gfire_reload_lconfig(gc);
-					purple_notify_message(NULL, PURPLE_NOTIFY_MSG_INFO, "Manage Games: game added",
-						game_name, "The game has been successfully added.", NULL, NULL);
+					purple_notify_message(NULL, PURPLE_NOTIFY_MSG_INFO, N_("Manage Games: game added"),
+						game_name, N_("The game has been successfully added."), NULL, NULL);
 				}
 				xmlnode_free(gfire_launch_new);
 			}
 		}
  		else {
-			purple_notify_message(NULL, PURPLE_NOTIFY_MSG_INFO, "Manage Games: warning", "Game already added",
-				"This game is already added, you can configure it if you want.", NULL, NULL);
+			purple_notify_message(NULL, PURPLE_NOTIFY_MSG_INFO, N_("Manage Games: warning"), N_("Game already added"),
+				N_("This game is already added, you can configure it if you want."), NULL, NULL);
 		}
 	}	
 	else {
-		purple_notify_message(NULL, PURPLE_NOTIFY_MSG_ERROR, "Manage Games: error",
-			"Couldn't add game", "Please try again. Make sure you fill in all fields.", NULL, NULL);
+		purple_notify_message(NULL, PURPLE_NOTIFY_MSG_ERROR, N_("Manage Games: error"),
+			N_("Couldn't add game"), N_("Please try again. Make sure you fill in all fields."), NULL, NULL);
 	}
 	
 	gtk_widget_destroy(manage_games_window);
@@ -1527,20 +1527,20 @@ static void gfire_edit_game_cb(manage_games_callback_args *args, GtkWidget *butt
 			
 			if (write_xml == TRUE) {
 				gfire_reload_lconfig(gc);
-				purple_notify_message(NULL, PURPLE_NOTIFY_MSG_INFO, "Manage Games: game edited", "Game edited",
-					"The game has been successfully edited.", NULL, NULL);
+				purple_notify_message(NULL, PURPLE_NOTIFY_MSG_INFO, N_("Manage Games: game edited"), N_("Game edited"),
+					N_("The game has been successfully edited."), NULL, NULL);
 			}
 			else {
-				purple_notify_message(NULL, PURPLE_NOTIFY_MSG_ERROR, "Manage Games: error", "Couldn't edit game'",
-					"Please try again. An error occured while editing the game.", NULL, NULL);
+				purple_notify_message(NULL, PURPLE_NOTIFY_MSG_ERROR, N_("Manage Games: error"), N_("Couldn't edit game'"),
+					N_("Please try again. An error occured while editing the game."), NULL, NULL);
 			}
 			
 			xmlnode_free(gfire_launch_new);
 		}
 	}
 	else {
-		purple_notify_message(NULL, PURPLE_NOTIFY_MSG_ERROR, "Manage Games: error",
-			"Couldn't edit game", "Please try again. Make sure you fill in all required fields.", NULL, NULL);
+		purple_notify_message(NULL, PURPLE_NOTIFY_MSG_ERROR, N_("Manage Games: error"),
+			N_("Couldn't edit game"), N_("Please try again. Make sure you fill in all required fields."), NULL, NULL);
 	}
 
 	gtk_widget_destroy(manage_games_window);
@@ -1647,18 +1647,18 @@ static void gfire_remove_game_cb(manage_games_callback_args *args, GtkWidget *bu
 
 			if(write_xml == TRUE) {
 				gfire_reload_lconfig(gc);
-				purple_notify_message(NULL, PURPLE_NOTIFY_MSG_INFO, "Manage Games: game removed",
-					"Game removed", "The game has been successfully removed.", NULL, NULL);
+				purple_notify_message(NULL, PURPLE_NOTIFY_MSG_INFO, N_("Manage Games: game removed"),
+					N_("Game removed"), N_("The game has been successfully removed."), NULL, NULL);
 			}
 			else {
-				purple_notify_message(NULL, PURPLE_NOTIFY_MSG_ERROR, "Manage Games: error",
-					"Couldn't remove game", "Please try again. An error occured while removing the game.", NULL, NULL);
+				purple_notify_message(NULL, PURPLE_NOTIFY_MSG_ERROR, N_("Manage Games: error"),
+					N_("Couldn't remove game"), N_("Please try again. An error occured while removing the game."), NULL, NULL);
 			}
 		}
 	}
 	else {
-		purple_notify_message(NULL, PURPLE_NOTIFY_MSG_ERROR, "Manage Games: error",
-			"Couldn't remove game", "Please try again. Make sure you select a game to remove.", NULL, NULL);
+		purple_notify_message(NULL, PURPLE_NOTIFY_MSG_ERROR, N_("Manage Games: error"),
+			N_("Couldn't remove game"), N_("Please try again. Make sure you select a game to remove."), NULL, NULL);
 	}
 
 	gtk_widget_destroy(manage_games_window);
@@ -1783,8 +1783,8 @@ int gfire_detect_running_games_cb(PurpleConnection *gc)
 					purple_debug_info("gfire: gfire_detect_running_games_cb",
 									  "%s is running. Telling Xfire ingame status.\n", game_name);
 
-					if (norm == TRUE) purple_notify_message(NULL, PURPLE_NOTIFY_MSG_INFO, "Ingame status",
-															game_name, "Your status has been changed.", NULL, NULL);
+					if (norm == TRUE) purple_notify_message(NULL, PURPLE_NOTIFY_MSG_INFO, N_("Ingame status"),
+															game_name, N_("Your status has been changed."), NULL, NULL);
 
 					len = gfire_join_game_create(gc, game_id_int, 0, NULL);
 					if (len != FALSE) gfire_send(gc, gfire->buff_out, len);
@@ -1919,9 +1919,9 @@ static void gfire_action_reload_lconfig_cb(PurplePluginAction *action)
 	gfire_parse_launchinfo_file(gc, g_build_filename(purple_user_dir(), "gfire_launch.xml", NULL));
 
 	if (NULL == gfire->xml_launch_info) {
-		purple_notify_message((void *)_gfire_plugin, PURPLE_NOTIFY_MSG_ERROR, "Gfire XML Reload", "Reloading gfire_launch.xml", "Operation failed. File not found or content was incorrect.", NULL, NULL);
+		purple_notify_message((void *)_gfire_plugin, PURPLE_NOTIFY_MSG_ERROR, N_("Gfire XML Reload"), N_("Reloading gfire_launch.xml"), N_("Operation failed. File not found or content was incorrect."), NULL, NULL);
 	} else {
-		purple_notify_message((void *)_gfire_plugin, PURPLE_NOTIFY_MSG_INFO, "Gfire XML Reload", "Reloading gfire_launch.xml","Reloading was successful.", NULL, NULL);
+		purple_notify_message((void *)_gfire_plugin, PURPLE_NOTIFY_MSG_INFO, N_("Gfire XML Reload"), N_("Reloading gfire_launch.xml"),N_("Reloading was successful."), NULL, NULL);
 
 	}
 
@@ -1939,10 +1939,10 @@ static void gfire_action_reload_gconfig_cb(PurplePluginAction *action)
 	gfire_parse_games_file(gc, g_build_filename(purple_user_dir(), "gfire_games.xml", NULL));
 
 	if (NULL == gfire->xml_games_list) {
-		purple_notify_message((void *)_gfire_plugin, PURPLE_NOTIFY_MSG_ERROR, "Gfire XML Reload", "Reloading gfire_games.xml", "Operation failed. File not found or content was incorrect.", NULL, NULL);
+		purple_notify_message((void *)_gfire_plugin, PURPLE_NOTIFY_MSG_ERROR, N_("Gfire XML Reload"), N_("Reloading gfire_games.xml"), N_("Operation failed. File not found or content was incorrect."), NULL, NULL);
 	}
 	else {
-		purple_notify_message((void *)_gfire_plugin, PURPLE_NOTIFY_MSG_INFO, "Gfire XML Reload", "Reloading gfire_games.xml","Reloading was successful.", NULL, NULL);
+		purple_notify_message((void *)_gfire_plugin, PURPLE_NOTIFY_MSG_INFO, N_("Gfire XML Reload"), N_("Reloading gfire_games.xml"),N_("Reloading was successful."), NULL, NULL);
 	}
 }
 
@@ -1960,14 +1960,14 @@ static void gfire_action_about_cb(PurplePluginAction *action)
 	char *msg = NULL;
 
 	if(strcmp(gfire_game_name(gc, 100), "100")) {
-		msg = g_strdup_printf("Gfire Version:\t\t%s\nGame List Version:\t%s", GFIRE_VERSION, gfire_game_name(gc, 100));
+		msg = g_strdup_printf(N_("Gfire Version:\t\t%s\nGame List Version:\t%s"), GFIRE_VERSION, gfire_game_name(gc, 100));
 	}
-	else msg = g_strdup_printf("Gfire Version: %s", GFIRE_VERSION);
+	else msg = g_strdup_printf(N_("Gfire Version: %s"), GFIRE_VERSION);
 
-	purple_request_action(gc, "About Gfire", "Xfire Plugin for Pidgin", msg, PURPLE_DEFAULT_ACTION_NONE,
-						  purple_connection_get_account(gc), NULL, NULL, gc, 3, "Close", NULL,
-						  "Website", G_CALLBACK(gfire_action_website_cb),
-						  "Wiki", G_CALLBACK(gfire_action_wiki_cb));
+	purple_request_action(gc, N_("About Gfire"), N_("Xfire Plugin for Pidgin"), msg, PURPLE_DEFAULT_ACTION_NONE,
+						  purple_connection_get_account(gc), NULL, NULL, gc, 3, N_("Close"), NULL,
+						  N_("Website"), G_CALLBACK(gfire_action_website_cb),
+						  N_("Wiki"), G_CALLBACK(gfire_action_wiki_cb));
 }
 
 static void gfire_action_get_gconfig_cb(PurplePluginAction *action)
@@ -2493,25 +2493,25 @@ static void _init_plugin(PurplePlugin *plugin)
 {
 	PurpleAccountOption *option;
 
-	option = purple_account_option_string_new("Server", "server",XFIRE_SERVER);
+	option = purple_account_option_string_new(N_("Server"), "server",XFIRE_SERVER);
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options,option);
 
-	option = purple_account_option_int_new("Port", "port", XFIRE_PORT);
+	option = purple_account_option_int_new(N_("Port"), "port", XFIRE_PORT);
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options,option);
 
-	option = purple_account_option_int_new("Version", "version", XFIRE_PROTO_VERSION);
+	option = purple_account_option_int_new(N_("Version"), "version", XFIRE_PROTO_VERSION);
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options,option);
 
-	option = purple_account_option_bool_new("Don't delete buddies from server", "buddynorm", TRUE);
+	option = purple_account_option_bool_new(N_("Don't delete buddies from server"), "buddynorm", TRUE);
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options,option);
 
-	option = purple_account_option_bool_new("Buddies can see if I'm typing", "typenorm", TRUE);
+	option = purple_account_option_bool_new(N_("Buddies can see if I'm typing"), "typenorm", TRUE);
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options,option);
 	
-	option = purple_account_option_bool_new("Auto detect for ingame status", "ingamedetectionnorm", TRUE);
+	option = purple_account_option_bool_new(N_("Auto detect for ingame status"), "ingamedetectionnorm", TRUE);
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options,option);
 
-	option = purple_account_option_bool_new("Notifiy me when my status is ingame", "ingamenotificationnorm", FALSE);
+	option = purple_account_option_bool_new(N_("Notifiy me when my status is ingame"), "ingamenotificationnorm", FALSE);
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options,option);
 
 	setlocale(LC_ALL, "");

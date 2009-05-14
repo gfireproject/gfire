@@ -157,12 +157,12 @@ void gfire_input_cb(gpointer data, gint source, PurpleInputCondition condition)
 		} else {
 			if (0 == tmp) {
 				purple_debug(PURPLE_DEBUG_MISC, "gfire", "(input): read 0 bytes, connection closed by peer\n");
-				purple_connection_error(gc, "Connection closed by peer.");
+				purple_connection_error(gc, N_("Connection closed by peer."));
 				return;
 			}
 			purple_debug(PURPLE_DEBUG_ERROR, "gfire", "Reading from socket failed errno = %d err_str = %s.\n",
 					errsv, strerror(errsv));
-			purple_connection_error(gc, "Socket read failure.");
+			purple_connection_error(gc, N_("Socket read failure."));
 			return;
 		}
 			
@@ -184,12 +184,12 @@ void gfire_input_cb(gpointer data, gint source, PurpleInputCondition condition)
 	if (tmp <= 0 ) {
 		if (0 == tmp) {
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "(input): read 0 bytes, connection closed by peer\n");
-			purple_connection_error(gc, "Connection closed by peer.");
+			purple_connection_error(gc, N_("Connection closed by peer."));
 			return;
 		}
 		purple_debug(PURPLE_DEBUG_ERROR, "gfire", "Reading from socket failed errno = %d err_str = %s.\n",
 				errsv, strerror(errsv));
-		purple_connection_error(gc, "Socket read failure.");
+		purple_connection_error(gc, N_("Socket read failure."));
 //		gfire_close(gc);
 		return;
 	}
@@ -239,12 +239,12 @@ void gfire_parse_packet(PurpleConnection *gc, int packet_len, int packet_id)
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received salt packet\n");
 			ob_len = gfire_send_auth(gc,packet_len, packet_id);		
 			gfire_send(gc, gfire->buff_out, ob_len);
-			purple_connection_update_progress(gc, "Login sent", 2, XFIRE_CONNECT_STEPS);
+			purple_connection_update_progress(gc, N_("Login sent"), 2, XFIRE_CONNECT_STEPS);
 		break;
 
 		case 129:
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received: wrong passwd/username\n");
-			purple_connection_error(gc, "Password or Username Incorrect.");
+			purple_connection_error(gc, N_("Password or Username Incorrect."));
 		break;
 	
 		case 130:
@@ -346,7 +346,7 @@ void gfire_parse_packet(PurpleConnection *gc, int packet_len, int packet_id)
 		case 145:	
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "ERROR: You have signed on from another location.\n");	
 			gc->wants_to_die = TRUE;
-			purple_connection_error(gc, "You have signed on from another location.");	
+			purple_connection_error(gc, N_("You have signed on from another location."));
 		break;
 		
 		case 150:

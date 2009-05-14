@@ -296,16 +296,16 @@ void gfire_chat_joined(PurpleConnection *gc, GList *members, guint8 *chat_id, gc
 	gfchat->motd = motd;
 	//prefix the window title with "xfire groupchat-" to get arround a nasty 1.5 bug that causes a crash
 	//if groupchat window title matches users username.
-	c = gfchat->c = serv_got_joined_chat(gc, gfchat->purple_id, g_strdup_printf("xfire groupchat-%s",topic));
+	c = gfchat->c = serv_got_joined_chat(gc, gfchat->purple_id, g_strdup_printf(N_("xfire groupchat-%s"),topic));
 	purple_conv_chat_set_topic(PURPLE_CONV_CHAT(c), NULL, topic);
 
-	tmpmsg = g_strdup_printf("You are now chatting in %s.", topic);
+	tmpmsg = g_strdup_printf(N_("You are now chatting in %s."), topic);
 	purple_conv_chat_write(PURPLE_CONV_CHAT(c), "", tmpmsg, PURPLE_MESSAGE_SYSTEM, time(NULL));
 	g_free(tmpmsg);
 
 	if (NULL != motd) {
 		purple_conv_chat_set_topic(PURPLE_CONV_CHAT(c), "", motd);
-		tmpmsg = g_strdup_printf("Today's Message:\n%s", motd);
+		tmpmsg = g_strdup_printf(N_("Today's Message:\n%s"), motd);
 		purple_conv_chat_write(PURPLE_CONV_CHAT(c), "", tmpmsg, PURPLE_MESSAGE_SYSTEM, time(NULL));
 		g_free(tmpmsg);
 	}
@@ -511,7 +511,7 @@ void gfire_chat_change_motd(PurpleConnection *gc, int id, const char *topic)
 	topic = purple_unescape_html(topic);
 	
 	if (strlen(topic) > 200) {
-		purple_notify_message(NULL, PURPLE_NOTIFY_MSG_WARNING, "Xfire Groupchat", "Topic change failed", "The topic contains more than 200 characters.", NULL, NULL);
+		purple_notify_message(NULL, PURPLE_NOTIFY_MSG_WARNING, N_("Xfire Groupchat"), N_("Topic change failed"), N_("The topic contains more than 200 characters."), NULL, NULL);
 		return -1;
 	}
 	
