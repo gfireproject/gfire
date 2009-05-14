@@ -112,8 +112,13 @@ static char *gfire_status_text(PurpleBuddy *buddy)
 	if (TRUE == purple_presence_is_online(p)) {
 		if (0 != gf_buddy->gameid) {
 			game_name = gfire_game_name(gc, gf_buddy->gameid);
-			g_sprintf(msg, N_("Playing %s"), game_name);
-			g_free(game_name);
+			if(game_name)
+			{
+				g_sprintf(msg, N_("Playing %s"), game_name);
+				g_free(game_name);
+			}
+			else
+				g_sprintf(msg, N_("Playing %d"), gf_buddy->gameid);
 			return g_strdup(msg);
 		}
 		if (gf_buddy->away) {
