@@ -111,7 +111,13 @@ char *gfire_game_name(PurpleConnection *gc, int game)
 		/* if we didn't find the game just show game ID */
 		if (!found) {
 			ret = g_strdup_printf("%d",game);
-		} else ret = g_strdup(gfire_escape_html(name)); 
+		} else {
+			// Name is non-empty?
+			if(name)
+				ret = g_strdup(gfire_escape_html(name));
+			else
+				ret = g_strdup_printf("%d",game);
+		}
 	}else{
 		/* uhh our gfire_games.xml was not found */
 		ret = g_strdup_printf("%d",game);
