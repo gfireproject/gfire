@@ -23,10 +23,10 @@ msgid "<b>Options basiques</b>"
 msgstr ""
 
 msgid "Launch prefix:"
-msgstr "Ausführungsprefix:"
+msgstr "Startprefix:"
 
 msgid "Launch options:"
-msgstr "Ausführungsoptionen:"
+msgstr "Startoptionen:"
 
 msgid "Required argument:"
 msgstr "Benötigtes Argument:"
@@ -59,13 +59,13 @@ msgid "My Profile Page"
 msgstr "Meine Profilseite"
 
 msgid "Reload Launch Config"
-msgstr "Ausführungskonfigaration neu laden"
+msgstr "Startkonfiguration neu laden"
 
 msgid "Reload Game ID List"
 msgstr "Spiel-ID Liste neu laden"
 
 msgid "Get Game ID List"
-msgstr "Spiel-ID List holen"
+msgstr "Spiel-ID Liste holen"
 
 msgid "About"
 msgstr "Über GFire"
