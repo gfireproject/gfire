@@ -647,10 +647,10 @@ static void gfire_get_info(PurpleConnection *gc, const char *who)
 		status = gfire_status_text(buddy);
 	}
 
-	purple_notify_user_info_add_pair(user_info, "Nickname", gf_buddy->alias);
-	purple_notify_user_info_add_pair(user_info, "Status", status);
+	purple_notify_user_info_add_pair(user_info, "Nickname", gfire_escape_html(gf_buddy->alias));
+	purple_notify_user_info_add_pair(user_info, "Status", gfire_escape_html(status));
 	if ((0 != gf_buddy->gameid) && (gf_buddy->away))
-		purple_notify_user_info_add_pair(user_info, "Away", gf_buddy->away_msg);
+		purple_notify_user_info_add_pair(user_info, "Away", gfire_escape_html(gf_buddy->away_msg));
 	magic = (guint32 *)gf_buddy->gameip;
 	if ((NULL != gf_buddy->gameip) && (0 != *magic)) {
 		g_sprintf(ipstr, "%d.%d.%d.%d", gf_buddy->gameip[3], gf_buddy->gameip[2],
