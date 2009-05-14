@@ -447,6 +447,11 @@ static void gfire_get_info_parse_gamerig_cb(PurpleUtilFetchUrlData *url_data, gp
 		{
 			purple_notify_user_info_add_pair(args->user_info, "Error", "Invalid gamerig data received!");
 		}
+		else if(xmlnode_get_child(gamerig, "error"))
+		{
+			purple_notify_user_info_add_pair(args->user_info, "Game Rig", xmlnode_get_data(xmlnode_get_child(gamerig, "error")));
+			xmlnode_free(gamerig);
+		}
 		else
 		{
 			// Manufacturer
@@ -539,6 +544,11 @@ static void gfire_get_info_parse_profile_cb(PurpleUtilFetchUrlData *url_data, gp
 		if(!profile)
 		{
 			purple_notify_user_info_add_pair(args->user_info, "Error", "Invalid profile data received!");
+		}
+		else if(xmlnode_get_child(profile, "error"))
+		{
+			purple_notify_user_info_add_pair(args->user_info, "Profile", xmlnode_get_data(xmlnode_get_child(profile, "error")));
+			xmlnode_free(profile);
 		}
 		else
 		{
