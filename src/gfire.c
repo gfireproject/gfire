@@ -89,9 +89,9 @@ static const char *gfire_blist_emblems(PurpleBuddy *b)
 }
 
 
-static char *gfire_status_text(PurpleBuddy *buddy)
+static gchar *gfire_status_text(PurpleBuddy *buddy)
 {
-	char msg[100];
+	gchar *msg = NULL;
 	GList *gfbl = NULL;
 	gfire_data *gfire = NULL;
 	gfire_buddy *gf_buddy = NULL;
@@ -111,6 +111,7 @@ static char *gfire_status_text(PurpleBuddy *buddy)
 
 	if (TRUE == purple_presence_is_online(p)) {
 		if (0 != gf_buddy->gameid) {
+			msg = g_malloc0(100);
 			game_name = gfire_game_name(gc, gf_buddy->gameid);
 			if(game_name)
 			{
@@ -119,9 +120,10 @@ static char *gfire_status_text(PurpleBuddy *buddy)
 			}
 			else
 				g_sprintf(msg, N_("Playing %d"), gf_buddy->gameid);
-			return g_strdup(msg);
+			return msg;
 		}
 		if (gf_buddy->away) {
+			msg = g_malloc0(100);
 			g_sprintf(msg,"%s", gf_buddy->away_msg);
 			return gfire_escape_html(msg);
 		}
