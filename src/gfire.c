@@ -2364,9 +2364,6 @@ char *gfire_escape_html(const char *html)
 			} else if (!strncmp(c, "\"", 1)) {
 				ret = g_string_append(ret, "&quot;");
 				c += 1;
-			} else if (!strncmp(c, "'", 1)) {
-				ret = g_string_append(ret, "&apos;");
-				c += 1;
 			} else if (!strncmp(c, "\n", 1)) {
 				ret = g_string_append(ret, "<br>");
 				c += 1;
