@@ -35,6 +35,6 @@ void gfire_send_away(PurpleConnection *gc, const char *msg);
 void gfire_process_invitation(PurpleConnection *gc, GList *invites);
 
 /* Function is in gfire.c, but we put this here for the timeout. */
-gboolean gfire_detect_running_games_cb(PurpleConnection *gc);
+int gfire_detect_running_processes_cb(PurpleConnection *gc);
 
 #endif /* _GF_NETWORK_H */

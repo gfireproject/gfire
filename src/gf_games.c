@@ -305,9 +305,8 @@ const gchar *gfire_get_buddy_ip(PurpleConnection *gc, PurpleBuddy *b)
 	if (!l || !(l->data)) return NULL;
 	gb = (gfire_buddy *)l->data;
 	if(gfire_get_buddy_game(gc ,b) != 0){
-		tmp = g_malloc0(XFIRE_GAMEIP_LEN);
-		memcpy(tmp, gb->gameip, XFIRE_GAMEIP_LEN);
-//		g_sprintf(tmp, "%d.%d.%d.%d", gb->gameip[3], gb->gameip[2], gb->gameip[1], gb->gameip[0]);
+		tmp = g_malloc0(16);
+		g_sprintf(tmp, "%d.%d.%d.%d", gb->gameip[3], gb->gameip[2], gb->gameip[1], gb->gameip[0]);
 		return tmp;
  	}
  	return NULL;

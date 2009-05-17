@@ -253,7 +253,7 @@ void gfire_parse_packet(PurpleConnection *gc, int packet_len, int packet_id)
 			gfire_packet_130(gc, packet_len);
 			if (gfire->alias) purple_connection_set_display_name(gc, g_strdup(gfire->alias));
 			#ifdef IS_NOT_WINDOWS
-			gfire->det_source = g_timeout_add(5000, (GSourceFunc)gfire_detect_running_games_cb, gc);
+			gfire->det_source = g_timeout_add(5000, (GSourceFunc)gfire_detect_running_processes_cb, gc);
 			#endif
 		break;
 
@@ -286,7 +286,7 @@ void gfire_parse_packet(PurpleConnection *gc, int packet_len, int packet_id)
 			/* autoset NEW VERSION :) */
 			memcpy(&newver, gfire->buff_in + 17, sizeof(newver));
 			newver = GUINT32_FROM_LE(newver);
-			g_sprintf(tmp, "Protocol version mismatch, needs to be %d. Auto set to new value.", newver);
+			g_sprintf(tmp, N_("Protocol version mismatch, needs to be %d. Auto set to new value."), newver);
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "login ok, but version too old, needs to be = %d\n", newver);
 			account = purple_connection_get_account(gc);
 			purple_account_set_int(account, "version", newver);
@@ -295,7 +295,7 @@ void gfire_parse_packet(PurpleConnection *gc, int packet_len, int packet_id)
 		break;
 
 		case 135:
-			purple_debug(PURPLE_DEBUG_MISC, "gfire", "got buddylist:game that a buddy is playing\n");
+			purple_debug(PURPLE_DEBUG_MISC, "gfire", "got buddylist: game that a buddy is playing\n");
 			tlist = gfire_game_status(gc, packet_len);
 			if (NULL != tlist) gfire_update_buddy_status(gc, tlist, GFIRE_STATUS_GAME);
 		break;
@@ -336,6 +336,7 @@ void gfire_parse_packet(PurpleConnection *gc, int packet_len, int packet_id)
 			if (buddy->sid) g_free(buddy->sid);
 			if (buddy->sid_str) g_free(buddy->sid_str);
 			if (buddy->gameip) g_free(buddy->gameip);
+			if (buddy->voipip) g_free(buddy->voipip);
 			g_free(buddy);
 		break;
 
@@ -347,6 +348,12 @@ void gfire_parse_packet(PurpleConnection *gc, int packet_len, int packet_id)
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "ERROR: You have signed on from another location.\n");	
 			gc->wants_to_die = TRUE;
 			purple_connection_error(gc, N_("You have signed on from another location."));
+		break;
+
+		case 147:
+			purple_debug(PURPLE_DEBUG_MISC, "gfire", "got buddylist: voip software that a buddy is using\n");
+			tlist = gfire_voip_status(gc, packet_len);
+			if (NULL != tlist) gfire_update_buddy_status(gc, tlist, GFIRE_STATUS_GAME);
 		break;
 		
 		case 150:

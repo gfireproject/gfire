@@ -52,6 +52,7 @@ xmlnode *gfire_manage_game_xml(char *game_id, char *game_name, gboolean game_nat
 	char *game_prefix, char *game_path, char *game_mod, char *game_connect);
 
 gboolean separe_path(char *path, char **file);
+char *str_path_get_filename(char *full_path);
 gboolean check_process(char *process, char *process_argument);
 #endif
 
@@ -172,6 +173,17 @@ static void gfire_blist_tooltip_text(PurpleBuddy *buddy, PurpleNotifyUserInfo *u
 					g_free(value);
 
 			}
+		}
+		// VoIP Info
+		magic = (guint32 *)gf_buddy->voipip;
+		if ((NULL != gf_buddy->voipip) && (0 != *magic)) {
+			g_sprintf(ipstr, "%d.%d.%d.%d", gf_buddy->voipip[3], gf_buddy->voipip[2],
+				gf_buddy->voipip[1], gf_buddy->voipip[0]);
+			gchar *server = g_strdup_printf("%s:%d", ipstr, gf_buddy->voipport);
+			game_name = gfire_game_name(gc, gf_buddy->voipid);
+			purple_notify_user_info_add_pair(user_info,game_name ? game_name : "VoIP",server);
+			g_free(game_name);
+			g_free(server);
 		}
 		if (gf_buddy->away) {
 			char * escaped_away = gfire_escape_html(gf_buddy->away_msg);
@@ -315,6 +327,7 @@ void gfire_close(PurpleConnection *gc)
 		if (NULL != b->sid) g_free(b->sid);
 		if (NULL != b->sid_str) g_free(b->sid_str);
 		if (NULL != b->gameip) g_free(b->gameip);
+		if (NULL != b->voipip) g_free(b->voipip);
 //		if (NULL != b->clanid) g_free(b->clanid);
 		
 		g_free(b);
@@ -322,7 +335,7 @@ void gfire_close(PurpleConnection *gc)
  		buddies = g_list_next(buddies);
 	}
 
-	purple_debug(PURPLE_DEBUG_MISC, "gfire", "CONN: freeing chat sturct\n");
+	purple_debug(PURPLE_DEBUG_MISC, "gfire", "CONN: freeing chat struct\n");
 	chats = gfire->chats;
 	while (NULL != buddies) {
 		gf_chat = (gfire_chat *)chats->data;
@@ -354,6 +367,7 @@ void gfire_close(PurpleConnection *gc)
 	if (NULL != gfire->userid) g_free(gfire->userid);
 	if (NULL != gfire->sid) g_free(gfire->sid);
 	if (NULL != gfire->alias) g_free(gfire->alias);
+	if (NULL != gfire->voipip) g_free(gfire->voipip);
 
 	g_free(gfire);
 	gc->proto_data = NULL;
@@ -664,6 +678,18 @@ static void gfire_get_info(PurpleConnection *gc, const char *who)
 			gf_buddy->gameip[1], gf_buddy->gameip[0]);
 		server = g_strdup_printf("%s:%d", ipstr, gf_buddy->gameport);
 		purple_notify_user_info_add_pair(user_info,N_("Server"),server);
+		g_free(server);
+	}
+
+	// VoIP Info
+	magic = (guint32 *)gf_buddy->voipip;
+	if ((NULL != gf_buddy->voipip) && (0 != *magic)) {
+		g_sprintf(ipstr, "%d.%d.%d.%d", gf_buddy->voipip[3], gf_buddy->voipip[2],
+			gf_buddy->voipip[1], gf_buddy->voipip[0]);
+		server = g_strdup_printf("%s:%d", ipstr, gf_buddy->voipport);
+		gchar *voip_name = gfire_game_name(gc, gf_buddy->voipid);
+		purple_notify_user_info_add_pair(user_info,voip_name ? voip_name : "VoIP",server);
+		g_free(voip_name);
 		g_free(server);
 	}
 
@@ -1014,6 +1040,12 @@ void gfire_update_buddy_status(PurpleConnection *gc, GList *buddies, int status)
 				case GFIRE_STATUS_ONLINE:
 					if ( 0 == g_ascii_strcasecmp(XFIRE_SID_OFFLINE_STR,gf_buddy->sid_str)) {
 						purple_prpl_got_user_status(gc->account, gf_buddy->name, "offline", NULL);
+						// Reset the buddy's game and voip status
+						gf_buddy->gameid = gf_buddy->voipid = 0;
+						gf_buddy->gameport = gf_buddy->voipport = 0;
+						if(gf_buddy->gameip) g_free(gf_buddy->gameip);
+						if(gf_buddy->voipip) g_free(gf_buddy->voipip);
+						gf_buddy->gameip = gf_buddy->voipip = NULL;
 					} else {
 						if ( gf_buddy->away ) {
 							purple_prpl_got_user_status(gc->account, gf_buddy->name, "away", NULL);
@@ -1166,7 +1198,43 @@ void gfire_buddy_menu_joingame_cb(PurpleBlistNode *node, gpointer *data)
  		if (serverport) serverip = (gchar *)gfire_get_buddy_ip(gc, b);
 
  		gfire_join_game(gc, serverip, serverport, game);
+
+		if(serverip)
+			g_free(serverip);
  	}
+}
+
+/**
+  * Callback function for pidgin buddy list right click menu.  This callback
+  * is what the interface calls when the Join VoIP ... menu option is selected
+  *
+  * @param node		BuddyList node provided by interface
+  * @param data		Gpointer data (not used)
+*/
+void gfire_buddy_menu_joinvoip_cb(PurpleBlistNode *node, gpointer *data)
+{
+	PurpleBuddy *b = (PurpleBuddy *)node;
+	PurpleConnection *gc = NULL;
+	gfire_data *gfire = NULL;
+	GList *l = NULL;
+	gfire_buddy *gb = NULL;
+	gchar *server_ip = NULL;
+
+	if (!b || !b->account || !(gc = purple_account_get_connection(b->account)) || !(gfire = (gfire_data*)gc->proto_data)) return;
+
+	l = gfire_find_buddy_in_list(gfire->buddies, (gpointer *)b->name, GFFB_NAME);
+	if (!l || !(l->data)) return;
+	gb = (gfire_buddy *)l->data;
+
+	if(gb->voipip)
+		server_ip = g_strdup_printf("%u.%u.%u.%u", gb->voipip[3], gb->voipip[2], gb->voipip[1], gb->voipip[0]);
+
+	if (gb->voipid && gfire_game_playable(gc, gb->voipid)) {
+		gfire_join_game(gc, server_ip, gb->voipport, gb->voipid);
+	}
+
+	if(server_ip)
+		g_free(server_ip);
 }
 
 /*
@@ -1206,6 +1274,18 @@ GList * gfire_node_menu(PurpleBlistNode *node)
 
 			me = purple_menu_action_new(N_("Join Game ..."),
 					PURPLE_CALLBACK(gfire_buddy_menu_joingame_cb),NULL, NULL);
+
+			if (!me) {
+				return NULL;
+			}
+			ret = g_list_append(ret, me);
+		}
+
+		if (gb && !gfire->voipid && gb->voipid && gfire_game_playable(gc, gb->voipid)){
+			 /* don't show menu if we are in VoIP software */
+
+			me = purple_menu_action_new(N_("Join VoIP ..."),
+					PURPLE_CALLBACK(gfire_buddy_menu_joinvoip_cb),NULL, NULL);
 
 			if (!me) {
 				return NULL;
@@ -1739,84 +1819,228 @@ xmlnode *gfire_manage_game_xml(char *game_id, char *game_name, gboolean game_exe
 	return game_node;
 }
 
-/**
- * detects running games by checking running processes.
- *
- * @param gc: the purple connection
- *
- * @return: TRUE (this function always returns TRUE)
- *
-**/
-int gfire_detect_running_games_cb(PurpleConnection *gc)
+void gfire_handle_game_detection(PurpleConnection *gc, int gameid, gboolean running, const char *executable)
 {
 	gfire_data *gfire = NULL;
 	if (!gc || !(gfire = (gfire_data *)gc->proto_data)) {
-		purple_debug_error("gfire: gfire_detect_running_games_cb", "GC not set.\n");
+		purple_debug_error("gfire", "gfire_handle_game_detection: GC not set.\n");
 		return;
 	}
 
+	char *game_name = gfire_game_name(gc, gameid);
+	int len = 0;
+
+	if (running == TRUE)
+	{
+		if (gfire->game_running == FALSE)
+		{
+			gboolean norm = purple_account_get_bool(purple_connection_get_account(gc), "ingamenotificationnorm", FALSE);
+			purple_debug_info("gfire",
+							"gfire_handle_game_detection: %s is running. Telling Xfire ingame status.\n", game_name);
+
+			if (norm == TRUE) purple_notify_message(NULL, PURPLE_NOTIFY_MSG_INFO, N_("Ingame status"),
+										game_name, N_("Your status has been changed."), NULL, NULL);
+
+			len = gfire_join_game_create(gc, gameid, 0, NULL);
+			if (len != FALSE) gfire_send(gc, gfire->buff_out, len);
+
+			gfire->game_running = TRUE;
+			gfire->gameid = gameid;
+		}
+	}
+	else
+	{
+		if(gfire->game_running == TRUE && gfire->gameid == gameid)
+		{
+			purple_debug(PURPLE_DEBUG_MISC, "gfire",
+						"gfire_handle_game_detection: Game not running anymore, sending out of game status.\n");
+			gfire->gameid = 0;
+
+			len = gfire_join_game_create(gc, 0, 0, NULL);
+			if(len) gfire_send(gc, gfire->buff_out, len);
+
+			gfire->game_running = FALSE;
+		}
+	}
+
+	if(game_name) g_free(game_name);
+}
+
+void gfire_handle_voip_detection(PurpleConnection *gc, int voipid, gboolean running, const char *executable)
+{
+	gfire_data *gfire = NULL;
+	if (!gc || !(gfire = (gfire_data *)gc->proto_data)) {
+		purple_debug_error("gfire", "gfire_handle_voip_detection: GC not set.\n");
+		return;
+	}
+
+	char *voip_name = gfire_game_name(gc, voipid);
+	int len = 0;
+
+	if (running == TRUE)
+	{
+		if (gfire->voipid == 0)
+		{
+			// Get Server IP and Port
+			char *executable_name = str_path_get_filename(executable);
+			guint8 *voip_ip = NULL;
+			guint32 voip_port = 0;
+
+			if(voipid == 32)
+				gfire_detect_teamspeak_server(&voip_ip, &voip_port);
+			else if(voipid == 34)
+				gfire_detect_mumble_server(executable_name, &voip_ip, &voip_port);
+
+			if(executable_name) g_free(executable_name);
+
+			if(!voip_ip)
+			{
+				purple_debug(PURPLE_DEBUG_MISC, "gfire",
+							 "gfire_handle_voip_detection: %s is running but it is not connected.\n", voip_name);
+				if(voip_name) g_free(voip_name);
+				return;
+			}
+
+			gboolean norm = purple_account_get_bool(purple_connection_get_account(gc), "ingamenotificationnorm", FALSE);
+			purple_debug(PURPLE_DEBUG_MISC, "gfire",
+						 "gfire_handle_voip_detection: %s is running. Telling Xfire voip software status.\n", voip_name);
+
+			if (norm == TRUE) purple_notify_message(NULL, PURPLE_NOTIFY_MSG_INFO, N_("VoIP software status"),
+													voip_name, N_("Your status has been changed."), NULL, NULL);
+
+			len = gfire_join_voip_create(gc, voipid, voip_port, voip_ip);
+			if (len) gfire_send(gc, gfire->buff_out, len);
+
+			gfire->voipid = voipid;
+			gfire->voipip = voip_ip;
+			gfire->voipport = voip_port;
+
+			if(voip_name) g_free(voip_name);
+			return;
+		}
+		else if(gfire->voipid == voipid)
+		{
+			// Get Server IP and Port
+			char *executable_name = str_path_get_filename(executable);
+			guint8 *voip_ip = NULL;
+			guint32 voip_port = 0;
+
+			purple_debug(PURPLE_DEBUG_MISC, "gfire",
+						 "gfire_handle_voip_detection: Checking for %ss server state...\n", voip_name);
+			if(voipid == 32)
+				gfire_detect_teamspeak_server(&voip_ip, &voip_port);
+			else if(voipid == 34)
+				gfire_detect_mumble_server(executable_name, &voip_ip, &voip_port);
+
+			if(executable_name) g_free(executable_name);
+
+			if(!voip_ip)
+			{
+				purple_debug(PURPLE_DEBUG_MISC, "gfire",
+							 "gfire_handle_voip_detection: %s is not connected anymore. Resetting Xfire voip software status.\n", voip_name);
+
+				if(gfire->voipip) g_free(gfire->voipip);
+
+				gfire->voipid = 0;
+				gfire->voipip = NULL;
+				gfire->voipport = 0;
+
+				len = gfire_join_voip_create(gc, 0, 0, NULL);
+				if (len) gfire_send(gc, gfire->buff_out, len);
+
+				if(voip_name) g_free(voip_name);
+				return;
+			}
+			else if((*((guint32*)gfire->voipip) != *((guint32*)voip_ip)) || gfire->voipport != voip_port)
+			{
+				purple_debug(PURPLE_DEBUG_MISC, "gfire",
+							 "gfire_handle_voip_detection: %ss server changed. Updating Xfire voip software status\n", voip_name);
+
+				if(gfire->voipip) g_free(gfire->voipip);
+
+				gfire->voipip = voip_ip;
+				gfire->voipport = voip_port;
+
+				len = gfire_join_voip_create(gc, voipid, voip_port, voip_ip);
+				if (len) gfire_send(gc, gfire->buff_out, len);
+
+				if(voip_name) g_free(voip_name);
+				return;
+			}
+			else
+			{
+				purple_debug(PURPLE_DEBUG_MISC, "gfire",
+							 "gfire_handle_voip_detection: %ss server hasn't changed.\n", voip_name);
+
+				if(voip_name) g_free(voip_name);
+				return;
+			}
+		}
+	}
+	else
+	{
+		if(gfire->voipid  == voipid)
+		{
+			purple_debug(PURPLE_DEBUG_MISC, "gfire",
+						"gfire_handle_voip_detection: voip software not running anymore. Resetting Xfire voip software status.\n");
+
+			if(gfire->voipip) g_free(gfire->voipip);
+
+			gfire->voipid = 0;
+			gfire->voipip = NULL;
+			gfire->voipport = 0;
+
+			len = gfire_join_voip_create(gc, 0, 0, NULL);
+			if(len) gfire_send(gc, gfire->buff_out, len);
+
+			if(voip_name) g_free(voip_name);
+		}
+	}
+}
+
+int gfire_detect_running_processes_cb(PurpleConnection *gc)
+{
+	gfire_data *gfire = NULL;
+	if (!gc || !(gfire = (gfire_data *)gc->proto_data)) {
+		purple_debug_error("gfire", "gfire_detect_running_processes_cb: GC not set.\n");
+		return FALSE;
+	}
+
 	gboolean norm = purple_account_get_bool(purple_connection_get_account(gc), "ingamedetectionnorm", TRUE);
-	if (norm == FALSE) return;
+	if (norm == FALSE)
+		return TRUE;
 
 	xmlnode *gfire_launch = gfire->xml_launch_info;
 	if (gfire_launch != NULL)
 	{
-		xmlnode *node_child;	
+		xmlnode *node_child;
 		for (node_child = xmlnode_get_child(gfire_launch, "game"); node_child != NULL;
-		     node_child = xmlnode_get_next_twin(node_child))
+			 node_child = xmlnode_get_next_twin(node_child))
 		{
 			xmlnode *command_node = xmlnode_get_child(node_child, "command");
 			xmlnode *executable_node = xmlnode_get_child(command_node, "executable");
 			xmlnode *path_node = xmlnode_get_child(command_node, "path");
-			
+
 			const char *game_executable = xmlnode_get_data(executable_node);
 			const char *game_executable_argument = xmlnode_get_attrib(executable_node, "argument");
 			const char *game_path = xmlnode_get_data(path_node);
 			gchar *game_id = xmlnode_get_attrib(node_child, "id");
-
-			gboolean process_running = check_process(game_executable, game_executable_argument);
-			
-			int len = 0;
-			int game_running_id = gfire->gameid;
 			int game_id_int = atoi(game_id);
-			char *game_name = gfire_game_name(gc, game_id_int);
-			gboolean game_running = gfire->game_running;
-			
-			if (process_running == TRUE)
-			{
-				if (game_running == FALSE)
-				{
-					gboolean norm = purple_account_get_bool(purple_connection_get_account(gc), "ingamenotificationnorm", FALSE);
-					purple_debug_info("gfire: gfire_detect_running_games_cb",
-									  "%s is running. Telling Xfire ingame status.\n", game_name);
 
-					if (norm == TRUE) purple_notify_message(NULL, PURPLE_NOTIFY_MSG_INFO, N_("Ingame status"),
-															game_name, N_("Your status has been changed."), NULL, NULL);
+			char *game_executable_name = str_path_get_filename(game_executable);
+			gboolean process_running = check_process(game_executable_name, game_executable_argument);
+			if(game_executable_name) g_free(game_executable_name);
 
-					len = gfire_join_game_create(gc, game_id_int, 0, NULL);
-					if (len != FALSE) gfire_send(gc, gfire->buff_out, len);
-					
-					gfire->game_running = TRUE;
-					gfire->gameid = game_id_int;
-				}
-			}
+			if(game_id_int < 32 || game_id_int > 34)
+				gfire_handle_game_detection(gc, game_id_int, process_running, game_executable);
 			else
-			{
-				if(game_running == TRUE && game_running_id == game_id_int)
-				{
-					purple_debug(PURPLE_DEBUG_MISC, "gfire: gfire_detect_running_games_cb",
-								 "Game not running anymore, sending out of game status.\n");
-					gfire->gameid = 0;
-				
-					len = gfire_join_game_create(gc, 0, 0, NULL);
-					if(len) gfire_send(gc, gfire->buff_out, len);
-					
-					gfire->game_running = FALSE;
-				}
-			}
+				gfire_handle_voip_detection(gc, game_id_int, process_running, game_executable);
+
+			if(game_executable) g_free(game_executable);
+			if(game_path) g_free(game_path);
 		}
 	}
-	
+
 	return TRUE;
 }
 
@@ -1870,8 +2094,8 @@ gboolean check_process(char *process, char *process_argument)
 	#else
 	char command[256];
 
-	/* sprintf(command, "ps -ef | grep -i %s | grep -v grep", process); */
-	sprintf(command, "lsof \"%s\"", process);
+	sprintf(command, "ps -ef | grep -i %s | grep -v grep", process);
+	//sprintf(command, "lsof \"%s\"", process);
 	
 	char buf[256];
 	int c;
@@ -2309,6 +2533,19 @@ char *str_replace (char *string, char *before, char *after)
 	return replaced;
 }
 
+char *str_path_get_filename(char *full_path)
+{
+	if(!full_path)
+		return NULL;
+
+	char *file = strrchr(full_path, '/');
+	if(!file)
+		return g_strdup(full_path);
+
+	file = file + 1;
+	return g_strdup(file);
+}
+
 /**
  * Removes color codes from a string,
  * used in the server browser to display the server names properly.
@@ -2380,6 +2617,150 @@ char *gfire_escape_html(const char *html)
 	}
 	
 	return escaped;
+}
+
+void gfire_detect_teamspeak_server(guint8 **voip_ip, guint32 *voip_port)
+{
+	if(!voip_ip || !voip_port)
+		return;
+
+	int unix_socket = -1;
+	struct sockaddr_un unix_addr;
+
+	unix_addr.sun_family = AF_UNIX;
+	strcpy(unix_addr.sun_path, "/tmp/.teamspeakclient");
+
+	unix_socket = socket(AF_UNIX, SOCK_STREAM, 0);
+	if(unix_socket < 0)
+	{
+		purple_debug(PURPLE_DEBUG_MISC, "gfire", "gfire_detect_teamspeak_server: Failed to create socket.\n");
+		*voip_ip = NULL;
+		*voip_port = 0;
+		return;
+	}
+
+	// Connect to TeamSpeak client
+	if(connect(unix_socket, (struct sockaddr*)&unix_addr, strlen(unix_addr.sun_path) + sizeof(unix_addr.sun_family)) != 0)
+	{
+		purple_debug(PURPLE_DEBUG_MISC, "gfire", "gfire_detect_teamspeak_server: Failed to connect to unix socket.\n");
+		*voip_ip = NULL;
+		*voip_port = 0;
+		return;
+	}
+
+	// Send Server Data Request (Format: Message length (incl. zero), 3x zero, Message, zero)
+	// Message: "GET_SERVER_INFO" => Length = 16
+	char request[20] = {0x10, 0x00, 0x00, 0x00, 'G', 'E', 'T', '_', 'S', 'E', 'R', 'V', 'E', 'R', '_', 'I', 'N', 'F', 'O', 0x00};
+	if(send(unix_socket, request, sizeof(request), 0) <= 0)
+	{
+		purple_debug(PURPLE_DEBUG_MISC, "gfire", "gfire_detect_teamspeak_server: Failed to send server data request.\n");
+		*voip_ip = NULL;
+		*voip_port = 0;
+		close(unix_socket);
+		return;
+	}
+
+	// Receive response
+	char buffer[1024];
+	memset(buffer, 0, sizeof(buffer));
+
+	int recBytes = 0;
+	int r = 0;
+	do
+	{
+		r = recv(unix_socket, &buffer[recBytes], sizeof(buffer) - 1 - recBytes, 0);
+		recBytes += r;
+	} while(r > 0);
+
+	if(recBytes <= 0)
+	{
+		purple_debug(PURPLE_DEBUG_MISC, "gfire", "gfire_detect_teamspeak_server: Failed to receive server data.\n");
+		*voip_ip = NULL;
+		*voip_port = 0;
+		close(unix_socket);
+		return;
+	}
+
+	buffer[recBytes] = 0;
+	char *data = &buffer[4]; // Skip the size and zeros
+	if(strncmp(data, "ERROR", 5) == 0)
+	{
+		purple_debug(PURPLE_DEBUG_MISC, "gfire", "gfire_detect_teamspeak_server: TeamSpeak doesn't seem to be connected.\n");
+		*voip_ip = NULL;
+		*voip_port = 0;
+		close(unix_socket);
+		return;
+	}
+
+	// Extract Server Address
+	char *tmp = data;
+	char *strings = NULL;
+	int count = 0;
+	while((strings = strtok(tmp, "\r\n")))
+	{
+		if(count == 5)
+		{
+			char *split = strchr(strings, ':');
+			if(!split)
+			{
+				purple_debug(PURPLE_DEBUG_MISC, "gfire", "gfire_detect_teamspeak_server: Received invalid data.\n");
+				*voip_ip = NULL;
+				*voip_port = 0;
+				close(unix_socket);
+			}
+
+			*split = ' ';
+			char ip[16];
+			guint32 port;
+			sscanf(strings, "%s %d", ip, &port);
+			purple_debug(PURPLE_DEBUG_MISC, "gfire", "gfire_detect_teamspeak_server: TeamSpeak Server: %s:%d\n", ip, port);
+
+			*voip_ip = (guint8*)gfire_ipstr_to_bin(ip);
+			*voip_port = port;
+		}
+
+		count = count + 1;
+		tmp = NULL;
+	}
+
+	close(unix_socket);
+}
+
+void gfire_detect_mumble_server(const gchar *executable, guint8 **voip_ip, guint32 *voip_port)
+{
+	if(!voip_ip || !voip_port || !executable)
+		return;
+
+	// Build command line
+	char cmd[1024];
+	sprintf(cmd, "netstat -tnp | grep -i %s", executable);
+
+	// Read output
+	FILE *netstat = popen(cmd, "r");
+	char data[100];
+	if(fgets(data, 100, netstat) == NULL && feof(netstat))
+	{
+		// No data. Mumble is not connected.
+		purple_debug(PURPLE_DEBUG_MISC, "gfire", "gfire_detect_mumble_server: Mumble doesn't seem to be connected.\n");
+		pclose(netstat);
+		*voip_ip = NULL;
+		*voip_port = 0;
+		return;
+	}
+	pclose(netstat);
+
+	// Extract "IP:Port"
+	char addr[22];
+	sscanf(data, "%*s\t%*d\t%*d\t%*s\t%s", addr);
+	// Replace ':' with ' ' for sscanf
+	(*strchr(addr, ':')) = ' ';
+	// Extract IP as a string and port
+	char ip[16];
+	guint32 port;
+	sscanf(addr, "%s %u", ip, &port);
+	purple_debug(PURPLE_DEBUG_MISC, "gfire", "gfire_detect_mumble_server: Mumble Server: %s:%d\n", ip, port);
+	*voip_ip = (guint8*)gfire_ipstr_to_bin(ip);
+	*voip_port = port;
 }
 
 /**
@@ -2515,7 +2896,7 @@ static void _init_plugin(PurplePlugin *plugin)
 	option = purple_account_option_bool_new(N_("Auto detect for ingame status"), "ingamedetectionnorm", TRUE);
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options,option);
 
-	option = purple_account_option_bool_new(N_("Notifiy me when my status is ingame"), "ingamenotificationnorm", FALSE);
+	option = purple_account_option_bool_new(N_("Notify me when my status is ingame"), "ingamenotificationnorm", FALSE);
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options,option);
 
 	setlocale(LC_ALL, "");

@@ -43,6 +43,7 @@ int gfire_add_buddy_create(PurpleConnection *gc, char *name);
 int gfire_remove_buddy_create(PurpleConnection *gc, gfire_buddy *b);
 int gfire_create_change_alias(PurpleConnection *gc, char *name);
 int gfire_join_game_create(PurpleConnection *gc, int game, int port, const char *ip);
+int gfire_join_voip_create(PurpleConnection *gc, int voip, int port, const char *ip);
 int gfire_request_avatar_info(PurpleConnection *gc, gfire_buddy *b);
 int gfire_send_typing_packet(PurpleConnection *gc, gfire_buddy *buddy);
 void gfire_read_alias_change(PurpleConnection *gc, int packet_len);
@@ -62,5 +63,6 @@ void gfire_read_clan_blist(PurpleConnection *gc, int packet_len);
 int gfire_create_serverlist_request (PurpleConnection *gc, int game);
 void gfire_read_serverlist(PurpleConnection *gc, int packet_len);
 void gfire_changed_avatar(PurpleConnection *gc, int packet_len);
+GList *gfire_voip_status(PurpleConnection *gc, int packet_len);
 
 #endif /* _GF_PACKET_H */

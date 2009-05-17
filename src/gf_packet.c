@@ -1040,6 +1040,45 @@ int gfire_join_game_create(PurpleConnection *gc, int game, int port, const char 
 	return index;
 }
 
+/*
+* Sends the packet when we join a voip server or leave it (voipid 00 00)
+*/
+int gfire_join_voip_create(PurpleConnection *gc, int voip, int port, const char *ip)
+{
+	int index = XFIRE_HEADER_LEN;
+	gfire_data *gfire = NULL;
+	guint32 vport = port;
+	guint32 voipid = voip;
+	const char nullip[4] = {0x00, 0x00, 0x00, 0x00};
+
+	if (!gc || !(gfire = (gfire_data *)gc->proto_data)) return 0;
+	if (!ip) ip = (char *)&nullip;
+
+	vport = GUINT32_TO_LE(vport);
+	voipid = GUINT32_TO_LE(voipid);
+
+	index = gfire_add_att_name(gfire->buff_out,index, "vid");
+	gfire->buff_out[index++] = 0x02;
+	memcpy(gfire->buff_out + index, &voipid, sizeof(voipid));
+	index += sizeof(voipid);
+
+	index = gfire_add_att_name(gfire->buff_out,index, "vip");
+	gfire->buff_out[index++] = 0x02;
+	gfire->buff_out[index++] = ip[0];
+	gfire->buff_out[index++] = ip[1];
+	gfire->buff_out[index++] = ip[2];
+	gfire->buff_out[index++] = ip[3];
+
+	index = gfire_add_att_name(gfire->buff_out,index, "vport");
+	gfire->buff_out[index++] = 0x02;
+	memcpy(gfire->buff_out + index, &vport, sizeof(vport));
+	index += sizeof(vport);
+
+	gfire_add_header(gfire->buff_out, index, 0x0F, 3);
+
+	return index;
+}
+
 int gfire_request_avatar_info(PurpleConnection *gc, gfire_buddy *b)
 {
 	int index = XFIRE_HEADER_LEN;
@@ -1833,7 +1872,14 @@ void gfire_read_clan_blist(PurpleConnection *gc, int packet_len)
 	
 	while (f != NULL)
 	{
-		
+		if(memcmp(u->data, gfire->userid, XFIRE_USERID_LEN) == 0)
+		{
+			f = g_list_next(f);
+			u = g_list_next(u);
+			n = g_list_next(n);
+			continue;
+		}
+
 		btmp = gfire_find_buddy_in_list(gfire->buddies, f->data, GFFB_NAME);
 		if (NULL == btmp) {
 			gf_buddy = g_malloc0(sizeof(gfire_buddy));
@@ -2108,4 +2154,92 @@ void gfire_changed_avatar(PurpleConnection *gc, int packet_len)
 		else
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "(changed avatar): %s has no avatar\n", NN(gf_buddy->name));
 	}
+}
+
+GList *gfire_voip_status(PurpleConnection *gc, int packet_len)
+{
+	int index = XFIRE_HEADER_LEN + 1;
+	int itmp = 0;
+	GList *btmp = NULL;
+	gfire_buddy *gf_buddy = NULL;
+	GList *ret = NULL;
+	GList *sids = NULL;
+	GList *voipids = NULL;
+	GList *voipips = NULL;
+	GList *voipports = NULL;
+	GList *s, *v, *ip, *vp;
+	gfire_data *gfire = (gfire_data *)gc->proto_data;
+
+	itmp = gfire_read_attrib(&sids, gfire->buff_in + index, packet_len - index, "sid", FALSE, TRUE, 0, 0,
+							  XFIRE_SID_LEN);
+	if (itmp < 1 ) {
+		//mem cleanup code
+		if (sids) g_list_free(sids);
+		return NULL;
+	}
+	index += itmp + 1;
+	itmp = gfire_read_attrib(&voipids, gfire->buff_in + index, packet_len - index, "vid", FALSE, TRUE, 0, 0,
+							  XFIRE_GAMEID_LEN);
+	if (itmp < 1 ) {
+		//mem cleanup code
+		if (sids) g_list_free(sids);
+		if (voipids) g_list_free(voipips);
+		return NULL;
+	}
+	index += itmp + 1;
+	itmp = gfire_read_attrib(&voipips, gfire->buff_in + index, packet_len - index, "vip", FALSE, TRUE, 0, 0,
+							  XFIRE_GAMEIP_LEN);
+	if (itmp < 1 ) {
+		//mem cleanup code
+		if (sids) g_list_free(sids);
+		if (voipids) g_list_free(voipids);
+		if (voipips) g_list_free(voipips);
+		return NULL;
+	}
+	index += itmp + 1;
+	itmp = gfire_read_attrib(&voipports, gfire->buff_in + index, packet_len - index, "vport", FALSE, TRUE, 0, 0,
+							  XFIRE_GAMEPORT_LEN);
+	if (itmp < 1 ) {
+		//mem cleanup code
+		if (sids) g_list_free(sids);
+		if (voipids) g_list_free(voipids);
+		if (voipips) g_list_free(voipips);
+		if (voipports) g_list_free(voipports);
+		return NULL;
+	}
+	voipids = g_list_first(voipids); sids = g_list_first(sids); voipips = g_list_first(voipips);
+	voipports = g_list_first(voipports);
+	v = voipids; s = sids; ip = voipips; vp = voipports;
+
+	while ( NULL != s ){
+		btmp = gfire_find_buddy_in_list(gfire->buddies, s->data, GFFB_SIDBIN);
+		if (NULL == btmp) {
+			purple_debug(PURPLE_DEBUG_MISC, "gfire", "WARN: pkt 135: (gameinfo) could not find sid in buddy list.\n");
+		} else {
+			gf_buddy = (gfire_buddy *)btmp->data;
+			memcpy(&(gf_buddy->voipid),v->data, XFIRE_GAMEID_LEN);
+			gf_buddy->voipid = GUINT32_FROM_LE(gf_buddy->voipid);
+			memcpy(&(gf_buddy->voipport),vp->data, XFIRE_GAMEPORT_LEN);
+			gf_buddy->voipport = GUINT32_FROM_LE(gf_buddy->voipport);
+			gf_buddy->voipport &= 0xFFFF;
+			gf_buddy->voipip = (guint8 *)ip->data;
+			ret = g_list_append(ret, (gpointer *)gf_buddy);
+
+			purple_debug(PURPLE_DEBUG_MISC, "gfire", "(voipinfo): %s, is talking on %d.%d.%d.%d:%d using %d\n",
+						 NN(gf_buddy->name), NNA(gf_buddy->voipip, gf_buddy->voipip[3]),
+							NNA(gf_buddy->voipip, gf_buddy->voipip[2]), NNA(gf_buddy->voipip, gf_buddy->voipip[1]),
+								NNA(gf_buddy->voipip, gf_buddy->voipip[0]), gf_buddy->voipport, gf_buddy->voipid);
+
+		}
+		g_free(s->data); g_free(v->data); g_free(vp->data);
+		s->data = v->data = vp->data = NULL;
+		s = g_list_next(s); v = g_list_next(v); ip = g_list_next(ip); vp = g_list_next(vp);
+	}
+
+	g_list_free(voipids);
+	g_list_free(voipports);
+	g_list_free(sids);
+	g_list_free(voipips);
+
+	return ret;
 }

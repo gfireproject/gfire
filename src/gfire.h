@@ -53,6 +53,9 @@
 	#include <gtk/gtk.h>
 	#include <gio/gio.h>
 	#include <errno.h>
+	// Required for teamspeak server detection
+	#include <sys/socket.h>
+	#include <sys/un.h>
 #endif /* _WIN32 */
 
 #ifndef G_GNUC_NULL_TERMINATED
@@ -132,6 +135,9 @@ struct _gfire_data {
 	guint8 *sid;				/* our session id for this connection */
 	gchar *alias;				/* our current server alias */
 	guint32 gameid;				/* our current game id */
+	guint32 voipid;				/* our current voip id */
+	guint32	voipport;			/* our current voip port */
+	guint8 *voipip;				/* our current voip ip (char[4], each byte is an octet) */
 	guint xqf_source;			/* g_timeout_add source number for xqf callback */
 	guint det_source;			/* g_timeout_add source number for game detection callback */
 	gboolean game_running;		/* bool to know if a game has already been detected */
@@ -153,6 +159,9 @@ struct _gfire_buddy {
 	guint32 gameid;			/* int game id */
 	guint32	gameport;		/* int game port */
 	guint8 *gameip;			/* char[4] game port, each byte is an octet */
+	guint32 voipid;			/* int voip id */
+	guint32	voipport;		/* int voip port */
+	guint8 *voipip;			/* char[4] voip ip, each byte is an octet */
 	int chatperm;			/* group chat permissions (only used for group chat members)*/
 	guint8 *clanid;			/* clanid (only used for group chat members)*/
 	gboolean friend;		/* TRUE == buddy is in friendslist */
@@ -212,5 +221,4 @@ void gfire_buddy_add_deny_cb(void *data);
 int gfire_check_xqf_cb(PurpleConnection *gc);
 void gfire_avatar_download_cb( PurpleUtilFetchUrlData *url_data, gpointer data, const char *buf, gsize len, const gchar *error_message);
 char *gfire_escape_color_codes(char *string);
-
 #endif /* _GFIRE_H */
