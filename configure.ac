@@ -91,7 +91,7 @@ AC_CONFIG_FILES([
 Makefile
 src/Makefile
 data/Makefile
-po/Makefile.in
+po/Makefile
 pixmaps/Makefile
 ])
 
