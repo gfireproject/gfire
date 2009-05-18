@@ -34,18 +34,18 @@ host_triplet = @host@
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/pre_config.h.in \
-	$(top_srcdir)/configure $(top_srcdir)/po/Makefile.in AUTHORS \
-	COPYING ChangeLog INSTALL NEWS config.guess config.sub depcomp \
-	install-sh ltmain.sh missing
+	$(top_srcdir)/configure AUTHORS COPYING ChangeLog INSTALL NEWS \
+	config.guess config.sub depcomp install-sh ltmain.sh missing
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/configure.ac
+am__aclocal_m4_deps = $(top_srcdir)/m4/intltool.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = pre_config.h
-CONFIG_CLEAN_FILES = po/Makefile
+CONFIG_CLEAN_FILES =
 SOURCES =
 DIST_SOURCES =
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
@@ -72,6 +72,7 @@ GZIP_ENV = --best
 distuninstallcheck_listfiles = find . -type f -print
 distcleancheck_listfiles = find . -type f -print
 ACLOCAL = @ACLOCAL@
+ALL_LINGUAS = @ALL_LINGUAS@
 AMTAR = @AMTAR@
 AR = @AR@
 AUTOCONF = @AUTOCONF@
@@ -85,19 +86,24 @@ CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
+CXX = @CXX@
+CXXCPP = @CXXCPP@
+CXXDEPMODE = @CXXDEPMODE@
+CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DATADIRNAME = @DATADIRNAME@
 DEBUG_CFLAGS = @DEBUG_CFLAGS@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DSYMUTIL = @DSYMUTIL@
-DUMPBIN = @DUMPBIN@
+ECHO = @ECHO@
 ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
-FGREP = @FGREP@
+F77 = @F77@
+FFLAGS = @FFLAGS@
 GETTEXT_PACKAGE = @GETTEXT_PACKAGE@
 GLIB_CFLAGS = @GLIB_CFLAGS@
 GLIB_GENMARSHAL = @GLIB_GENMARSHAL@
@@ -114,12 +120,33 @@ INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 INSTOBJEXT = @INSTOBJEXT@
 INTLLIBS = @INTLLIBS@
-LD = @LD@
+INTLTOOL_CAVES_RULE = @INTLTOOL_CAVES_RULE@
+INTLTOOL_DESKTOP_RULE = @INTLTOOL_DESKTOP_RULE@
+INTLTOOL_DIRECTORY_RULE = @INTLTOOL_DIRECTORY_RULE@
+INTLTOOL_EXTRACT = @INTLTOOL_EXTRACT@
+INTLTOOL_KBD_RULE = @INTLTOOL_KBD_RULE@
+INTLTOOL_KEYS_RULE = @INTLTOOL_KEYS_RULE@
+INTLTOOL_MERGE = @INTLTOOL_MERGE@
+INTLTOOL_OAF_RULE = @INTLTOOL_OAF_RULE@
+INTLTOOL_PERL = @INTLTOOL_PERL@
+INTLTOOL_POLICY_RULE = @INTLTOOL_POLICY_RULE@
+INTLTOOL_PONG_RULE = @INTLTOOL_PONG_RULE@
+INTLTOOL_PROP_RULE = @INTLTOOL_PROP_RULE@
+INTLTOOL_SCHEMAS_RULE = @INTLTOOL_SCHEMAS_RULE@
+INTLTOOL_SERVER_RULE = @INTLTOOL_SERVER_RULE@
+INTLTOOL_SERVICE_RULE = @INTLTOOL_SERVICE_RULE@
+INTLTOOL_SHEET_RULE = @INTLTOOL_SHEET_RULE@
+INTLTOOL_SOUNDLIST_RULE = @INTLTOOL_SOUNDLIST_RULE@
+INTLTOOL_THEME_RULE = @INTLTOOL_THEME_RULE@
+INTLTOOL_UI_RULE = @INTLTOOL_UI_RULE@
+INTLTOOL_UPDATE = @INTLTOOL_UPDATE@
+INTLTOOL_XAM_RULE = @INTLTOOL_XAM_RULE@
+INTLTOOL_XML_NOMERGE_RULE = @INTLTOOL_XML_NOMERGE_RULE@
+INTLTOOL_XML_RULE = @INTLTOOL_XML_RULE@
 LDFLAGS = @LDFLAGS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
-LIPO = @LIPO@
 LN_S = @LN_S@
 LTLIBOBJS = @LTLIBOBJS@
 MAKEINFO = @MAKEINFO@
@@ -127,12 +154,9 @@ MKDIR_P = @MKDIR_P@
 MKINSTALLDIRS = @MKINSTALLDIRS@
 MSGFMT = @MSGFMT@
 MSGFMT_OPTS = @MSGFMT_OPTS@
-NM = @NM@
+MSGMERGE = @MSGMERGE@
 NMEDIT = @NMEDIT@
-OBJDUMP = @OBJDUMP@
 OBJEXT = @OBJEXT@
-OTOOL = @OTOOL@
-OTOOL64 = @OTOOL64@
 PACKAGE = @PACKAGE@
 PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
 PACKAGE_NAME = @PACKAGE_NAME@
@@ -160,7 +184,8 @@ abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
 abs_top_srcdir = @abs_top_srcdir@
 ac_ct_CC = @ac_ct_CC@
-ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
+ac_ct_CXX = @ac_ct_CXX@
+ac_ct_F77 = @ac_ct_F77@
 am__include = @am__include@
 am__leading_dot = @am__leading_dot@
 am__quote = @am__quote@
@@ -191,7 +216,6 @@ libdir = @libdir@
 libexecdir = @libexecdir@
 localedir = @localedir@
 localstatedir = @localstatedir@
-lt_ECHO = @lt_ECHO@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 oldincludedir = @oldincludedir@
@@ -275,8 +299,6 @@ $(srcdir)/pre_config.h.in:  $(am__configure_deps)
 
 distclean-hdr:
 	-rm -f pre_config.h stamp-h1
-po/Makefile: $(top_builddir)/config.status $(top_srcdir)/po/Makefile.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
 
 mostlyclean-libtool:
 	-rm -f *.lo

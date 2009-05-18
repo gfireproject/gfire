@@ -22,6 +22,8 @@ AC_SUBST(GETTEXT_PACKAGE)
 AM_GLIB_GNU_GETTEXT
 AM_GLIB_DEFINE_LOCALEDIR(LOCALEDIR)
 
+IT_PROG_INTLTOOL([0.35.0])
+
 #
 # Define Gfire header
 #
@@ -91,7 +93,7 @@ AC_CONFIG_FILES([
 Makefile
 src/Makefile
 data/Makefile
-po/Makefile
+po/Makefile.in
 pixmaps/Makefile
 ])
 
