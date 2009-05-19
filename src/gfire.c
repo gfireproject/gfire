@@ -52,7 +52,6 @@ xmlnode *gfire_manage_game_xml(char *game_id, char *game_name, gboolean game_exe
 	char *game_prefix, char *game_path, char *game_launch, char *game_connect);
 
 gboolean separe_path(char *path, char **file);
-char *str_path_get_filename(char *full_path);
 gboolean check_process(char *process, char *process_argument);
 #endif
 
@@ -1901,7 +1900,7 @@ void gfire_handle_voip_detection(PurpleConnection *gc, int voipid, gboolean runn
 		if (gfire->voipid == 0)
 		{
 			// Get Server IP and Port
-			char *executable_name = str_path_get_filename(executable);
+			char *executable_name = g_path_get_basename(executable);
 			guint8 *voip_ip = NULL;
 			guint32 voip_port = 0;
 
@@ -1940,7 +1939,7 @@ void gfire_handle_voip_detection(PurpleConnection *gc, int voipid, gboolean runn
 		else if(gfire->voipid == voipid)
 		{
 			// Get Server IP and Port
-			char *executable_name = str_path_get_filename(executable);
+			char *executable_name = g_path_get_basename(executable);
 			guint8 *voip_ip = NULL;
 			guint32 voip_port = 0;
 
@@ -2046,7 +2045,7 @@ int gfire_detect_running_processes_cb(PurpleConnection *gc)
 			gchar *game_id = xmlnode_get_attrib(node_child, "id");
 			int game_id_int = atoi(game_id);
 
-			char *game_executable_name = str_path_get_filename(game_executable);
+			char *game_executable_name = g_path_get_basename(game_executable);
 			gboolean process_running = check_process(game_executable_name, game_executable_argument);
 			if(game_executable_name) g_free(game_executable_name);
 
@@ -2550,19 +2549,6 @@ char *str_replace (char *string, char *before, char *after)
 	strncpy (replaced + replaced_pos, string, len);
 
 	return replaced;
-}
-
-char *str_path_get_filename(char *full_path)
-{
-	if(!full_path)
-		return NULL;
-
-	char *file = strrchr(full_path, '/');
-	if(!file)
-		return g_strdup(full_path);
-
-	file = file + 1;
-	return g_strdup(file);
 }
 
 /**
