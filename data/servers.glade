@@ -159,7 +159,8 @@
                 <child>
                   <object class="GtkTreeViewColumn" id="name_column">
                     <property name="resizable">True</property>
-                    <property name="title">Name</property>
+                    <property name="max_width">256</property>
+                    <property name="title">Server name</property>
                     <property name="expand">True</property>
                     <child>
                       <object class="GtkCellRendererText" id="name_cell_renderer"/>
@@ -170,10 +171,9 @@
                   </object>
                 </child>
                 <child>
-                  <object class="GtkTreeViewColumn" id="adress_column">
+                  <object class="GtkTreeViewColumn" id="ip_column">
                     <property name="resizable">True</property>
-                    <property name="title">Adress (IP)</property>
-                    <property name="expand">True</property>
+                    <property name="title">Server IP</property>
                     <child>
                       <object class="GtkCellRendererText" id="adress_cell_renderer"/>
                       <attributes>

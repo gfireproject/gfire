@@ -66,10 +66,6 @@
 /* Define the location where the catalogs will be installed */
 #define LOCALEDIR "/usr/share/locale"
 
-/* Define to the sub-directory in which libtool stores uninstalled libraries.
-   */
-#define LT_OBJDIR ".libs/"
-
 /* Define to the address where bug reports for this package should be sent. */
 #define SNPP_PACKAGE_BUGREPORT ""
 
