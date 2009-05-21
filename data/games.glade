@@ -84,6 +84,7 @@
                             </child>
                             <child>
                               <object class="GtkEntry" id="add_game_entry">
+                                <property name="height_request">32</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="invisible_char">&#x25CF;</property>
@@ -127,6 +128,7 @@
                                 <child>
                                   <object class="GtkFileChooserButton" id="add_executable_button">
                                     <property name="visible">True</property>
+                                    <property name="sensitive">False</property>
                                   </object>
                                   <packing>
                                     <property name="padding">5</property>
@@ -433,6 +435,7 @@
                                 <child>
                                   <object class="GtkFileChooserButton" id="edit_executable_button">
                                     <property name="visible">True</property>
+                                    <property name="sensitive">False</property>
                                   </object>
                                   <packing>
                                     <property name="padding">5</property>
@@ -464,6 +467,7 @@
                             </child>
                             <child>
                               <object class="GtkComboBox" id="edit_game_combo">
+                                <property name="height_request">32</property>
                                 <property name="visible">True</property>
                                 <property name="model">edit_game_list_store</property>
                                 <child>
