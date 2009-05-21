@@ -2621,7 +2621,7 @@ char *gfire_escape_color_codes(char *string)
 		'C', 'E', '6', 'V',
 		'K', 'L', '8', 'Y', 'A',
 		'?', '+', '@', '-', '/',
-		'n', '&' // Non-standard Q3 color codes.
+		'&',
 	};
 	
 	gchar *escaped = g_strdup_printf("%s", string);
@@ -2629,13 +2629,15 @@ char *gfire_escape_color_codes(char *string)
 	if (escaped != NULL)
 	{	
 		int i;
-		for (i = 0; i < 41; i++)
+		for (i = 0; i < 42; i++)
 		{
-			gchar *code;
-			char *empty = "";
+			gchar *code, *code_lower_case;
 
 			code = g_strdup_printf("^%c", color_codes[i]);
-			escaped = str_replace(escaped, code, empty);
+			code_lower_case = g_ascii_strdown(code, -1);
+
+			escaped = str_replace(escaped, code, "");
+			escaped = str_replace(escaped, code_lower_case, "");
 		}
 	}
 
