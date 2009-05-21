@@ -46,6 +46,7 @@ static void gfire_action_manage_games_cb(PurplePluginAction *action);
 static void gfire_add_game_cb(manage_games_callback_args *args, GtkWidget *button);
 static void gfire_edit_game_cb(manage_games_callback_args *args, GtkWidget *button);
 static void gfire_manage_games_edit_update_fields_cb(GtkBuilder *builder, GtkWidget *edit_games_combo);
+static void gfire_manage_games_update_executable_toggled_cb(GtkBuilder *builder, GtkWidget *executable_check_button);
 static void gfire_remove_game_cb(manage_games_callback_args *args, GtkWidget *button);
 static void gfire_reload_lconfig(PurpleConnection *gc);
 xmlnode *gfire_manage_game_xml(char *game_id, char *game_name, gboolean game_executable, char *game_argument,
@@ -1348,6 +1349,11 @@ static void gfire_action_nick_change_cb(PurplePluginAction *action)
 		FALSE, FALSE, NULL, N_("OK"), G_CALLBACK(gfire_change_nick), N_("Cancel"), NULL, account, NULL, NULL, gc);
 }
 
+static void gfire_manage_games_update_executable_cb(GtkWidget *executable_button, GtkWidget *path_button)
+{
+	gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(executable_button), gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(path_button)));
+}
+
 /**
  * shows the manage games window
  *
@@ -1378,22 +1384,29 @@ static void gfire_action_manage_games_cb(PurplePluginAction *action)
 
 	GtkWidget *manage_games_window = GTK_WIDGET(gtk_builder_get_object(builder, "manage_games_window"));
 	GtkWidget *add_game_entry = GTK_WIDGET(gtk_builder_get_object(builder, "add_game_entry"));
+	GtkWidget *add_path_button = GTK_WIDGET(gtk_builder_get_object(builder, "add_path_button"));
+	GtkWidget *add_executable_check_button = GTK_WIDGET(gtk_builder_get_object(builder, "add_executable_check_button"));
+	GtkWidget *add_executable_button = GTK_WIDGET(gtk_builder_get_object(builder, "add_executable_button"));
 	GtkWidget *add_close_button = GTK_WIDGET(gtk_builder_get_object(builder, "add_close_button"));
 	GtkWidget *add_add_button = GTK_WIDGET(gtk_builder_get_object(builder, "add_add_button"));
 	GtkWidget *edit_game_combo = GTK_WIDGET(gtk_builder_get_object(builder, "edit_game_combo"));
+	GtkWidget *edit_executable_check_button = GTK_WIDGET(gtk_builder_get_object(builder, "edit_executable_check_button"));
 	GtkWidget *edit_close_button = GTK_WIDGET(gtk_builder_get_object(builder, "edit_close_button"));
 	GtkWidget *edit_apply_button = GTK_WIDGET(gtk_builder_get_object(builder, "edit_apply_button"));
 	GtkWidget *edit_remove_button = GTK_WIDGET(gtk_builder_get_object(builder, "edit_remove_button"));
-
+	
 	manage_games_callback_args *args;
 
 	args = g_new0(manage_games_callback_args, 1);
 	args->gc = gc;
 	args->builder = builder;
-
+	
+	g_signal_connect_swapped(add_path_button, "current-folder-changed", G_CALLBACK(gfire_manage_games_update_executable_cb), add_executable_button);
+	g_signal_connect_swapped(add_executable_check_button, "toggled", G_CALLBACK(gfire_manage_games_update_executable_toggled_cb), builder);
 	g_signal_connect_swapped(add_close_button, "clicked", G_CALLBACK(gtk_widget_destroy), manage_games_window);
 	g_signal_connect_swapped(add_add_button, "clicked", G_CALLBACK(gfire_add_game_cb), args);
 	g_signal_connect_swapped(edit_game_combo, "changed", G_CALLBACK(gfire_manage_games_edit_update_fields_cb), builder);
+	g_signal_connect_swapped(edit_executable_check_button, "toggled", G_CALLBACK(gfire_manage_games_update_executable_toggled_cb), builder);
 	g_signal_connect_swapped(edit_close_button, "clicked", G_CALLBACK(gtk_widget_destroy), manage_games_window);
 	g_signal_connect_swapped(edit_apply_button, "clicked", G_CALLBACK(gfire_edit_game_cb), args);
 	g_signal_connect_swapped(edit_remove_button, "clicked", G_CALLBACK(gfire_remove_game_cb), args);
@@ -1712,6 +1725,32 @@ static void gfire_manage_games_edit_update_fields_cb(GtkBuilder *builder, GtkWid
 		}
 	}
 }
+
+static void gfire_manage_games_update_executable_toggled_cb(GtkBuilder *builder, GtkWidget *executable_check_button)
+{
+	if (builder == NULL) {
+		purple_debug_error("gfire", "Couldn't access interface.");
+		return;
+	}
+
+	GtkWidget *add_executable_check_button = GTK_WIDGET(gtk_builder_get_object(builder, "add_executable_check_button"));
+	GtkWidget *add_executable_button = GTK_WIDGET(gtk_builder_get_object(builder, "add_executable_button"));
+	GtkWidget *edit_executable_check_button = GTK_WIDGET(gtk_builder_get_object(builder, "edit_executable_check_button"));
+	GtkWidget *edit_executable_button = GTK_WIDGET(gtk_builder_get_object(builder, "edit_executable_button"));
+
+	gboolean check_button_state;
+	
+	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(add_executable_check_button)) == TRUE) check_button_state = FALSE;
+	else check_button_state = TRUE;
+
+	gtk_widget_set_sensitive(add_executable_button, check_button_state);
+
+	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(edit_executable_check_button)) == TRUE) check_button_state = FALSE;
+	else check_button_state = TRUE;
+
+	gtk_widget_set_sensitive(edit_executable_button, check_button_state);	
+}
+
 
 /**
  * removes the selected game from gfire_launch.xml in the manage games window
