@@ -2621,7 +2621,7 @@ char *gfire_escape_color_codes(char *string)
 		'C', 'E', '6', 'V',
 		'K', 'L', '8', 'Y', 'A',
 		'?', '+', '@', '-', '/',
-		'&',
+		'&', 'X'
 	};
 	
 	gchar *escaped = g_strdup_printf("%s", string);
@@ -2629,7 +2629,7 @@ char *gfire_escape_color_codes(char *string)
 	if (escaped != NULL)
 	{	
 		int i;
-		for (i = 0; i < 42; i++)
+		for (i = 0; i < 43; i++)
 		{
 			gchar *code, *code_lower_case;
 
