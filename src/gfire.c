@@ -1373,6 +1373,7 @@ static void gfire_action_manage_games_cb(PurplePluginAction *action)
 	}
 
 	gfire_reload_lconfig(gc);
+
 	builder_file = g_build_filename(DATADIR, "purple", "gfire", "games.glade", NULL);
 	gtk_builder_add_from_file(builder, builder_file, NULL);
 	g_free(builder_file);
@@ -1412,14 +1413,25 @@ static void gfire_action_manage_games_cb(PurplePluginAction *action)
 	g_signal_connect_swapped(edit_remove_button, "clicked", G_CALLBACK(gfire_remove_game_cb), args);
 
 	xmlnode *gfire_launch = purple_util_read_xml_from_file("gfire_launch.xml", "gfire_launch.xml");
+	
 	if (gfire_launch != NULL)
 	{
-		xmlnode *node_child;
-		for (node_child = xmlnode_get_child(gfire_launch, "game"); node_child != NULL;
-		    node_child = xmlnode_get_next_twin(node_child))
+
+		const char *manager_version = xmlnode_get_attrib(gfire_launch, "version");
+
+		if (g_strcmp0(manager_version, "2") != NULL) {
+			purple_notify_message(NULL, PURPLE_NOTIFY_MSG_ERROR, N_("Manage Games: error"), N_("Incompatible games configuration"),
+				N_("Your current games configuration is incompatible with this version of Gfire. Please remove it and try again."), NULL, NULL);
+			return;
+		}
+		else
 		{
-			const char *game_name = xmlnode_get_attrib(node_child, "name");
-			gtk_combo_box_append_text(GTK_COMBO_BOX(edit_game_combo), game_name);
+			xmlnode *node_child;
+			for (node_child = xmlnode_get_child(gfire_launch, "game"); node_child != NULL;
+			     node_child = xmlnode_get_next_twin(node_child)) {
+				const char *game_name = xmlnode_get_attrib(node_child, "name");
+				gtk_combo_box_append_text(GTK_COMBO_BOX(edit_game_combo), game_name);
+			}
 		}
 	}
 
@@ -1505,7 +1517,8 @@ static void gfire_add_game_cb(manage_games_callback_args *args, GtkWidget *butto
 
 		if (game_check == FALSE)
  		{
-			xmlnode *gfire_launch_new = xmlnode_new("launchinfo");
+			xmlnode *gfire_launch_new = xmlnode_new("launch_info");
+			xmlnode_set_attrib(gfire_launch_new, "version", "2");
 			xmlnode *gfire_launch = purple_util_read_xml_from_file("gfire_launch.xml", "gfire_launch.xml");
 			xmlnode *game_node;
 			
@@ -1601,7 +1614,8 @@ static void gfire_edit_game_cb(manage_games_callback_args *args, GtkWidget *butt
 	    && ((game_executable_use_path == FALSE && game_executable != NULL) || game_executable_use_path == TRUE))
 	{
 		xmlnode *gfire_launch = purple_util_read_xml_from_file("gfire_launch.xml", "gfire_launch.xml");
-		xmlnode *gfire_launch_new = xmlnode_new("launchinfo");
+		xmlnode *gfire_launch_new = xmlnode_new("launch_info");
+		xmlnode_set_attrib(gfire_launch_new, "version", "2");
 		
 		if (gfire_launch != NULL)
 		{
@@ -1772,7 +1786,8 @@ static void gfire_remove_game_cb(manage_games_callback_args *args, GtkWidget *bu
 	if (selected_game != NULL)
 	{
 		xmlnode *gfire_launch = purple_util_read_xml_from_file("gfire_launch.xml", "gfire_launch.xml");
-		xmlnode *gfire_launch_new = xmlnode_new("launchinfo");
+		xmlnode *gfire_launch_new = xmlnode_new("launch_info");
+		xmlnode_set_attrib(gfire_launch_new, "version", "2");
 		
 		if (gfire_launch != NULL)
 		{
@@ -1837,7 +1852,7 @@ static void gfire_reload_lconfig(PurpleConnection *gc)
 
 /**
  * creates a new xmlnode containing the game information, the returned node must be inserted
- * in the main launchinfo node
+ * in the main launch_info node
  *
  * @param game_id: the game ID
  * @param game_name: the game name
