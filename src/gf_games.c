@@ -114,7 +114,7 @@ char *gfire_game_name(PurpleConnection *gc, int game)
 		} else {
 			// Name is non-empty?
 			if(name)
-				ret = g_strdup(gfire_escape_html(name));
+				ret = gfire_escape_html(name);
 			else
 				ret = g_strdup_printf("%d",game);
 		}

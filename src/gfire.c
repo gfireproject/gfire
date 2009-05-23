@@ -1908,10 +1908,10 @@ void gfire_handle_game_detection(PurpleConnection *gc, int gameid, gboolean runn
 		{
 			gboolean norm = purple_account_get_bool(purple_connection_get_account(gc), "ingamenotificationnorm", FALSE);
 			purple_debug_info("gfire",
-							"gfire_handle_game_detection: %s is running. Telling Xfire ingame status.\n", game_name);
+							"gfire_handle_game_detection: %s is running. Telling Xfire ingame status.\n", NN(game_name));
 
 			if (norm == TRUE) purple_notify_message(NULL, PURPLE_NOTIFY_MSG_INFO, N_("Ingame status"),
-										game_name, N_("Your status has been changed."), NULL, NULL);
+										NN(game_name), N_("Your status has been changed."), NULL, NULL);
 
 			len = gfire_join_game_create(gc, gameid, 0, NULL);
 			if (len != FALSE) gfire_send(gc, gfire->buff_out, len);
