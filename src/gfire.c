@@ -82,8 +82,13 @@ static const char *gfire_blist_emblems(PurpleBuddy *b)
 	p = purple_buddy_get_presence(b);
 
 	if (purple_presence_is_online(p) == TRUE){
-	if (0 != gf_buddy->gameid)
-		return "game";
+		if (0 != gf_buddy->gameid && 0 == gf_buddy->voipid) {
+			return "game";
+		} else if (0 == gf_buddy->gameid && 0 != gf_buddy->voipid) {
+			return "voip";
+		} else if (0 != gf_buddy->gameid && 0 != gf_buddy->voipid) {
+			return "game-voip";
+		}
 	}
 
 	return NULL;
