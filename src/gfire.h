@@ -144,6 +144,9 @@ struct _gfire_data {
 	gboolean blist_loaded;		/* TRUE == buddy list is loaded, we need this for the clan list */
 	GtkBuilder *server_browser;
 	GList *server_list;
+	GMutex *server_mutex;		/* mutex for writing the found server */
+	int server_ip;				/* server ip */
+	gchar *server_port;			/* server port */
 };
 
 struct _gfire_buddy {
@@ -221,4 +224,6 @@ void gfire_buddy_add_deny_cb(void *data);
 int gfire_check_xqf_cb(PurpleConnection *gc);
 void gfire_avatar_download_cb( PurpleUtilFetchUrlData *url_data, gpointer data, const char *buf, gsize len, const gchar *error_message);
 char *gfire_escape_color_codes(char *string);
+
+static void gfire_detect_game_server(PurpleConnection *gc);
 #endif /* _GFIRE_H */

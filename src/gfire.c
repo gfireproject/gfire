@@ -58,6 +58,7 @@ gboolean check_process(char *process, char *process_argument);
 
 static PurplePlugin *_gfire_plugin = NULL;
 
+
 static const char *gfire_blist_icon(PurpleAccount *a, PurpleBuddy *b) {
 	return "gfire";
 }
@@ -288,6 +289,9 @@ static void gfire_login_cb(gpointer data, gint source, const gchar *error_messag
 	gfire_send(gc, packet, length);
 
 	gc->inpa = purple_input_add(gfire->fd, PURPLE_INPUT_READ, gfire_input_cb, gc);
+
+	/* Create server_ip_mutex */
+	gfire->server_mutex = g_mutex_new();
 }
 
 
@@ -374,6 +378,9 @@ void gfire_close(PurpleConnection *gc)
 	if (NULL != gfire->alias) g_free(gfire->alias);
 	if (NULL != gfire->voipip) g_free(gfire->voipip);
 
+	if (gfire->server_ip != NULL) g_free(gfire->server_ip);
+	if (gfire->server_mutex != NULL) g_free(gfire->server_mutex);
+	
 	g_free(gfire);
 	gc->proto_data = NULL;
 }
@@ -1909,6 +1916,24 @@ void gfire_handle_game_detection(PurpleConnection *gc, int gameid, gboolean runn
 
 	if (running == TRUE)
 	{
+		g_thread_create(gfire_detect_game_server, gc, TRUE, NULL);
+		
+		if (gfire->server_ip != NULL && gfire->server_port != NULL && gfire->gameid != NULL)
+		{
+			purple_debug_info("gfire_handle_game_detection", "Playing on server (%s:%d)", gfire->server_ip, gfire->server_port);
+			
+			int packet_len = gfire_join_game_create(gc, gfire->gameid, gfire->server_port,
+			                                        (guint8*)gfire_ipstr_to_bin(gfire->server_ip));
+			if (packet_len != 0) gfire_send(gc, gfire->buff_out, packet_len);
+		}
+		else
+		{
+			purple_debug_info("gfire_handle_game_detection", "Not playing on a server.", gfire->server_ip, gfire->server_port);
+
+			int packet_len = gfire_join_game_create(gc, gfire->gameid, 0, NULL);
+			if (packet_len != 0) gfire_send(gc, gfire->buff_out, packet_len);
+		}
+		
 		if (gfire->game_running == FALSE)
 		{
 			gboolean norm = purple_account_get_bool(purple_connection_get_account(gc), "ingamenotificationnorm", FALSE);
@@ -2832,6 +2857,92 @@ void gfire_detect_mumble_server(const gchar *executable, guint8 **voip_ip, guint
 	purple_debug(PURPLE_DEBUG_MISC, "gfire", "gfire_detect_mumble_server: Mumble Server: %s:%d\n", ip, port);
 	*voip_ip = (guint8*)gfire_ipstr_to_bin(ip);
 	*voip_port = port;
+}
+
+static void gfire_detect_game_server(PurpleConnection *gc)
+{
+	gfire_data *gfire = NULL;
+	if (gc == NULL || (gfire = (gfire_data *)gc->proto_data) == NULL) {
+		purple_debug_error("gfire_detect_game_server", "GC not set and/or couldn't access gfire data.\n");
+		return;
+	}
+
+	int game_id = gfire->gameid;
+	xmlnode *gfire_games = gfire->xml_games_list;
+
+	if (game_id != NULL && gfire_games != NULL)
+	{
+		xmlnode *node_child;
+		gboolean *server_detect;
+		char *server_ip;
+		
+		for (node_child = xmlnode_get_child(gfire_games, "game"); node_child != NULL; node_child = xmlnode_get_next_twin(node_child))
+		{
+ 			const char *game_id_tmp = xmlnode_get_attrib(node_child, "id");
+			xmlnode *server_detect_node = xmlnode_get_child(node_child, "server_detect");
+
+			if (atoi(game_id_tmp) == game_id) {
+				if (g_strcmp0(xmlnode_get_data(server_detect_node), "true") == NULL) server_detect = TRUE;
+				else server_detect = FALSE;
+			}
+		}
+
+		if (server_detect == TRUE)
+		{
+			char command[128], line[2048];
+			int c, count;
+		
+			memset(line, 0, sizeof(line));
+		
+			sprintf(command, "tcpdump -f -c 30");
+			FILE *command_pipe = popen(command, "r");
+		
+			if (command_pipe != NULL)
+			{
+				GRegex *regex = NULL;
+				GError *regex_error = NULL;
+				GMatchInfo *regex_matches = NULL;
+				gboolean regex_match = FALSE;
+
+				regex = g_regex_new("(\\d{1,3}\\.){4}\\d{4,5}", G_REGEX_OPTIMIZE, 0, &regex_error);
+			
+				while (fgets(line, sizeof line, command_pipe) != NULL)
+				{
+					gchar *current_line = g_strdup_printf("%s", line);
+					regex_match = g_regex_match(regex, current_line, 0, &regex_matches);
+				
+					if (regex_match == TRUE) server_ip = g_match_info_fetch(regex_matches, 0);
+					else server_ip = NULL;
+				}
+				
+				fclose(command_pipe);
+
+				if (server_ip != NULL)
+				{
+					gchar **server_ip_split = g_strsplit(server_ip, ".", -1);
+
+					if (server_ip_split != NULL)
+					{
+						char *server_ip_str = g_strdup_printf("%s.%s.%s.%s", server_ip_split[0], server_ip_split[1],
+						                                      server_ip_split[2], server_ip_split[3]);
+						int server_port_tmp = atoi(server_ip_split[4]);
+						
+						g_mutex_lock(gfire->server_mutex);
+						gfire->server_ip = server_ip_str;
+						gfire->server_port = server_port_tmp;
+						g_mutex_unlock(gfire->server_mutex);
+					}
+				}
+				else
+				{
+					g_mutex_lock(gfire->server_mutex);
+					gfire->server_ip = NULL;
+					gfire->server_port = NULL;
+					g_mutex_unlock(gfire->server_mutex);
+				}
+			}
+		}
+	}
 }
 
 /**
