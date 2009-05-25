@@ -145,8 +145,8 @@ struct _gfire_data {
 	GtkBuilder *server_browser;
 	GList *server_list;
 	GMutex *server_mutex;		/* mutex for writing the found server */
-	int server_ip;				/* server ip */
-	gchar *server_port;			/* server port */
+	gchar *server_ip;			/* server ip */
+	int server_port;			/* server port */
 };
 
 struct _gfire_buddy {
