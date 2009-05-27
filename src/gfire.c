@@ -2708,8 +2708,9 @@ char *gfire_escape_html(const char *html)
 			}
 		}
 
-		g_string_append_c(ret, 0);
-		return g_string_free(ret, FALSE);
+		gchar *copy = g_strdup(ret->str);
+		g_string_free(ret, TRUE);
+		return copy;
 	}
 	else
 		return NULL;
