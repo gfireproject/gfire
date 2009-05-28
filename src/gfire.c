@@ -496,66 +496,139 @@ static void gfire_get_info_parse_gamerig_cb(PurpleUtilFetchUrlData *url_data, gp
 		}
 		else if(xmlnode_get_child(gamerig, "error"))
 		{
-			purple_notify_user_info_add_pair(args->user_info, "Game Rig", xmlnode_get_data(xmlnode_get_child(gamerig, "error")));
+			gchar *tmp = xmlnode_get_data(xmlnode_get_child(gamerig, "error"));
+			purple_notify_user_info_add_pair(args->user_info, "Game Rig", NN(tmp));
+			if(tmp) g_free(tmp);
 			xmlnode_free(gamerig);
 		}
 		else
 		{
+			gchar *tmp = NULL;
 			// Manufacturer
 			xmlnode *data = xmlnode_get_child(gamerig, "manufacturer");
-			purple_notify_user_info_add_pair(args->user_info, N_("Manufacturer"), xmlnode_get_data(data) ? xmlnode_get_data(data) : N_("Unknown"));
+			tmp = xmlnode_get_data(data);
+			if(tmp)
+			{
+				purple_notify_user_info_add_pair(args->user_info, N_("Manufacturer"), tmp);
+				g_free(tmp);
+			}
 
 			// CPU
 			data = xmlnode_get_child(gamerig, "processor");
-			purple_notify_user_info_add_pair(args->user_info, N_("Processor"), xmlnode_get_data(data) ? xmlnode_get_data(data) : N_("Unknown"));
+			tmp = xmlnode_get_data(data);
+			if(tmp)
+			{
+				purple_notify_user_info_add_pair(args->user_info, N_("Processor"), tmp);
+				g_free(tmp);
+			}
 
 			// Memory
 			data = xmlnode_get_child(gamerig, "memory");
-			purple_notify_user_info_add_pair(args->user_info, N_("Memory"), xmlnode_get_data(data) ? xmlnode_get_data(data) : N_("Unknown"));
+			tmp = xmlnode_get_data(data);
+			if(tmp)
+			{
+				purple_notify_user_info_add_pair(args->user_info, N_("Memory"), tmp);
+				g_free(tmp);
+			}
 
 			// Video Card
 			data = xmlnode_get_child(gamerig, "videocard");
-			purple_notify_user_info_add_pair(args->user_info, N_("Video Card"), xmlnode_get_data(data) ? xmlnode_get_data(data) : N_("Unknown"));
+			tmp = xmlnode_get_data(data);
+			if(tmp)
+			{
+				purple_notify_user_info_add_pair(args->user_info, N_("Video Card"), tmp);
+				g_free(tmp);
+			}
 
 			// Sound Card
 			data = xmlnode_get_child(gamerig, "soundcard");
-			purple_notify_user_info_add_pair(args->user_info, N_("Sound Card"), xmlnode_get_data(data) ? xmlnode_get_data(data) : N_("Unknown"));
+			tmp = xmlnode_get_data(data);
+			if(tmp)
+			{
+				purple_notify_user_info_add_pair(args->user_info, N_("Sound Card"), tmp);
+				g_free(tmp);
+			}
 
 			// Mainboard
 			data = xmlnode_get_child(gamerig, "mainboard");
-			purple_notify_user_info_add_pair(args->user_info, N_("Mainboard"), xmlnode_get_data(data) ? xmlnode_get_data(data) : N_("Unknown"));
+			tmp = xmlnode_get_data(data);
+			if(tmp)
+			{
+				purple_notify_user_info_add_pair(args->user_info, N_("Mainboard"), tmp);
+				g_free(tmp);
+			}
 
 			// Hard Drive
 			data = xmlnode_get_child(gamerig, "harddrive");
-			purple_notify_user_info_add_pair(args->user_info, N_("Hard Drive"), xmlnode_get_data(data) ? xmlnode_get_data(data) : N_("Unknown"));
+			tmp = xmlnode_get_data(data);
+			if(tmp)
+			{
+				purple_notify_user_info_add_pair(args->user_info, N_("Hard Drive"), tmp);
+				g_free(tmp);
+			}
 
 			// Monitor
 			data = xmlnode_get_child(gamerig, "monitor");
-			purple_notify_user_info_add_pair(args->user_info, N_("Monitor"), xmlnode_get_data(data) ? xmlnode_get_data(data) : N_("Unknown"));
+			tmp = xmlnode_get_data(data);
+			if(tmp)
+			{
+				purple_notify_user_info_add_pair(args->user_info, N_("Monitor"), tmp);
+				g_free(tmp);
+			}
 
 			// Keyboard
 			data = xmlnode_get_child(gamerig, "keyboard");
-			purple_notify_user_info_add_pair(args->user_info, N_("Keyboard"), xmlnode_get_data(data) ? xmlnode_get_data(data) : N_("Unknown"));
+			tmp = xmlnode_get_data(data);
+			if(tmp)
+			{
+				purple_notify_user_info_add_pair(args->user_info, N_("Keyboard"), tmp);
+				g_free(tmp);
+			}
 
 			// Mouse
 			data = xmlnode_get_child(gamerig, "mouse");
-			purple_notify_user_info_add_pair(args->user_info, N_("Mouse"), xmlnode_get_data(data) ? xmlnode_get_data(data) : N_("Unknown"));
+			tmp = xmlnode_get_data(data);
+			if(tmp)
+			{
+				purple_notify_user_info_add_pair(args->user_info, N_("Mouse"), tmp);
+				g_free(tmp);
+			}
 
 			// Mouse Surface
 			data = xmlnode_get_child(gamerig, "mousesurface");
-			purple_notify_user_info_add_pair(args->user_info, N_("Mouse Surface"), xmlnode_get_data(data) ? xmlnode_get_data(data) : N_("Unknown"));
+			tmp = xmlnode_get_data(data);
+			if(tmp)
+			{
+				purple_notify_user_info_add_pair(args->user_info, N_("Mouse Surface"), tmp);
+				g_free(tmp);
+			}
 
 			// Speakers
 			data = xmlnode_get_child(gamerig, "speakers");
-			purple_notify_user_info_add_pair(args->user_info, N_("Speakers"), xmlnode_get_data(data) ? xmlnode_get_data(data) : N_("Unknown"));
+			tmp = xmlnode_get_data(data);
+			if(tmp)
+			{
+				purple_notify_user_info_add_pair(args->user_info, N_("Speakers"), tmp);
+				g_free(tmp);
+			}
 
 			// Computer Case
 			data = xmlnode_get_child(gamerig, "computer_case");
-			purple_notify_user_info_add_pair(args->user_info, N_("Computer Case"), xmlnode_get_data(data) ? xmlnode_get_data(data) : N_("Unknown"));
+			tmp = xmlnode_get_data(data);
+			if(tmp)
+			{
+				purple_notify_user_info_add_pair(args->user_info, N_("Computer Case"), tmp);
+				g_free(tmp);
+			}
 
 			// Operating System
 			data = xmlnode_get_child(gamerig, "operatingsystem");
-			purple_notify_user_info_add_pair(args->user_info, N_("Operating System"), xmlnode_get_data(data) ? xmlnode_get_data(data) : N_("Unknown"));
+			tmp = xmlnode_get_data(data);
+			if(tmp)
+			{
+				purple_notify_user_info_add_pair(args->user_info, N_("Operating System"), tmp);
+				g_free(tmp);
+			}
 
 			xmlnode_free(gamerig);
 		}
@@ -594,50 +667,103 @@ static void gfire_get_info_parse_profile_cb(PurpleUtilFetchUrlData *url_data, gp
 		}
 		else if(xmlnode_get_child(profile, "error"))
 		{
-			purple_notify_user_info_add_pair(args->user_info, N_("Profile"), xmlnode_get_data(xmlnode_get_child(profile, "error")));
+			gchar *tmp = xmlnode_get_data(xmlnode_get_child(profile, "error"));
+			purple_notify_user_info_add_pair(args->user_info, N_("Profile"), NN(tmp));
+			if(tmp) g_free(tmp);
 			xmlnode_free(profile);
 		}
 		else
 		{
+			gchar *tmp = NULL;
 			// Real Name
 			xmlnode *data = xmlnode_get_child(profile, "realname");
-			purple_notify_user_info_add_pair(args->user_info, N_("Real Name"), xmlnode_get_data(data) ? xmlnode_get_data(data) : "Unknown");
+			tmp = xmlnode_get_data(data);
+			if(tmp)
+			{
+				purple_notify_user_info_add_pair(args->user_info, N_("Real Name"), tmp);
+				g_free(tmp);
+			}
 
 			// Age
 			data = xmlnode_get_child(profile, "age");
-			purple_notify_user_info_add_pair(args->user_info, N_("Age"), xmlnode_get_data(data));
+			tmp = xmlnode_get_data(data);
+			if(tmp)
+			{
+				purple_notify_user_info_add_pair(args->user_info, N_("Age"), tmp);
+				g_free(tmp);
+			}
 
 			// Gender
 			data = xmlnode_get_child(profile, "gender");
-			purple_notify_user_info_add_pair(args->user_info, N_("Gender"), (xmlnode_get_data(data)[0] == 'm') ? "Male" : "Female");
+			tmp = xmlnode_get_data(data);
+			if(tmp)
+			{
+				purple_notify_user_info_add_pair(args->user_info, N_("Gender"), (tmp[0] == 'm') ? N_("Male") : N_("Female"));
+				g_free(tmp);
+			}
 
 			// Occupation
 			data = xmlnode_get_child(profile, "occupation");
-			purple_notify_user_info_add_pair(args->user_info, N_("Occupation"), xmlnode_get_data(data) ? xmlnode_get_data(data) : N_("None"));
+			tmp = xmlnode_get_data(data);
+			if(tmp)
+			{
+				purple_notify_user_info_add_pair(args->user_info, N_("Occupation"), tmp);
+				g_free(tmp);
+			}
 
 			// Country
 			data = xmlnode_get_child(profile, "country");
-			purple_notify_user_info_add_pair(args->user_info, N_("Country"), xmlnode_get_data(data));
+			tmp = xmlnode_get_data(data);
+			if(tmp)
+			{
+				purple_notify_user_info_add_pair(args->user_info, N_("Country"), tmp);
+				g_free(tmp);
+			}
 
 			// Location
 			data = xmlnode_get_child(profile, "location");
-			purple_notify_user_info_add_pair(args->user_info, N_("Location"), xmlnode_get_data(data) ? xmlnode_get_data(data) : N_("Unknown"));
+			tmp = xmlnode_get_data(data);
+			if(tmp)
+			{
+				purple_notify_user_info_add_pair(args->user_info, N_("Location"), tmp);
+				g_free(tmp);
+			}
 
 			// Gaming style
 			data = xmlnode_get_child(profile, "gaming_style");
-			purple_notify_user_info_add_pair(args->user_info, N_("Gaming Style"), xmlnode_get_data(data) ? xmlnode_get_data(data) : N_("None"));
+			tmp = xmlnode_get_data(data);
+			if(tmp)
+			{
+				purple_notify_user_info_add_pair(args->user_info, N_("Gaming Style"), tmp);
+				g_free(tmp);
+			}
 
 			// Interests
 			data = xmlnode_get_child(profile, "interests");
-			purple_notify_user_info_add_pair(args->user_info, N_("Interests"), xmlnode_get_data(data) ? xmlnode_get_data(data) : N_("None"));
+			tmp = xmlnode_get_data(data);
+			if(tmp)
+			{
+				purple_notify_user_info_add_pair(args->user_info, N_("Interests"), tmp);
+				g_free(tmp);
+			}
 
 			// Friends
 			data = xmlnode_get_child(profile, "friends_count");
-			purple_notify_user_info_add_pair(args->user_info, N_("Friends"), xmlnode_get_data(data));
+			tmp = xmlnode_get_data(data);
+			if(tmp)
+			{
+				purple_notify_user_info_add_pair(args->user_info, N_("Friends"), tmp);
+				g_free(tmp);
+			}
 
-			// Join date
+			// Join Date
 			data = xmlnode_get_child(profile, "joindate");
-			purple_notify_user_info_add_pair(args->user_info, N_("Join date"), xmlnode_get_data(data));
+			tmp = xmlnode_get_data(data);
+			if(tmp)
+			{
+				purple_notify_user_info_add_pair(args->user_info, N_("Join Date"), tmp);
+				g_free(tmp);
+			}
 
 			xmlnode_free(profile);
 		}
