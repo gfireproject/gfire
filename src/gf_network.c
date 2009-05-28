@@ -129,9 +129,7 @@ int gfire_initialize_connection(guint8 *packet, int version)
 
 void gfire_input_cb(gpointer data, gint source, PurpleInputCondition condition)
 {
-	static int short_flag = 0;
 	guint16 packet_len = 0;
-	static int bytes_read = 0;
 	static int tmp = 0;
 	int errsv = 0;
 	guint16 pkt_id = 0;
@@ -142,77 +140,74 @@ void gfire_input_cb(gpointer data, gint source, PurpleInputCondition condition)
 	if ( (NULL == gfire->buff_out) || (NULL == gfire->buff_in) ) {
 		if ( NULL == gfire->buff_out ) gfire->buff_out = g_malloc0(GFIRE_BUFFOUT_SIZE);
 		if ( NULL == gfire->buff_in ) gfire->buff_in = g_malloc0(GFIRE_BUFFIN_SIZE);
-		short_flag = FALSE;
-		tmp = bytes_read = 0;
 	}
 
-	/* read in the header so we know how much data to read */
-
-	if ( !short_flag ) {
-		tmp = read(source, (void *) gfire->buff_in + bytes_read, XFIRE_HEADER_LEN - bytes_read);
-		errsv = errno;
-		if (tmp > 0) {
-			bytes_read += tmp;
-			tmp = 0;
-		} else {
-			if (0 == tmp) {
+	if(gfire->bytes_read < 2)
+	{
+		// Read the first 2 bytes (packet len)
+		tmp = read(source, (void*)gfire->buff_in, 2);
+		// Check for errors
+		if(tmp <= 0)
+		{
+			// Connection closed when we receive a 0 byte packet
+			if(tmp == 0)
+			{
 				purple_debug(PURPLE_DEBUG_MISC, "gfire", "(input): read 0 bytes, connection closed by peer\n");
 				purple_connection_error(gc, N_("Connection closed by peer."));
-				return;
 			}
-			purple_debug(PURPLE_DEBUG_ERROR, "gfire", "Reading from socket failed errno = %d err_str = %s.\n",
-					errsv, strerror(errsv));
-			purple_connection_error(gc, N_("Socket read failure."));
+			else
+			{
+				purple_debug(PURPLE_DEBUG_ERROR, "gfire", "Reading from socket failed errno = %d err_str = %s.\n",
+						errsv, strerror(errno));
+				purple_connection_error(gc, N_("Socket read failure."));
+			}
+			gfire->bytes_read = 0;
 			return;
 		}
-			
-		if ( XFIRE_HEADER_LEN > bytes_read ) {
-			/* short read, not enough even for a header? */
-			purple_debug(PURPLE_DEBUG_MISC, "gfire", "(input): Header short read, read %d bytes\n", bytes_read);
+
+		gfire->bytes_read += tmp;
+
+		if(gfire->bytes_read < 2)
 			return;
-		}
 	}
-		
-	/* get packet length from header */
+
+	// Get packet len
 	memcpy(&packet_len, gfire->buff_in, sizeof(packet_len));
-	/* xfire network uses little endian format */
 	packet_len = GUINT16_FROM_LE(packet_len);
 
-	/* read the rest of the packet */
-	tmp = read(source, (void *) gfire->buff_in + bytes_read, packet_len - bytes_read);
-	errsv = errno;
-	if (tmp <= 0 ) {
-		if (0 == tmp) {
+	// Read the rest of the packet
+	tmp = read(source, (void*)gfire->buff_in + gfire->bytes_read, packet_len - gfire->bytes_read);
+	// Check for errors
+	if(tmp <= 0)
+	{
+		// Connection closed when we receive a 0 byte packet
+		if(tmp == 0)
+		{
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "(input): read 0 bytes, connection closed by peer\n");
 			purple_connection_error(gc, N_("Connection closed by peer."));
-			return;
 		}
-		purple_debug(PURPLE_DEBUG_ERROR, "gfire", "Reading from socket failed errno = %d err_str = %s.\n",
-				errsv, strerror(errsv));
-		purple_connection_error(gc, N_("Socket read failure."));
-//		gfire_close(gc);
+		else
+		{
+			purple_debug(PURPLE_DEBUG_ERROR, "gfire", "Reading from socket failed errno = %d err_str = %s.\n",
+				errsv, strerror(errno));
+			purple_connection_error(gc, N_("Socket read failure."));
+		}
+		gfire->bytes_read = 0;
 		return;
 	}
-	bytes_read += tmp;
-	if (bytes_read < packet_len) {
-		short_flag = TRUE;
-//		memcpy(&pkt_id, gfire->buff_in + 2, sizeof(packet_len));
-//		pkt_id = GUINT16_FROM_LE(pkt_id);
-		purple_debug(PURPLE_DEBUG_MISC, "gfire", "Packet (%d) read too short, wanted %d bytes, got %d bytes\n",
-			(int) pkt_id, packet_len, bytes_read);
-		purple_debug(PURPLE_DEBUG_MISC, "gfire", "SHORT Packet header: %02x %02x %02x %02x %02x \n",
-			gfire->buff_in[0],gfire->buff_in[1],gfire->buff_in[2],gfire->buff_in[3],gfire->buff_in[4]);
-		/* we'll wait for some more network data */
-		return;
-	} else {
-		if ( short_flag ) purple_debug(PURPLE_DEBUG_MISC, "gfire", "SHORT cleared\n");
-    }
 
-	/* got the whole packet */
-	bytes_read = 0;
-	short_flag = FALSE;
-	memcpy(&pkt_id, gfire->buff_in + 2, sizeof(packet_len));
+	gfire->bytes_read += tmp;
+
+	// We still don't have all data, wait until our next call
+	if(gfire->bytes_read != packet_len)
+		return;
+
+	// We have the whole xfire packet, process it
+	//		Get packet id
+	memcpy(&pkt_id, gfire->buff_in + 2, sizeof(pkt_id));
 	pkt_id = GUINT16_FROM_LE(pkt_id);
+
+	gfire->bytes_read = 0;
 	gfire_parse_packet(gc, packet_len, (int) pkt_id);
 }
 

@@ -123,6 +123,7 @@ struct _gfire_data {
 	int fd; 
 	int chat;
 	gchar *email;
+	guint16 bytes_read;
 	guint8 *buff_out;
 	guint8 *buff_in;
 	GList *buddies;
