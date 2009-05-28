@@ -89,6 +89,7 @@
 #define GFIRE_XQF_FILENAME "ingame.tmp"
 #define GFIRE_DEFAULT_GROUP_NAME "Xfire"
 #define GFIRE_CLAN_GROUP_NAME "Clan"
+#define GFIRE_CLAN_GROUP_FORMATTING "%s [%s]" // long name, short name
 #define GFIRE_VERSION "0.8.1"
 #define GFIRE_GAMES_XML_URL "http://gfire.site40.net/files/gfire_games.xml"
 #define XFIRE_HEADER_LEN 5
@@ -113,7 +114,7 @@
 typedef struct _gfire_data	gfire_data;
 typedef struct _gfire_buddy	gfire_buddy;
 typedef struct _gfire_im	gfire_im;
-typedef struct _gfire_clans	gfire_clans;
+typedef struct _gfire_clan	gfire_clan;
 typedef struct _gfire_c_msg	gfire_chat_msg;
 typedef struct _manage_games_callback_args manage_games_callback_args;
 typedef struct _get_info_callback_args get_info_callback_args;
@@ -147,6 +148,7 @@ struct _gfire_data {
 	GMutex *server_mutex;		/* mutex for writing the found server */
 	gchar *server_ip;			/* server ip */
 	int server_port;			/* server port */
+	GList *clans;
 };
 
 struct _gfire_buddy {
@@ -166,7 +168,7 @@ struct _gfire_buddy {
 	guint32	voipport;		/* int voip port */
 	guint8 *voipip;			/* char[4] voip ip, each byte is an octet */
 	int chatperm;			/* group chat permissions (only used for group chat members)*/
-	guint8 *clanid;			/* clanid (only used for group chat members)*/
+	guint32 clanid;			/* clanid (only used for group chat members)*/
 	gboolean friend;		/* TRUE == buddy is in friendslist */
 	gboolean clan;			/* TRUE == buddy is in clanlist */
 	gboolean groupchat;		/* TRUE == buddy is in groupchat */
@@ -186,6 +188,13 @@ struct _gfire_c_msg {
 	guint8 *uid;		/* userid of user posting the message */
 	gchar *im_str;		/* im text */
 	gfire_buddy *b;		/* for users joining the chat */
+};
+
+struct _gfire_clan {
+	guint32 clanid;
+	gchar *clanLongName;
+	gchar *clanShortName;
+	PurpleGroup *group;
 };
 
 
@@ -215,8 +224,11 @@ struct _get_info_callback_args {
 
 void gfire_close(PurpleConnection *gc);
 GList *gfire_find_buddy_in_list( GList *blist, gpointer *data, int mode );
-void gfire_new_buddy(PurpleConnection *gc, gchar *alias, gchar *name, gboolean friend, gboolean clan);
+void gfire_new_buddy(PurpleConnection *gc, gchar *alias, gchar *name, gboolean friend, guint32 clanid);
 void gfire_new_buddies(PurpleConnection *gc);
+void gfire_check_for_left_clan_members(PurpleConnection *gc, guint32 clanid);
+void gfire_leave_clan(PurpleConnection *gc, guint32 clanid);
+void gfire_add_clan(PurpleConnection *gc, gfire_clan *newClan);
 void gfire_handle_im(PurpleConnection *gc);
 void gfire_update_buddy_status(PurpleConnection *gc, GList *buddies, int status);
 void gfire_buddy_add_authorize_cb(void *data);

@@ -1815,11 +1815,130 @@ int gfire_create_reject_chat(PurpleConnection *gc, const guint8 *cid)
 	
 }
 
+void gfire_read_clan_leave(PurpleConnection *gc, int packet_len)
+{
+	guint32 clanid = 0;
+	guint32 userid = 0;
+	GList *clan_member_entry = NULL;
+	gfire_buddy *clan_member = NULL;
+	PurpleAccount *account = NULL;
+	PurpleBuddy *buddy = NULL;
+
+	gfire_data *gfire = (gfire_data *)gc->proto_data;
+
+	if (packet_len < 17) {
+		purple_debug_error("gfire", "packet 160 received, but too short. (%d bytes)\n", packet_len);
+		return;
+	}
+
+	memcpy(&clanid, gfire->buff_in + 7, sizeof(clanid));
+	memcpy(&userid, gfire->buff_in + 13, sizeof(userid));
+
+	// We have left the clan
+	if(memcmp(&userid,gfire->userid, sizeof(userid)) == 0)
+		gfire_leave_clan(gc, clanid);
+	// Someone else left the clan
+	else
+	{
+		clan_member_entry = gfire_find_buddy_in_list(gfire->buddies,(gpointer *)&userid, GFFB_UIDBIN);
+		if (clan_member_entry == NULL) {
+			purple_debug(PURPLE_DEBUG_MISC, "gfire", "Remove buddy requested, buddy NOT FOUND.\n");
+			return;
+		}
+		clan_member = (gfire_buddy*)clan_member_entry->data;
+		// Only delete buddy if he is a clan member, not a friend
+		if(clan_member->clan)
+		{
+			account = purple_connection_get_account(gc);
+			buddy = purple_find_buddy(account, clan_member->name);
+			purple_blist_remove_buddy(buddy);
+			gfire->buddies = g_list_delete_link(gfire->buddies, clan_member_entry);
+			purple_debug(PURPLE_DEBUG_MISC, "gfire", "%s left a clan, removing buddy\n", NN(clan_member->name));
+			if (clan_member->away_msg) g_free(clan_member->away_msg);
+			if (clan_member->name) g_free(clan_member->name);
+			if (clan_member->alias) g_free(clan_member->alias);
+			if (clan_member->userid) g_free(clan_member->userid);
+			if (clan_member->uid_str) g_free(clan_member->uid_str);
+			if (clan_member->sid) g_free(clan_member->sid);
+			if (clan_member->sid_str) g_free(clan_member->sid_str);
+			if (clan_member->gameip) g_free(clan_member->gameip);
+			if (clan_member->voipip) g_free(clan_member->voipip);
+			g_free(clan_member);
+		}
+	}
+}
+
+void gfire_read_clan_list(PurpleConnection *gc, int packet_len)
+{
+	int index, itmp, i, type = 0;
+	GList *clanids = NULL;
+	GList *clanLongNames = NULL;
+	GList *clanShortNames = NULL;
+	GList *clanTypes = NULL;
+	gfire_clan *newClan = NULL;
+
+	gfire_data *gfire = (gfire_data *)gc->proto_data;
+
+	index = 8;
+	itmp = gfire_read_attrib(&clanids, gfire->buff_in + index, packet_len - index, NULL, FALSE, TRUE, 0, 0, XFIRE_CLANID_LEN);
+	if (itmp < 1) {
+		if (clanids != NULL) g_list_free(clanids);
+		return;
+	}
+
+	index += itmp + 3;
+	itmp = gfire_read_attrib(&clanLongNames, gfire->buff_in + index, packet_len - index, NULL, TRUE, FALSE, 0, 0, 0);
+	if (itmp < 1 ) {
+		if (clanids != NULL) g_list_free(clanids);
+		if (clanLongNames != NULL) g_list_free(clanLongNames);
+		return;
+	}
+
+	index += itmp + 3;
+	itmp = gfire_read_attrib(&clanShortNames, gfire->buff_in + index, packet_len - index, NULL, TRUE, FALSE, 0, 0, 0);
+	if (itmp < 1 ) {
+		if (clanids != NULL) g_list_free(clanids);
+		if (clanLongNames != NULL) g_list_free(clanLongNames);
+		if (clanShortNames != NULL) g_list_free(clanShortNames);
+		return;
+	}
+
+	index += itmp + 3;
+	itmp = gfire_read_attrib(&clanTypes, gfire->buff_in + index, packet_len - index, NULL, FALSE, TRUE, 0, 0, 4);
+	if (itmp < 1 ) {
+		if (clanids != NULL) g_list_free(clanids);
+		if (clanLongNames != NULL) g_list_free(clanLongNames);
+		if (clanShortNames != NULL) g_list_free(clanShortNames);
+		if (clanTypes != NULL) g_list_free(clanTypes);
+		return;
+	}
+
+	clanids = g_list_first(clanids);
+	clanLongNames = g_list_first(clanLongNames);
+	clanShortNames = g_list_first(clanShortNames);
+	clanTypes = g_list_first(clanTypes);
+
+	while(clanids != NULL)
+	{
+		newClan = g_new0(gfire_clan, 1);
+		newClan->clanid = *(guint32*)clanids->data;
+		newClan->clanLongName = clanLongNames->data;
+		newClan->clanShortName = clanShortNames->data;
+
+		gfire_add_clan(gc, newClan);
+
+		clanids = g_list_next(clanids);
+		clanLongNames = g_list_next(clanLongNames);
+		clanShortNames = g_list_next(clanShortNames);
+		clanTypes = g_list_next(clanTypes);
+	}
+}
+
 void gfire_read_clan_blist(PurpleConnection *gc, int packet_len)
 {
 	int index, itmp, i, type = 0;
 	gfire_buddy *gf_buddy = NULL;
-	guint8 clanid[XFIRE_CLANID_LEN] = {0x0,0x0,0x0,0x0};
+	guint32 clanid = 0;
 	GList *userids = NULL;
 	GList *usernames = NULL;
 	GList *nicks = NULL;
@@ -1831,12 +1950,12 @@ void gfire_read_clan_blist(PurpleConnection *gc, int packet_len)
 	gfire_data *gfire = (gfire_data *)gc->proto_data;
 
 	if (packet_len < 16) {
-		purple_debug_error("gfire", "packet 131 received, but too short. (%d bytes)\n", packet_len);
+		purple_debug_error("gfire", "packet 159 received, but too short. (%d bytes)\n", packet_len);
 		return;
 	}
 
 	index = 7;
-	memcpy(clanid, gfire->buff_in + index, XFIRE_CLANID_LEN);
+	memcpy(&clanid, gfire->buff_in + index, XFIRE_CLANID_LEN);
 	index += XFIRE_CLANID_LEN + 3;
 	
 	itmp = gfire_read_attrib(&userids, gfire->buff_in + index, packet_len - index, NULL, FALSE, TRUE, 0, 0, XFIRE_USERID_LEN);
@@ -1860,6 +1979,11 @@ void gfire_read_clan_blist(PurpleConnection *gc, int packet_len)
 		if (usernames != NULL) g_list_free(usernames);
 		if (nicks != NULL) g_list_free(nicks);
 		return;
+	}
+
+	if(g_list_length(usernames) <= 1)
+	{
+		gfire_check_for_left_clan_members(gc, clanid);
 	}
 
 	userids = g_list_first(userids);
@@ -1923,12 +2047,10 @@ void gfire_read_clan_blist(PurpleConnection *gc, int packet_len)
 	{
 		gf_buddy = (gfire_buddy *)n->data;
 		if (gf_buddy->clan) {
-		purple_debug(PURPLE_DEBUG_MISC, "gfire", "clan buddy info: %s, %02x%02x%02x%02x, %s, %02x%02x%02x%02x\n",
+		purple_debug(PURPLE_DEBUG_MISC, "gfire", "clan buddy info: %s, %02x%02x%02x%02x, %s, %08x\n",
 			     NN(gf_buddy->name), NNA(gf_buddy->userid, gf_buddy->userid[0]),
 			     NNA(gf_buddy->userid, gf_buddy->userid[1]), NNA(gf_buddy->userid, gf_buddy->userid[2]),
-			     NNA(gf_buddy->userid, gf_buddy->userid[3]), NN(gf_buddy->alias),
-			     NNA(gf_buddy->clanid, gf_buddy->clanid[0]), NNA(gf_buddy->clanid, gf_buddy->clanid[1]),
-			     NNA(gf_buddy->clanid, gf_buddy->clanid[2]), NNA(gf_buddy->clanid, gf_buddy->clanid[3]));
+				 NNA(gf_buddy->userid, gf_buddy->userid[3]), NN(gf_buddy->alias), gf_buddy->clanid);
 		}
 		n = g_list_next(n);
 	}

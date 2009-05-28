@@ -300,8 +300,10 @@ void gfire_close(PurpleConnection *gc)
 	gfire_data *gfire = NULL;
 	GList *buddies = NULL;
 	GList *chats = NULL;
+	GList *clans = NULL;
 	gfire_buddy *b = NULL;
 	gfire_chat *gf_chat = NULL;
+	gfire_clan *gf_clan = NULL;
 
 	purple_debug(PURPLE_DEBUG_MISC, "gfire", "CONNECTION: close requested.\n");
 	if (!gc || !(gfire = (gfire_data *)gc->proto_data)) {
@@ -337,7 +339,6 @@ void gfire_close(PurpleConnection *gc)
 		if (NULL != b->sid_str) g_free(b->sid_str);
 		if (NULL != b->gameip) g_free(b->gameip);
 		if (NULL != b->voipip) g_free(b->voipip);
-//		if (NULL != b->clanid) g_free(b->clanid);
 		
 		g_free(b);
 		buddies->data = NULL;
@@ -346,7 +347,7 @@ void gfire_close(PurpleConnection *gc)
 
 	purple_debug(PURPLE_DEBUG_MISC, "gfire", "CONN: freeing chat struct\n");
 	chats = gfire->chats;
-	while (NULL != buddies) {
+	while (NULL != chats) {
 		gf_chat = (gfire_chat *)chats->data;
 		if (NULL != gf_chat->members) g_list_free(gf_chat->members);
 		if (NULL != gf_chat->chat_id) g_free(gf_chat->chat_id);
@@ -356,6 +357,18 @@ void gfire_close(PurpleConnection *gc)
 		g_free(gf_chat);
 		chats->data = NULL;
  		chats = g_list_next(chats);
+	}
+
+	purple_debug(PURPLE_DEBUG_MISC, "gfire", "CONN: freeing clan struct\n");
+	clans = gfire->clans;
+	while (NULL != clans)
+	{
+		gf_clan = (gfire_clan *)clans->data;
+		if(gf_clan->clanLongName) g_free(gf_clan->clanLongName);
+		if(gf_clan->clanShortName) g_free(gf_clan->clanShortName);
+		g_free(gf_clan);
+		clans->data = NULL;
+		clans = g_list_next(clans);
 	}
 
 
@@ -371,6 +384,7 @@ void gfire_close(PurpleConnection *gc)
 	if (NULL != gfire->buff_in) g_free(gfire->buff_in);
 	if (NULL != gfire->buddies) g_list_free(gfire->buddies);
 	if (NULL != gfire->chats) g_list_free(gfire->chats);
+	if (NULL != gfire->clans) g_list_free(gfire->clans);
 	if (NULL != gfire->xml_games_list) xmlnode_free(gfire->xml_games_list);
 	if (NULL != gfire->xml_launch_info) xmlnode_free(gfire->xml_launch_info);
 	if (NULL != gfire->userid) g_free(gfire->userid);
@@ -763,6 +777,217 @@ static void gfire_add_buddy(PurpleConnection *gc, PurpleBuddy *buddy, PurpleGrou
 
 }
 
+void gfire_check_for_left_clan_members(PurpleConnection *gc, guint32 clanid)
+{
+	gfire_data *gfire = NULL;
+	GList *clans = NULL;
+	GList *buddies = NULL;
+	gfire_clan *clan = NULL;
+	gfire_buddy *clan_member = NULL;
+	PurpleGroup *clan_group = NULL;
+	PurpleBlistNode *contact_buddy_node = NULL;
+	PurpleBlistNode *buddy_node = NULL;
+	PurpleBuddy *pbuddy = NULL;
+	gfire_buddy *gf_buddy = NULL;
+
+	if (!gc || !(gfire = (gfire_data *)gc->proto_data) || !clanid)
+	{
+		purple_debug(PURPLE_DEBUG_ERROR, "gfire", "gfire_check_for_left_clan_members: invalid purple connection or clanid!\n");
+		return;
+	}
+
+	clans = gfire->clans;
+	while(clans)
+	{
+		if(clans->data && ((gfire_clan*)clans->data)->clanid == clanid)
+			break;
+		clans = g_list_next(clans);
+	}
+
+	if(!clans)
+	{
+		purple_debug(PURPLE_DEBUG_ERROR, "gfire", "gfire_check_for_left_clan_members: clan not found!\n");
+		return;
+	}
+
+	clan = clans->data;
+
+	contact_buddy_node = purple_blist_node_get_first_child(&(clan->group->node));
+	if(!contact_buddy_node)
+		return;
+
+	while(contact_buddy_node)
+	{
+		if(!PURPLE_BLIST_NODE_IS_BUDDY(contact_buddy_node) && !PURPLE_BLIST_NODE_IS_CONTACT(contact_buddy_node))
+		{
+			buddy_node = purple_blist_node_get_sibling_next(contact_buddy_node);
+			continue;
+		}
+		else if(PURPLE_BLIST_NODE_IS_CONTACT(contact_buddy_node))
+			buddy_node = purple_blist_node_get_first_child(contact_buddy_node);
+		else
+			buddy_node = contact_buddy_node;
+
+		gboolean found = FALSE;
+		pbuddy = (PurpleBuddy*)buddy_node;
+
+		buddies = gfire->buddies;
+		while(buddies)
+		{
+			if(!buddies->data)
+			{
+				buddies = g_list_next(buddies);
+				continue;
+			}
+
+			gf_buddy = (gfire_buddy*)buddies->data;
+			if(g_strcmp0(gf_buddy->name, purple_buddy_get_name(pbuddy)) == 0)
+			{
+				found = TRUE;
+				break;
+			}
+
+			buddies = g_list_next(buddies);
+		}
+
+		if(!found)
+		{
+			purple_debug(PURPLE_DEBUG_INFO, "gfire", "%s seems to have left his clan, removing buddy\n", purple_buddy_get_name(pbuddy));
+			purple_blist_remove_buddy(pbuddy);
+		}
+
+		contact_buddy_node = purple_blist_node_get_sibling_next(contact_buddy_node);
+	}
+}
+
+void gfire_leave_clan(PurpleConnection *gc, guint32 clanid)
+{
+	gfire_data *gfire = NULL;
+	GList *clans = NULL;
+	GList *buddies = NULL;
+	gfire_clan *clan = NULL;
+	gfire_buddy *clan_member = NULL;
+	PurpleAccount *account = NULL;
+	PurpleBuddy *pbuddy = NULL;
+
+	if (!gc || !(gfire = (gfire_data *)gc->proto_data) || !clanid) return;
+
+	account = purple_connection_get_account(gc);
+
+	buddies = gfire->buddies;
+
+	while(buddies)
+	{
+		if(!buddies->data)
+		{
+			buddies = g_list_next(buddies);
+			continue;
+		}
+
+		clan_member = buddies->data;
+		if(!clan_member->clan || clan_member->clanid != clanid)
+		{
+			buddies = g_list_next(buddies);
+			continue;
+		}
+
+		pbuddy = purple_find_buddy(account, clan_member->name);
+		if(!pbuddy)
+		{
+			purple_debug(PURPLE_DEBUG_ERROR, "gfire", "gfire_leave_clan: Tried to remove clan member %s, but buddy was not found!\n", clan_member->name);
+			buddies = g_list_next(buddies);
+			continue;
+		}
+
+		purple_blist_remove_buddy(pbuddy);
+		gfire->buddies = g_list_delete_link(gfire->buddies, buddies);
+
+		if (clan_member->away_msg) g_free(clan_member->away_msg);
+		if (clan_member->name) g_free(clan_member->name);
+		if (clan_member->alias) g_free(clan_member->alias);
+		if (clan_member->userid) g_free(clan_member->userid);
+		if (clan_member->uid_str) g_free(clan_member->uid_str);
+		if (clan_member->sid) g_free(clan_member->sid);
+		if (clan_member->sid_str) g_free(clan_member->sid_str);
+		if (clan_member->gameip) g_free(clan_member->gameip);
+		if (clan_member->voipip) g_free(clan_member->voipip);
+		g_free(clan_member);
+
+		buddies = g_list_next(buddies);
+	}
+
+	clans = gfire->clans;
+
+	while(clans)
+	{
+		if(clans->data && ((gfire_clan*)clans->data)->clanid == clanid)
+			break;
+		clans = g_list_next(clans);
+	}
+
+	if(!clans)
+	{
+		purple_debug(PURPLE_DEBUG_ERROR, "gfire", "gfire_leave_clan: clan not found!\n");
+		return;
+	}
+
+	clan = clans->data;
+	purple_debug(PURPLE_DEBUG_INFO, "gfire", "gfire_leave_clan: removing clan %08x\n", clan->clanid);
+
+	if(clan->clanLongName) g_free(clan->clanLongName);
+	if(clan->clanShortName) g_free(clan->clanShortName);
+
+	purple_blist_remove_group(clan->group);
+	gfire->clans = g_list_delete_link(gfire->clans, clans);
+
+	g_free(clan);
+}
+
+void gfire_add_clan(PurpleConnection *gc, gfire_clan *newClan)
+{
+	gfire_data *gfire = NULL;
+	gchar *clan_group_str = NULL;
+	PurpleBlistNode *group_node = NULL;
+	PurpleGroup *clan_group = NULL;
+
+	if (!gc || !(gfire = (gfire_data *)gc->proto_data) || !newClan) return;
+
+	// Check if the clan group exists /////////////////
+	// Get first group node
+	group_node = purple_blist_get_root();
+	while(group_node && !PURPLE_BLIST_NODE_IS_GROUP(group_node))
+		group_node = purple_blist_node_get_first_child(group_node);
+
+	// Check for a fitting node
+	while(group_node && purple_blist_node_get_int(group_node, "clanid") != newClan->clanid)
+		group_node = purple_blist_node_get_sibling_next(group_node);
+
+	// Group found
+	if(group_node)
+	{
+		newClan->group = (PurpleGroup*)group_node;
+		// Maybe a TODO: Renaming an existing group if the clan name changed
+	}
+	// Not found, create new blist clan group
+	else if(!group_node)
+	{
+		clan_group_str = g_strdup_printf(GFIRE_CLAN_GROUP_FORMATTING, NN(newClan->clanLongName), NN(newClan->clanShortName));
+		gchar *escaped = gfire_escape_html(clan_group_str);
+		if(clan_group_str) g_free(clan_group_str);
+
+		clan_group = purple_group_new(escaped);
+		if(escaped) g_free(escaped);
+
+		purple_blist_add_group(clan_group, NULL);
+		purple_blist_node_set_int(&clan_group->node, "clanid", newClan->clanid);
+
+		newClan->group = clan_group;
+	}
+
+	// Append clan to gfire clan list
+	gfire->clans = g_list_append(gfire->clans, newClan);
+}
+
 
 static void gfire_remove_buddy(PurpleConnection *gc, PurpleBuddy *buddy, PurpleGroup *group)
 {
@@ -879,16 +1104,23 @@ GList *gfire_find_buddy_in_list( GList *blist, gpointer *data, int mode )
 }
 
 
-void gfire_new_buddy(PurpleConnection *gc, gchar *alias, gchar *name, gboolean friend, gboolean clan)
+void gfire_new_buddy(PurpleConnection *gc, gchar *alias, gchar *name, gboolean friend, guint32 clanid)
 {
 	PurpleBuddy *buddy = NULL;
 	PurpleAccount *account = NULL;
 	PurpleGroup *default_purple_group = NULL;
-	PurpleGroup *default_clan_group = NULL;
+	PurpleGroup *clan_group = NULL;
+	gfire_data *gfire = NULL;
+	GList *clans = NULL;
 	account = purple_connection_get_account(gc);
 	default_purple_group = purple_find_group(GFIRE_DEFAULT_GROUP_NAME);
-	default_clan_group = purple_find_group(GFIRE_CLAN_GROUP_NAME);
+	clan_group = NULL;
 	buddy = purple_find_buddy(account, name);
+
+	if(!gc || !(gfire = (gfire_data*)gc->proto_data))
+		return;
+
+	clans = gfire->clans;
 
 
 	if (buddy == NULL && friend == TRUE) {
@@ -905,15 +1137,32 @@ void gfire_new_buddy(PurpleConnection *gc, gchar *alias, gchar *name, gboolean f
 		serv_got_alias(gc, name, g_strdup(alias));
 	}
 	
-	if (buddy == NULL && clan == TRUE) {
-		if (NULL == default_clan_group) {
-			default_clan_group = purple_group_new(GFIRE_CLAN_GROUP_NAME);
-			purple_blist_add_group(default_clan_group, NULL);
+	if (buddy == NULL && clanid > 0) {
+		while(clans)
+		{
+			if(clans->data && ((gfire_clan*)clans->data)->clanid == clanid)
+			{
+				clan_group = ((gfire_clan*)clans->data)->group;
+				break;
+			}
+			clans = g_list_next(clans);
 		}
+
+		if(!clan_group)
+		{
+			clan_group = purple_find_group(GFIRE_CLAN_GROUP_NAME);
+			if(!clan_group)
+			{
+				clan_group = purple_group_new(GFIRE_CLAN_GROUP_NAME);
+				purple_blist_add_group(clan_group, NULL);
+			}
+			purple_debug(PURPLE_DEBUG_ERROR, "gfire", "(buddylist): buddy's clan %08x not found in Pidgin buddy list, adding to default!\n", clanid);
+		}
+
 		buddy = purple_buddy_new(account, name, NULL);
 		purple_debug(PURPLE_DEBUG_MISC, "gfire", "(buddylist): buddy %s not found in Pidgin buddy list, adding.\n",
 				NN(name));
-		purple_blist_add_buddy(buddy, NULL, default_clan_group, NULL);
+		purple_blist_add_buddy(buddy, NULL, clan_group, NULL);
 		serv_got_alias(gc, name, g_strdup(alias));
 	} else {
 		serv_got_alias(gc, name, g_strdup(alias));
@@ -929,11 +1178,18 @@ void gfire_new_buddies(PurpleConnection *gc)
 	PurpleBuddy *gbuddy = NULL;
 	GList *tmp = gfire->buddies;
 	int packet_len = 0;
+	guint32 clanid = 0;
 
 	while (NULL != tmp) {
 		b = (gfire_buddy *)tmp->data;
 		if (!b) return;
-		gfire_new_buddy(gc, b->alias, b->name, b->friend, b->clan);
+		// Check if a member has left during offline time
+		if(b->clan && clanid != b->clanid)
+		{
+			clanid = b->clanid;
+			gfire_check_for_left_clan_members(gc, clanid);
+		}
+		gfire_new_buddy(gc, b->alias, b->name, b->friend, b->clanid);
 		tmp = g_list_next(tmp);
 		gbuddy = purple_find_buddy(purple_connection_get_account(gc), b->name);
 		if(gbuddy != NULL)

@@ -59,6 +59,8 @@ int gfire_create_change_motd(PurpleConnection *gc, const guint8 *cid, gchar* mot
 void gfire_read_chat_motd_change(PurpleConnection *gc, int packet_len);
 void read_groupchat_buddy_permission_change(PurpleConnection *gc, int packet_len);
 int gfire_create_reject_chat(PurpleConnection *gc, const guint8 *cid);
+void gfire_read_clan_leave(PurpleConnection *gc, int packet_len);
+void gfire_read_clan_list(PurpleConnection *gc, int packet_len);
 void gfire_read_clan_blist(PurpleConnection *gc, int packet_len);
 int gfire_create_serverlist_request (PurpleConnection *gc, int game);
 void gfire_read_serverlist(PurpleConnection *gc, int packet_len);
