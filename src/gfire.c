@@ -2550,7 +2550,7 @@ static void gfire_action_about_cb(PurplePluginAction *action)
 
 	gchar *version_str = gfire_game_name(gc, 100);
 
-	if(version_str && g_strcmp0(version_str, "100") == 0) {
+	if(version_str && g_strcmp0(version_str, "100") != 0) {
 		msg = g_strdup_printf(N_("Gfire Version:\t\t%s\nGame List Version:\t%s"), GFIRE_VERSION, version_str);
 		g_free(version_str);
 	} else {
