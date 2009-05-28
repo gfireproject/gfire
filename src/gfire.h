@@ -84,14 +84,14 @@
 #include "xmlnode.h"
 #include "gf_debug.h"
 
-#define GFIRE_WEBSITE "http://gfire.sf.net"
-#define GFIRE_WIKI "http://samjordan.co.uk/gFireWiki"
+#define GFIRE_WEBSITE "http://gfireproject.org"
+#define GFIRE_WIKI "http://my-trac.assembla.com/gfire/wiki"
 #define GFIRE_XQF_FILENAME "ingame.tmp"
 #define GFIRE_DEFAULT_GROUP_NAME "Xfire"
 #define GFIRE_CLAN_GROUP_NAME "Clan"
 #define GFIRE_CLAN_GROUP_FORMATTING "%s [%s]" // long name, short name
-#define GFIRE_VERSION "0.8.1"
-#define GFIRE_GAMES_XML_URL "http://gfire.site40.net/files/gfire_games.xml"
+#define GFIRE_VERSION "0.9.0"
+#define GFIRE_GAMES_XML_URL "http://gfireproject.org/files/gfire_games.xml"
 #define XFIRE_HEADER_LEN 5
 #define XFIRE_USERID_LEN 4
 #define XFIRE_CLANID_LEN 4
@@ -102,7 +102,7 @@
 #define XFIRE_CHATID_LEN 21
 #define XFIRE_SERVER "cs.xfire.com"
 #define XFIRE_PORT 25999
-#define XFIRE_PROTO_VERSION 107
+#define XFIRE_PROTO_VERSION 109
 #define XFIRE_CONNECT_STEPS 3
 #define XFIRE_SID_OFFLINE_STR "00000000000000000000000000000000"
 #define XFIRE_KEEPALIVE_TIME 300  // see gfire_keep_alive for more info
