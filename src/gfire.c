@@ -3025,6 +3025,48 @@ char *str_replace (char *string, char *before, char *after)
 }
 
 /**
+ * Replaces a character by a string in a string
+ * and returns the new string.
+**/
+gchar *str_replace_c(const gchar *p_src, gchar p_find, const gchar *p_replace)
+{
+	if(!p_src || !p_replace)
+		return NULL;
+
+	guint16 len_replace = strlen(p_replace);
+
+	guint16 alloc_len = strlen(p_src) + 11;
+	gchar *ret = (gchar*)g_malloc0(alloc_len);
+
+	int pos = 0;
+	int ret_pos = 0;
+	while(p_src[pos] != 0)
+	{
+		if(p_src[pos] == p_find)
+		{
+			if((alloc_len - len_replace - ret_pos) < 0)
+			{
+				alloc_len += len_replace + 1;
+				ret = (gchar*)g_realloc(ret, alloc_len);
+			}
+			memcpy(ret + ret_pos, p_replace, len_replace);
+			ret_pos += len_replace;
+		}
+		else
+		{
+			ret[ret_pos] = p_src[pos];
+			ret_pos++;
+		}
+
+		pos++;
+	}
+
+	ret[ret_pos] = 0;
+
+	return ret;
+}
+
+/**
  * Removes color codes from a string,
  * used in the server browser to display the server names properly.
 **/
@@ -3066,6 +3108,27 @@ char *gfire_escape_color_codes(char *string)
 char *gfire_escape_html(const char *html)
 {
 	if (html != NULL) {
+		gchar *tmp = NULL;
+		gchar *tmp2 = NULL;
+
+		tmp = str_replace_c(html, '&', "&amp;");
+
+		tmp2 = str_replace_c(tmp, '<', "&lt;");
+		if(tmp) g_free(tmp);
+
+		tmp = str_replace_c(tmp2, '>', "&gt;");
+		if(tmp2) g_free(tmp2);
+
+		tmp2 = str_replace_c(tmp, '"', "&quot;");
+		if(tmp) g_free(tmp);
+
+		tmp = str_replace_c(tmp2, '\n', "<br />");
+		if(tmp2) g_free(tmp2);
+
+		return tmp;
+
+		/* Temporary commented
+
 		char *c = html;
 		GString *ret = g_string_new("");
 		while (*c) {
@@ -3093,6 +3156,7 @@ char *gfire_escape_html(const char *html)
 		gchar *copy = g_strdup(ret->str);
 		g_string_free(ret, TRUE);
 		return copy;
+		*/
 	}
 	else
 		return NULL;
