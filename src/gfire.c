@@ -52,7 +52,6 @@ static void gfire_reload_lconfig(PurpleConnection *gc);
 xmlnode *gfire_manage_game_xml(char *game_id, char *game_name, gboolean game_executable, char *game_argument,
 	char *game_prefix, char *game_path, char *game_launch, char *game_connect);
 
-gboolean separe_path(char *path, char **file);
 gboolean check_process(char *process, char *process_argument);
 #endif
 
