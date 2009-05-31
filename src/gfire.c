@@ -3313,80 +3313,141 @@ static void gfire_detect_game_server(PurpleConnection *gc)
 		return;
 	}
 
-	int game_id = gfire->gameid;
 	xmlnode *gfire_games = gfire->xml_games_list;
+	xmlnode *gfire_launch = gfire->xml_launch_info;
+	int game_id = gfire->gameid;
 
-	if (game_id != NULL && gfire_games != NULL)
+	if (game_id != NULL && gfire_games != NULL && gfire_launch != NULL)
 	{
 		xmlnode *node_child;
-		gboolean *server_detect;
+
+		char *game_executable;
+		gboolean server_detect, server_detect_udp;
 		char *server_ip;
+		int server_port;
+
+		/* Get game executable */
+		for (node_child = xmlnode_get_child(gfire_launch, "game"); node_child != NULL; node_child = xmlnode_get_next_twin(node_child))
+		{
+			xmlnode *command_node = xmlnode_get_child(node_child, "command");
+			xmlnode *executable_node = xmlnode_get_child(command_node, "executable");
+			char *game_id_tmp = xmlnode_get_attrib(node_child, "id");
+
+			if (atoi(game_id_tmp) == game_id) game_executable = xmlnode_get_data(executable_node);
+		}
 		
+		/* Look up if server detection is enabled */
 		for (node_child = xmlnode_get_child(gfire_games, "game"); node_child != NULL; node_child = xmlnode_get_next_twin(node_child))
 		{
- 			const char *game_id_tmp = xmlnode_get_attrib(node_child, "id");
-			xmlnode *server_detect_node = xmlnode_get_child(node_child, "server_detect");
+			xmlnode *detect_node = xmlnode_get_child(node_child, "server_detect");
+			char *game_id_tmp = xmlnode_get_attrib(node_child, "id");
 
 			if (atoi(game_id_tmp) == game_id) {
-				if (g_strcmp0(xmlnode_get_data(server_detect_node), "true") == NULL) server_detect = TRUE;
+				if (g_strcmp0(xmlnode_get_data(detect_node), "true") == NULL) server_detect = TRUE;
 				else server_detect = FALSE;
 			}
 		}
 
-		if (server_detect == TRUE)
+		if (server_detect == TRUE && game_executable != NULL)
 		{
 			char command[128], line[2048];
 			int c, count;
 		
 			memset(line, 0, sizeof(line));
-		
-			sprintf(command, "tcpdump -f -c 30");
+
+			/* Get possible ip using tcp */
+			sprintf(command, "netstat -tuanp | grep %s", g_path_get_basename(game_executable));
 			FILE *command_pipe = popen(command, "r");
-		
-			if (command_pipe != NULL)
+
+			if (command_pipe != NULL)				
 			{
-				GRegex *regex = NULL;
-				GError *regex_error = NULL;
-				GMatchInfo *regex_matches = NULL;
-				gboolean regex_match = FALSE;
+				GRegex *regex;
+				GMatchInfo *regex_matches;
+				gboolean regex_match;
 
-				regex = g_regex_new("(\\d{1,3}\\.){4}\\d{4,5}", G_REGEX_OPTIMIZE, 0, &regex_error);
+				regex = g_regex_new("(\\d{1,3}\\.){3}\\d{1,3}:\\d{4,5}", G_REGEX_OPTIMIZE, 0, NULL);
 			
-				while (fgets(line, sizeof line, command_pipe) != NULL)
-				{
-					gchar *current_line = g_strdup_printf("%s", line);
-					regex_match = g_regex_match(regex, current_line, 0, &regex_matches);
+				fgets(line, sizeof line, command_pipe);
+				gchar *current_line = g_strdup_printf("%s", line);
 				
-					if (regex_match == TRUE) server_ip = g_match_info_fetch(regex_matches, 0);
-					else server_ip = NULL;
-				}
-				
-				fclose(command_pipe);
+				regex_match = g_regex_match(regex, current_line, 0, &regex_matches);
 
-				if (server_ip != NULL)
+				if (regex_match == TRUE)
 				{
+					server_ip = g_match_info_fetch(regex_matches, 0);
+					server_ip = str_replace(server_ip, ":", ".");
+					
 					gchar **server_ip_split = g_strsplit(server_ip, ".", -1);
-
-					if (server_ip_split != NULL)
-					{
-						char *server_ip_str = g_strdup_printf("%s.%s.%s.%s", server_ip_split[0], server_ip_split[1],
-						                                      server_ip_split[2], server_ip_split[3]);
-						int server_port_tmp = atoi(server_ip_split[4]);
-						
-						g_mutex_lock(gfire->server_mutex);
-						gfire->server_ip = server_ip_str;
-						gfire->server_port = server_port_tmp;
-						g_mutex_unlock(gfire->server_mutex);
-					}
+					server_port = atoi(server_ip_split[4]);
 				}
-				else
+				else server_ip = NULL;
+
+				/* Detect if game uses udp */
+				if (g_regex_match_simple("udp", server_ip, G_REGEX_OPTIMIZE, 0) == TRUE) server_detect_udp = TRUE;
+				
+				fclose(command_pipe);				
+			}
+
+			/* Get ip using udp if needed */
+			if (server_detect_udp == TRUE)
+			{
+				sprintf(command, "tcpdump -f -c 30");
+				command_pipe = popen(command, "r");
+
+				if (command_pipe != NULL)
 				{
+					GRegex *regex;
+					GMatchInfo *regex_matches;
+					gboolean regex_match;
+
+					while (fgets(line, sizeof line, command_pipe) != NULL)
+					{
+						gchar *current_line = g_strdup_printf("%s", line);
+
+						regex = g_regex_new("(\\d{1,3}\\.){4}\\d{4,5}", G_REGEX_OPTIMIZE, 0, NULL);
+						regex_match = g_regex_match(regex, current_line, 0, &regex_matches);
+				
+						if (regex_match == TRUE)
+						{
+							server_ip = g_match_info_fetch(regex_matches, 0);
+							gchar **server_ip_split = g_strsplit(server_ip, ".", -1);
+							int server_port_tmp = atoi(server_ip_split[4]);
+							printf("%d - %d\n\n", server_port, server_port_tmp);
+							if (server_port != server_port_tmp) server_ip = NULL;
+
+							/* Stop searching for ip */
+							break;
+						}
+						else server_ip = NULL;
+					}
+
+					fclose(command_pipe);
+				}
+			}
+
+			/* Store found ip */
+			if (server_ip != NULL)
+			{
+				gchar **server_ip_split = g_strsplit(server_ip, ".", -1);
+
+				if (server_ip_split != NULL)
+				{
+					char *server_ip_str = g_strdup_printf("%s.%s.%s.%s", server_ip_split[0], server_ip_split[1],
+					                                      server_ip_split[2], server_ip_split[3]);
+					int server_port_tmp = atoi(server_ip_split[4]);
+
 					g_mutex_lock(gfire->server_mutex);
-					gfire->server_ip = NULL;
-					gfire->server_port = NULL;
+					gfire->server_ip = server_ip_str;
+					gfire->server_port = server_port_tmp;
 					g_mutex_unlock(gfire->server_mutex);
 				}
 			}
+			else {
+				g_mutex_lock(gfire->server_mutex);
+				gfire->server_ip = NULL;
+				gfire->server_port = NULL;
+				g_mutex_unlock(gfire->server_mutex);
+			}		
 		}
 	}
 }
