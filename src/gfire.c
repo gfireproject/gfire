@@ -3383,9 +3383,14 @@ static void gfire_detect_game_server(PurpleConnection *gc)
 				else server_ip = NULL;
 
 				/* Detect if game uses udp */
-				if (g_regex_match_simple("udp", server_ip, G_REGEX_OPTIMIZE, 0) == TRUE) server_detect_udp = TRUE;
+				GRegex *regex_udp;
+
+				regex_udp = g_regex_new("udp", G_REGEX_OPTIMIZE, 0, NULL);
+				regex_match = g_regex_match(regex_udp, current_line, 0, NULL);
+				if (regex_match == TRUE) server_detect_udp = TRUE;
+				else server_detect_udp = FALSE;
 				
-				fclose(command_pipe);				
+				fclose(command_pipe);
 			}
 
 			/* Get ip using udp if needed */
@@ -3412,7 +3417,7 @@ static void gfire_detect_game_server(PurpleConnection *gc)
 							server_ip = g_match_info_fetch(regex_matches, 0);
 							gchar **server_ip_split = g_strsplit(server_ip, ".", -1);
 							int server_port_tmp = atoi(server_ip_split[4]);
-							printf("%d - %d\n\n", server_port, server_port_tmp);
+
 							if (server_port != server_port_tmp) server_ip = NULL;
 
 							/* Stop searching for ip */
