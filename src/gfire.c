@@ -2577,7 +2577,7 @@ gboolean check_process(char *process, char *process_argument)
 	#else
 	char command[256];
 
-	sprintf(command, "ps -ef | grep -i %s | grep -v grep", process);
+	sprintf(command, "ps -e | grep -i %s | grep -v grep", process);
 	//sprintf(command, "lsof \"%s\"", process);
 	
 	char buf[256];
