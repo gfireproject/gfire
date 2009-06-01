@@ -2913,11 +2913,11 @@ void gfire_join_game(PurpleConnection *gc, const gchar *server_ip, int server_po
 		return;
 	}
 	
-	gfire_linfo *game_launch_info = NULL;
+	gfire_game_launch_info *game_launch_info = NULL;
 	const char null_ip[4] = {0x00, 0x00, 0x00, 0x00};
 	gchar *game_launch_command;
 
- 	game_launch_info = gfire_linfo_get(gc, game_id);
+ 	game_launch_info = gfire_game_launch_info_get(gc, game_id);
  	if (game_launch_info == NULL) {
  		purple_debug_error("gfire: gfire_join_game()", "Game launch info struct not defined!\n");
  		return;
@@ -2927,7 +2927,7 @@ void gfire_join_game(PurpleConnection *gc, const gchar *server_ip, int server_po
 
 	gchar *tmp = gfire_ipstr_to_bin(server_ip);
 	
-	game_launch_command = gfire_linfo_get_cmd(game_launch_info, (guint8 *)tmp, server_port, NULL);
+	game_launch_command = gfire_game_launch_info_get_command(game_launch_info, (guint8 *)tmp, server_port);
 	g_spawn_command_line_async(game_launch_command, NULL);
 }
 

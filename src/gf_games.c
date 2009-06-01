@@ -225,14 +225,14 @@ gboolean gfire_parse_launchinfo_file(PurpleConnection *gc, const char *filename)
 */
 gboolean gfire_game_playable(PurpleConnection *gc, int game)
 {
-	gfire_linfo *foo = NULL;
+	gfire_game_launch_info *foo = NULL;
 	gfire_data *gfire = NULL;
 
 	if (!gc || !(gfire = (gfire_data *)gc->proto_data) || !game) return FALSE;
 	
-	foo = gfire_linfo_get(gc, game);
+	foo = gfire_game_launch_info_get(gc, game);
 	if (!foo) return FALSE;
-	gfire_linfo_free(foo);
+	gfire_game_launch_info_free(foo);
 	return TRUE;
 
 }
@@ -312,46 +312,23 @@ const gchar *gfire_get_buddy_ip(PurpleConnection *gc, PurpleBuddy *b)
  	return NULL;
 }
 
-
-/**
- *  Creates a newly allocated and zeroed launch info struct
- *
- *  @return     pointer to newly created zeroed structure
-*/
-gfire_linfo *gfire_linfo_new()
+gfire_game_launch_info *gfire_game_launch_info_new()
 {
-	gfire_linfo *ret = NULL;
-	ret = g_malloc0(sizeof(gfire_linfo));
-	return ret;
+	gfire_game_launch_info *game_launch_info;
+	game_launch_info = g_malloc0(sizeof(gfire_game_launch_info));
+	return game_launch_info;
 }
 
-
-/**
- *	Frees memory associated with launch info structure, passing null pointer
- *	causes function to return.
- *
- *	@param		*l		pointer to associated structure to free (null ok)
-*/
-void gfire_linfo_free(gfire_linfo *l)
+void gfire_game_launch_info_free(gfire_game_launch_info *game_launch_info)
 {
-	if (!l) return;
-	g_free(l);
+	if (game_launch_info == NULL) return;
+	g_free(game_launch_info);
 }
 
-
-/**
- *	Searches launch.xml node structure for associated game, and then returns launch
- *	info struct associated with that game. Returns NULL if game is not found.
- *
- *	@param		game		integer xfire game ID of game to get and return
- *
- *	@return					Returns launch info structure with fields filled or
- *							NULL if game can't be found
-*/
-gfire_linfo *gfire_linfo_get(PurpleConnection *gc, int game)
+gfire_game_launch_info *gfire_game_launch_info_get(PurpleConnection *gc, int game_id)
 {
 	gfire_data *gfire = NULL;
-	gfire_linfo *l = NULL;
+	gfire_game_launch_info *l = NULL;
 	xmlnode *node = NULL;
 	xmlnode *cnode = NULL;
 	xmlnode *command = NULL;
@@ -359,7 +336,7 @@ gfire_linfo *gfire_linfo_get(PurpleConnection *gc, int game)
 	int found = 0;
 	int id = 0;
 
-	if (!gc || !(gfire = (gfire_data *)gc->proto_data) || !game) return NULL;
+	if (!gc || !(gfire = (gfire_data *)gc->proto_data) || !game_id) return NULL;
 	
 	if (gfire->xml_launch_info != NULL) {
 		node = xmlnode_get_child(gfire->xml_launch_info, "game");
@@ -368,7 +345,7 @@ gfire_linfo *gfire_linfo_get(PurpleConnection *gc, int game)
 			num  = xmlnode_get_attrib(node, "id");
 			id = atoi((const char *)num);
 // printf("linfo id=%d\tname=\"%s\"\n", id, name);
-			if (id == game) {
+			if (id == game_id) {
 				found = 1;
 			}
 			if (found) break;
@@ -379,10 +356,10 @@ gfire_linfo *gfire_linfo_get(PurpleConnection *gc, int game)
 			return NULL;
 		}
 		/* got the game */
-		l = gfire_linfo_new();
+		l = gfire_game_launch_info_new();
 		if (!l) return NULL; /* Out of Memory */
 		
-		l->game_id = game;
+		l->game_id = game_id;
 		l->game_name = g_strdup(name);
 		for (cnode = node->child; cnode; cnode = cnode->next) {
 			if (cnode->type != XMLNODE_TYPE_TAG)
@@ -447,57 +424,35 @@ gchar *gfire_launch_parse(const char *src, const char *data, const char *delim)
 
 }
 
-
-/**
- *	takes launch info struct, and returns a command line that is parsed with information
- *	in struct and replaced with data provided by other function arguments. String should be
- *	freed after use.
- *
- *	@param		l		populated launch info struct
- *	@param		ip		binary representation of the ip address
- *	@param		prt		integer port number for connect line
- *	@param		mod		string name of mod that needs to be run (only used in xqf)
- *
- *	@return				pointer to string command line fully parsed. if l is NULL function
- 						returns NULL. String should be freed after use. g_free()
-*/
-gchar *gfire_linfo_get_cmd(gfire_linfo *l, const guint8 *ip, int prt, const gchar *mod)
+gchar *gfire_game_launch_info_get_command(gfire_game_launch_info *game_launch_info, const guint8 *server_ip, int server_port)
 {
-	gchar *old = NULL;
-	gchar *cmd = NULL;
-	gchar *options = NULL;
-	gchar *connect = NULL;
-	gchar *gamemod = NULL;
-	gchar *port = NULL;
-	gchar *sip = NULL;
-
-	if (!l || !ip) return NULL;
+	char *command, *server_ip_tmp, *server_port_tmp, *game_connect_option;
 	
-	port = g_strdup_printf("%d",prt);
-	sip = g_strdup_printf("%d.%d.%d.%d", ip[3], ip[2], ip[1], ip[0]);
-	connect = gfire_launch_parse(l->game_connect, sip, "[ip]");
-	old = connect;
-	connect = gfire_launch_parse(connect, port, "[port]");
-	g_free(old);
-
-	cmd = "";
-
-	if (l->game_path == NULL || l->game_connect == NULL) {
-		purple_debug_error("gfire_linfo_get_cmd", "Couldn't get game path and/or game connection option.\n");
+	if (game_launch_info == NULL || server_ip == NULL || server_port == NULL) {
+		purple_debug_error("gfire_linfo_get_cmd", "Couldn't get command.\n");
 		return;
 	}
 	
-	if (l->game_prefix != NULL) {
-		cmd = l->game_prefix;
-		cmd = g_strdup_printf("%s %s", cmd, l->game_path);
+	server_port_tmp = g_strdup_printf("%d", server_port);
+	server_ip_tmp = g_strdup_printf("%d.%d.%d.%d", server_ip[3], server_ip[2], server_ip[1], server_ip[0]);
+	game_connect_option = str_replace(game_launch_info->game_connect, "[ip]", server_ip_tmp);
+	game_connect_option = str_replace(connect, "[port]", server_port_tmp);
+
+	if (game_launch_info->game_path == NULL || game_launch_info->game_connect == NULL) {
+		purple_debug_error("gfire_linfo_get_cmd", "Couldn't get game path and/or game connect option.\n");
+		return;
 	}
-	else cmd = l->game_path;
-
-	if (l->game_launch != NULL) cmd = g_strdup_printf("%s %s", cmd, l->game_launch);
-
-	cmd = g_strdup_printf("%s %s", cmd, connect);
 	
-	return cmd;	
+	if (game_launch_info->game_prefix != NULL) {
+		command = game_launch_info->game_prefix;
+		command = g_strdup_printf("%s %s", command, game_launch_info->game_path);
+	}
+	else command = game_launch_info->game_path;
+
+	if (game_launch_info->game_launch != NULL) command = g_strdup_printf("%s %s", command, game_launch_info->game_launch);
+
+	command = g_strdup_printf("%s %s", command, game_connect_option);
+	return command;	
 }
 
 /**

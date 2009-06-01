@@ -24,9 +24,9 @@
 
 #include "gfire.h"
 
-typedef struct _gfire_linfo gfire_linfo;
+typedef struct _gfire_game_launch_info gfire_game_launch_info;
 
-struct _gfire_linfo
+struct _gfire_game_launch_info
 {
 	int game_id;
 	char *game_name;
@@ -44,11 +44,46 @@ gboolean gfire_game_playable(PurpleConnection *gc, int game);
 int gfire_get_buddy_game(PurpleConnection *gc, PurpleBuddy *b);
 int gfire_get_buddy_port(PurpleConnection *gc, PurpleBuddy *b);
 const gchar *gfire_get_buddy_ip(PurpleConnection *gc, PurpleBuddy *b);
-gfire_linfo *gfire_linfo_new();
-void gfire_linfo_free(gfire_linfo *l);
-gfire_linfo *gfire_linfo_get(PurpleConnection *gc, int game);
-gchar *gfire_linfo_get_cmd(gfire_linfo *l, const guint8 *ip, int prt, const gchar *mod);
-gchar *gfire_ipstr_to_bin(const gchar *ip);
 
+
+/**
+ * Creates a newly allocated game launch info struct.
+ *
+ * @return: a newly allocated game launch info struct
+**/
+gfire_game_launch_info *gfire_game_launch_info_new();
+
+
+/**
+ * Frees a game launch info struct.
+ *
+ * @param *game_launch_info: the game launch info struct to free
+**/
+void gfire_game_launch_info_free(gfire_game_launch_info *game_launch_info);
+
+
+/**
+ * Gets the launch info struct of a game.
+ *
+ * @param game_id: the id of the game
+ *
+ * @return: the game launch info struct
+**/
+gfire_game_launch_info *gfire_game_launch_info_get(PurpleConnection *gc, int game_id);
+
+
+/**
+ * Gets the command line to launch a game by parsing the launch info struct.
+ *
+ * @param game_launch_info_struct: the launch info struct
+ * @param server_ip: the server ip
+ * @param server_port: the server port
+ *
+ * @return: a string containing the full command line
+**/
+gchar *gfire_game_launch_info_get_command(gfire_game_launch_info *game_launch_info, const guint8 *server_ip, int server_port);
+
+
+gchar *gfire_ipstr_to_bin(const gchar *ip);
 
 #endif /* _GF_GAMES_H */
