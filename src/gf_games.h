@@ -45,6 +45,16 @@ int gfire_get_buddy_game(PurpleConnection *gc, PurpleBuddy *b);
 int gfire_get_buddy_port(PurpleConnection *gc, PurpleBuddy *b);
 const gchar *gfire_get_buddy_ip(PurpleConnection *gc, PurpleBuddy *b);
 
+/**
+ * Gets the id of a game.
+ *
+ * @param gc: the purple connection
+ * @param game_name: the game name
+ *
+ * @return: the game id, -1 if not found (unknown game)
+**/
+int gfire_game_id(PurpleConnection *gc, char *game_name);
+
 
 /**
  * Creates a newly allocated game launch info struct.

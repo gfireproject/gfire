@@ -35,14 +35,6 @@ void gfire_xml_download_cb(
 	const gchar *error_message
 	);
 
-/**
- * returns the id of a game
- *
- * @param gc: the purple connection
- * @param game_name: the game name
- *
- * @return: the game id, -1 if not found (unknown game)
-**/
 
 int gfire_game_id(PurpleConnection *gc, char *game_name)
 {

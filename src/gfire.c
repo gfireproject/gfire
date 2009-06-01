@@ -226,7 +226,6 @@ static GList *gfire_status_types(PurpleAccount *account)
 static void gfire_login(PurpleAccount *account)
 {
 	gfire_data *gfire;
-	int	err = 0;
 
 	PurpleConnection *gc = purple_account_get_connection(account);
 	/* set connection flags for chats and im's tells purple what we can and can't handle */
@@ -1416,7 +1415,6 @@ void gfire_update_buddy_status(PurpleConnection *gc, GList *buddies, int status)
 	gfire_buddy *gf_buddy = NULL;
 	GList *b = g_list_first(buddies);
 	PurpleBuddy *gbuddy = NULL;
-	int len = 0;
 
 	if (!buddies || !gc || !gc->account) {
 		if (buddies) g_list_free(buddies);
@@ -1814,7 +1812,7 @@ static void gfire_action_manage_games_cb(PurplePluginAction *action)
 
 		if (g_strcmp0(manager_version, "2") != NULL) {
 			purple_notify_message(NULL, PURPLE_NOTIFY_MSG_ERROR, N_("Manage Games: error"), N_("Incompatible games configuration"),
-				N_("Your current games configuration is incompatible with this version of Gfire. Please remove it and try again."), NULL, NULL);
+			                      N_("Your current games configuration is incompatible with this version of Gfire. Please remove it and try again."), NULL, NULL);
 			return;
 		}
 		else
@@ -2099,7 +2097,7 @@ static void gfire_manage_games_edit_update_fields_cb(GtkBuilder *builder, GtkWid
 		     node_child = xmlnode_get_next_twin(node_child))
 		{
 			const char *game = xmlnode_get_attrib(node_child, "name");
-			if (g_strcmp0(selected_game, game) == NULL)
+			if (g_strcmp0(selected_game, game) == 0)
 			{
 				xmlnode *command_node = xmlnode_get_child(node_child, "command");
 				xmlnode *executable_node = xmlnode_get_child(command_node, "executable");
@@ -2112,10 +2110,10 @@ static void gfire_manage_games_edit_update_fields_cb(GtkBuilder *builder, GtkWid
 				char *game_prefix = xmlnode_get_data(prefix_node);
 				char *game_path = xmlnode_get_data(path_node);
 				char *game_launch = xmlnode_get_data(launch_node);
-				char *game_argument = xmlnode_get_attrib(executable_node, "argument");
+				const char *game_argument = xmlnode_get_attrib(executable_node, "argument");
 				char *game_connect = xmlnode_get_data(connect_node);
 
-				if (g_strcmp0(game_path, game_executable) == NULL) {
+				if (g_strcmp0(game_path, game_executable) == 0) {
 					gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(edit_executable_check_button), TRUE);
 				}
 				else gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(edit_executable_check_button), FALSE);
@@ -2189,7 +2187,7 @@ static void gfire_remove_game_cb(manage_games_callback_args *args, GtkWidget *bu
 			     node_child = xmlnode_get_next_twin(node_child))
 			{
 				const char *game_name = xmlnode_get_attrib(node_child, "name");
-				if(g_strcmp0(game_name, selected_game) != NULL) {
+				if(g_strcmp0(game_name, selected_game) != 0) {
 					xmlnode_insert_child(gfire_launch_new, node_child);
 				}
 			}
@@ -2270,7 +2268,7 @@ xmlnode *gfire_manage_game_xml(char *game_id, char *game_name, gboolean game_exe
 	
 	xmlnode *command_node = xmlnode_new_child(game_node, "command");
 	xmlnode *executable_node = xmlnode_new_child(command_node, "executable");
-	xmlnode_insert_data(executable_node, game_executable, -1);
+	xmlnode_insert_data(executable_node, (const char*)game_executable, -1);
 	xmlnode_set_attrib(executable_node, "argument", game_argument);
 	xmlnode *prefix_node = xmlnode_new_child(command_node, "prefix");
 	xmlnode_insert_data(prefix_node, game_prefix, -1);
@@ -2298,7 +2296,7 @@ void gfire_handle_game_detection(PurpleConnection *gc, int gameid, gboolean runn
 	if (running == TRUE)
 	{
 		if (purple_account_get_bool(purple_connection_get_account(gc), "server_detection_option", FALSE) == TRUE) {
-			g_thread_create(gfire_detect_game_server, gc, TRUE, NULL);
+			g_thread_create((GThreadFunc )gfire_detect_game_server, gc, TRUE, NULL);
 		}
 		
 		if (gfire->server_ip != NULL && gfire->server_port != NULL && gfire->gameid != NULL) {			
@@ -2311,7 +2309,7 @@ void gfire_handle_game_detection(PurpleConnection *gc, int gameid, gboolean runn
 			int packet_len = gfire_join_game_create(gc, gfire->gameid, 0, NULL);
 			if (packet_len != 0) gfire_send(gc, gfire->buff_out, packet_len);
 
-			purple_debug_info("gfire_handle_game_detection", "Not playing on a server.", gfire->server_ip, gfire->server_port);
+			purple_debug_info("gfire_handle_game_detection", "Not playing on a server.");
 		}
 		
 		if (gfire->game_running == FALSE)
@@ -2510,7 +2508,7 @@ int gfire_detect_running_processes_cb(PurpleConnection *gc)
 			int game_id_int = atoi(game_id);
 
 			char *game_executable_name = g_path_get_basename(game_executable);
-			gboolean process_running = check_process(game_executable_name, game_executable_argument);
+			gboolean process_running = check_process(game_executable_name, (char *)game_executable_argument);
 			if(game_executable_name) g_free(game_executable_name);
 
 			if(game_id_int < 32 || game_id_int > 34)
@@ -2518,8 +2516,8 @@ int gfire_detect_running_processes_cb(PurpleConnection *gc)
 			else
 				gfire_handle_voip_detection(gc, game_id_int, process_running, game_executable);
 
-			if(game_executable) g_free(game_executable);
-			if(game_path) g_free(game_path);
+			if(game_executable != NULL) g_free(game_executable);
+			if(game_path != NULL) g_free(game_path);
 		}
 	}
 
@@ -2562,11 +2560,11 @@ gboolean check_process_argument(int process_id, char *process_argument)
 
 
 /**
- * checks if a process is running.
+ * Checks if a process is running.
  *
  * @param process: the process name
  *
- * @return: TRUE if the process is running, FALSE if not or if an error occured.
+ * @return: TRUE if the process is running, FALSE if not or if an error occured
  *
 **/
 gboolean check_process(char *process, char *process_argument)
@@ -2592,7 +2590,7 @@ gboolean check_process(char *process, char *process_argument)
 	
 	pclose(cmd);
 
-	if (g_strcmp0(buf, "") != NULL)
+	if (g_strcmp0(buf, "") != 0)
 	{
 		if (process_argument != NULL)
 		{
@@ -3330,7 +3328,7 @@ static void gfire_detect_game_server(PurpleConnection *gc)
 		{
 			xmlnode *command_node = xmlnode_get_child(node_child, "command");
 			xmlnode *executable_node = xmlnode_get_child(command_node, "executable");
-			char *game_id_tmp = xmlnode_get_attrib(node_child, "id");
+			const char *game_id_tmp = xmlnode_get_attrib(node_child, "id");
 
 			if (atoi(game_id_tmp) == game_id) game_executable = xmlnode_get_data(executable_node);
 		}
@@ -3339,10 +3337,10 @@ static void gfire_detect_game_server(PurpleConnection *gc)
 		for (node_child = xmlnode_get_child(gfire_games, "game"); node_child != NULL; node_child = xmlnode_get_next_twin(node_child))
 		{
 			xmlnode *detect_node = xmlnode_get_child(node_child, "server_detect");
-			char *game_id_tmp = xmlnode_get_attrib(node_child, "id");
+			const char *game_id_tmp = xmlnode_get_attrib(node_child, "id");
 
 			if (atoi(game_id_tmp) == game_id) {
-				if (g_strcmp0(xmlnode_get_data(detect_node), "true") == NULL) server_detect = TRUE;
+				if (g_strcmp0(xmlnode_get_data(detect_node), "true") == 0) server_detect = TRUE;
 				else server_detect = FALSE;
 			}
 		}
@@ -3350,8 +3348,6 @@ static void gfire_detect_game_server(PurpleConnection *gc)
 		if (server_detect == TRUE && game_executable != NULL)
 		{
 			char command[128], line[2048];
-			int c, count;
-		
 			memset(line, 0, sizeof(line));
 
 			/* Get possible ip using tcp */
