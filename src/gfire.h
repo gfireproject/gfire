@@ -146,7 +146,6 @@ struct _gfire_data {
 	gboolean blist_loaded;		/* TRUE == buddy list is loaded, we need this for the clan list */
 	GtkBuilder *server_browser;
 	GList *server_list;
-	gboolean *server_detected;
 	GMutex *server_mutex;		/* mutex for writing the found server */
 	gchar *server_ip;			/* server ip */
 	int server_port;			/* server port */

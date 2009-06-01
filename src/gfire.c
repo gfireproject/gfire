@@ -2301,19 +2301,17 @@ void gfire_handle_game_detection(PurpleConnection *gc, int gameid, gboolean runn
 			g_thread_create(gfire_detect_game_server, gc, TRUE, NULL);
 		}
 		
-		if (gfire->server_ip != NULL && gfire->server_port != NULL && gfire->gameid != NULL && gfire->server_detected == FALSE)
-		{
+		if (gfire->server_ip != NULL && gfire->server_port != NULL && gfire->gameid != NULL) {			
 			int packet_len = gfire_join_game_create(gc, gfire->gameid, gfire->server_port, (guint8*)gfire_ipstr_to_bin(gfire->server_ip));
 			if (packet_len != 0) gfire_send(gc, gfire->buff_out, packet_len);
 
 			purple_debug_info("gfire_handle_game_detection", "Playing on server (%s:%d)", gfire->server_ip, gfire->server_port);
-			gfire->server_detected = TRUE;
 		}
-		else if (gfire->server_ip == NULL || gfire->server_port == NULL) {
+		else {
 			int packet_len = gfire_join_game_create(gc, gfire->gameid, 0, NULL);
 			if (packet_len != 0) gfire_send(gc, gfire->buff_out, packet_len);
-			
-			gfire->server_detected = FALSE;
+
+			purple_debug_info("gfire_handle_game_detection", "Not playing on a server.", gfire->server_ip, gfire->server_port);
 		}
 		
 		if (gfire->game_running == FALSE)
