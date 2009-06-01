@@ -2297,7 +2297,9 @@ void gfire_handle_game_detection(PurpleConnection *gc, int gameid, gboolean runn
 
 	if (running == TRUE)
 	{
-		g_thread_create(gfire_detect_game_server, gc, TRUE, NULL);
+		if (purple_account_get_bool(purple_connection_get_account(gc), "server_detection_option", FALSE) == TRUE) {
+			g_thread_create(gfire_detect_game_server, gc, TRUE, NULL);
+		}
 		
 		if (gfire->server_ip != NULL && gfire->server_port != NULL && gfire->gameid != NULL)
 		{
@@ -3592,6 +3594,9 @@ static void _init_plugin(PurplePlugin *plugin)
 
 	option = purple_account_option_bool_new(N_("Notify me when my status is ingame"), "ingamenotificationnorm", FALSE);
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options,option);
+
+	option = purple_account_option_bool_new(N_("Use server detection"), "server_detection_option", FALSE);
+	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
 
 	setlocale(LC_ALL, "");
 	bindtextdomain("gfire", LOCALEDIR);
