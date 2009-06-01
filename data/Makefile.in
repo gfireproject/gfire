@@ -35,8 +35,7 @@ host_triplet = @host@
 subdir = data
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/m4/intltool.m4 \
-	$(top_srcdir)/configure.ac
+am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
@@ -50,17 +49,9 @@ am__vpath_adj = case $$p in \
     *) f=$$p;; \
   esac;
 am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
-am__installdirs = "$(DESTDIR)$(gfire_datadir)" \
-	"$(DESTDIR)$(gfire_data_scriptsdir)" \
-	"$(DESTDIR)$(gfire_data_server_detectiondir)" \
-	"$(DESTDIR)$(gfire_data_server_detection_toolsdir)"
+am__installdirs = "$(DESTDIR)$(gfire_datadir)"
 gfire_dataDATA_INSTALL = $(INSTALL_DATA)
-gfire_data_scriptsDATA_INSTALL = $(INSTALL_DATA)
-gfire_data_server_detectionDATA_INSTALL = $(INSTALL_DATA)
-gfire_data_server_detection_toolsDATA_INSTALL = $(INSTALL_DATA)
-DATA = $(gfire_data_DATA) $(gfire_data_scripts_DATA) \
-	$(gfire_data_server_detection_DATA) \
-	$(gfire_data_server_detection_tools_DATA)
+DATA = $(gfire_data_DATA)
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
 ALL_LINGUAS = @ALL_LINGUAS@
@@ -77,24 +68,19 @@ CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
-CXX = @CXX@
-CXXCPP = @CXXCPP@
-CXXDEPMODE = @CXXDEPMODE@
-CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DATADIRNAME = @DATADIRNAME@
 DEBUG_CFLAGS = @DEBUG_CFLAGS@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DSYMUTIL = @DSYMUTIL@
-ECHO = @ECHO@
+DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
-F77 = @F77@
-FFLAGS = @FFLAGS@
+FGREP = @FGREP@
 GETTEXT_PACKAGE = @GETTEXT_PACKAGE@
 GLIB_CFLAGS = @GLIB_CFLAGS@
 GLIB_GENMARSHAL = @GLIB_GENMARSHAL@
@@ -111,33 +97,16 @@ INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 INSTOBJEXT = @INSTOBJEXT@
 INTLLIBS = @INTLLIBS@
-INTLTOOL_CAVES_RULE = @INTLTOOL_CAVES_RULE@
-INTLTOOL_DESKTOP_RULE = @INTLTOOL_DESKTOP_RULE@
-INTLTOOL_DIRECTORY_RULE = @INTLTOOL_DIRECTORY_RULE@
 INTLTOOL_EXTRACT = @INTLTOOL_EXTRACT@
-INTLTOOL_KBD_RULE = @INTLTOOL_KBD_RULE@
-INTLTOOL_KEYS_RULE = @INTLTOOL_KEYS_RULE@
 INTLTOOL_MERGE = @INTLTOOL_MERGE@
-INTLTOOL_OAF_RULE = @INTLTOOL_OAF_RULE@
 INTLTOOL_PERL = @INTLTOOL_PERL@
-INTLTOOL_POLICY_RULE = @INTLTOOL_POLICY_RULE@
-INTLTOOL_PONG_RULE = @INTLTOOL_PONG_RULE@
-INTLTOOL_PROP_RULE = @INTLTOOL_PROP_RULE@
-INTLTOOL_SCHEMAS_RULE = @INTLTOOL_SCHEMAS_RULE@
-INTLTOOL_SERVER_RULE = @INTLTOOL_SERVER_RULE@
-INTLTOOL_SERVICE_RULE = @INTLTOOL_SERVICE_RULE@
-INTLTOOL_SHEET_RULE = @INTLTOOL_SHEET_RULE@
-INTLTOOL_SOUNDLIST_RULE = @INTLTOOL_SOUNDLIST_RULE@
-INTLTOOL_THEME_RULE = @INTLTOOL_THEME_RULE@
-INTLTOOL_UI_RULE = @INTLTOOL_UI_RULE@
 INTLTOOL_UPDATE = @INTLTOOL_UPDATE@
-INTLTOOL_XAM_RULE = @INTLTOOL_XAM_RULE@
-INTLTOOL_XML_NOMERGE_RULE = @INTLTOOL_XML_NOMERGE_RULE@
-INTLTOOL_XML_RULE = @INTLTOOL_XML_RULE@
+LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
+LIPO = @LIPO@
 LN_S = @LN_S@
 LTLIBOBJS = @LTLIBOBJS@
 MAKEINFO = @MAKEINFO@
@@ -146,8 +115,12 @@ MKINSTALLDIRS = @MKINSTALLDIRS@
 MSGFMT = @MSGFMT@
 MSGFMT_OPTS = @MSGFMT_OPTS@
 MSGMERGE = @MSGMERGE@
+NM = @NM@
 NMEDIT = @NMEDIT@
+OBJDUMP = @OBJDUMP@
 OBJEXT = @OBJEXT@
+OTOOL = @OTOOL@
+OTOOL64 = @OTOOL64@
 PACKAGE = @PACKAGE@
 PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
 PACKAGE_NAME = @PACKAGE_NAME@
@@ -175,8 +148,7 @@ abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
 abs_top_srcdir = @abs_top_srcdir@
 ac_ct_CC = @ac_ct_CC@
-ac_ct_CXX = @ac_ct_CXX@
-ac_ct_F77 = @ac_ct_F77@
+ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
 am__include = @am__include@
 am__leading_dot = @am__leading_dot@
 am__quote = @am__quote@
@@ -207,6 +179,7 @@ libdir = @libdir@
 libexecdir = @libexecdir@
 localedir = @localedir@
 localstatedir = @localstatedir@
+lt_ECHO = @lt_ECHO@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 oldincludedir = @oldincludedir@
@@ -223,18 +196,9 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-EXTRA_DIST = games.glade \
-			 servers.glade \
-			 scripts/server_detection/4097.py
-
+EXTRA_DIST = games.glade servers.glade
 gfire_datadir = $(datadir)/purple/gfire
-gfire_data_scriptsdir = $(gfire_datadir)/scripts
-gfire_data_server_detectiondir = $(gfire_data_scriptsdir)/server_detection
-gfire_data_server_detection_toolsdir = $(gfire_data_server_detectiondir)/tools
 gfire_data_DATA = games.glade servers.glade
-gfire_data_scripts_DATA = 
-gfire_data_server_detection_DATA = scripts/server_detection/4097.py
-gfire_data_server_detection_tools_DATA = 
 all: all-am
 
 .SUFFIXES:
@@ -290,57 +254,6 @@ uninstall-gfire_dataDATA:
 	  echo " rm -f '$(DESTDIR)$(gfire_datadir)/$$f'"; \
 	  rm -f "$(DESTDIR)$(gfire_datadir)/$$f"; \
 	done
-install-gfire_data_scriptsDATA: $(gfire_data_scripts_DATA)
-	@$(NORMAL_INSTALL)
-	test -z "$(gfire_data_scriptsdir)" || $(MKDIR_P) "$(DESTDIR)$(gfire_data_scriptsdir)"
-	@list='$(gfire_data_scripts_DATA)'; for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  f=$(am__strip_dir) \
-	  echo " $(gfire_data_scriptsDATA_INSTALL) '$$d$$p' '$(DESTDIR)$(gfire_data_scriptsdir)/$$f'"; \
-	  $(gfire_data_scriptsDATA_INSTALL) "$$d$$p" "$(DESTDIR)$(gfire_data_scriptsdir)/$$f"; \
-	done
-
-uninstall-gfire_data_scriptsDATA:
-	@$(NORMAL_UNINSTALL)
-	@list='$(gfire_data_scripts_DATA)'; for p in $$list; do \
-	  f=$(am__strip_dir) \
-	  echo " rm -f '$(DESTDIR)$(gfire_data_scriptsdir)/$$f'"; \
-	  rm -f "$(DESTDIR)$(gfire_data_scriptsdir)/$$f"; \
-	done
-install-gfire_data_server_detectionDATA: $(gfire_data_server_detection_DATA)
-	@$(NORMAL_INSTALL)
-	test -z "$(gfire_data_server_detectiondir)" || $(MKDIR_P) "$(DESTDIR)$(gfire_data_server_detectiondir)"
-	@list='$(gfire_data_server_detection_DATA)'; for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  f=$(am__strip_dir) \
-	  echo " $(gfire_data_server_detectionDATA_INSTALL) '$$d$$p' '$(DESTDIR)$(gfire_data_server_detectiondir)/$$f'"; \
-	  $(gfire_data_server_detectionDATA_INSTALL) "$$d$$p" "$(DESTDIR)$(gfire_data_server_detectiondir)/$$f"; \
-	done
-
-uninstall-gfire_data_server_detectionDATA:
-	@$(NORMAL_UNINSTALL)
-	@list='$(gfire_data_server_detection_DATA)'; for p in $$list; do \
-	  f=$(am__strip_dir) \
-	  echo " rm -f '$(DESTDIR)$(gfire_data_server_detectiondir)/$$f'"; \
-	  rm -f "$(DESTDIR)$(gfire_data_server_detectiondir)/$$f"; \
-	done
-install-gfire_data_server_detection_toolsDATA: $(gfire_data_server_detection_tools_DATA)
-	@$(NORMAL_INSTALL)
-	test -z "$(gfire_data_server_detection_toolsdir)" || $(MKDIR_P) "$(DESTDIR)$(gfire_data_server_detection_toolsdir)"
-	@list='$(gfire_data_server_detection_tools_DATA)'; for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  f=$(am__strip_dir) \
-	  echo " $(gfire_data_server_detection_toolsDATA_INSTALL) '$$d$$p' '$(DESTDIR)$(gfire_data_server_detection_toolsdir)/$$f'"; \
-	  $(gfire_data_server_detection_toolsDATA_INSTALL) "$$d$$p" "$(DESTDIR)$(gfire_data_server_detection_toolsdir)/$$f"; \
-	done
-
-uninstall-gfire_data_server_detection_toolsDATA:
-	@$(NORMAL_UNINSTALL)
-	@list='$(gfire_data_server_detection_tools_DATA)'; for p in $$list; do \
-	  f=$(am__strip_dir) \
-	  echo " rm -f '$(DESTDIR)$(gfire_data_server_detection_toolsdir)/$$f'"; \
-	  rm -f "$(DESTDIR)$(gfire_data_server_detection_toolsdir)/$$f"; \
-	done
 tags: TAGS
 TAGS:
 
@@ -378,7 +291,7 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(DATA)
 installdirs:
-	for dir in "$(DESTDIR)$(gfire_datadir)" "$(DESTDIR)$(gfire_data_scriptsdir)" "$(DESTDIR)$(gfire_data_server_detectiondir)" "$(DESTDIR)$(gfire_data_server_detection_toolsdir)"; do \
+	for dir in "$(DESTDIR)$(gfire_datadir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -423,9 +336,7 @@ info: info-am
 
 info-am:
 
-install-data-am: install-gfire_dataDATA install-gfire_data_scriptsDATA \
-	install-gfire_data_server_detectionDATA \
-	install-gfire_data_server_detection_toolsDATA
+install-data-am: install-gfire_dataDATA
 
 install-dvi: install-dvi-am
 
@@ -459,10 +370,7 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-gfire_dataDATA \
-	uninstall-gfire_data_scriptsDATA \
-	uninstall-gfire_data_server_detectionDATA \
-	uninstall-gfire_data_server_detection_toolsDATA
+uninstall-am: uninstall-gfire_dataDATA
 
 .MAKE: install-am install-strip
 
@@ -471,18 +379,12 @@ uninstall-am: uninstall-gfire_dataDATA \
 	dvi-am html html-am info info-am install install-am \
 	install-data install-data-am install-dvi install-dvi-am \
 	install-exec install-exec-am install-gfire_dataDATA \
-	install-gfire_data_scriptsDATA \
-	install-gfire_data_server_detectionDATA \
-	install-gfire_data_server_detection_toolsDATA install-html \
-	install-html-am install-info install-info-am install-man \
-	install-pdf install-pdf-am install-ps install-ps-am \
-	install-strip installcheck installcheck-am installdirs \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	uninstall uninstall-am uninstall-gfire_dataDATA \
-	uninstall-gfire_data_scriptsDATA \
-	uninstall-gfire_data_server_detectionDATA \
-	uninstall-gfire_data_server_detection_toolsDATA
+	install-html install-html-am install-info install-info-am \
+	install-man install-pdf install-pdf-am install-ps \
+	install-ps-am install-strip installcheck installcheck-am \
+	installdirs maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-generic mostlyclean-libtool pdf pdf-am \
+	ps ps-am uninstall uninstall-am uninstall-gfire_dataDATA
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
