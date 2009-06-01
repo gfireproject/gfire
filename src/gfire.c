@@ -2301,20 +2301,19 @@ void gfire_handle_game_detection(PurpleConnection *gc, int gameid, gboolean runn
 			g_thread_create(gfire_detect_game_server, gc, TRUE, NULL);
 		}
 		
-		if (gfire->server_ip != NULL && gfire->server_port != NULL && gfire->gameid != NULL)
+		if (gfire->server_ip != NULL && gfire->server_port != NULL && gfire->gameid != NULL && gfire->server_detected == FALSE)
 		{
-			purple_debug_info("gfire_handle_game_detection", "Playing on server (%s:%d)", gfire->server_ip, gfire->server_port);
-			
-			int packet_len = gfire_join_game_create(gc, gfire->gameid, gfire->server_port,
-			                                        (guint8*)gfire_ipstr_to_bin(gfire->server_ip));
+			int packet_len = gfire_join_game_create(gc, gfire->gameid, gfire->server_port, (guint8*)gfire_ipstr_to_bin(gfire->server_ip));
 			if (packet_len != 0) gfire_send(gc, gfire->buff_out, packet_len);
-		}
-		else
-		{
-			purple_debug_info("gfire_handle_game_detection", "Not playing on a server.", gfire->server_ip, gfire->server_port);
 
+			purple_debug_info("gfire_handle_game_detection", "Playing on server (%s:%d)", gfire->server_ip, gfire->server_port);
+			gfire->server_detected = TRUE;
+		}
+		else if (gfire->server_ip == NULL || gfire->server_port == NULL) {
 			int packet_len = gfire_join_game_create(gc, gfire->gameid, 0, NULL);
 			if (packet_len != 0) gfire_send(gc, gfire->buff_out, packet_len);
+			
+			gfire->server_detected = FALSE;
 		}
 		
 		if (gfire->game_running == FALSE)
@@ -3376,7 +3375,16 @@ static void gfire_detect_game_server(PurpleConnection *gc)
 
 				if (regex_match == TRUE)
 				{
-					server_ip = g_match_info_fetch(regex_matches, 0);
+					/* Try to get second ip, because first ip is our ip */
+					while (g_match_info_matches(regex_matches) == TRUE)
+					{
+						gchar *server_ip_tmp = g_match_info_fetch(regex_matches, 0);
+						if (server_ip_tmp != NULL) server_ip = server_ip_tmp;
+
+						/* g_free(server_ip_tmp); */
+						g_match_info_next(regex_matches, NULL);
+					}
+					
 					server_ip = str_replace(server_ip, ":", ".");
 					
 					gchar **server_ip_split = g_strsplit(server_ip, ".", -1);
