@@ -237,9 +237,6 @@ static void gfire_login(PurpleAccount *account)
 	gc->proto_data = gfire = g_new0(gfire_data, 1);
 	gfire->fd = -1;
 	gfire->buff_out = gfire->buff_in = NULL;
-	/* load game xml from user dir */
-	gfire_parse_games_file(gc, g_build_filename(purple_user_dir(), "gfire_games.xml", NULL));
-	gfire_parse_launchinfo_file(gc, g_build_filename(purple_user_dir(), "gfire_launch.xml", NULL));
 
 	if (!purple_account_get_connection(account)) {
 			purple_connection_error(gc, N_("Couldn't create socket."));

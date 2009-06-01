@@ -247,6 +247,10 @@ void gfire_parse_packet(PurpleConnection *gc, int packet_len, int packet_id)
 			purple_connection_set_state(gc, PURPLE_CONNECTED);
 			gfire_packet_130(gc, packet_len);
 			if (gfire->alias) purple_connection_set_display_name(gc, g_strdup(gfire->alias));
+
+			/* load game xml from user dir; these don't need to work unless we are connected */
+			gfire_parse_games_file(gc, g_build_filename(purple_user_dir(), "gfire_games.xml", NULL));
+			gfire_parse_launchinfo_file(gc, g_build_filename(purple_user_dir(), "gfire_launch.xml", NULL));
 			#ifdef IS_NOT_WINDOWS
 			gfire->det_source = g_timeout_add(5000, (GSourceFunc)gfire_detect_running_processes_cb, gc);
 			#endif
