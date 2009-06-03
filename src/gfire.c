@@ -3299,14 +3299,15 @@ void gfire_detect_mumble_server(const gchar *executable, guint8 **voip_ip, guint
 	*voip_port = port;
 }
 
+
 static void gfire_detect_game_server(PurpleConnection *gc)
 {
 	gfire_data *gfire = NULL;
 	if (gc == NULL || (gfire = (gfire_data *)gc->proto_data) == NULL) {
 		purple_debug_error("gfire_detect_game_server", "GC not set and/or couldn't access gfire data.\n");
 		return;
-	}
-
+	};
+	
 	xmlnode *gfire_games = gfire->xml_games_list;
 	xmlnode *gfire_launch = gfire->xml_launch_info;
 	int game_id = gfire->gameid;
@@ -3397,7 +3398,7 @@ static void gfire_detect_game_server(PurpleConnection *gc)
 			/* Get ip using udp if needed */
 			if (server_detect_udp == TRUE)
 			{
-				sprintf(command, "tcpdump -f -c 30");
+				sprintf(command, "tcpdump -f -n -c 5");
 				command_pipe = popen(command, "r");
 
 				if (command_pipe != NULL)
@@ -3410,19 +3411,53 @@ static void gfire_detect_game_server(PurpleConnection *gc)
 					{
 						gchar *current_line = g_strdup_printf("%s", line);
 
-						regex = g_regex_new("(\\d{1,3}\\.){4}\\d{4,5}", G_REGEX_OPTIMIZE, 0, NULL);
+						regex = g_regex_new("(\\d{1,3}\\.){4}\\d{4,5} >", G_REGEX_OPTIMIZE, 0, NULL);
 						regex_match = g_regex_match(regex, current_line, 0, &regex_matches);
 				
 						if (regex_match == TRUE)
 						{
-							server_ip = g_match_info_fetch(regex_matches, 0);
-							gchar **server_ip_split = g_strsplit(server_ip, ".", -1);
+							GRegex *regex_ip;
+							GMatchInfo *regex_ip_matches;
+							gboolean regex_ip_match;
+
+							regex_ip = g_regex_new("(\\d{1,3}\\.){4}\\d{4,5}", G_REGEX_OPTIMIZE, 0, NULL);
+							gchar *server_ip_tmp = g_match_info_fetch(regex_matches, 0);
+							regex_ip_match = g_regex_match(regex_ip, server_ip_tmp, 0, &regex_ip_matches);
+							
+							gchar **server_ip_split = g_strsplit(server_ip_tmp, ".", -1);
 							int server_port_tmp = atoi(server_ip_split[4]);
 
 							if (server_port != server_port_tmp) server_ip = NULL;
+							else
+							{
+								if (regex_ip_match == TRUE)
+								{
+									GRegex *regex_remote_ip;
+									GMatchInfo *regex_remote_ip_matches;
+									gboolean regex_remote_ip_match;
 
-							/* Stop searching for ip */
-							break;
+									regex_remote_ip = g_regex_new("(\\d{1,3}\\.){4}\\d{4,5}", G_REGEX_OPTIMIZE, 0, NULL);
+									regex_remote_ip_match = g_regex_match(regex_remote_ip, current_line, 0, &regex_remote_ip_matches);
+
+									if (regex_remote_ip_match == TRUE)
+									{
+										/* Try to get second ip, because first ip is our ip */
+										while (g_match_info_matches(regex_remote_ip_matches) == TRUE)
+										{
+											gchar *server_ip_tmp = g_match_info_fetch(regex_remote_ip_matches, 0);
+											if (server_ip_tmp != NULL) server_ip = server_ip_tmp;
+
+											/* g_free(server_ip_tmp); */
+											g_match_info_next(regex_remote_ip_matches, NULL);
+										}
+									
+										/* Stop searching for ip */
+										break;
+									}
+									else server_ip = NULL;
+								}
+								else server_ip = NULL;
+							}
 						}
 						else server_ip = NULL;
 					}
