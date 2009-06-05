@@ -38,6 +38,10 @@
 #include <glib/gthread.h>
 #include <unistd.h>
 #include <string.h>
+#include <sys/types.h>
+
+#include <netdb.h>
+#include <ifaddrs.h>
 
 #include <libintl.h>
 #include <locale.h>
