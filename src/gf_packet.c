@@ -309,6 +309,8 @@ void gfire_packet_131(PurpleConnection *gc, int packet_len)
 		gf_buddy->alias = (gchar *)n->data;
 		gf_buddy->userid = (guint8 *)u->data;
 		gf_buddy->friend = (gboolean )TRUE;
+		gf_buddy->clan = FALSE;
+		gf_buddy->clanid = 0;
 
 		if (gf_buddy->alias == NULL) gf_buddy->alias = g_strdup(gf_buddy->name);
 
@@ -2012,14 +2014,20 @@ void gfire_read_clan_blist(PurpleConnection *gc, int packet_len)
 			gf_buddy = (gfire_buddy *)btmp->data;
 		}
 
+		if(gf_buddy->friend)
+		{
+			f = g_list_next(f);
+			u = g_list_next(u);
+			n = g_list_next(n);
+			continue;
+		}
+
 		gf_buddy->name = (gchar *)f->data;
-		
-		/* No specific clan names for buddies who are already in our buddy list */
-		if (!gf_buddy->friend) gf_buddy->alias = (gchar *)n->data;
+		gf_buddy->alias = (gchar *)n->data;
 
 		gf_buddy->userid = (guint8 *)u->data;
 		gf_buddy->clanid = clanid;
-		gf_buddy->clan = (gboolean )TRUE;
+		gf_buddy->clan = TRUE;
 
 		if (gf_buddy->alias == NULL) gf_buddy->alias = g_strdup(gf_buddy->name);
 
@@ -2206,7 +2214,7 @@ void gfire_read_serverlist(PurpleConnection *gc, int packet_len)
 void gfire_changed_avatar(PurpleConnection *gc, int packet_len)
 {
 	guint8 uid[XFIRE_USERID_LEN] = {0x0,0x0,0x0,0x0};
-	guint8 avatarType = 0x0;
+	guint32 avatarType = 0x0;
 	guint32 avatarNum = 0x0;
 	gfire_data *gfire = NULL;
 	int index = 7;
@@ -2225,9 +2233,11 @@ void gfire_changed_avatar(PurpleConnection *gc, int packet_len)
 	/* grab the avatarType */
 	memcpy(&avatarType, gfire->buff_in + index, sizeof(avatarType));
 	index += sizeof(avatarType) + 2;
+	avatarType = GUINT32_FROM_LE(avatarType);
 
 	/* grab the avatarNum */
 	memcpy(&avatarNum, gfire->buff_in + index, sizeof(avatarNum));
+	avatarNum = GUINT32_FROM_LE(avatarNum);
 
 	gfbl = gfire_find_buddy_in_list(gfire->buddies, (gpointer) &uid, GFFB_UIDBIN);
 	if(gfbl == NULL)
@@ -2251,9 +2261,21 @@ void gfire_changed_avatar(PurpleConnection *gc, int packet_len)
 	}
 
 
-	if(avatarType == 2 && avatarNum == gf_buddy->avatarnumber)
+	if((avatarType == 1 || avatarType == 2) && avatarType == gf_buddy->avatartype && avatarNum == gf_buddy->avatarnumber)
 	{
 		purple_debug(PURPLE_DEBUG_MISC, "gfire", "(changed avatar): avatar did not change. skipping download.\n");
+	}
+	else if(avatarType == 1)
+	{
+		avatar_url = g_strdup_printf(XFIRE_GALLERY_AVATAR_URL, avatarNum);
+		purple_debug(PURPLE_DEBUG_MISC, "gfire", "(changed avatar): trying to download avatar from: %s\n", NN(avatar_url));
+		purple_util_fetch_url(avatar_url, TRUE, "Purple-xfire", TRUE, gfire_avatar_download_cb, (void *)pbuddy);
+		g_free(avatar_url);
+
+		gf_buddy->avatartype = avatarType;
+		gf_buddy->avatarnumber = avatarNum;
+		purple_blist_node_set_int(&pbuddy->node, "avatartype", avatarType);
+		purple_blist_node_set_int(&pbuddy->node, "avatarnumber", avatarNum);
 	}
 	else if(avatarType == 2)
 	{
@@ -2262,7 +2284,9 @@ void gfire_changed_avatar(PurpleConnection *gc, int packet_len)
 		purple_util_fetch_url(avatar_url, TRUE, "Purple-xfire", TRUE, gfire_avatar_download_cb, (void *)pbuddy);
 		g_free(avatar_url);
 
+		gf_buddy->avatartype = avatarType;
 		gf_buddy->avatarnumber = avatarNum;
+		purple_blist_node_set_int(&pbuddy->node, "avatartype", avatarType);
 		purple_blist_node_set_int(&pbuddy->node, "avatarnumber", avatarNum);
 	}
 	else
@@ -2275,6 +2299,9 @@ void gfire_changed_avatar(PurpleConnection *gc, int packet_len)
 		}
 		else
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "(changed avatar): %s has no avatar\n", NN(gf_buddy->name));
+
+		purple_blist_node_remove_setting(&pbuddy->node, "avatartype");
+		purple_blist_node_remove_setting(&pbuddy->node, "avatarnumber");
 	}
 }
 

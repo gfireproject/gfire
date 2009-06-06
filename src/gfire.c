@@ -1256,7 +1256,7 @@ void gfire_new_buddy(PurpleConnection *gc, gchar *alias, gchar *name, gboolean f
 		gf_buddy = (gfire_data*)l->data;
 
 	// Buddy is already added in a clan -> move him to the xfire contacts
-	if(buddy != NULL && friend == TRUE && gf_buddy != NULL && gf_buddy->clan)
+	if(buddy != NULL && friend && gf_buddy && gf_buddy->clan && purple_blist_node_get_bool(&buddy->node, "clanmember"))
 	{
 		if (NULL == default_purple_group) {
 			default_purple_group = purple_group_new(GFIRE_DEFAULT_GROUP_NAME);
@@ -1265,6 +1265,7 @@ void gfire_new_buddy(PurpleConnection *gc, gchar *alias, gchar *name, gboolean f
 		purple_blist_remove_buddy(buddy);
 		buddy = purple_buddy_new(account, name, NULL);
 		purple_blist_add_buddy(buddy, NULL, default_purple_group, NULL);
+		purple_blist_node_remove_setting(&buddy->node, "clanmember");
 
 		serv_got_alias(gc, name, g_strdup(alias));
 	}
@@ -1307,6 +1308,7 @@ void gfire_new_buddy(PurpleConnection *gc, gchar *alias, gchar *name, gboolean f
 		purple_debug(PURPLE_DEBUG_MISC, "gfire", "(buddylist): buddy %s not found in Pidgin buddy list, adding.\n",
 				NN(name));
 		purple_blist_add_buddy(buddy, NULL, clan_group, NULL);
+		purple_blist_node_set_bool(&buddy->node, "clanmember", TRUE);
 		serv_got_alias(gc, name, g_strdup(alias));
 	}
 	else {
@@ -1338,7 +1340,10 @@ void gfire_new_buddies(PurpleConnection *gc)
 		tmp = g_list_next(tmp);
 		gbuddy = purple_find_buddy(purple_connection_get_account(gc), b->name);
 		if(gbuddy != NULL)
+		{
 			b->avatarnumber = purple_blist_node_get_int(&(gbuddy->node), "avatarnumber");
+			b->avatartype = purple_blist_node_get_int(&(gbuddy->node), "avatartype");
+		}
 		packet_len = gfire_request_avatar_info(gc, b);
 		if (packet_len > 0)	gfire_send(gc, gfire->buff_out, packet_len);
 	}
@@ -2984,11 +2989,11 @@ void gfire_avatar_download_cb( PurpleUtilFetchUrlData *url_data, gpointer data, 
 		return;
 	}
 
-	if((unsigned char)buf[0] != 0xFF || (unsigned char)buf[1] != 0xD8)
+	/*if((unsigned char)buf[0] != 0xFF || (unsigned char)buf[1] != 0xD8)
 	{
 		purple_debug(PURPLE_DEBUG_ERROR, "gfire", "gfire_avatar_download_cb: invalid jpeg file (first two bytes: %02x%02x)\n", buf[0], buf[1]);
 		return;
-	}
+	}*/
 
 	gc = pbuddy->account->gc;
 	if ( PURPLE_CONNECTION_IS_VALID(gc) && PURPLE_CONNECTION_IS_CONNECTED(gc) )
