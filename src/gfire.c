@@ -2346,19 +2346,6 @@ void gfire_handle_game_detection(PurpleConnection *gc, int gameid, gboolean runn
 			g_thread_create((GThreadFunc )gfire_detect_game_server, gc, TRUE, NULL);
 		}
 		
-		if (gfire->server_ip != NULL && gfire->server_port != NULL && gfire->gameid != NULL) {			
-			int packet_len = gfire_join_game_create(gc, gfire->gameid, gfire->server_port, (guint8*)gfire_ipstr_to_bin(gfire->server_ip));
-			if (packet_len != 0) gfire_send(gc, gfire->buff_out, packet_len);
-
-			purple_debug_info("gfire_handle_game_detection", "Playing on server (%s:%d)", gfire->server_ip, gfire->server_port);
-		}
-		else {
-			int packet_len = gfire_join_game_create(gc, gfire->gameid, 0, NULL);
-			if (packet_len != 0) gfire_send(gc, gfire->buff_out, packet_len);
-
-			purple_debug_info("gfire_handle_game_detection", "Not playing on a server.");
-		}
-		
 		if (gfire->game_running == FALSE)
 		{
 			gboolean norm = purple_account_get_bool(purple_connection_get_account(gc), "ingamenotificationnorm", FALSE);
@@ -2387,6 +2374,26 @@ void gfire_handle_game_detection(PurpleConnection *gc, int gameid, gboolean runn
 			if(len) gfire_send(gc, gfire->buff_out, len);
 
 			gfire->game_running = FALSE;
+		}
+	}
+
+	if (gfire->server_changed == TRUE && gfire->gameid != NULL)
+	{
+		if (gfire->server_ip == NULL)
+		{
+			int packet_len = gfire_join_game_create(gc, gfire->gameid, 0, NULL);
+			if (packet_len != 0) gfire_send(gc, gfire->buff_out, packet_len);
+
+			gfire->server_changed = FALSE;
+			purple_debug_info("gfire_handle_game_detection", "Not playing on a server anymore.\n");
+		}
+		else
+		{
+			int packet_len = gfire_join_game_create(gc, gfire->gameid, gfire->server_port, (guint8*)gfire_ipstr_to_bin(gfire->server_ip));
+			if (packet_len != 0) gfire_send(gc, gfire->buff_out, packet_len);
+
+			gfire->server_changed = FALSE;
+			purple_debug_info("gfire_handle_game_detection", "Playing on server (%s:%d)\n", gfire->server_ip, gfire->server_port);
 		}
 	}
 
@@ -3426,7 +3433,7 @@ static void gfire_detect_game_server(PurpleConnection *gc)
 				else server_detect = FALSE;
 
 				gchar *excluded_ports = xmlnode_get_data(exclude_ports_node);
-				server_excluded_ports = g_strsplit(excluded_ports, ",", -1);
+				if (excluded_ports != NULL) server_excluded_ports = g_strsplit(excluded_ports, ",", -1);
 			}
 		}
 
@@ -3472,8 +3479,10 @@ static void gfire_detect_game_server(PurpleConnection *gc)
 					i = 0;
 
 					/* Check if port is allowed */
-					for (; server_excluded_ports[i] != NULL; i++) {
-						if (server_port == atoi(server_excluded_ports[i])) server_ip = NULL;
+					if (server_excluded_ports != NULL) {
+						for (; server_excluded_ports[i] != NULL; i++) {
+							if (server_port == atoi(server_excluded_ports[i])) server_ip = NULL;
+						}
 					}
 					
 				}
@@ -3543,8 +3552,10 @@ static void gfire_detect_game_server(PurpleConnection *gc)
 									i = 0;
 
 									/* Check if port is allowed */
-									for (; server_excluded_ports[i] != NULL; i++) {
-										if (server_port == atoi(server_excluded_ports[i])) port_accepted = FALSE;
+									if (server_excluded_ports != NULL) {
+										for (; server_excluded_ports[i] != NULL; i++) {
+											if (server_port == atoi(server_excluded_ports[i]))  port_accepted = FALSE;
+										}
 									}
 
 									/* Check if found ip is not remote ip */
@@ -3561,18 +3572,18 @@ static void gfire_detect_game_server(PurpleConnection *gc)
 				}
 			}
 
-			/* Store found ip */
+			/* Store found ip */			
 			if (server_ip != NULL)
 			{
 				gchar **server_ip_split = g_strsplit(server_ip, ".", -1);
-
 				if (server_ip_split != NULL)
 				{
 					char *server_ip_str = g_strdup_printf("%s.%s.%s.%s", server_ip_split[0], server_ip_split[1],
 					                                      server_ip_split[2], server_ip_split[3]);
 					int server_port_tmp = atoi(server_ip_split[4]);
-
+					
 					g_mutex_lock(gfire->server_mutex);
+					if (g_strcmp0(server_ip_str, gfire->server_ip) != 0) gfire->server_changed = TRUE;
 					gfire->server_ip = server_ip_str;
 					gfire->server_port = server_port_tmp;
 					g_mutex_unlock(gfire->server_mutex);
@@ -3580,10 +3591,11 @@ static void gfire_detect_game_server(PurpleConnection *gc)
 			}
 			else {
 				g_mutex_lock(gfire->server_mutex);
+				if (gfire->server_ip != NULL) gfire->server_changed = TRUE;
 				gfire->server_ip = NULL;
 				gfire->server_port = NULL;
 				g_mutex_unlock(gfire->server_mutex);
-			}		
+			}
 		}
 	}
 }
