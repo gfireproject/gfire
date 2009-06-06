@@ -3349,7 +3349,6 @@ void gfire_detect_mumble_server(const gchar *executable, guint8 **voip_ip, guint
 	*voip_port = port;
 }
 
-
 static void gfire_detect_game_server(PurpleConnection *gc)
 {
 	gfire_data *gfire = NULL;
@@ -3413,7 +3412,7 @@ static void gfire_detect_game_server(PurpleConnection *gc)
 
 			if (atoi(game_id_tmp) == game_id) game_executable = xmlnode_get_data(executable_node);
 		}
-		
+
 		/* Look up if server detection is enabled and get excluded ports */
 		for (node_child = xmlnode_get_child(gfire_games, "game"); node_child != NULL; node_child = xmlnode_get_next_twin(node_child))
 		{
@@ -3427,7 +3426,7 @@ static void gfire_detect_game_server(PurpleConnection *gc)
 				else server_detect = FALSE;
 
 				gchar *excluded_ports = xmlnode_get_data(exclude_ports_node);
-				if (excluded_ports != NULL) server_excluded_ports = g_strsplit(excluded_ports, ",", -1);
+				server_excluded_ports = g_strsplit(excluded_ports, ",", -1);
 			}
 		}
 
@@ -3468,6 +3467,15 @@ static void gfire_detect_game_server(PurpleConnection *gc)
 					
 					gchar **server_ip_split = g_strsplit(server_ip, ".", -1);
 					server_port = atoi(server_ip_split[4]);
+
+					gboolean port_accepted = TRUE;
+					i = 0;
+
+					/* Check if port is allowed */
+					for (; server_excluded_ports[i] != NULL; i++) {
+						if (server_port == atoi(server_excluded_ports[i])) server_ip = NULL;
+					}
+					
 				}
 				else server_ip = NULL;
 
@@ -3513,22 +3521,8 @@ static void gfire_detect_game_server(PurpleConnection *gc)
 
 							gchar **sender_ip_full_split = g_strsplit(sender_ip_full, ".", -1);
 							int sender_port = atoi(sender_ip_full_split[4]);
-							gboolean port_accepted = TRUE;
-
-							if (server_excluded_ports != NULL)
-							{
-								gchar *excluded_port;
-
-								int j = 0;
-								for (excluded_port = g_strdup_printf("%s", server_excluded_ports[j]);
-								     server_excluded_ports[j] != NULL; j++)
-								{
-									excluded_port = g_strdup_printf("%s", server_excluded_ports[j]);
-									if (server_port == atoi(excluded_port)) port_accepted = FALSE;
-								}
-							}
 							
-							if (sender_port == server_port && port_accepted == TRUE)
+							if (sender_port == server_port)
 							{
 								regex = g_regex_new(regex_ip_receiver_tcpdump, G_REGEX_OPTIMIZE, 0, NULL);
 								regex_match = g_regex_match(regex, current_line, 0, &regex_matches);
@@ -3544,8 +3538,17 @@ static void gfire_detect_game_server(PurpleConnection *gc)
 									gchar **receiver_ip_split = g_strsplit(receiver_ip_full, ".", -1);
 									gchar *receiver_ip_wo_port = g_strdup_printf("%s.%s.%s.%s", receiver_ip_split[0], receiver_ip_split[1],
 									                                             receiver_ip_split[2], receiver_ip_split[3]);
+									
+									gboolean port_accepted = TRUE;
+									i = 0;
 
-									 if (g_strcmp0(receiver_ip_wo_port, remote_ip) != 0) {
+									/* Check if port is allowed */
+									for (; server_excluded_ports[i] != NULL; i++) {
+										if (server_port == atoi(server_excluded_ports[i])) port_accepted = FALSE;
+									}
+
+									/* Check if found ip is not remote ip */
+									if ((g_strcmp0(receiver_ip_wo_port, remote_ip) != 0) && port_accepted == TRUE) {
 										server_ip = receiver_ip_full;
 										break;
 									}
