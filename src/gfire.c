@@ -3350,9 +3350,8 @@ static void gfire_detect_game_server(PurpleConnection *gc)
 	{
 		xmlnode *node_child;
 
-		char *game_executable;
+		gchar *game_executable, *server_ip, **server_excluded_ports;
 		gboolean server_detect, server_detect_udp;
-		char *server_ip;
 		int server_port;
 
 		/* Get game executable */
@@ -3365,15 +3364,20 @@ static void gfire_detect_game_server(PurpleConnection *gc)
 			if (atoi(game_id_tmp) == game_id) game_executable = xmlnode_get_data(executable_node);
 		}
 		
-		/* Look up if server detection is enabled */
+		/* Look up if server detection is enabled and get excluded ports */
 		for (node_child = xmlnode_get_child(gfire_games, "game"); node_child != NULL; node_child = xmlnode_get_next_twin(node_child))
 		{
 			xmlnode *detect_node = xmlnode_get_child(node_child, "server_detect");
+			xmlnode *exclude_ports_node = xmlnode_get_child(node_child, "server_exclude_ports");
 			const char *game_id_tmp = xmlnode_get_attrib(node_child, "id");
 
-			if (atoi(game_id_tmp) == game_id) {
+			if (atoi(game_id_tmp) == game_id)
+			{
 				if (g_strcmp0(xmlnode_get_data(detect_node), "true") == 0) server_detect = TRUE;
 				else server_detect = FALSE;
+
+				gchar *excluded_ports = xmlnode_get_data(exclude_ports_node);
+				if (excluded_ports != NULL) server_excluded_ports = g_strsplit(excluded_ports, ",", -1);
 			}
 		}
 
@@ -3459,8 +3463,22 @@ static void gfire_detect_game_server(PurpleConnection *gc)
 
 							gchar **sender_ip_full_split = g_strsplit(sender_ip_full, ".", -1);
 							int sender_port = atoi(sender_ip_full_split[4]);
+							gboolean port_accepted = TRUE;
 
-							if (sender_port == server_port)
+							if (server_excluded_ports != NULL)
+							{
+								gchar *excluded_port;
+
+								int j = 0;
+								for (excluded_port = g_strdup_printf("%s", server_excluded_ports[j]);
+								     server_excluded_ports[j] != NULL; j++)
+								{
+									excluded_port = g_strdup_printf("%s", server_excluded_ports[j]);
+									if (sender_port == atoi(excluded_port)) port_accepted = FALSE;
+								}
+							}
+							
+							if (sender_port == server_port && port_accepted == TRUE)
 							{
 								regex = g_regex_new(regex_ip_receiver_tcpdump, G_REGEX_OPTIMIZE, 0, NULL);
 								regex_match = g_regex_match(regex, current_line, 0, &regex_matches);
@@ -3481,13 +3499,9 @@ static void gfire_detect_game_server(PurpleConnection *gc)
 										server_ip = receiver_ip_full;
 										break;
 									}
-									else server_ip = NULL;
 								}
-								else server_ip = NULL;
 							}
-							else server_ip = NULL;
 						}
-						else server_ip = NULL;
 					}
 
 					fclose(command_pipe);
