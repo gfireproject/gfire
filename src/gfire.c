@@ -3474,7 +3474,7 @@ static void gfire_detect_game_server(PurpleConnection *gc)
 								     server_excluded_ports[j] != NULL; j++)
 								{
 									excluded_port = g_strdup_printf("%s", server_excluded_ports[j]);
-									if (sender_port == atoi(excluded_port)) port_accepted = FALSE;
+									if (server_port == atoi(excluded_port)) port_accepted = FALSE;
 								}
 							}
 							
