@@ -1083,27 +1083,33 @@ void gfire_add_clan(PurpleConnection *gc, gfire_clan *newClan)
 	while(group_node && purple_blist_node_get_int(group_node, "clanid") != newClan->clanid)
 		group_node = purple_blist_node_get_sibling_next(group_node);
 
+	clan_group_str = g_strdup_printf(GFIRE_CLAN_GROUP_FORMATTING, NN(newClan->clanLongName), NN(newClan->clanShortName));
+	gchar *escaped = gfire_escape_html(clan_group_str);
 	// Group found
 	if(group_node)
 	{
 		newClan->group = (PurpleGroup*)group_node;
-		// Maybe a TODO: Renaming an existing group if the clan name changed
+		// Rename existing group if the clan name changed
+		if(g_strcmp0(purple_group_get_name(newClan->group), escaped) != 0)
+		{
+			purple_debug(PURPLE_DEBUG_MISC, "gfire", "updating clan group name \"%s\" -> \"%s\"\n", purple_group_get_name(newClan->group), escaped);
+			purple_blist_rename_group(newClan->group, escaped);
+		}
 	}
 	// Not found, create new blist clan group
 	else if(!group_node)
 	{
-		clan_group_str = g_strdup_printf(GFIRE_CLAN_GROUP_FORMATTING, NN(newClan->clanLongName), NN(newClan->clanShortName));
-		gchar *escaped = gfire_escape_html(clan_group_str);
-		if(clan_group_str) g_free(clan_group_str);
-
 		clan_group = purple_group_new(escaped);
-		if(escaped) g_free(escaped);
+
+		purple_debug(PURPLE_DEBUG_MISC, "gfire", "adding clan group\"%s\"\n", escaped);
 
 		purple_blist_add_group(clan_group, NULL);
 		purple_blist_node_set_int(&clan_group->node, "clanid", newClan->clanid);
 
 		newClan->group = clan_group;
 	}
+	if(escaped) g_free(escaped);
+	if(clan_group_str) g_free(clan_group_str);
 
 	// Append clan to gfire clan list
 	gfire->clans = g_list_append(gfire->clans, newClan);
@@ -1236,6 +1242,8 @@ void gfire_new_buddy(PurpleConnection *gc, gchar *alias, gchar *name, gboolean f
 	account = purple_connection_get_account(gc);
 	default_purple_group = purple_find_group(GFIRE_DEFAULT_GROUP_NAME);
 	clan_group = NULL;
+	gfire_buddy *gf_buddy = NULL;
+	GList *l = NULL;
 	buddy = purple_find_buddy(account, name);
 
 	if(!gc || !(gfire = (gfire_data*)gc->proto_data))
@@ -1243,8 +1251,25 @@ void gfire_new_buddy(PurpleConnection *gc, gchar *alias, gchar *name, gboolean f
 
 	clans = gfire->clans;
 
+	l = gfire_find_buddy_in_list(gfire->buddies, name, GFFB_NAME);
+	if(l)
+		gf_buddy = (gfire_data*)l->data;
 
-	if (buddy == NULL && friend == TRUE) {
+	// Buddy is already added in a clan -> move him to the xfire contacts
+	if(buddy != NULL && friend == TRUE && gf_buddy != NULL && gf_buddy->clan)
+	{
+		if (NULL == default_purple_group) {
+			default_purple_group = purple_group_new(GFIRE_DEFAULT_GROUP_NAME);
+			purple_blist_add_group(default_purple_group, NULL);
+		}
+		purple_blist_remove_buddy(buddy);
+		buddy = purple_buddy_new(account, name, NULL);
+		purple_blist_add_buddy(buddy, NULL, default_purple_group, NULL);
+
+		serv_got_alias(gc, name, g_strdup(alias));
+	}
+	// Buddy is a new xfire contact
+	else if (buddy == NULL && friend == TRUE) {
 		if (NULL == default_purple_group) {
 			default_purple_group = purple_group_new(GFIRE_DEFAULT_GROUP_NAME);
 			purple_blist_add_group(default_purple_group, NULL);
@@ -1254,11 +1279,9 @@ void gfire_new_buddy(PurpleConnection *gc, gchar *alias, gchar *name, gboolean f
 				NN(name));
 		purple_blist_add_buddy(buddy, NULL, default_purple_group, NULL);
 		serv_got_alias(gc, name, g_strdup(alias));
-	} else {
-		serv_got_alias(gc, name, g_strdup(alias));
 	}
-	
-	if (buddy == NULL && clanid > 0) {
+	// Buddy is a new clan member
+	else if (buddy == NULL && clanid > 0) {
 		while(clans)
 		{
 			if(clans->data && ((gfire_clan*)clans->data)->clanid == clanid)
@@ -1285,7 +1308,8 @@ void gfire_new_buddy(PurpleConnection *gc, gchar *alias, gchar *name, gboolean f
 				NN(name));
 		purple_blist_add_buddy(buddy, NULL, clan_group, NULL);
 		serv_got_alias(gc, name, g_strdup(alias));
-	} else {
+	}
+	else {
 		serv_got_alias(gc, name, g_strdup(alias));
 	}
 }
@@ -1562,6 +1586,16 @@ void gfire_buddy_menu_profile_cb(PurpleBlistNode *node, gpointer *data)
 	purple_notify_uri((void *)_gfire_plugin, uri);
  }
 
+void gfire_buddy_menu_add_as_friend_cb(PurpleBlistNode *node, gpointer *data)
+{
+	PurpleBuddy *b = (PurpleBuddy *)node;
+
+	if (!b || !b->account)
+		return;
+
+	purple_blist_request_add_buddy(b->account, purple_buddy_get_name(b), GFIRE_DEFAULT_GROUP_NAME, NULL);
+}
+
 
  /**
   * Callback function for pidgin buddy list right click menu.  This callback
@@ -1656,6 +1690,17 @@ GList * gfire_node_menu(PurpleBlistNode *node)
 		l = gfire_find_buddy_in_list(gfire->buddies, (gpointer *)b->name, GFFB_NAME);
 		if (!l) return NULL; /* can't find the buddy? not our plugin? */
 		gb = (gfire_buddy *)l->data;
+
+		if(gb && gb->clan)
+		{
+			me = purple_menu_action_new(N_("Add as friend"),
+					PURPLE_CALLBACK(gfire_buddy_menu_add_as_friend_cb),NULL, NULL);
+
+			if (!me) {
+				return NULL;
+			}
+			ret = g_list_append(ret, me);
+		}
 
 		if (gb && !gfire->gameid && gb->gameid && gfire_game_playable(gc, gb->gameid)){
 			 /* don't show menu if we are in game */
