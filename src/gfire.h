@@ -237,10 +237,10 @@ struct _get_info_callback_args {
 #include "gf_packet.h"
 #include "gf_chat.h"
 #include "gf_network.h"
-#include "gf_games.h"
+#include "gf_games."
 
-#include "gf_query.h"
 #include "cipher.h"
+#include "gf_query.h"
 
 static const char *gfire_blist_icon(PurpleAccount *a, PurpleBuddy *b);
 static const char *gfire_blist_emblems(PurpleBuddy *b);
