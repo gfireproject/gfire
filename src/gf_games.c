@@ -19,11 +19,8 @@
  * You should have received a copy of the GNU General Public License
  * along with Gfire.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "gfire.h"
-#include "gf_packet.h"
-#include "gf_network.h"
-#include "gf_games.h"
 
+#include "gfire.h"
 
 void gfire_xml_download_cb(
 
@@ -516,4 +513,3 @@ void gfire_xml_download_cb( PurpleUtilFetchUrlData *url_data, gpointer data, con
 		purple_notify_message(NULL, PURPLE_NOTIFY_MSG_ERROR, N_("XFire games Download"), N_("Will attempt to download gfire_games.xml from the Gfire server."), N_("Unable to write gfire_games.xml"), NULL, NULL);
 	}
 }
-

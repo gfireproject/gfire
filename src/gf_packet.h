@@ -20,10 +20,6 @@
  * You should have received a copy of the GNU General Public License
  * along with Gfire.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef _GF_PACKET_H
-#define _GF_PACKET_H
-
-#include "gfire.h"
 
 void gfire_add_header(guint8 *packet, int length, int type, int atts);
 int gfire_add_att_name(guint8 *packet,int packet_length, char *att);
@@ -66,5 +62,3 @@ int gfire_create_serverlist_request (PurpleConnection *gc, int game);
 void gfire_read_serverlist(PurpleConnection *gc, int packet_len);
 void gfire_changed_avatar(PurpleConnection *gc, int packet_len);
 GList *gfire_voip_status(PurpleConnection *gc, int packet_len);
-
-#endif /* _GF_PACKET_H */

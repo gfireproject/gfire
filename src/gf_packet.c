@@ -22,13 +22,6 @@
 
 #include "gfire.h"
 
-#include "gf_network.h"
-#include "gf_packet.h"
-#include "gf_chat.h"
-#include "gf_query.c"
-
-#include "cipher.h"
-
 void gfire_add_header(guint8 *packet, int length, int type, int atts)
 {
 	guint8 buffer[5] = { 0,0,0,0,(guint8) atts };

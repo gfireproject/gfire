@@ -21,19 +21,6 @@
 */
 
 #include "gfire.h"
-#include "gf_packet.h"
-#include "gf_network.h"
-#include "gf_chat.h"
-
-/* we only include this on win32 builds */
-#  ifdef _WIN32
-#    include "internal.h"
-#  endif /* _WIN32 */
-
-
-
-void gfire_parse_packet(PurpleConnection *gc, int packet_len, int packet_id);
-
 
 void gfire_send(PurpleConnection *gc, const guint8 *packet, int size)
 {

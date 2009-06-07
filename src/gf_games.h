@@ -19,8 +19,6 @@
  * You should have received a copy of the GNU General Public License
  * along with Gfire.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef _GF_GAMES_H
-#define _GF_GAMES_H
 
 #include "gfire.h"
 
@@ -95,5 +93,3 @@ gchar *gfire_game_launch_info_get_command(gfire_game_launch_info *game_launch_in
 
 
 gchar *gfire_ipstr_to_bin(const gchar *ip);
-
-#endif /* _GF_GAMES_H */

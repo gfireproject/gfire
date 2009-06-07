@@ -21,7 +21,6 @@
 */
 
 #ifndef _GFIRE_H
-
 #define _GFIRE_H
 
 #ifdef HAVE_CONFIG_H
@@ -115,6 +114,11 @@
 #define XFIRE_AVATAR_URL "http://screenshot.xfire.com/avatar/%s.jpg?%u" // username, revision number
 #define XFIRE_GALLERY_AVATAR_URL "http://media.xfire.com/xfire/xf/images/avatars/gallery/default/%03u.gif" // avatar id
 #define XFIRE_SEND_TYPING_TIMEOUT 10
+
+/* we only include this on win32 builds */
+#  ifdef _WIN32
+#    include "internal.h"
+#  endif /* _WIN32 */
 
 typedef struct _gfire_data	gfire_data;
 typedef struct _gfire_buddy	gfire_buddy;
@@ -229,6 +233,43 @@ struct _get_info_callback_args {
 #define GFIRE_STATUS_ONLINE		0	/* set buddies online / offline */
 #define	GFIRE_STATUS_GAME		1	/* update game information */
 #define	GFIRE_STATUS_AWAY		2	/* update away status */
+
+#include "gf_packet.h"
+#include "gf_chat.h"
+#include "gf_network.h"
+#include "gf_games.h"
+
+#include "gf_query.h"
+#include "cipher.h"
+
+static const char *gfire_blist_icon(PurpleAccount *a, PurpleBuddy *b);
+static const char *gfire_blist_emblems(PurpleBuddy *b);
+static void gfire_blist_tooltip_text(PurpleBuddy *buddy, PurpleNotifyUserInfo *user_info, gboolean full);
+static GList *gfire_status_types(PurpleAccount *account);
+static int gfire_im_send(PurpleConnection *gc, const char *who, const char *what, PurpleMessageFlags flags);
+static void gfire_login(PurpleAccount *account);
+static void gfire_login_cb(gpointer data, gint source, const gchar *error_message);
+static void gfire_add_buddy(PurpleConnection *gc, PurpleBuddy *buddy, PurpleGroup *group);
+static void gfire_remove_buddy(PurpleConnection *gc, PurpleBuddy *buddy, PurpleGroup *group);
+void gfire_buddy_menu_profile_cb(PurpleBlistNode *node, gpointer *data);
+GList *gfire_node_menu(PurpleBlistNode *node);
+
+void gfire_join_game(PurpleConnection *gc, const gchar *server_ip, int server_port, int game_id);
+char *gfire_escape_html(const char *html);
+
+#ifdef IS_NOT_WINDOWS
+static void gfire_action_manage_games_cb(PurplePluginAction *action);
+static void gfire_add_game_cb(manage_games_callback_args *args, GtkWidget *button);
+static void gfire_edit_game_cb(manage_games_callback_args *args, GtkWidget *button);
+static void gfire_manage_games_edit_update_fields_cb(GtkBuilder *builder, GtkWidget *edit_games_combo);
+static void gfire_manage_games_update_executable_toggled_cb(GtkBuilder *builder, GtkWidget *executable_check_button);
+static void gfire_remove_game_cb(manage_games_callback_args *args, GtkWidget *button);
+static void gfire_reload_lconfig(PurpleConnection *gc);
+xmlnode *gfire_manage_game_xml(char *game_id, char *game_name, gboolean game_executable, char *game_argument,
+	char *game_prefix, char *game_path, char *game_launch, char *game_connect);
+
+gboolean check_process(char *process, char *process_argument);
+#endif
 
 void gfire_close(PurpleConnection *gc);
 GList *gfire_find_buddy_in_list( GList *blist, gpointer *data, int mode );

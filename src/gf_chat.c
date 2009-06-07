@@ -21,9 +21,6 @@
 */
 
 #include "gfire.h"
-#include "gf_packet.h"
-#include "gf_chat.h"
-#include "gf_network.h"
 
 void gfire_join_chat(PurpleConnection *gc, GHashTable *components)
 {

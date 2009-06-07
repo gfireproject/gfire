@@ -20,11 +20,6 @@
  * along with Gfire.  If not, see <http://www.gnu.org/licenses/>.A
 */
 
-#ifndef _GF_NETWORK_H
-#define _GF_NETWORK_H
-
-#include "gfire.h"
-
 #define GFIRE_BUFFOUT_SIZE 65535
 #define GFIRE_BUFFIN_SIZE 65535
 
@@ -33,8 +28,7 @@ int gfire_initialize_connection(guint8 *packet, int version);
 void gfire_input_cb(gpointer data, gint source, PurpleInputCondition condition);
 void gfire_send_away(PurpleConnection *gc, const char *msg);
 void gfire_process_invitation(PurpleConnection *gc, GList *invites);
+void gfire_parse_packet(PurpleConnection *gc, int packet_len, int packet_id);
 
 /* Function is in gfire.c, but we put this here for the timeout. */
 int gfire_detect_running_processes_cb(PurpleConnection *gc);
-
-#endif /* _GF_NETWORK_H */

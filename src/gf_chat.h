@@ -19,10 +19,6 @@
  * You should have received a copy of the GNU General Public License
  * along with Gfire.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef _GF_CHAT_H
-#define _GF_CHAT_H
-
-#include "gfire.h"
 
 typedef struct _gfire_chat	gfire_chat;
 
@@ -56,5 +52,3 @@ void gfire_chat_got_msg(PurpleConnection *gc, gfire_chat_msg *gcm);
 void gfire_chat_user_leave(PurpleConnection *gc, gfire_chat_msg *gcm);
 void gfire_chat_user_join(PurpleConnection *gc, gfire_chat_msg *gcm);
 void gfire_chat_change_motd(PurpleConnection *gc, int id, const char *topic);
-
-#endif /* _GF_CHAT_H */
