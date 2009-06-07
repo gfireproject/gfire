@@ -53,9 +53,9 @@ LTLIBRARIES = $(plugin_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 @PLUGINS_TRUE@libxfire_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
 am__libxfire_la_SOURCES_DIST = gfire.c gf_network.c gf_packet.c \
-	gf_games.c gf_chat.c
+	gf_games.c gf_chat.c gf_query.c
 @PLUGINS_TRUE@am_libxfire_la_OBJECTS = gfire.lo gf_network.lo \
-@PLUGINS_TRUE@	gf_packet.lo gf_games.lo gf_chat.lo
+@PLUGINS_TRUE@	gf_packet.lo gf_games.lo gf_chat.lo gf_query.lo
 libxfire_la_OBJECTS = $(am_libxfire_la_OBJECTS)
 libxfire_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
@@ -227,7 +227,8 @@ EXTRA_DIST = \
 	gf_network.h \
 	gf_packet.h \
 	gf_games.h \
-	gf_chat.h
+	gf_chat.h \
+	gf_query.h
 
 INCLUDES = \
 	-I$(top_srcdir) \
@@ -241,7 +242,8 @@ libxfire_la_LDFLAGS = -module -avoid-version
 @PLUGINS_TRUE@	gf_network.c \
 @PLUGINS_TRUE@	gf_packet.c \
 @PLUGINS_TRUE@	gf_games.c \
-@PLUGINS_TRUE@	gf_chat.c
+@PLUGINS_TRUE@	gf_chat.c \
+@PLUGINS_TRUE@	gf_query.c
 
 @PLUGINS_TRUE@libxfire_la_LIBADD = \
 @PLUGINS_TRUE@	$(GLIB_LIBS) $(SSL_LIBS)
@@ -328,6 +330,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gf_games.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gf_network.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gf_packet.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gf_query.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gfire.Plo@am__quote@
 
 .c.o:

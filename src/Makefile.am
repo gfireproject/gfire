@@ -4,7 +4,8 @@ EXTRA_DIST = \
 	gf_network.h \
 	gf_packet.h \
 	gf_games.h \
-	gf_chat.h
+	gf_chat.h \
+	gf_query.h
 
 INCLUDES = \
 	-I$(top_srcdir) \
@@ -21,7 +22,8 @@ libxfire_la_SOURCES = \
 	gf_network.c \
 	gf_packet.c \
 	gf_games.c \
-	gf_chat.c
+	gf_chat.c \
+	gf_query.c
 
 libxfire_la_LIBADD = \
 	$(GLIB_LIBS) $(SSL_LIBS)

@@ -21,7 +21,6 @@
 */
 
 #include "gfire.h"
-#include "gf_query.c"
 
 void gfire_add_header(guint8 *packet, int length, int type, int atts)
 {
