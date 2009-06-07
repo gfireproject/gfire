@@ -277,6 +277,14 @@ int gfire_check_xqf_cb(PurpleConnection *gc);
 void gfire_avatar_download_cb( PurpleUtilFetchUrlData *url_data, gpointer data, const char *buf, gsize len, const gchar *error_message);
 char *gfire_escape_color_codes(char *string);
 char *str_replace (char *string, char *before, char *after);
+
+/**
+ * Detects the game server of the current running game.
+ * This function is called as thread while the game is running.
+ *
+ * @param gc:	The purple connection
+ *
+**/
 void gfire_detect_game_server(PurpleConnection *gc);
 
 #include "gf_chat.h"
