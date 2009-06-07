@@ -2593,9 +2593,11 @@ gboolean check_process(char *process, char *process_argument)
 	#ifdef IS_WINDOWS
 	return FALSE;
 	#else
-	char command[256];
+	gchar *command = NULL;
 
-	sprintf(command, "ps -e | grep -i %s | grep -v grep", process);
+	command = g_strdup_printf("ps -e | grep -i %s | grep -v grep", process);
+	if(!command)
+		return FALSE;
 	//sprintf(command, "lsof \"%s\"", process);
 	
 	char buf[256];
@@ -2617,7 +2619,10 @@ gboolean check_process(char *process, char *process_argument)
 		{
 			int process_id;
 
-			sprintf(command, "pidof %s", g_path_get_basename(process));
+			g_free(command);
+			command = g_strdup_printf("pidof %s", process);
+			if(!command)
+				return FALSE;
 			memset(buf, 0, sizeof(buf));
 			FILE *cmd = popen(command, "r");
 
@@ -2628,14 +2633,21 @@ gboolean check_process(char *process, char *process_argument)
 			}
 
 			pclose(cmd);
-			process_id = atoi(&buf);
+			process_id = atoi(buf);
 			gboolean process_running_argument = check_process_argument(process_id, process_argument);
 
+			g_free(command);
 			return process_running_argument;
 		}
-		else return TRUE;
+		else {
+			g_free(command);
+			return TRUE;
+		}
 	}
-	else return FALSE;
+	else {
+		g_free(command);
+		return FALSE;
+	}
 	#endif
 }
 
