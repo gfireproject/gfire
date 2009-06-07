@@ -20,8 +20,6 @@
  * along with Gfire.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "gfire.h"
-
 typedef struct _gfire_game_launch_info gfire_game_launch_info;
 
 struct _gfire_game_launch_info

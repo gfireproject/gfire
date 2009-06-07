@@ -21,6 +21,7 @@
 */
 
 #include "gfire.h"
+#include "gf_query.c"
 
 void gfire_add_header(guint8 *packet, int length, int type, int atts)
 {
@@ -100,7 +101,7 @@ int gfire_read_attrib(GList **values, guint8 *buffer, int packet_len, const char
 }
 
 
-static void hashSha1(char* input,char* digest)
+void hashSha1(char* input,char* digest)
 //based on code from purple_util_get_image_filename in the pidgin 2.2.0 source
 {
 	PurpleCipherContext *context;                                                                                                                                            
@@ -2078,7 +2079,7 @@ int gfire_create_serverlist_request (PurpleConnection *gc, int game)
 	return index;
 }
 
-static void update_server_list(GtkListStore *server_list_store)
+void update_server_list(GtkListStore *server_list_store)
 {
 	GtkTreeIter iter;
 	gboolean valid_iter;

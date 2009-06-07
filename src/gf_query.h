@@ -20,8 +20,8 @@
  * along with Gfire.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#define MINIQUERY_VERSION   "0.1.1"
 
+#define MINIQUERY_VERSION   "0.1.1"
 #include <stdint.h>
 
 #ifdef _WIN32
@@ -121,3 +121,5 @@ typedef struct {
 #pragma pack()
 
 #define FREEX(X)    freex((void *)&X)
+
+int miniquery(ipdata_t *gip, int type, in_addr_t ip, u16 port);

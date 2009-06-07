@@ -20,8 +20,7 @@
  * along with Gfire.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _GFIRE_H
-#define _GFIRE_H
+#pragma once
 
 #ifdef HAVE_CONFIG_H
 	#include <gfire_config.h>
@@ -234,23 +233,15 @@ struct _get_info_callback_args {
 #define	GFIRE_STATUS_GAME		1	/* update game information */
 #define	GFIRE_STATUS_AWAY		2	/* update away status */
 
-#include "gf_packet.h"
-#include "gf_chat.h"
-#include "gf_network.h"
-#include "gf_games.h"
-
-#include "cipher.h"
-#include "gf_query.h"
-
-static const char *gfire_blist_icon(PurpleAccount *a, PurpleBuddy *b);
-static const char *gfire_blist_emblems(PurpleBuddy *b);
-static void gfire_blist_tooltip_text(PurpleBuddy *buddy, PurpleNotifyUserInfo *user_info, gboolean full);
-static GList *gfire_status_types(PurpleAccount *account);
-static int gfire_im_send(PurpleConnection *gc, const char *who, const char *what, PurpleMessageFlags flags);
-static void gfire_login(PurpleAccount *account);
-static void gfire_login_cb(gpointer data, gint source, const gchar *error_message);
-static void gfire_add_buddy(PurpleConnection *gc, PurpleBuddy *buddy, PurpleGroup *group);
-static void gfire_remove_buddy(PurpleConnection *gc, PurpleBuddy *buddy, PurpleGroup *group);
+const char *gfire_blist_icon(PurpleAccount *a, PurpleBuddy *b);
+const char *gfire_blist_emblems(PurpleBuddy *b);
+void gfire_blist_tooltip_text(PurpleBuddy *buddy, PurpleNotifyUserInfo *user_info, gboolean full);
+GList *gfire_status_types(PurpleAccount *account);
+int gfire_im_send(PurpleConnection *gc, const char *who, const char *what, PurpleMessageFlags flags);
+void gfire_login(PurpleAccount *account);
+void gfire_login_cb(gpointer data, gint source, const gchar *error_message);
+void gfire_add_buddy(PurpleConnection *gc, PurpleBuddy *buddy, PurpleGroup *group);
+void gfire_remove_buddy(PurpleConnection *gc, PurpleBuddy *buddy, PurpleGroup *group);
 void gfire_buddy_menu_profile_cb(PurpleBlistNode *node, gpointer *data);
 GList *gfire_node_menu(PurpleBlistNode *node);
 
@@ -258,13 +249,13 @@ void gfire_join_game(PurpleConnection *gc, const gchar *server_ip, int server_po
 char *gfire_escape_html(const char *html);
 
 #ifdef IS_NOT_WINDOWS
-static void gfire_action_manage_games_cb(PurplePluginAction *action);
-static void gfire_add_game_cb(manage_games_callback_args *args, GtkWidget *button);
-static void gfire_edit_game_cb(manage_games_callback_args *args, GtkWidget *button);
-static void gfire_manage_games_edit_update_fields_cb(GtkBuilder *builder, GtkWidget *edit_games_combo);
-static void gfire_manage_games_update_executable_toggled_cb(GtkBuilder *builder, GtkWidget *executable_check_button);
-static void gfire_remove_game_cb(manage_games_callback_args *args, GtkWidget *button);
-static void gfire_reload_lconfig(PurpleConnection *gc);
+void gfire_action_manage_games_cb(PurplePluginAction *action);
+void gfire_add_game_cb(manage_games_callback_args *args, GtkWidget *button);
+void gfire_edit_game_cb(manage_games_callback_args *args, GtkWidget *button);
+void gfire_manage_games_edit_update_fields_cb(GtkBuilder *builder, GtkWidget *edit_games_combo);
+void gfire_manage_games_update_executable_toggled_cb(GtkBuilder *builder, GtkWidget *executable_check_button);
+void gfire_remove_game_cb(manage_games_callback_args *args, GtkWidget *button);
+void gfire_reload_lconfig(PurpleConnection *gc);
 xmlnode *gfire_manage_game_xml(char *game_id, char *game_name, gboolean game_executable, char *game_argument,
 	char *game_prefix, char *game_path, char *game_launch, char *game_connect);
 
@@ -285,6 +276,13 @@ void gfire_buddy_add_deny_cb(void *data);
 int gfire_check_xqf_cb(PurpleConnection *gc);
 void gfire_avatar_download_cb( PurpleUtilFetchUrlData *url_data, gpointer data, const char *buf, gsize len, const gchar *error_message);
 char *gfire_escape_color_codes(char *string);
+char *str_replace (char *string, char *before, char *after);
+void gfire_detect_game_server(PurpleConnection *gc);
 
-static void gfire_detect_game_server(PurpleConnection *gc);
-#endif /* _GFIRE_H */
+#include "gf_chat.h"
+#include "gf_packet.h"
+#include "gf_network.h"
+#include "gf_games.h"
+
+#include "cipher.h"
+#include "gf_query.h"

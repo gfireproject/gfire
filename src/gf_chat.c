@@ -520,4 +520,3 @@ void gfire_chat_change_motd(PurpleConnection *gc, int id, const char *topic)
 	return -1;
 
 }
-

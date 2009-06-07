@@ -25,12 +25,12 @@
 static PurplePlugin *_gfire_plugin = NULL;
 
 
-static const char *gfire_blist_icon(PurpleAccount *a, PurpleBuddy *b) {
+const char *gfire_blist_icon(PurpleAccount *a, PurpleBuddy *b) {
 	return "gfire";
 }
 
 
-static const char *gfire_blist_emblems(PurpleBuddy *b)
+const char *gfire_blist_emblems(PurpleBuddy *b)
 {
 	gfire_data *gfire = NULL;
 	gfire_buddy *gf_buddy = NULL;
@@ -62,7 +62,7 @@ static const char *gfire_blist_emblems(PurpleBuddy *b)
 }
 
 
-static gchar *gfire_status_text(PurpleBuddy *buddy)
+gchar *gfire_status_text(PurpleBuddy *buddy)
 {
 	gchar *msg = NULL;
 	GList *gfbl = NULL;
@@ -105,7 +105,7 @@ static gchar *gfire_status_text(PurpleBuddy *buddy)
 }
 
 
-static void gfire_blist_tooltip_text(PurpleBuddy *buddy, PurpleNotifyUserInfo *user_info, gboolean full)
+void gfire_blist_tooltip_text(PurpleBuddy *buddy, PurpleNotifyUserInfo *user_info, gboolean full)
 {
 	PurpleConnection *gc = NULL;
 	gfire_data *gfire = NULL;
@@ -169,7 +169,7 @@ static void gfire_blist_tooltip_text(PurpleBuddy *buddy, PurpleNotifyUserInfo *u
 
 
 
-static GList *gfire_status_types(PurpleAccount *account)
+GList *gfire_status_types(PurpleAccount *account)
 {
 	PurpleStatusType *type;
 	GList *types = NULL;
@@ -190,7 +190,7 @@ static GList *gfire_status_types(PurpleAccount *account)
 }
 
 
-static void gfire_login(PurpleAccount *account)
+void gfire_login(PurpleAccount *account)
 {
 	gfire_data *gfire;
 
@@ -219,7 +219,7 @@ static void gfire_login(PurpleAccount *account)
 }
 
 
-static void gfire_login_cb(gpointer data, gint source, const gchar *error_message)
+void gfire_login_cb(gpointer data, gint source, const gchar *error_message)
 {
 	PurpleConnection *gc = data;
 	guint8 packet[1024];
@@ -362,7 +362,7 @@ void gfire_close(PurpleConnection *gc)
 }
 
 
-static int gfire_im_send(PurpleConnection *gc, const char *who, const char *what, PurpleMessageFlags flags)
+int gfire_im_send(PurpleConnection *gc, const char *who, const char *what, PurpleMessageFlags flags)
 {
 	PurplePresence *p = NULL;
 	gfire_data *gfire = NULL;
@@ -404,7 +404,7 @@ static int gfire_im_send(PurpleConnection *gc, const char *who, const char *what
 
 }
 
-static unsigned int gfire_send_typing(PurpleConnection *gc, const char *who, PurpleTypingState state)
+unsigned int gfire_send_typing(PurpleConnection *gc, const char *who, PurpleTypingState state)
 {
 	gfire_buddy *gf_buddy = NULL;
 	gfire_data *gfire = NULL;
@@ -436,7 +436,7 @@ static unsigned int gfire_send_typing(PurpleConnection *gc, const char *who, Pur
 	return XFIRE_SEND_TYPING_TIMEOUT;
 }
 
-static void gfire_get_info_parse_gamerig_cb(PurpleUtilFetchUrlData *url_data, gpointer data, const gchar *buf, gsize len, const gchar *error_message)
+void gfire_get_info_parse_gamerig_cb(PurpleUtilFetchUrlData *url_data, gpointer data, const gchar *buf, gsize len, const gchar *error_message)
 {
 	get_info_callback_args *args = (get_info_callback_args*)data;
 
@@ -607,7 +607,7 @@ static void gfire_get_info_parse_gamerig_cb(PurpleUtilFetchUrlData *url_data, gp
 	}
 }
 
-static void gfire_get_info_parse_profile_cb(PurpleUtilFetchUrlData *url_data, gpointer data, const gchar *buf, gsize len, const gchar *error_message)
+void gfire_get_info_parse_profile_cb(PurpleUtilFetchUrlData *url_data, gpointer data, const gchar *buf, gsize len, const gchar *error_message)
 {
 	get_info_callback_args *args = (get_info_callback_args*)data;
 
@@ -743,7 +743,7 @@ static void gfire_get_info_parse_profile_cb(PurpleUtilFetchUrlData *url_data, gp
 	}
 }
 
-static void gfire_get_info(PurpleConnection *gc, const char *who)
+void gfire_get_info(PurpleConnection *gc, const char *who)
 {
 	PurpleAccount *account;
 	PurpleBuddy *buddy;
@@ -819,7 +819,7 @@ static void gfire_get_info(PurpleConnection *gc, const char *who)
 	g_free(infoURL);
 }
 
-static void gfire_set_status(PurpleAccount *account, PurpleStatus *status)
+void gfire_set_status(PurpleAccount *account, PurpleStatus *status)
 {
 	PurpleConnection *gc = NULL;
 	gfire_data *gfire = NULL;
@@ -853,7 +853,7 @@ static void gfire_set_status(PurpleAccount *account, PurpleStatus *status)
 }
 
 
-static void gfire_add_buddy(PurpleConnection *gc, PurpleBuddy *buddy, PurpleGroup *group)
+void gfire_add_buddy(PurpleConnection *gc, PurpleBuddy *buddy, PurpleGroup *group)
 {
 	gfire_data *gfire = NULL;
 	int packet_len = 0;
@@ -1083,7 +1083,7 @@ void gfire_add_clan(PurpleConnection *gc, gfire_clan *newClan)
 }
 
 
-static void gfire_remove_buddy(PurpleConnection *gc, PurpleBuddy *buddy, PurpleGroup *group)
+void gfire_remove_buddy(PurpleConnection *gc, PurpleBuddy *buddy, PurpleGroup *group)
 {
 	gfire_data *gfire = NULL;
 	int packet_len = 0;
@@ -1711,7 +1711,7 @@ GList * gfire_node_menu(PurpleBlistNode *node)
  }
 
 
-static void gfire_change_nick(PurpleConnection *gc, const char *entry)
+void gfire_change_nick(PurpleConnection *gc, const char *entry)
 {
 	gfire_data *gfire = NULL;
 	int packet_len = 0;
@@ -1745,7 +1745,7 @@ static void gfire_change_nick(PurpleConnection *gc, const char *entry)
 }
 
 
-static void gfire_action_nick_change_cb(PurplePluginAction *action)
+void gfire_action_nick_change_cb(PurplePluginAction *action)
 {
 	PurpleConnection *gc = (PurpleConnection *)action->context;
 	PurpleAccount *account = purple_connection_get_account(gc);
@@ -1754,7 +1754,7 @@ static void gfire_action_nick_change_cb(PurplePluginAction *action)
 		FALSE, FALSE, NULL, N_("OK"), G_CALLBACK(gfire_change_nick), N_("Cancel"), NULL, account, NULL, NULL, gc);
 }
 
-static void gfire_manage_games_update_executable_cb(GtkWidget *executable_button, GtkWidget *path_button)
+void gfire_manage_games_update_executable_cb(GtkWidget *executable_button, GtkWidget *path_button)
 {
 	gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(executable_button), gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(path_button)));
 }
@@ -1765,7 +1765,7 @@ static void gfire_manage_games_update_executable_cb(GtkWidget *executable_button
  * @param action: the menu action, passed by the signal connection function
  *
 **/
-static void gfire_action_manage_games_cb(PurplePluginAction *action)
+void gfire_action_manage_games_cb(PurplePluginAction *action)
 {
 	PurpleConnection *gc = (PurpleConnection *)action->context;
 	gfire_data *gfire = NULL;
@@ -1878,7 +1878,7 @@ static void gfire_action_manage_games_cb(PurplePluginAction *action)
  * adds a game by getting the values from the manage games window
  * 
 **/
-static void gfire_add_game_cb(manage_games_callback_args *args, GtkWidget *button)
+void gfire_add_game_cb(manage_games_callback_args *args, GtkWidget *button)
 {
 	PurpleConnection *gc = args->gc;
 	GtkBuilder *builder = args->builder;
@@ -1984,7 +1984,7 @@ static void gfire_add_game_cb(manage_games_callback_args *args, GtkWidget *butto
  * the manage games window
  *
 **/
-static void gfire_edit_game_cb(manage_games_callback_args *args, GtkWidget *button)
+void gfire_edit_game_cb(manage_games_callback_args *args, GtkWidget *button)
 {
 	PurpleConnection *gc = args->gc;
 	GtkBuilder *builder = args->builder;
@@ -2084,7 +2084,7 @@ static void gfire_edit_game_cb(manage_games_callback_args *args, GtkWidget *butt
  * for editing the selected game in the manage games window
  *
 **/
-static void gfire_manage_games_edit_update_fields_cb(GtkBuilder *builder, GtkWidget *edit_game_combo)
+void gfire_manage_games_edit_update_fields_cb(GtkBuilder *builder, GtkWidget *edit_game_combo)
 {
 	if (builder == NULL) {
 		purple_debug_error("gfire: gfire_manage_games_edit_update_fields_cb", "Couldn't access interface.\n");
@@ -2145,7 +2145,7 @@ static void gfire_manage_games_edit_update_fields_cb(GtkBuilder *builder, GtkWid
 	}
 }
 
-static void gfire_manage_games_update_executable_toggled_cb(GtkBuilder *builder, GtkWidget *executable_check_button)
+void gfire_manage_games_update_executable_toggled_cb(GtkBuilder *builder, GtkWidget *executable_check_button)
 {
 	if (builder == NULL) {
 		purple_debug_error("gfire", "Couldn't access interface.");
@@ -2175,7 +2175,7 @@ static void gfire_manage_games_update_executable_toggled_cb(GtkBuilder *builder,
  * removes the selected game from gfire_launch.xml in the manage games window
  *
 **/
-static void gfire_remove_game_cb(manage_games_callback_args *args, GtkWidget *button)
+void gfire_remove_game_cb(manage_games_callback_args *args, GtkWidget *button)
 {
 	PurpleConnection *gc = args->gc;
 	GtkBuilder *builder = args->builder;
@@ -2236,7 +2236,7 @@ static void gfire_remove_game_cb(manage_games_callback_args *args, GtkWidget *bu
  * @param gc: the purple connection
  *
 **/
-static void gfire_reload_lconfig(PurpleConnection *gc)
+void gfire_reload_lconfig(PurpleConnection *gc)
 {
 	gfire_data *gfire = NULL;
 	if (gc == NULL || (gfire = (gfire_data *)gc->proto_data) == NULL) {
@@ -2639,7 +2639,7 @@ gboolean check_process(char *process, char *process_argument)
 	#endif
 }
 
-static void gfire_action_reload_lconfig_cb(PurplePluginAction *action)
+void gfire_action_reload_lconfig_cb(PurplePluginAction *action)
 {
 	PurpleConnection *gc = (PurpleConnection *) action->context;
 	gfire_data *gfire = NULL;
@@ -2659,7 +2659,7 @@ static void gfire_action_reload_lconfig_cb(PurplePluginAction *action)
 
 }
 
-static void gfire_action_reload_gconfig_cb(PurplePluginAction *action)
+void gfire_action_reload_gconfig_cb(PurplePluginAction *action)
 {
 	PurpleConnection *gc = (PurpleConnection *) action->context;
 	gfire_data *gfire = NULL;
@@ -2678,15 +2678,15 @@ static void gfire_action_reload_gconfig_cb(PurplePluginAction *action)
 	}
 }
 
-static void gfire_action_website_cb() {
+void gfire_action_website_cb() {
 	purple_notify_uri((void *)_gfire_plugin, GFIRE_WEBSITE);
 }
 
-static void gfire_action_wiki_cb() {
+void gfire_action_wiki_cb() {
 	purple_notify_uri((void *)_gfire_plugin, GFIRE_WIKI);
 }
 
-static void gfire_action_about_cb(PurplePluginAction *action)
+void gfire_action_about_cb(PurplePluginAction *action)
 {
 	PurpleConnection *gc = (PurpleConnection *) action->context;
 	char *msg = NULL;
@@ -2709,7 +2709,7 @@ static void gfire_action_about_cb(PurplePluginAction *action)
 	if(msg) g_free(msg);
 }
 
-static void gfire_action_get_gconfig_cb(PurplePluginAction *action)
+void gfire_action_get_gconfig_cb(PurplePluginAction *action)
 {
 	PurpleConnection *gc = (PurpleConnection *) action->context;
 	gfire_data *gfire = NULL;
@@ -2724,7 +2724,7 @@ static void gfire_action_get_gconfig_cb(PurplePluginAction *action)
 	gfire_parse_games_file(gc, filename);
 }
 
-static void gfire_action_profile_page_cb(PurplePluginAction *action)
+void gfire_action_profile_page_cb(PurplePluginAction *action)
 {
 	PurpleConnection *gc = (PurpleConnection *) action->context;
 	PurpleAccount *a = purple_connection_get_account(gc);
@@ -2735,7 +2735,7 @@ static void gfire_action_profile_page_cb(PurplePluginAction *action)
 	purple_notify_uri((void *)_gfire_plugin, uri);
 }
 
-static void gfire_query_server_list_cb(manage_games_callback_args *args, GtkWidget *button)
+void gfire_query_server_list_cb(manage_games_callback_args *args, GtkWidget *button)
 {
 	PurpleConnection *gc = args->gc;
 	GtkBuilder *builder = args->builder;
@@ -2770,7 +2770,7 @@ static void gfire_query_server_list_cb(manage_games_callback_args *args, GtkWidg
 	}
 }
 
-static void gfire_server_browser_connect_cb(manage_games_callback_args *args, GtkWidget *sender)
+void gfire_server_browser_connect_cb(manage_games_callback_args *args, GtkWidget *sender)
 {
 	PurpleConnection *gc = args->gc;
 	GtkBuilder *builder = args->builder;
@@ -2823,7 +2823,7 @@ static void gfire_server_browser_connect_cb(manage_games_callback_args *args, Gt
  * @param action: the menu action, passed by the signal connection function
  *
 **/
-static void gfire_action_server_browser_cb(PurplePluginAction *action)
+void gfire_action_server_browser_cb(PurplePluginAction *action)
 {
 	PurpleConnection *gc = (PurpleConnection *)action->context;
 	gfire_data *gfire = NULL;
@@ -3323,7 +3323,7 @@ void gfire_detect_mumble_server(const gchar *executable, guint8 **voip_ip, guint
 	*voip_port = port;
 }
 
-static void gfire_detect_game_server(PurpleConnection *gc)
+void gfire_detect_game_server(PurpleConnection *gc)
 {
 	gfire_data *gfire = NULL;
 	if (gc == NULL || (gfire = (gfire_data *)gc->proto_data) == NULL) return;
