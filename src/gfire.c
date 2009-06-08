@@ -2518,15 +2518,34 @@ int gfire_detect_running_processes_cb(PurpleConnection *gc)
 		for (node_child = xmlnode_get_child(gfire_launch, "game"); node_child != NULL;
 			 node_child = xmlnode_get_next_twin(node_child))
 		{
-			xmlnode *command_node = xmlnode_get_child(node_child, "command");
-			xmlnode *executable_node = xmlnode_get_child(command_node, "executable");
-			xmlnode *path_node = xmlnode_get_child(command_node, "path");
+			xmlnode *command_node = NULL;
+			xmlnode *executable_node = NULL;
 
-			const char *game_executable = xmlnode_get_data(executable_node);
-			const char *game_executable_argument = xmlnode_get_attrib(executable_node, "argument");
-			const char *game_path = xmlnode_get_data(path_node);
-			gchar *game_id = xmlnode_get_attrib(node_child, "id");
-			int game_id_int = atoi(game_id);
+			command_node = xmlnode_get_child(node_child, "command");
+			if(!command_node)
+				continue;
+
+			executable_node = xmlnode_get_child(command_node, "executable");
+
+			// Detection is not possible without this node
+			if(!executable_node)
+				continue;
+
+			const gchar *game_executable = NULL;
+			const gchar *game_executable_argument = NULL;
+			const gchar *game_path = NULL;
+			const gchar *game_id = NULL;
+			int game_id_int = 0;
+
+			game_executable = xmlnode_get_data(executable_node);
+			// Detection is not possible without this data
+			if(!game_executable)
+				continue;
+			game_executable_argument = xmlnode_get_attrib(executable_node, "argument");
+
+			game_id = xmlnode_get_attrib(node_child, "id");
+			if(game_id)
+				game_id_int = atoi((char*)game_id);
 
 			char *game_executable_name = g_path_get_basename(game_executable);
 			gboolean process_running = check_process(game_executable_name, game_executable_argument);
@@ -2538,7 +2557,6 @@ int gfire_detect_running_processes_cb(PurpleConnection *gc)
 				gfire_handle_voip_detection(gc, game_id_int, process_running, game_executable);
 
 			if(game_executable != NULL) g_free(game_executable);
-			if(game_path != NULL) g_free(game_path);
 		}
 	}
 
@@ -2555,7 +2573,7 @@ int gfire_detect_running_processes_cb(PurpleConnection *gc)
  * @return: TRUE if the process has been launched with the given argument, FALSE if not or if an error occured.
  *
 **/ 
-gboolean check_process_argument(int process_id, char *process_argument)
+gboolean check_process_argument(const int process_id, const gchar *process_argument)
 {
 	char command[256];
 	sprintf(command, "cat /proc/%d/cmdline | gawk -F[[:cntrl:]] \'{ for (i = 1; i < NF + 1; i++) printf(\"%%s \", $i) }\'", process_id);
@@ -2588,7 +2606,7 @@ gboolean check_process_argument(int process_id, char *process_argument)
  * @return: TRUE if the process is running, FALSE if not or if an error occured
  *
 **/
-gboolean check_process(char *process, char *process_argument)
+gboolean check_process(const gchar *process, const gchar *process_argument)
 {
 	#ifdef IS_WINDOWS
 	return FALSE;
@@ -2623,7 +2641,7 @@ gboolean check_process(char *process, char *process_argument)
 			int process_id;
 
 			g_free(command);
-			command = g_strdup_printf("pidof %s", process);
+			command = g_strdup_printf("pidof \"%s\"", process);
 			if(!command)
 				return FALSE;
 			memset(buf, 0, sizeof(buf));

@@ -259,7 +259,7 @@ void gfire_reload_lconfig(PurpleConnection *gc);
 xmlnode *gfire_manage_game_xml(char *game_id, char *game_name, gboolean game_executable, char *game_argument,
 	char *game_prefix, char *game_path, char *game_launch, char *game_connect);
 
-gboolean check_process(char *process, char *process_argument);
+gboolean check_process(const gchar *process, const gchar *process_argument);
 #endif
 
 void gfire_close(PurpleConnection *gc);
@@ -277,15 +277,9 @@ int gfire_check_xqf_cb(PurpleConnection *gc);
 void gfire_avatar_download_cb( PurpleUtilFetchUrlData *url_data, gpointer data, const char *buf, gsize len, const gchar *error_message);
 char *gfire_escape_color_codes(char *string);
 char *str_replace (char *string, char *before, char *after);
-
-/**
- * Detects the game server of the current running game.
- * This function is called as thread while the game is running.
- *
- * @param gc:	The purple connection
- *
-**/
 void gfire_detect_game_server(PurpleConnection *gc);
+void gfire_detect_teamspeak_server(guint8 **voip_ip, guint32 *voip_port);
+void gfire_detect_mumble_server(const gchar *executable, guint8 **voip_ip, guint32 *voip_port);
 
 #include "gf_chat.h"
 #include "gf_packet.h"
