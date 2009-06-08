@@ -2529,7 +2529,7 @@ int gfire_detect_running_processes_cb(PurpleConnection *gc)
 			int game_id_int = atoi(game_id);
 
 			char *game_executable_name = g_path_get_basename(game_executable);
-			gboolean process_running = check_process(game_executable_name, (char *)game_executable_argument);
+			gboolean process_running = check_process(game_executable_name, game_executable_argument);
 			if(game_executable_name) g_free(game_executable_name);
 
 			if(game_id_int < 32 || game_id_int > 34)
@@ -2595,7 +2595,10 @@ gboolean check_process(char *process, char *process_argument)
 	#else
 	gchar *command = NULL;
 
-	command = g_strdup_printf("ps -e | grep -i %s | grep -v grep", process);
+	if(!process)
+		return FALSE;
+
+	command = g_strdup_printf("ps -e | grep -i \"%s\" | grep -v grep", process);
 	if(!command)
 		return FALSE;
 	//sprintf(command, "lsof \"%s\"", process);
@@ -3305,7 +3308,7 @@ void gfire_detect_mumble_server(const gchar *executable, guint8 **voip_ip, guint
 
 	// Build command line
 	char cmd[1024];
-	sprintf(cmd, "netstat -tnp | grep -i %s", executable);
+	sprintf(cmd, "netstat -tnp | grep -i \"%s\"", executable);
 
 	// Read output
 	FILE *netstat = popen(cmd, "r");
