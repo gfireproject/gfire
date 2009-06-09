@@ -1223,7 +1223,7 @@ void gfire_new_buddy(PurpleConnection *gc, gchar *alias, gchar *name, gboolean f
 		gf_buddy = (gfire_data*)l->data;
 
 	// Buddy is already added in a clan -> move him to the xfire contacts
-	if(buddy != NULL && friend && gf_buddy && gf_buddy->clan && purple_blist_node_get_bool(&buddy->node, "clanmember"))
+	if(buddy != NULL && friend && purple_blist_node_get_bool(&buddy->node, "clanmember"))
 	{
 		if (NULL == default_purple_group) {
 			default_purple_group = purple_group_new(GFIRE_DEFAULT_GROUP_NAME);
