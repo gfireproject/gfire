@@ -20,7 +20,7 @@ msgid "Use game path"
 msgstr "Nutze Spielpfad"
 
 msgid "<b>Options basiques</b>"
-msgstr ""
+msgstr "<b>Grundeinstellungen</b>"
 
 msgid "Launch prefix:"
 msgstr "Startprefix:"
@@ -32,7 +32,7 @@ msgid "Required argument:"
 msgstr "Benötigtes Argument:"
 
 msgid "<b>Options avancés</b>"
-msgstr ""
+msgstr "<b>Erweiterte Einstellungen</b>"
 
 msgid "gtk-add"
 msgstr ""
@@ -65,7 +65,7 @@ msgid "Reload Game ID List"
 msgstr "Spiel-ID Liste neu laden"
 
 msgid "Get Game ID List"
-msgstr "Spiel-ID Liste holen"
+msgstr "Spiel-ID Liste herunterladen"
 
 msgid "About"
-msgstr "Über GFire"
+msgstr "Über Gfire"

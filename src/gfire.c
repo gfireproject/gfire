@@ -1232,7 +1232,6 @@ void gfire_new_buddy(PurpleConnection *gc, gchar *alias, gchar *name, gboolean f
 		purple_blist_remove_buddy(buddy);
 		buddy = purple_buddy_new(account, name, NULL);
 		purple_blist_add_buddy(buddy, NULL, default_purple_group, NULL);
-		purple_blist_node_remove_setting(&buddy->node, "clanmember");
 
 		serv_got_alias(gc, name, g_strdup(alias));
 	}
