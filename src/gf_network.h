@@ -24,7 +24,6 @@
 #define GFIRE_BUFFIN_SIZE 65535
 
 void gfire_send(PurpleConnection *gc, const guint8 *packet, int size);
-int gfire_initialize_connection(guint8 *packet, int version);
 void gfire_input_cb(gpointer data, gint source, PurpleInputCondition condition);
 void gfire_send_away(PurpleConnection *gc, const char *msg);
 void gfire_process_invitation(PurpleConnection *gc, GList *invites);

@@ -2385,3 +2385,62 @@ GList *gfire_voip_status(PurpleConnection *gc, int packet_len)
 
 	return ret;
 }
+
+int gfire_create_collective_statistics(PurpleConnection *gc, const gchar *lang, const gchar *skin, const gchar *theme, const gchar *partner)
+{
+	int index = XFIRE_HEADER_LEN;
+	gfire_data *gfire = NULL;
+
+	if (!gc || !(gfire = (gfire_data *)gc->proto_data) || !lang || !skin || !theme || !partner)
+		return 0;
+
+	index = gfire_add_att_name(gfire->buff_out, index, "lang");
+	gfire->buff_out[index++] = 0x01;
+	*((guint16*)&gfire->buff_out[index++]) = (guint16)strlen(lang);
+	index++;
+	memcpy(&gfire->buff_out[index++], lang, strlen(lang));
+	index += strlen(lang) - 1;
+
+	index = gfire_add_att_name(gfire->buff_out, index, "skin");
+	gfire->buff_out[index++] = 0x01;
+	*((guint16*)&gfire->buff_out[index++]) = (guint16)strlen(skin);
+	index++;
+	memcpy(&gfire->buff_out[index++], skin, strlen(skin));
+	index += strlen(skin) - 1;
+
+	index = gfire_add_att_name(gfire->buff_out, index, "theme");
+	gfire->buff_out[index++] = 0x01;
+	*((guint16*)&gfire->buff_out[index++]) = (guint16)strlen(theme);
+	index++;
+	memcpy(&gfire->buff_out[index++], theme, strlen(theme));
+	index += strlen(theme) - 1;
+
+	index = gfire_add_att_name(gfire->buff_out, index, "partner");
+	gfire->buff_out[index++] = 0x01;
+	*((guint16*)&gfire->buff_out[index++]) = (guint16)strlen(partner);
+	index++;
+	memcpy(&gfire->buff_out[index++], partner, strlen(partner));
+	index += strlen(partner) - 1;
+
+	gfire_add_header(gfire->buff_out, index, 16, 4);
+
+	return index;
+}
+
+int gfire_create_client_version(PurpleConnection *gc, const guint32 version)
+{
+	int index = XFIRE_HEADER_LEN;
+	gfire_data *gfire = NULL;
+
+	if (!gc || !(gfire = (gfire_data *)gc->proto_data))
+		return 0;
+
+	index = gfire_add_att_name(gfire->buff_out, index, "version");
+	gfire->buff_out[index++] = 0x02;
+	*((guint32*)&gfire->buff_out[index++]) = GUINT32_TO_LE(version);
+	index += 3;
+
+	gfire_add_header(gfire->buff_out, index, 3, 1);
+
+	return index;
+}

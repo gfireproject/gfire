@@ -62,3 +62,5 @@ int gfire_create_serverlist_request (PurpleConnection *gc, int game);
 void gfire_read_serverlist(PurpleConnection *gc, int packet_len);
 void gfire_changed_avatar(PurpleConnection *gc, int packet_len);
 GList *gfire_voip_status(PurpleConnection *gc, int packet_len);
+int gfire_create_collective_statistics(PurpleConnection *gc, const gchar *lang, const gchar *skin, const gchar *theme, const gchar *partner);
+int gfire_create_client_version(PurpleConnection *gc, const guint32 version);

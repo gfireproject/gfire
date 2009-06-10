@@ -203,7 +203,8 @@ void gfire_login(PurpleAccount *account)
 
 	gc->proto_data = gfire = g_new0(gfire_data, 1);
 	gfire->fd = -1;
-	gfire->buff_out = gfire->buff_in = NULL;
+	gfire->buff_out = g_malloc0(GFIRE_BUFFOUT_SIZE);
+	gfire->buff_in = g_malloc0(GFIRE_BUFFOUT_SIZE);
 
 	if (!purple_account_get_connection(account)) {
 			purple_connection_error(gc, N_("Couldn't create socket."));
@@ -247,8 +248,9 @@ void gfire_login_cb(gpointer data, gint source, const gchar *error_message)
 
 	gfire_send(gc, (const guint8 *)"UA01", 4); /* open connection */
 
-	length = gfire_initialize_connection(packet,purple_account_get_int(account, "version", XFIRE_PROTO_VERSION));
-	gfire_send(gc, packet, length);
+	// Send client version
+	length = gfire_create_client_version(gc, purple_account_get_int(purple_connection_get_account(gc), "version", 0));
+	if(length) gfire_send(gc, gfire->buff_out, length);
 
 	gc->inpa = purple_input_add(gfire->fd, PURPLE_INPUT_READ, gfire_input_cb, gc);
 

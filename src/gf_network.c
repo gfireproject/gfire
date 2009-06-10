@@ -42,78 +42,6 @@ void gfire_send(PurpleConnection *gc, const guint8 *packet, int size)
 	gfire->last_packet = gtv.tv_sec;
 }
 
-
-/*
- * sends this packet to the server:
- * magicNumber 00 type(18) 00 numberOfAtts //skins and versions of skins are 1 
- * attribute_length 'skin' 04 01 numberOfSkins 00 lengthOfNextSkin 00 nameOfSkin LengthOfNextSkin 00 nameOfSkin (..andSoOn..) 
- * attribute_length  'version' 04 02 numberOfSkins 00 (forEachSkin){ 01 00 00 00 } 12 00 03 00 01 
- * attribute_length 'version' 02 versionNumber 00 00 00
- *
- */
-int gfire_initialize_connection(guint8 *packet, int version)
-{
-	int length = 51;
-	int index = 0;
-	int skins = 2;
-	int i;
-	guint16 ver = GUINT16_TO_LE((guint16) version);
-
-	gfire_add_header(packet, length, 18, 2);/*add header*/
-	index += 5;	
-
-	index = gfire_add_att_name(packet,index, "skin");/*add skin*/
-	packet[index] = 0x04;
-	packet[index+1] = 0x01;
-	packet[index+2] = (guint8)skins;
-	packet[index+3] = 0x00;
-	packet[index+4] = strlen("Gfire080");
-	packet[index+5] = 0x00;
-	index += 6;
-	
-	memcpy(packet+index,"Gfire080",strlen("Gfire080"));/*add first skin name*/
-	index += strlen("Gfire080");
-	
-	packet[index] = strlen("Gfire");
-	packet[index+1] = 0x00;
-	index += 2;
-	
-	memcpy(packet+index,"Gfire",strlen("Gfire"));/*add second skin name*/
-	index += strlen("Gfire");	
-	
-	index = gfire_add_att_name(packet,index, "version");/*add version of skins*/
-	packet[index] = 0x04;
-	packet[index+1] = 0x02;
-	packet[index+2] = (guint8)skins;
-	packet[index+1] = 0x00;
-	index += 4;
-	
-	for(i = 0;i < skins;i++){/*(forEachSkin){ 01 00 00 00 }*/
-		packet[index] = 0x01;
-		packet[index+1] = 0x00;
-		packet[index+2] = 0x00;
-		packet[index+3] = 0x00;
-		index += 4;
-	}
-	
-	packet[index] = 0x12;
-	packet[index+1] = 0x00;
-	packet[index+2] = 0x03;
-	packet[index+3] = 0x00;
-	packet[index+4] = 0x01;
-	index +=5;
-	
-	index = gfire_add_att_name(packet,index, "version");/*add xfire version*/
-	packet[index] = 0x02;
-	memcpy(packet+index+1, &ver, sizeof(ver));
-	packet[index+3] = 0x00;
-	packet[index+4] = 0x00;
-	index += 5;
-	
-	return index;
-}
-
-
 void gfire_input_cb(gpointer data, gint source, PurpleInputCondition condition)
 {
 	guint16 packet_len = 0;
@@ -234,6 +162,10 @@ void gfire_parse_packet(PurpleConnection *gc, int packet_len, int packet_id)
 			purple_connection_set_state(gc, PURPLE_CONNECTED);
 			gfire_packet_130(gc, packet_len);
 			if (gfire->alias) purple_connection_set_display_name(gc, g_strdup(gfire->alias));
+
+			// Send collective statistics
+			ob_len = gfire_create_collective_statistics(gc, "en", "Gfire", GFIRE_VERSION, "");
+			if(ob_len) gfire_send(gc, gfire->buff_out, ob_len);
 
 			/* load game xml from user dir; these don't need to work unless we are connected */
 			gfire_parse_games_file(gc, g_build_filename(purple_user_dir(), "gfire_games.xml", NULL));
