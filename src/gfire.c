@@ -249,7 +249,7 @@ void gfire_login_cb(gpointer data, gint source, const gchar *error_message)
 	gfire_send(gc, (const guint8 *)"UA01", 4); /* open connection */
 
 	// Send client version
-	length = gfire_create_client_version(gc, purple_account_get_int(purple_connection_get_account(gc), "version", 0));
+	length = gfire_create_client_version(gc, purple_account_get_int(account, "version", XFIRE_PROTO_VERSION));
 	if(length) gfire_send(gc, gfire->buff_out, length);
 
 	gc->inpa = purple_input_add(gfire->fd, PURPLE_INPUT_READ, gfire_input_cb, gc);
