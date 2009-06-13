@@ -2981,6 +2981,13 @@ void gfire_join_game(PurpleConnection *gc, const gchar *server_ip, int server_po
 	gchar *tmp = gfire_ipstr_to_bin(server_ip);
 	
 	game_launch_command = gfire_game_launch_info_get_command(game_launch_info, (guint8 *)tmp, server_port);
+	if(!game_launch_command)
+	{
+		purple_debug_error("gfire: gfire_join_game()", "Couldn't generate game launch command!\n");
+		return;
+	}
+
+	purple_debug(PURPLE_DEBUG_MISC, "gfire", "Launching game for joining: %s\n", game_launch_command);
 	g_spawn_command_line_async(game_launch_command, NULL);
 }
 

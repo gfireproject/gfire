@@ -415,33 +415,54 @@ gchar *gfire_launch_parse(const char *src, const char *data, const char *delim)
 
 gchar *gfire_game_launch_info_get_command(gfire_game_launch_info *game_launch_info, const guint8 *server_ip, int server_port)
 {
-	char *command, *server_ip_tmp, *server_port_tmp, *game_connect_option;
+	gchar *command_prefixed, *command_launch_args, *command, *game_connect_option = NULL;
 	
-	if (game_launch_info == NULL || server_ip == NULL || server_port == NULL) {
-		purple_debug_error("gfire_linfo_get_cmd", "Couldn't get command.\n");
-		return;
+	if (game_launch_info == NULL) {
+		purple_debug_error("gfire_game_launch_info_get_command", "Invalid game launch info.\n");
+		return NULL;
+	}
+
+	if(!game_launch_info->game_path) {
+		purple_debug_error("gfire_game_launch_info_get_command", "Path setting is empty, please fill it out first!\n");
+		return NULL;
 	}
 	
-	server_port_tmp = g_strdup_printf("%d", server_port);
-	server_ip_tmp = g_strdup_printf("%d.%d.%d.%d", server_ip[3], server_ip[2], server_ip[1], server_ip[0]);
-	game_connect_option = str_replace(game_launch_info->game_connect, "[ip]", server_ip_tmp);
-	game_connect_option = str_replace(connect, "[port]", server_port_tmp);
+	if(game_launch_info->game_connect && server_ip)
+	{
+		gchar *server_ip_tmp, *server_port_tmp, *tmp = NULL;
 
-	if (game_launch_info->game_path == NULL || game_launch_info->game_connect == NULL) {
-		purple_debug_error("gfire_linfo_get_cmd", "Couldn't get game path and/or game connect option.\n");
-		return;
+		server_port_tmp = g_strdup_printf("%d", server_port);
+		server_ip_tmp = g_strdup_printf("%d.%d.%d.%d", server_ip[3], server_ip[2], server_ip[1], server_ip[0]);
+		tmp = str_replace(game_launch_info->game_connect, "[ip]", server_ip_tmp);
+		game_connect_option = str_replace(tmp, "[port]", server_port_tmp);
+
+		g_free(server_port_tmp);
+		g_free(server_ip_tmp);
+		g_free(tmp);
 	}
 	
-	if (game_launch_info->game_prefix != NULL) {
-		command = game_launch_info->game_prefix;
-		command = g_strdup_printf("%s %s", command, game_launch_info->game_path);
+	if (game_launch_info->game_prefix != NULL)
+		command_prefixed = g_strdup_printf("%s %s", game_launch_info->game_prefix, game_launch_info->game_path);
+	else
+		command_prefixed = g_strdup(game_launch_info->game_path);
+
+	if (game_launch_info->game_launch != NULL)
+		command_launch_args = g_strdup_printf("%s %s", command_prefixed, game_launch_info->game_launch);
+	else
+		command_launch_args = g_strdup(command_prefixed);
+
+	g_free(command_prefixed);
+
+	if(game_connect_option)
+	{
+		command = g_strdup_printf("%s %s", command_launch_args, game_connect_option);
+		g_free(game_connect_option);
+		g_free(command_launch_args);
+
+		return command;
 	}
-	else command = game_launch_info->game_path;
-
-	if (game_launch_info->game_launch != NULL) command = g_strdup_printf("%s %s", command, game_launch_info->game_launch);
-
-	command = g_strdup_printf("%s %s", command, game_connect_option);
-	return command;	
+	else
+		return command_launch_args;
 }
 
 /**
