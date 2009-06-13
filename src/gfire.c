@@ -1955,6 +1955,8 @@ void gfire_add_game_cb(manage_games_callback_args *args, GtkWidget *button)
 				char *gfire_launch_new_str = xmlnode_to_formatted_str(gfire_launch_new, NULL);
 
 				gboolean write_xml = purple_util_write_data_to_file("gfire_launch.xml", gfire_launch_new_str, -1);
+				g_free(gfire_launch_new_str);
+
 				if (write_xml == FALSE) {
 					purple_notify_message(NULL, PURPLE_NOTIFY_MSG_ERROR, N_("Manage Games: error"), N_("Couldn't add game"),
 										  N_("Please try again. An error occured while adding the game."), NULL, NULL);
@@ -1976,7 +1978,7 @@ void gfire_add_game_cb(manage_games_callback_args *args, GtkWidget *button)
 		purple_notify_message(NULL, PURPLE_NOTIFY_MSG_ERROR, N_("Manage Games: error"),
 							  N_("Couldn't add game"), N_("Please try again. Make sure you fill in all fields."), NULL, NULL);
 	}
-	
+
 	gtk_widget_destroy(manage_games_window);
 }
 
@@ -2033,12 +2035,12 @@ void gfire_edit_game_cb(manage_games_callback_args *args, GtkWidget *button)
 				const char *game_id = xmlnode_get_attrib(node_child, "id");
 				const char *game_type = xmlnode_get_attrib(node_child, "type");
 					
-				if (g_strcmp0(game_name, game_name_tmp) == NULL)
+				if (g_strcmp0(game_name, game_name_tmp) == 0)
 				{
 					gboolean game_native;
 					xmlnode *game_node ;
 					
-					if (g_strcmp0(game_type, "Native game") == NULL) game_native = TRUE;
+					if (g_strcmp0(game_type, "Native game") == 0) game_native = TRUE;
 					else game_native = FALSE;
 
 					if (game_executable_use_path == TRUE) {
@@ -2053,11 +2055,12 @@ void gfire_edit_game_cb(manage_games_callback_args *args, GtkWidget *button)
 					xmlnode_insert_child(gfire_launch_new, game_node);
 					g_free(game_path);
 				}
-				else xmlnode_insert_child(gfire_launch_new, node_child);
+				else xmlnode_insert_child(gfire_launch_new, xmlnode_copy(node_child));
 			}
 
 			char *gfire_launch_new_str = xmlnode_to_formatted_str(gfire_launch_new, NULL);
 			gboolean write_xml = purple_util_write_data_to_file("gfire_launch.xml", gfire_launch_new_str, -1);
+			g_free(gfire_launch_new_str);
 			
 			if (write_xml == TRUE) {
 				gfire_reload_lconfig(gc);
@@ -2203,12 +2206,13 @@ void gfire_remove_game_cb(manage_games_callback_args *args, GtkWidget *button)
 			{
 				const char *game_name = xmlnode_get_attrib(node_child, "name");
 				if(g_strcmp0(game_name, selected_game) != 0) {
-					xmlnode_insert_child(gfire_launch_new, node_child);
+					xmlnode_insert_child(gfire_launch_new, xmlnode_copy(node_child));
 				}
 			}
 
 			char *gfire_launch_new_str = xmlnode_to_formatted_str(gfire_launch_new, NULL);
 			gboolean write_xml = purple_util_write_data_to_file("gfire_launch.xml", gfire_launch_new_str, -1);
+			g_free(gfire_launch_new_str);
 
 			if(write_xml == TRUE) {
 				gfire_reload_lconfig(gc);
