@@ -356,18 +356,17 @@ gfire_game_launch_info *gfire_game_launch_info_get(PurpleConnection *gc, int gam
 			
 			if (strcmp(cnode->name, "command") == NULL)
 			{
-				if ((command = xmlnode_get_child(cnode, "prefix"))) {
-					if(l->game_prefix == NULL) l->game_prefix = "";
-					else l->game_prefix = g_strdup(xmlnode_get_data(command));
-				}
+				if ((command = xmlnode_get_child(cnode, "prefix")))
+					l->game_prefix = xmlnode_get_data(command);
+
 				if ((command = xmlnode_get_child(cnode, "path")))
-					l->game_path = g_strdup(xmlnode_get_data(command));
-				if ((command = xmlnode_get_child(cnode, "launch"))) {
-					if(l->game_launch == NULL) l->game_launch = "";
-					else l->game_launch = g_strdup(xmlnode_get_data(command));
-				}
+					l->game_path = xmlnode_get_data(command);
+
+				if ((command = xmlnode_get_child(cnode, "launch")))
+					l->game_launch = xmlnode_get_data(command);
+
 				if ((command = xmlnode_get_child(cnode, "connect")))
-					l->game_connect = g_strdup(xmlnode_get_data(command));
+					l->game_connect = xmlnode_get_data(command);
 			}
 		}
 	}
@@ -442,9 +441,9 @@ gchar *gfire_game_launch_info_get_command(gfire_game_launch_info *game_launch_in
 	}
 	
 	if (game_launch_info->game_prefix != NULL)
-		command_prefixed = g_strdup_printf("%s %s", game_launch_info->game_prefix, game_launch_info->game_path);
+		command_prefixed = g_strdup_printf("%s \"%s\"", game_launch_info->game_prefix, game_launch_info->game_path);
 	else
-		command_prefixed = g_strdup(game_launch_info->game_path);
+		command_prefixed = g_strdup_printf("\"%s\"", game_launch_info->game_path);
 
 	if (game_launch_info->game_launch != NULL)
 		command_launch_args = g_strdup_printf("%s %s", command_prefixed, game_launch_info->game_launch);
