@@ -432,8 +432,8 @@ gchar *gfire_game_launch_info_get_command(gfire_game_launch_info *game_launch_in
 
 		server_port_tmp = g_strdup_printf("%d", server_port);
 		server_ip_tmp = g_strdup_printf("%d.%d.%d.%d", server_ip[3], server_ip[2], server_ip[1], server_ip[0]);
-		tmp = str_replace(game_launch_info->game_connect, "[ip]", server_ip_tmp);
-		game_connect_option = str_replace(tmp, "[port]", server_port_tmp);
+		tmp = purple_strreplace(game_launch_info->game_connect, "[ip]", server_ip_tmp);
+		game_connect_option = purple_strreplace(tmp, "[port]", server_port_tmp);
 
 		g_free(server_port_tmp);
 		g_free(server_ip_tmp);

@@ -276,7 +276,6 @@ void gfire_buddy_add_deny_cb(void *data);
 int gfire_check_xqf_cb(PurpleConnection *gc);
 void gfire_avatar_download_cb( PurpleUtilFetchUrlData *url_data, gpointer data, const char *buf, gsize len, const gchar *error_message);
 char *gfire_escape_color_codes(char *string);
-char *str_replace (char *string, char *before, char *after);
 void gfire_detect_game_server(PurpleConnection *gc);
 void gfire_detect_teamspeak_server(guint8 **voip_ip, guint32 *voip_port);
 void gfire_detect_mumble_server(const gchar *executable, guint8 **voip_ip, guint32 *voip_port);

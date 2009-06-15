@@ -3087,54 +3087,12 @@ char *str_replace (char *string, char *before, char *after)
 }
 
 /**
- * Replaces a character by a string in a string
- * and returns the new string.
-**/
-gchar *str_replace_c(const gchar *p_src, gchar p_find, const gchar *p_replace)
-{
-	if(!p_src || !p_replace)
-		return NULL;
-
-	guint16 len_replace = strlen(p_replace);
-
-	guint16 alloc_len = strlen(p_src) + 11;
-	gchar *ret = (gchar*)g_malloc0(alloc_len);
-
-	int pos = 0;
-	int ret_pos = 0;
-	while(p_src[pos] != 0)
-	{
-		if(p_src[pos] == p_find)
-		{
-			if((alloc_len - len_replace - ret_pos) < 0)
-			{
-				alloc_len += len_replace + 1;
-				ret = (gchar*)g_realloc(ret, alloc_len);
-			}
-			memcpy(ret + ret_pos, p_replace, len_replace);
-			ret_pos += len_replace;
-		}
-		else
-		{
-			ret[ret_pos] = p_src[pos];
-			ret_pos++;
-		}
-
-		pos++;
-	}
-
-	ret[ret_pos] = 0;
-
-	return ret;
-}
-
-/**
  * Removes color codes from a string,
  * used in the server browser to display the server names properly.
 **/
 char *gfire_escape_color_codes(char *string)
 {
-	char color_codes[] = {
+	const char color_codes[] = {
 		'0', 'P', '9', 'Y', 'Z', '7', 'W',
 		'J', '1', 'Q', 'I',
 		'H', '2', 'R', 'G',
@@ -3146,21 +3104,23 @@ char *gfire_escape_color_codes(char *string)
 		'?', '+', '@', '-', '/',
 		'&', 'X'
 	};
+
+	if(!string)
+		return NULL;
 	
-	gchar *escaped = g_strdup_printf("%s", string);
+	gchar *escaped = g_strdup(string);
 
 	if (escaped != NULL)
 	{	
 		int i;
-		for (i = 0; i < 43; i++)
+		gchar code[3];
+		gchar *tmp = NULL;
+		for (i = 0; i < sizeof(color_codes); i++)
 		{
-			gchar *code, *code_lower_case;
-
-			code = g_strdup_printf("^%c", color_codes[i]);
-			code_lower_case = g_ascii_strdown(code, -1);
-
-			escaped = str_replace(escaped, code, "");
-			escaped = str_replace(escaped, code_lower_case, "");
+			g_snprintf(code, 3, "^%c", color_codes[i]);
+			tmp = purple_strcasereplace(escaped, code, "");
+			g_free(escaped);
+			escaped = tmp;
 		}
 	}
 
@@ -3173,18 +3133,18 @@ char *gfire_escape_html(const char *html)
 		gchar *tmp = NULL;
 		gchar *tmp2 = NULL;
 
-		tmp = str_replace_c(html, '&', "&amp;");
+		tmp = purple_strreplace(html, "&", "&amp;");
 
-		tmp2 = str_replace_c(tmp, '<', "&lt;");
+		tmp2 = purple_strreplace(tmp, "<", "&lt;");
 		if(tmp) g_free(tmp);
 
-		tmp = str_replace_c(tmp2, '>', "&gt;");
+		tmp = purple_strreplace(tmp2, ">", "&gt;");
 		if(tmp2) g_free(tmp2);
 
-		tmp2 = str_replace_c(tmp, '"', "&quot;");
+		tmp2 = purple_strreplace(tmp, "\"", "&quot;");
 		if(tmp) g_free(tmp);
 
-		tmp = str_replace_c(tmp2, '\n', "<br />");
+		tmp = purple_strreplace(tmp2, "\n", "<br />");
 		if(tmp2) g_free(tmp2);
 
 		return tmp;
@@ -3489,7 +3449,7 @@ void gfire_detect_game_server(PurpleConnection *gc)
 					g_match_info_next(regex_matches, NULL);
 				}
 				
-				server_ip = str_replace(server_ip, ":", ".");
+				server_ip = purple_strreplace(server_ip, ":", ".");
 				
 				gchar **server_ip_split = g_strsplit(server_ip, ".", -1);
 				server_port = atoi(server_ip_split[4]);
@@ -3542,7 +3502,7 @@ void gfire_detect_game_server(PurpleConnection *gc)
 					if (regex_match == TRUE)
 					{
 						sender_ip_full = g_match_info_fetch(regex_matches, 0);
-						sender_ip_full = str_replace(sender_ip_full, " >", "");
+						sender_ip_full = purple_strreplace(sender_ip_full, " >", "");
 						
 						g_regex_unref(regex);
 						g_match_info_free(regex_matches);
@@ -3558,7 +3518,7 @@ void gfire_detect_game_server(PurpleConnection *gc)
 							if (regex_match == TRUE)
 							{
 								receiver_ip_full = g_match_info_fetch(regex_matches, 0);
-								receiver_ip_full = str_replace(receiver_ip_full, "> ", "");
+								receiver_ip_full = purple_strreplace(receiver_ip_full, "> ", "");
 
 								g_regex_unref(regex);
 								g_match_info_free(regex_matches);
