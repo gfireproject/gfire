@@ -3031,62 +3031,6 @@ void gfire_avatar_download_cb( PurpleUtilFetchUrlData *url_data, gpointer data, 
 }
 
 /**
- * Replaces a substring by another substring in a string
- * and returns the new string.
-**/
-char *str_replace (char *string, char *before, char *after)
-{
-	const char *pos;
-	char *replaced;
-	size_t replaced_pos;
-
-	size_t len;
-	size_t allocated_size;
-
-	pos = strstr(string, before);
-	if (pos == NULL) return string;
-
-	len = (size_t)pos - (size_t)string;
-	allocated_size = len + strlen (after) + 1;
-	replaced = malloc (allocated_size);
-	replaced_pos = 0;
-
-	strncpy (replaced + replaced_pos, string, len);
-	replaced_pos += len;
-	string = pos + strlen (before);
-
-	len = strlen (after);
-	strncpy (replaced + replaced_pos, after, len);
-	replaced_pos += len;
-
-	pos = strstr (string, before);
-	while (pos != NULL)
-	{
-		len = (size_t)pos - (size_t)string;
-		allocated_size += len + strlen (after);
-		replaced = (char *)realloc (replaced, allocated_size);
-
-		strncpy (replaced + replaced_pos, string, len);
-		replaced_pos += len;
-
-		string = pos + strlen (before);
-
-		len = strlen (after);
-		strncpy (replaced + replaced_pos, after, len);
-		replaced_pos += len;
-
-		pos = strstr (string, before);
-	}
-
-	len = strlen (string) + 1;
-	allocated_size += len;
-	replaced = realloc (replaced, allocated_size);
-	strncpy (replaced + replaced_pos, string, len);
-
-	return replaced;
-}
-
-/**
  * Removes color codes from a string,
  * used in the server browser to display the server names properly.
 **/
