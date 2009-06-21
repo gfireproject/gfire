@@ -5,6 +5,7 @@ EXTRA_DIST = \
 	gf_packet.h \
 	gf_games.h \
 	gf_chat.h \
+	gf_friend_search.h \
 	gf_query.h
 
 INCLUDES = \
@@ -23,6 +24,7 @@ libxfire_la_SOURCES = \
 	gf_packet.c \
 	gf_games.c \
 	gf_chat.c \
+	gf_friend_search.c \
 	gf_query.c
 
 libxfire_la_LIBADD = \

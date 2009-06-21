@@ -258,6 +258,10 @@ void gfire_parse_packet(PurpleConnection *gc, int packet_len, int packet_id)
 			g_free(buddy);
 		break;
 
+		case 143:
+			gfire_read_friend_search_result(gc, packet_len);
+		break;
+
 		case 144:
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received keep alive response (PONG)\n");
 		break;

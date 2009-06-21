@@ -2444,3 +2444,80 @@ int gfire_create_client_version(PurpleConnection *gc, const guint32 version)
 
 	return index;
 }
+
+int gfire_create_friend_search(PurpleConnection *gc, const gchar *p_search)
+{
+	int index = XFIRE_HEADER_LEN;
+	gfire_data *gfire = NULL;
+
+	if (!gc || !(gfire = (gfire_data *)gc->proto_data) || !p_search)
+		return 0;
+
+	index = gfire_add_att_name(gfire->buff_out, index, "name");
+	gfire->buff_out[index++] = 0x01;
+	*((guint16*)&gfire->buff_out[index++]) = (guint16)strlen(p_search);
+	index++;
+	memcpy(&gfire->buff_out[index++], p_search, strlen(p_search));
+	index += strlen(p_search) - 1;
+
+	index = gfire_add_att_name(gfire->buff_out, index, "fname");
+	gfire->buff_out[index++] = 0x01;
+	*((guint16*)&gfire->buff_out[index++]) = (guint16)0x00;
+	index++;
+
+	index = gfire_add_att_name(gfire->buff_out, index, "lname");
+	gfire->buff_out[index++] = 0x01;
+	*((guint16*)&gfire->buff_out[index++]) = (guint16)0x00;
+	index++;
+
+	index = gfire_add_att_name(gfire->buff_out, index, "email");
+	gfire->buff_out[index++] = 0x01;
+	*((guint16*)&gfire->buff_out[index++]) = (guint16)0x00;
+	index++;
+
+	gfire_add_header(gfire->buff_out, index, 12, 4);
+
+	return index;
+}
+
+int gfire_read_friend_search_result(PurpleConnection *gc, int packet_len)
+{
+	int index = XFIRE_HEADER_LEN + 1;
+	int itmp = 0;
+
+	GList *usernames = NULL;
+	GList *firstnames = NULL;
+	GList *lastnames = NULL;
+
+	gfire_data *gfire = (gfire_data *)gc->proto_data;
+
+	itmp = gfire_read_attrib(&usernames, gfire->buff_in + index, packet_len - index, "name", TRUE, FALSE, 0, 0, 0);
+	if (itmp < 1 ) {
+		//mem cleanup code
+		if (usernames) g_list_free(usernames);
+		return 0;
+	}
+
+	index += itmp + 1;
+	itmp = gfire_read_attrib(&firstnames, gfire->buff_in + index, packet_len - index, "fname", TRUE, FALSE, 0, 0, 0);
+	if (itmp < 1 ) {
+		//mem cleanup code
+		if (usernames) g_list_free(usernames);
+		if (firstnames) g_list_free(firstnames);
+		return 0;
+	}
+
+	index += itmp + 1;
+	itmp = gfire_read_attrib(&lastnames, gfire->buff_in + index, packet_len - index, "lname", TRUE, FALSE, 0, 0, 0);
+	if (itmp < 1 ) {
+		//mem cleanup code
+		if (usernames) g_list_free(usernames);
+		if (firstnames) g_list_free(firstnames);
+		if (lastnames) g_list_free(lastnames);
+		return 0;
+	}
+
+	gfire_friend_search_results(gc, usernames, firstnames, lastnames);
+
+	return index + itmp;
+}

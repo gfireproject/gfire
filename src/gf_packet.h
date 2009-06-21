@@ -64,3 +64,5 @@ void gfire_changed_avatar(PurpleConnection *gc, int packet_len);
 GList *gfire_voip_status(PurpleConnection *gc, int packet_len);
 int gfire_create_collective_statistics(PurpleConnection *gc, const gchar *lang, const gchar *skin, const gchar *theme, const gchar *partner);
 int gfire_create_client_version(PurpleConnection *gc, const guint32 version);
+int gfire_create_friend_search(PurpleConnection *gc, const gchar *p_search);
+int gfire_read_friend_search_result(PurpleConnection *gc, int packet_len);

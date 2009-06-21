@@ -284,6 +284,7 @@ void gfire_detect_mumble_server(const gchar *executable, guint8 **voip_ip, guint
 #include "gf_packet.h"
 #include "gf_network.h"
 #include "gf_games.h"
+#include "gf_friend_search.h"
 
 #include "cipher.h"
 #include "gf_query.h"

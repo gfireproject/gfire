@@ -2939,6 +2939,9 @@ static GList *gfire_actions(PurplePlugin *plugin, gpointer context)
 	act = purple_plugin_action_new(N_("Get Game ID List"),
 			gfire_action_get_gconfig_cb);
 	m = g_list_append(m, act);
+	act = purple_plugin_action_new(N_("Friend Search"),
+			gfire_show_friend_search_cb);
+	m = g_list_append(m, act);
 	act = purple_plugin_action_new(N_("Manage Games"),
 			gfire_action_manage_games_cb);
 	m = g_list_append(m, act);
