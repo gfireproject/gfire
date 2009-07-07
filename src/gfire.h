@@ -3,7 +3,9 @@
  *
  * Copyright (C) 2000-2001, Beat Wolf <asraniel@fryx.ch>
  * Copyright (C) 2006,      Keith Geffert <keith@penguingurus.com>
- * Copyright (C) 2008,	    Laurent De Marez <laurentdemarez@gmail.com>
+ * Copyright (C) 2008-2009	Laurent De Marez <laurentdemarez@gmail.com>
+ * Copyright (C) 2009       Warren Dumortier <nwarrenfl@gmail.com>
+ * Copyright (C) 2009	    Oliver Ney <oliver@dryder.de>
  *
  * This file is part of Gfire.
  *
@@ -82,10 +84,6 @@ struct _gfire_data
 	gchar *email;
 
 	GList *chats;				/* glist of _gfire_chat structs */
-
-	// Configuration
-	xmlnode *xml_games_list;
-	xmlnode *xml_launch_info;
 
 
 	// Detected programs

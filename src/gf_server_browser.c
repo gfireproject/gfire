@@ -3,10 +3,9 @@
  *
  * Copyright (C) 2000-2001, Beat Wolf <asraniel@fryx.ch>
  * Copyright (C) 2006,      Keith Geffert <keith@penguingurus.com>
- * Copyright (C) 2008,	    Laurent De Marez <laurentdemarez@gmail.com>
- * Copyright (C) 2009,	    Laurent De Marez <laurentdemarez@gmail.com>,
- *						    Warren Dumortier <nwarrenfl@gmail.com>,
- *						    Oliver Ney <oliver@dryder.de>
+ * Copyright (C) 2008-2009	Laurent De Marez <laurentdemarez@gmail.com>
+ * Copyright (C) 2009       Warren Dumortier <nwarrenfl@gmail.com>
+ * Copyright (C) 2009	    Oliver Ney <oliver@dryder.de>
  *
  * This file is part of Gfire.
  *
@@ -201,16 +200,11 @@ void gfire_server_browser_show(PurplePluginAction *p_action)
 	g_signal_connect_swapped(refresh_button, "clicked", G_CALLBACK(gfire_server_browser_request_list_cb), args);
 	g_signal_connect_swapped(connect_button, "clicked", G_CALLBACK(gfire_server_browser_connect_cb), args);
 
-	xmlnode *gfire_launch = gfire->xml_launch_info;
-	if (gfire_launch != NULL)
+	xmlnode *node_child = gfire_game_launch_node_first();
+	for(; node_child; node_child = gfire_game_launch_node_next(node_child))
 	{
-		xmlnode *node_child;
-		for (node_child = xmlnode_get_child(gfire_launch, "game"); node_child != NULL;
-			node_child = xmlnode_get_next_twin(node_child))
-		{
-			const char *game_name = xmlnode_get_attrib(node_child, "name");
-			gtk_combo_box_append_text(GTK_COMBO_BOX(game_combo), game_name);
-		}
+		const gchar *game_name = xmlnode_get_attrib(node_child, "name");
+		gtk_combo_box_append_text(GTK_COMBO_BOX(game_combo), game_name);
 	}
 
 	gtk_widget_show_all(server_browser_window);

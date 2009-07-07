@@ -3,7 +3,9 @@
  *
  * Copyright (C) 2000-2001, Beat Wolf <asraniel@fryx.ch>
  * Copyright (C) 2006,      Keith Geffert <keith@penguingurus.com>
- * Copyright (C) 2008,	    Laurent De Marez <laurentdemarez@gmail.com>
+ * Copyright (C) 2008-2009	Laurent De Marez <laurentdemarez@gmail.com>
+ * Copyright (C) 2009       Warren Dumortier <nwarrenfl@gmail.com>
+ * Copyright (C) 2009	    Oliver Ney <oliver@dryder.de>
  *
  * This file is part of Gfire.
  *
@@ -443,7 +445,7 @@ static void gfire_game_launch_edit_xmlnode(xmlnode *p_node, const gchar *p_game_
 	if(p_game_name)
 		xmlnode_set_attrib(p_node, "name", p_game_name);
 
-	// Delete XQF node it already exists
+	// Delete XQF node if it already exists
 	xmlnode *xqf_node = NULL;
 	if((xqf_node = xmlnode_get_child(p_node, "xqf")))
 		xmlnode_free(xqf_node);
@@ -454,13 +456,13 @@ static void gfire_game_launch_edit_xmlnode(xmlnode *p_node, const gchar *p_game_
 		xmlnode_set_attrib(xqf_node, "name", p_game_name);
 
 	// Get old command node or create one
-	xmlnode *command_node = NULL;
-	if(!(command_node = xmlnode_get_child(p_node, "command")))
+	xmlnode *command_node = xmlnode_get_child(p_node, "command");
+	if(!command_node)
 		command_node = xmlnode_new_child(p_node, "command");
 
 	// Set executable
-	xmlnode *executable_node = NULL;
-	if((executable_node = xmlnode_get_child(p_node, "executable")))
+	xmlnode *executable_node = xmlnode_get_child(command_node, "executable");
+	if(executable_node)
 		xmlnode_free(executable_node);
 
 	executable_node = xmlnode_new_child(command_node, "executable");
@@ -470,8 +472,8 @@ static void gfire_game_launch_edit_xmlnode(xmlnode *p_node, const gchar *p_game_
 		xmlnode_set_attrib(executable_node, "argument", p_game_argument);
 
 	// Set prefix
-	xmlnode *prefix_node = NULL;
-	if((prefix_node = xmlnode_get_child(p_node, "prefix")))
+	xmlnode *prefix_node = xmlnode_get_child(command_node, "prefix");
+	if(prefix_node)
 		xmlnode_free(prefix_node);
 
 	prefix_node = xmlnode_new_child(command_node, "prefix");
@@ -479,8 +481,8 @@ static void gfire_game_launch_edit_xmlnode(xmlnode *p_node, const gchar *p_game_
 		xmlnode_insert_data(prefix_node, p_game_prefix, -1);
 
 	// Set path
-	xmlnode *path_node = NULL;
-	if((path_node = xmlnode_get_child(p_node, "path")))
+	xmlnode *path_node = xmlnode_get_child(command_node, "path");
+	if(path_node)
 		xmlnode_free(path_node);
 
 	path_node = xmlnode_new_child(command_node, "path");
@@ -488,8 +490,8 @@ static void gfire_game_launch_edit_xmlnode(xmlnode *p_node, const gchar *p_game_
 		xmlnode_insert_data(path_node, p_game_path, -1);
 
 	// Set launch
-	xmlnode *launch_node = NULL;
-	if((launch_node = xmlnode_get_child(p_node, "launch")))
+	xmlnode *launch_node = xmlnode_get_child(command_node, "launch");
+	if(launch_node)
 		xmlnode_free(launch_node);
 
 	launch_node = xmlnode_new_child(command_node, "launch");
@@ -497,8 +499,8 @@ static void gfire_game_launch_edit_xmlnode(xmlnode *p_node, const gchar *p_game_
 		xmlnode_insert_data(launch_node, p_game_launch, -1);
 
 	// Set connect
-	xmlnode *connect_node = NULL;
-	if((connect_node = xmlnode_get_child(p_node, "connect")))
+	xmlnode *connect_node = xmlnode_get_child(command_node, "connect");
+	if(connect_node)
 		xmlnode_free(connect_node);
 
 	connect_node = xmlnode_new_child(command_node, "connect");
@@ -969,12 +971,12 @@ static void gfire_game_manager_edit_update_fields_cb(GtkBuilder *p_builder, GtkW
 	else
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(edit_executable_check_button), FALSE);
 
-	gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(edit_executable_button), game_executable);
-	gtk_entry_set_text(GTK_ENTRY(edit_prefix_entry), game_prefix);
-	gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(edit_path_button), game_path);
-	gtk_entry_set_text(GTK_ENTRY(edit_launch_entry), game_launch);
-	gtk_entry_set_text(GTK_ENTRY(edit_argument_entry), game_argument);
-	gtk_entry_set_text(GTK_ENTRY(edit_connect_entry), game_connect);
+	gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(edit_executable_button), game_executable ? game_executable : "");
+	gtk_entry_set_text(GTK_ENTRY(edit_prefix_entry), game_prefix ? game_prefix : "");
+	gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(edit_path_button), game_path ? game_path : "");
+	gtk_entry_set_text(GTK_ENTRY(edit_launch_entry), game_launch ? game_launch : "");
+	gtk_entry_set_text(GTK_ENTRY(edit_argument_entry), game_argument ? game_argument : "");
+	gtk_entry_set_text(GTK_ENTRY(edit_connect_entry), game_connect ? game_connect : "");
 
 	if(game_executable) g_free(game_executable);
 	if(game_prefix) g_free(game_prefix);
