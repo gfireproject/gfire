@@ -19,13 +19,24 @@ if PLUGINS
 plugin_LTLIBRARIES = libxfire.la
 
 libxfire_la_SOURCES = \
-	gfire.c \
-	gf_network.c \
-	gf_packet.c \
-	gf_games.c \
+	gf_buddies.c \
+	gf_buddies_proto.c \
 	gf_chat.c \
+	gf_chat_proto.c \
 	gf_friend_search.c \
-	gf_query.c
+	gf_friend_search_proto.c \
+	gf_games.c \
+	gf_network.c \
+	gf_protocol.c \
+	gf_purple.c \
+	gf_query.c \
+	gfire.c \
+	gfire_proto.c \
+	gf_server_browser.c \
+	gf_server_browser_proto.c \
+	gf_menus.c \
+	gf_util.c \
+	gf_server_detection_linux.c
 
 libxfire_la_LIBADD = \
 	$(GLIB_LIBS) $(SSL_LIBS)

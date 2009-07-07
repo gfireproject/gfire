@@ -2,14 +2,12 @@
 # Most of this configure script was ripped from gaim-netsoul,
 # thank you guys!!!
 #
-GFIRE_VERSION="`cat ./VERSION`"
-
 AC_INIT(src/gfire.c)
 AC_PREREQ(2.50)
 
+GFIRE_VERSION="`cat ./VERSION`"
+
 AM_INIT_AUTOMAKE([gfire], "$GFIRE_VERSION", "")
-AC_DEFINE_UNQUOTED(GFIRE_VERSION, "$GFIRE_VERSION", [Gfire version])
-AC_DEFINE_UNQUOTED(PAKAGE, "$PACKAGE", [PACKAGE])
 
 AC_PATH_PROG(sedpath, sed)
 AC_CONFIG_MACRO_DIR([m4])
@@ -32,6 +30,9 @@ AH_TOP([
 	#define _GFIRE_CONFIG_H
 ])
 AH_BOTTOM([#endif])
+
+AC_DEFINE_UNQUOTED([GFIRE_VERSION], ["$GFIRE_VERSION"], [Gfire version])
+AC_DEFINE_UNQUOTED([PAKAGE], ["$PACKAGE"], [PACKAGE])
 
 #
 # Check C compiler
@@ -81,6 +82,7 @@ AM_CONDITIONAL(PLUGINS, test "$want_plugins"="yes")
 #
 # Setup libtool
 #
+AC_DISABLE_STATIC
 AM_PROG_LIBTOOL
 LIBTOOL="$LIBTOOL --silent"
 

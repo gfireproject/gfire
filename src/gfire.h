@@ -20,271 +20,158 @@
  * along with Gfire.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#ifndef _GFIRE_H
+#define _GFIRE_H
 
-#ifdef HAVE_CONFIG_H
-	#include <gfire_config.h>
-#endif
+// Required prototypes
+typedef struct _gfire_data gfire_data;
 
-#define PURPLE_PLUGINS
+#include "gf_base.h"
 
-#include <stddef.h>
-#include <stdlib.h>
-#include <glib-object.h>
-#include <glib.h>
-#include <glib/gprintf.h>
-#include <glib/gthread.h>
-#include <unistd.h>
-#include <string.h>
-#include <sys/types.h>
-
-#include <netdb.h>
-#include <ifaddrs.h>
-
-#include <libintl.h>
-#include <locale.h>
-
-#define _(string) gettext (string)
-#define gettext_noop(string) string
-#define N_(string) gettext (string)
-
-#ifdef _WIN32
-	#define IS_WINDOWS
-#else
-	#define IS_NOT_WINDOWS
-	#include <gtk/gtk.h>
-	#include <gio/gio.h>
-	#include <errno.h>
-	// Required for teamspeak server detection
-	#include <sys/socket.h>
-	#include <sys/un.h>
-#endif /* _WIN32 */
-
-#ifndef G_GNUC_NULL_TERMINATED
-	#if __GNUC__ >= 4
-		#define G_GNUC_NULL_TERMINATED __attribute__((__sentinel__))
-	#else
-		#define G_GNUC_NULL_TERMINATED
-	#endif /* __GNUC__ >= 4 */
-#endif /* G_GNUC_NULL_TERMINATED */
-
-#include "util.h"
-#include "server.h"
-#include "notify.h"
-#include "plugin.h"
-#include "account.h"
-#include "accountopt.h"
-#include "blist.h"
-#include "conversation.h"
-#include "debug.h"
-#include "prpl.h" 
-#include "proxy.h"
-#include "util.h"  
-#include "version.h" 
-#include "request.h"
-
-#include "xmlnode.h"
-#include "gf_debug.h"
-
-#define GFIRE_WEBSITE "http://gfireproject.org"
-#define GFIRE_WIKI "http://my-trac.assembla.com/gfire/wiki"
-#define GFIRE_XQF_FILENAME "ingame.tmp"
-#define GFIRE_DEFAULT_GROUP_NAME "Xfire"
-#define GFIRE_CLAN_GROUP_NAME "Clan"
-#define GFIRE_CLAN_GROUP_FORMATTING "%s [%s]" // long name, short name
-#define GFIRE_VERSION "0.9.0"
-#define GFIRE_GAMES_XML_URL "http://gfireproject.org/files/gfire_games.xml"
-#define XFIRE_HEADER_LEN 5
-#define XFIRE_USERID_LEN 4
-#define XFIRE_CLANID_LEN 4
-#define XFIRE_SID_LEN 16
-#define XFIRE_GAMEID_LEN 4
-#define XFIRE_GAMEPORT_LEN 4
-#define XFIRE_GAMEIP_LEN 4
-#define XFIRE_CHATID_LEN 21
-#define XFIRE_SERVER "cs.xfire.com"
-#define XFIRE_PORT 25999
-#define XFIRE_PROTO_VERSION 109
-#define XFIRE_CONNECT_STEPS 3
-#define XFIRE_SID_OFFLINE_STR "00000000000000000000000000000000"
-#define XFIRE_KEEPALIVE_TIME 300  // see gfire_keep_alive for more info
-#define XFIRE_PROFILE_URL "http://www.xfire.com/profile/"
-#define XFIRE_XML_INFO_URL "http://www.xfire.com/xml/%s/%s/" // username, info-type
-#define XFIRE_AVATAR_URL "http://screenshot.xfire.com/avatar/%s.jpg?%u" // username, revision number
-#define XFIRE_GALLERY_AVATAR_URL "http://media.xfire.com/xfire/xf/images/avatars/gallery/default/%03u.gif" // avatar id
-#define XFIRE_SEND_TYPING_TIMEOUT 10
+#include "gf_buddies.h"
+#include "gf_chat.h"
+#include "gf_games.h"
 
 /* we only include this on win32 builds */
 #  ifdef _WIN32
 #    include "internal.h"
 #  endif /* _WIN32 */
 
-typedef struct _gfire_data	gfire_data;
-typedef struct _gfire_buddy	gfire_buddy;
-typedef struct _gfire_im	gfire_im;
-typedef struct _gfire_clan	gfire_clan;
-typedef struct _gfire_c_msg	gfire_chat_msg;
-typedef struct _manage_games_callback_args manage_games_callback_args;
-typedef struct _get_info_callback_args get_info_callback_args;
+// gfire_find_buddy modes
+typedef enum _gfire_find_buddy_mode
+{
+	GFFB_NAME = 0,	// by name, pass pointer to string
+	GFFB_ALIAS,		// by alias, pass pointer to string
+	GFFB_USERID,	// by userid, pass pointer to uid
+	GFFB_SID		// by sid, pass pointer to sid array
+} gfire_find_buddy_mode;
 
-struct _gfire_data { 
-	int fd; 
-	int chat;
-	gchar *email;
-	guint16 bytes_read;
-	guint8 *buff_out;
+typedef enum _gfire_find_chat_mode
+{
+	GFFC_CID = 0,	// by chat ID
+	GFFC_PURPLEID	// by purple ID
+} gfire_find_chat_mode;
+
+typedef struct _gfire_chat_msg
+{
+	guint8 *chat_id;	/* xfire chat ID of group chat */
+	guint32 uid;		/* userid of user posting the message */
+	gchar *im_str;		/* im text */
+	gfire_buddy *b;		/* for users joining the chat */
+} gfire_chat_msg;
+
+struct _gfire_data
+{
+	// Networking
+	int fd;
 	guint8 *buff_in;
-	GList *buddies;
-	GList *chats;				/* glist of _gfire_chat structs */
-	gfire_im *im;				/* im struct, filled when we have an im to proccess */
-	gboolean away;
-	xmlnode *xml_games_list;
-	xmlnode *xml_launch_info;
+	guint16 bytes_read;
 	gulong last_packet;			/* time (in seconds) of our last packet */
-	guint8 *userid;				/* our userid on the xfire network */
+	PurpleConnection *gc;
+
+	// Xfire session
+	guint32 userid;				/* our userid on the xfire network */
 	guint8 *sid;				/* our session id for this connection */
 	gchar *alias;				/* our current server alias */
-	guint32 gameid;				/* our current game id */
-	guint32 voipid;				/* our current voip id */
-	guint32	voipport;			/* our current voip port */
-	guint8 *voipip;				/* our current voip ip (char[4], each byte is an octet) */
+
+	// Buddies
+	GList *buddies;
+	GList *clans;
+
+	guint32 chat;
+	gchar *email;
+
+	GList *chats;				/* glist of _gfire_chat structs */
+
+	// Configuration
+	xmlnode *xml_games_list;
+	xmlnode *xml_launch_info;
+
+
+	// Detected programs
+	gfire_game_data game_data;
+	gfire_game_data voip_data;
+
+	// Timer callbacks
 	guint xqf_source;			/* g_timeout_add source number for xqf callback */
 	guint det_source;			/* g_timeout_add source number for game detection callback */
-	gboolean game_running;		/* bool to know if a game has already been detected */
-	gboolean blist_loaded;		/* TRUE == buddy list is loaded, we need this for the clan list */
+
+	// Server Browser
 	GtkBuilder *server_browser;
+
+	// Server Detection
 	GList *server_list;
 	gboolean server_changed;	
 	GMutex *server_mutex;		/* mutex for writing found server */
-	gchar *server_ip;			/* server ip */
-	int server_port;			/* server port */
-	GList *clans;
 };
 
-struct _gfire_buddy {
-	gboolean away;			/* TRUE == buddy is away */
-	gchar *away_msg;		/* pointer to away message, null if not away */
-	guint32	im;				/* im index ++'d on each im reception and and send */
-	gchar *name;			/* name (xfire login id) */
-	gchar *alias;			/* nick (xfire alias) */
-	guint8 *userid;			/* xfire user id binary */
-	gchar *uid_str;			/* xfire user id (string format hex) 8 chars + 1 0x00 */
-	guint8 *sid;			/* sid binary form, length = XFIRE_SID_LEN */
-	gchar *sid_str;			/* sid string representation */
-	guint32 gameid;			/* int game id */
-	guint32	gameport;		/* int game port */
-	guint8 *gameip;			/* char[4] game port, each byte is an octet */
-	guint32 voipid;			/* int voip id */
-	guint32	voipport;		/* int voip port */
-	guint8 *voipip;			/* char[4] voip ip, each byte is an octet */
-	int chatperm;			/* group chat permissions (only used for group chat members)*/
-	guint32 clanid;			/* clanid (only used for group chat members)*/
-	gboolean friend;		/* TRUE == buddy is in friendslist */
-	gboolean clan;			/* TRUE == buddy is in clanlist */
-	gboolean groupchat;		/* TRUE == buddy is in groupchat */
-	guint32 avatarnumber;	/* xfire avatar revision number */
-	guint32 avatartype;		/* xfire avatar type */
-};
+typedef struct _invitation_callback_args
+{
+	gfire_data *gfire;
+	gchar *name;
+} invitation_callback_args;
 
-struct _gfire_im {
-	guint32	type;		/* msgtype 0 = im, 1 = ack packet, 2 = p2p info, 3 = typing info */
-	guint8 peer;		/* peermsg from packet */
-	guint32 index;		/* im index for this conversation */
-	gchar *sid_str;		/* sid (string format) of buddy that this im belongs to */
-	gchar *im_str;		/* im text */
-};
-
-struct _gfire_c_msg {
-	guint8 *chat_id;	/* xfire chat ID of group chat */
-	guint8 *uid;		/* userid of user posting the message */
-	gchar *im_str;		/* im text */
-	gfire_buddy *b;		/* for users joining the chat */
-};
-
-struct _gfire_clan {
-	guint32 clanid;
-	gchar *clanLongName;
-	gchar *clanShortName;
-	PurpleGroup *group;
-};
-
-
-struct _manage_games_callback_args {
-	PurpleConnection *gc;
-	GtkBuilder *builder;
-};
-
-struct _get_info_callback_args {
-	PurpleConnection *gc;
+typedef struct _get_info_callback_args
+{
+	gfire_data *gfire;
 	PurpleNotifyUserInfo *user_info;
 	gfire_buddy *gf_buddy;
-};
+} get_info_callback_args;
 
-/* gfire_find_buddy_in_list MODES */
-#define GFFB_NAME		0	/* by name, pass pointer to string */
-#define GFFB_ALIAS		1	/* by alias, pass pointer to string */
-#define GFFB_USERID		2	/* by userid, pass pointer to string ver of uid */
-#define GFFB_UIDBIN		4	/* by userid, pass binary string of userid */
-#define GFFB_SIDS		8	/* by sid (as string) pass pointer of string */
-#define GFFB_SIDBIN 	16	/* by sid (binary data) pass pointer */
 
-/* gfire_update_buddy_status TYPES */
-#define GFIRE_STATUS_ONLINE		0	/* set buddies online / offline */
-#define	GFIRE_STATUS_GAME		1	/* update game information */
-#define	GFIRE_STATUS_AWAY		2	/* update away status */
+// Creation and freeing
+gfire_data *gfire_create(PurpleConnection *p_gc);
+void gfire_free(gfire_data *p_gfire);
 
-const char *gfire_blist_icon(PurpleAccount *a, PurpleBuddy *b);
-const char *gfire_blist_emblems(PurpleBuddy *b);
-void gfire_blist_tooltip_text(PurpleBuddy *buddy, PurpleNotifyUserInfo *user_info, gboolean full);
-GList *gfire_status_types(PurpleAccount *account);
-int gfire_im_send(PurpleConnection *gc, const char *who, const char *what, PurpleMessageFlags flags);
-void gfire_login(PurpleAccount *account);
-void gfire_login_cb(gpointer data, gint source, const gchar *error_message);
-void gfire_add_buddy(PurpleConnection *gc, PurpleBuddy *buddy, PurpleGroup *group);
-void gfire_remove_buddy(PurpleConnection *gc, PurpleBuddy *buddy, PurpleGroup *group);
-void gfire_buddy_menu_profile_cb(PurpleBlistNode *node, gpointer *data);
-GList *gfire_node_menu(PurpleBlistNode *node);
+// Connection
+PurpleConnection *gfire_get_connection(const gfire_data *p_gfire);
+void gfire_login(gfire_data *p_gfire);
+void gfire_close(gfire_data *p_gfire);
+void gfire_authenticate(gfire_data *p_gfire, const gchar *p_salt);
+void gfire_keep_alive(gfire_data *p_gfire);
 
-void gfire_join_game(PurpleConnection *gc, const gchar *server_ip, int server_port, int game_id);
-char *gfire_escape_html(const char *html);
+// Session
+void gfire_set_userid(gfire_data *p_gfire, guint32 p_userid);
+void gfire_set_sid(gfire_data *p_gfire, guint8 *p_sid);
 
-#ifdef IS_NOT_WINDOWS
-void gfire_action_manage_games_cb(PurplePluginAction *action);
-void gfire_add_game_cb(manage_games_callback_args *args, GtkWidget *button);
-void gfire_edit_game_cb(manage_games_callback_args *args, GtkWidget *button);
-void gfire_manage_games_edit_update_fields_cb(GtkBuilder *builder, GtkWidget *edit_games_combo);
-void gfire_manage_games_update_executable_toggled_cb(GtkBuilder *builder, GtkWidget *executable_check_button);
-void gfire_remove_game_cb(manage_games_callback_args *args, GtkWidget *button);
-void gfire_reload_lconfig(PurpleConnection *gc);
-xmlnode *gfire_manage_game_xml(char *game_id, char *game_name, gboolean game_executable, char *game_argument,
-	char *game_prefix, char *game_path, char *game_launch, char *game_connect);
+// Buddy handling
+gfire_buddy *gfire_find_buddy(gfire_data *p_gfire, const void *p_data, gfire_find_buddy_mode p_mode);
+void gfire_add_buddy(gfire_data *p_gfire, gfire_buddy *p_buddy, PurpleGroup *p_group);
+void gfire_remove_buddy(gfire_data *p_gfire, gfire_buddy *p_buddy, gboolean p_fromServer, gboolean p_force);
+void gfire_got_invitation(gfire_data *p_gfire, const gchar *p_name, const gchar *p_alias, const gchar *p_msg);
+void gfire_show_buddy_info(gfire_data *p_gfire, const gchar *p_name);
 
-gboolean check_process(const gchar *process, const gchar *process_argument);
-#endif
+// Clan handling
+gfire_clan *gfire_find_clan(gfire_data *p_gfire, guint32 p_clanid);
+void gfire_add_clan(gfire_data *p_gfire, gfire_clan *p_clan);
+void gfire_remove_clan(gfire_data *p_gfire, gfire_clan *p_clan);
+void gfire_leave_clan(gfire_data *p_gfire, guint32 p_clanid);
+void gfire_remove_buddy_from_clan(gfire_data *p_gfire, gfire_buddy *p_buddy, guint32 p_clanid);
 
-void gfire_close(PurpleConnection *gc);
-GList *gfire_find_buddy_in_list( GList *blist, gpointer *data, int mode );
-void gfire_new_buddy(PurpleConnection *gc, gchar *alias, gchar *name, gboolean friend, guint32 clanid);
-void gfire_new_buddies(PurpleConnection *gc);
-void gfire_check_for_left_clan_members(PurpleConnection *gc, guint32 clanid);
-void gfire_leave_clan(PurpleConnection *gc, guint32 clanid);
-void gfire_add_clan(PurpleConnection *gc, gfire_clan *newClan);
-void gfire_handle_im(PurpleConnection *gc);
-void gfire_update_buddy_status(PurpleConnection *gc, GList *buddies, int status);
-void gfire_buddy_add_authorize_cb(void *data);
-void gfire_buddy_add_deny_cb(void *data);
-int gfire_check_xqf_cb(PurpleConnection *gc);
-void gfire_avatar_download_cb( PurpleUtilFetchUrlData *url_data, gpointer data, const char *buf, gsize len, const gchar *error_message);
-char *gfire_escape_color_codes(char *string);
-void gfire_detect_game_server(PurpleConnection *gc);
-void gfire_detect_teamspeak_server(guint8 **voip_ip, guint32 *voip_port);
-void gfire_detect_mumble_server(const gchar *executable, guint8 **voip_ip, guint32 *voip_port);
+// Chat handling
+gfire_chat *gfire_find_chat(gfire_data *p_gfire, const void *p_data, gfire_find_chat_mode p_mode);
+void gfire_add_chat(gfire_data *p_gfire, gfire_chat *p_chat);
+void gfire_leave_chat(gfire_data *p_gfire, gfire_chat *p_chat);
 
-#include "gf_chat.h"
-#include "gf_packet.h"
-#include "gf_network.h"
-#include "gf_games.h"
-#include "gf_friend_search.h"
+// Gaming status
+gboolean gfire_is_playing(const gfire_data *p_gfire);
+gboolean gfire_is_talking(const gfire_data *p_gfire);
+const gfire_game_data *gfire_get_game_data(gfire_data *p_gfire);
+const gfire_game_data *gfire_get_voip_data(gfire_data *p_gfire);
+void gfire_join_game(gfire_data *p_gfire, const gfire_game_data *p_game_data);
 
-#include "cipher.h"
-#include "gf_query.h"
+// Appearance
+const gchar *gfire_get_name(const gfire_data *p_gfire);
+void gfire_set_alias(gfire_data *p_gfire, const gchar* p_alias); // Local
+void gfire_set_nick(gfire_data *p_gfire, const gchar *p_nick); // Remote
+
+// Status handling
+void gfire_set_status_text(gfire_data *p_gfire, const gchar *p_status);
+
+// Identification
+gboolean gfire_is_self(const gfire_data *p_gfire, guint32 p_userid);
+
+// Detection
+int gfire_detect_running_processes_cb(gfire_data *p_gfire);
+
+#endif // _GFIRE_H

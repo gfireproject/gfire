@@ -24,8 +24,9 @@
 #define _GF_FRIEND_SEARCH_H
 
 #include "gfire.h"
+#include "gf_friend_search_proto.h"
 
 void gfire_show_friend_search_cb(PurplePluginAction *p_action);
-void gfire_friend_search_results(PurpleConnection *gc, GList *p_usernames, GList *p_firstnames, GList *p_lastnames);
+void gfire_friend_search_results(GList *p_usernames, GList *p_firstnames, GList *p_lastnames);
 
 #endif // _GF_FRIEND_SEARCH_H

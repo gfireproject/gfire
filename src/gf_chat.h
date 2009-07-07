@@ -20,35 +20,53 @@
  * along with Gfire.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-typedef struct _gfire_chat	gfire_chat;
+#ifndef _GF_CHAT_H
+#define _GF_CHAT_H
 
-struct _gfire_chat {
-	int purple_id;			/* purple chat id */
-	GList *members;			/* glist of _gfire_buddy structs */
-	guint8 *chat_id;		/* xfire chat id */
-	gchar *topic;			/* channel topic */
-	gchar *motd;			/* motd */
-	PurpleConversation *c;	/* purple conv instance */
-};
+#include "gf_base.h"
+#include "gf_buddies.h"
+#include "gf_chat_proto.h"
 
-/* gfire_find_chat() modes */
-#define GFFC_CID	0
-#define GFFC_PURPLEID	1
+// GFIRE CHAT SYSTEM ////////////////////////////////////////////////
+// Gfire Chat Struct
+typedef struct _gfire_chat
+{
+	PurpleConnection *gc;
+	guint32 purple_id;		// purple chat id
+	GList *members;			// glist of _gfire_buddy structs
+	guint8 *chat_id;		// xfire chat id
+	gchar *topic;			// channel topic
+	gchar *motd;			// motd
+	PurpleConversation *c;	// purple conv instance
+} gfire_chat;
 
+// Creation and freeing
+gfire_chat *gfire_chat_create(const guint8 *p_id, const gchar *p_topic, const gchar *p_motd);
+void gfire_chat_free(gfire_chat *p_chat);
 
-void gfire_join_chat(PurpleConnection *gc, GHashTable *components);
-void gfire_reject_chat(PurpleConnection *gc, GHashTable *components);
+// Member handling
+gfire_buddy *gfire_chat_find_member(gfire_chat *p_chat, guint32 p_userid);
+void gfire_chat_add_member(gfire_chat *p_chat, gfire_buddy *p_buddy, guint32 p_perm, gboolean p_joined);
+void gfire_chat_user_left(gfire_chat *p_chat, guint32 p_userid);
+void gfire_chat_buddy_permission_changed(gfire_chat *p_chat, guint32 p_userid, guint32 p_perm);
 
-void gfire_read_chat_invite(PurpleConnection *gc, int packet_len);
-GList *gfire_chat_info(PurpleConnection *gc);
-GHashTable *gfire_chat_info_defaults(PurpleConnection *gc, const char *chat_name);
-char *gfire_get_chat_name(GHashTable *data);
-void gfire_chat_invite(PurpleConnection *gc, int id, const char *message, const char *who);
-void gfire_chat_leave(PurpleConnection *gc, int id);
-int gfire_chat_send(PurpleConnection *gc, int id, const char *message, PurpleMessageFlags flags);
-void gfire_chat_joined(PurpleConnection *gc, GList *members, guint8 *chat_id, gchar *topic, gchar *motd);
-GList *gfire_find_chat(GList *chats, gpointer *data, int mode);
-void gfire_chat_got_msg(PurpleConnection *gc, gfire_chat_msg *gcm);
-void gfire_chat_user_leave(PurpleConnection *gc, gfire_chat_msg *gcm);
-void gfire_chat_user_join(PurpleConnection *gc, gfire_chat_msg *gcm);
-void gfire_chat_change_motd(PurpleConnection *gc, int id, const char *topic);
+// Receiving and sending messages
+void gfire_chat_got_msg(gfire_chat *p_chat, guint32 p_userid, const gchar *p_msg);
+void gfire_chat_send(gfire_chat *p_chat, const gchar *p_msg);
+
+// Joining and leaving
+void gfire_chat_join(const guint8 *p_chat_id, const gchar *p_room, const gchar *p_pass, PurpleConnection *p_gc);
+void gfire_chat_leave(gfire_chat *p_chat);
+
+// MotD
+void gfire_chat_motd_changed(gfire_chat *p_chat, const gchar *p_motd);
+void gfire_chat_change_motd(gfire_chat *p_chat, const gchar *p_motd);
+
+// Inviting
+void gfire_chat_invite(gfire_chat *p_chat, const gfire_buddy *p_buddy);
+void gfire_chat_reject(guint8 *p_chat_id, PurpleConnection *p_gc);
+
+// Purple
+void gfire_chat_show(gfire_chat *p_chat);
+
+#endif // _GF_CHAT_H

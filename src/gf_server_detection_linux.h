@@ -4,6 +4,9 @@
  * Copyright (C) 2000-2001, Beat Wolf <asraniel@fryx.ch>
  * Copyright (C) 2006,      Keith Geffert <keith@penguingurus.com>
  * Copyright (C) 2008,	    Laurent De Marez <laurentdemarez@gmail.com>
+ * Copyright (C) 2009,	    Laurent De Marez <laurentdemarez@gmail.com>,
+ *						    Warren Dumortier <nwarrenfl@gmail.com>,
+ *						    Oliver Ney <oliver@dryder.de>
  *
  * This file is part of Gfire.
  *
@@ -17,26 +20,29 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Gfire.  If not, see <http://www.gnu.org/licenses/>.A
+ * along with Gfire.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _GF_NETWORK_H
-#define _GF_NETWORK_H
+#ifndef _GF_SERVER_DETECTION_LINUX_H
+#define _GF_SERVER_DETECTION_LINUX_H
+
+#ifndef _WIN32
 
 #include "gf_base.h"
 #include "gfire.h"
 
-#define GFIRE_BUFFOUT_SIZE 65535
-#define GFIRE_BUFFIN_SIZE 65535
+// Used for server detection
+#include <netdb.h>
+#include <ifaddrs.h>
 
-// Network system
-void gfire_network_init();
-void gfire_network_cleanup();
-void gfire_network_buffout_write(const void *p_data, guint16 p_len, guint16 p_offset);
+// Used for teamspeak detection
+#include <sys/socket.h>
+#include <sys/un.h>
 
-// Traffic handling
-void gfire_send(PurpleConnection *p_gc, guint16 p_size);
-void gfire_input_cb(gpointer p_data, gint p_source, PurpleInputCondition p_condition);
-void gfire_parse_packet(gfire_data *p_gfire, guint16 p_packet_len, guint16 p_packet_id);
+gboolean check_process(const gchar *process, const gchar *process_argument);
+void gfire_detect_teamspeak_server(guint8 **voip_ip, guint32 *voip_port);
+void gfire_server_detection_detect(gfire_data *p_gfire);
 
-#endif // _GF_NETWORK_H
+#endif // _WIN32
+
+#endif // _GF_SERVER_DETECTION_LINUX_H

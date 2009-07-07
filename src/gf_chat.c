@@ -20,503 +20,294 @@
  * along with Gfire.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "gfire.h"
+#include "gf_network.h"
+#include "gf_chat.h"
 
-void gfire_join_chat(PurpleConnection *gc, GHashTable *components)
+gfire_chat *gfire_chat_create(const guint8 *p_id, const gchar *p_topic, const gchar *p_motd)
 {
-	gfire_data *gfire = NULL;
-	guint8 *xid = NULL;
-	gchar *room = NULL;
-	gchar *name = NULL;
-	gchar *pass = NULL;
-	int packet_len = 0;
+	gfire_chat *ret = g_malloc0(sizeof(gfire_chat));
+	if(!ret)
+		return NULL;
 
-	if (!gc || !(gfire = (gfire_data *)gc->proto_data) || !components) return;
-
-
-	name = gfire->alias ? gfire->alias : (gchar *)purple_account_get_username(gc->account);
-	room = g_hash_table_lookup(components, "room");
-	pass = g_hash_table_lookup(components, "password");
-	if (!(xid = g_hash_table_lookup(components, "chat_id"))) {
-		/* no xid we need to create this room */
-		purple_debug(PURPLE_DEBUG_MISC, "gfire","Attempting to create chat room %s\n", NN(room));
-		xid = g_malloc0(XFIRE_CHATID_LEN);
-		xid[0] = 0x00;
-		xid[1] = 0x00;
-		packet_len = gfire_create_join_chat(gc, xid, (room ? room : name), pass);
-		g_free(xid);
-	} else {
-		packet_len = gfire_create_join_chat(gc, xid, name, pass);
+	ret->chat_id = g_malloc0(XFIRE_CHATID_LEN);
+	if(!ret->chat_id)
+	{
+		g_free(ret);
+		return NULL;
 	}
 
-	if (packet_len > 0)	{
-		gfire_send(gc, gfire->buff_out, packet_len);
-		purple_debug(PURPLE_DEBUG_MISC, "gfire", "(chat): sending join info for room %s\n", NN(room));
+	if(p_topic)
+		ret->topic = g_strdup(p_topic);
+	if(p_motd)
+		ret->motd = g_strdup(p_motd);
+
+	return ret;
+}
+
+void gfire_chat_free(gfire_chat *p_chat)
+{
+	if(!p_chat)
 		return;
+
+	if(p_chat->chat_id) g_free(p_chat->chat_id);
+	if(p_chat->topic) g_free(p_chat->topic);
+	if(p_chat->motd) g_free(p_chat->motd);
+
+	GList *cur_member = p_chat->members;
+	while(cur_member)
+	{
+		gfire_buddy_free((gfire_buddy*)cur_member->data);
+		cur_member = g_list_next(cur_member);
 	}
 
-	purple_debug(PURPLE_DEBUG_ERROR, "gfire", "(chat join): failed to join room %s\n", NN(room));
-
+	if(p_chat->members) g_list_free(p_chat->members);
 }
 
-
-void gfire_reject_chat(PurpleConnection *gc, GHashTable *components)
+void gfire_chat_add_member(gfire_chat *p_chat, gfire_buddy *p_buddy, guint32 p_perm, gboolean p_joined)
 {
-	gfire_data *gfire = NULL;
-	guint8 *cid = NULL;
-	int packet_len = 0;
-	
-	if (!gc || !(gfire = (gfire_data *)gc->proto_data) || !components) return;
-
-	if ((cid = g_hash_table_lookup(components, "chat_id"))) packet_len = gfire_create_reject_chat(gc, cid);
-
-	if (packet_len > 0)	{
-		gfire_send(gc, gfire->buff_out, packet_len);
-		purple_debug(PURPLE_DEBUG_MISC, "gfire", "(chat): sending reject groupchat invitation\n");
+	if(!p_chat || !p_buddy)
 		return;
-	}
 
-}
-
-
-void gfire_read_chat_invite(PurpleConnection *gc, int packet_len)
-{
-	int index = 7;
-	guint16 sl = 0;
-	gfire_data *gfire = NULL;
-	gchar chanid[XFIRE_CHATID_LEN + 1];
-	gchar *inviter_uid = NULL;
-	gchar *inviter_login = NULL;
-	gchar *inviter_alias = NULL;
-	gchar *room = NULL;
-	GHashTable *components = NULL;
-
-	if (!gc || !(gfire = (gfire_data *)gc->proto_data) || (index > packet_len)) return;
-
-	/* get chat id */
-	memcpy(chanid, gfire->buff_in + index, XFIRE_CHATID_LEN);
-	chanid[XFIRE_CHATID_LEN]=0x00;
-	index += XFIRE_CHATID_LEN + 8;
-
-	/* get user id of the person inviting us */
-	inviter_uid = g_malloc0(XFIRE_USERID_LEN);
-	memcpy(inviter_uid, gfire->buff_in + index, XFIRE_USERID_LEN);
-	index += XFIRE_USERID_LEN + 2;
-
-	purple_debug(PURPLE_DEBUG_MISC, "gfire", "(chat invite): chatid: %s, inviter userid: %s\n",
-				NN(chanid), NN(inviter_uid));
-
-	/* get string len of login id of inviter */
-	memcpy(&sl, gfire->buff_in + index, sizeof(sl));
-	sl = GUINT16_FROM_LE(sl);
-	index += sizeof(sl);
-
-	if (0 == sl) {
-		purple_debug(PURPLE_DEBUG_ERROR, "gfire", "(chat invite): string len of loginID is 0!\n");
-		return;
-	}
-	inviter_login = g_malloc0(sl + 1);
-	memcpy(inviter_login, gfire->buff_in + index, sl);
-	index += sl + 2;
-
-	/* get nick of inviter if they have one */
-	memcpy(&sl, gfire->buff_in + index, sizeof(sl));
-	sl = GUINT16_FROM_LE(sl);
-	index += sizeof(sl);
-
-	if (sl > 0) {
-		inviter_alias = g_malloc0(sl + 1);
-		memcpy(inviter_alias, gfire->buff_in + index, sl);
-	}
-	index += sl + 2;
-
-	/* get room name length */
-	memcpy(&sl, gfire->buff_in + index, sizeof(sl));
-	sl = GUINT16_FROM_LE(sl);
-	index += sizeof(sl);
-	if (sl > 0) {
-		room = g_malloc0(sl + 1);
-		memcpy(room, gfire->buff_in + index, sl);
-	}
-	
-	purple_debug(PURPLE_DEBUG_MISC, "gfire", "(chat invite): %s with alias %s, invited us to room '%s'\n",
-				NN(inviter_login), NN(inviter_alias), NN(room));
-
-	/* assemble ghashtable */
-	components = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
-	if (NULL != room) g_hash_table_replace(components, g_strdup("room"), room);
-	if (NULL != inviter_alias) g_hash_table_replace(components, g_strdup("inv_alias"), inviter_alias);
-	if (NULL != inviter_login) g_hash_table_replace(components, g_strdup("inv_lid"), inviter_login);
-	g_hash_table_replace(components, g_strdup("chat_id"), g_strdup(chanid));
-	g_hash_table_replace(components, g_strdup("inv_uid"), inviter_uid);
-	g_hash_table_replace(components, g_strdup("members"), g_strdup_printf("%s\n", inviter_login));
-
-	serv_got_chat_invite(gc, room, (inviter_alias ? inviter_alias : inviter_login), "", components);
-//	serv_got_chat_invite(gc, room, inviter_login, "", components);
-
-}
-
-
-GList *gfire_chat_info(PurpleConnection *gc)
-{
-	GList *m = NULL;
-	struct proto_chat_entry *pce;
-
-	pce = g_new0(struct proto_chat_entry, 1);
-	pce->label = "_Room:";
-	pce->identifier = "room";
-	pce->required = TRUE;
-	m = g_list_append(m, pce);
-	
-	pce = g_new0(struct proto_chat_entry, 1);
-	pce->label = "_Password:";
-	pce->identifier = "password";
-	pce->secret = TRUE;
-	m = g_list_append(m, pce);
-
-	return m;
-}
-
-
-GHashTable *gfire_chat_info_defaults(PurpleConnection *gc, const char *chat_name)
-{
-	GHashTable *defaults;
-
-	defaults = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, g_free);
-
-	if (chat_name != NULL)
-		g_hash_table_insert(defaults, "room", g_strdup(chat_name));
-
-	return defaults;
-}
-
-
-char *gfire_get_chat_name(GHashTable *data)
-{
-	return g_strdup(g_hash_table_lookup(data, "room"));
-}
-
-
-void gfire_chat_invite(PurpleConnection *gc, int id, const char *message, const char *who)
-{
-	gfire_data *gfire = NULL;
-	gfire_chat *gfchat = NULL;
-	gfire_buddy *buddy = NULL;
-	GList *t = NULL;
-	int len = 0;
-
-	if (!gc || !(gfire = (gfire_data *)gc->proto_data) || !who) return;
-
-	t = gfire_find_chat(gfire->chats, (gpointer *)GINT_TO_POINTER(id), GFFC_PURPLEID);
-	if (!t || !(gfchat = (gfire_chat *)t->data)) return;
-
-	t = gfire_find_buddy_in_list(gfire->buddies, (gpointer *)who, GFFB_NAME);
-	if (!t || !(buddy = (gfire_buddy *)t->data)) return;
-
-	/* need chat id, and buddy's sid for invite message */
-	len = gfire_create_chat_invite(gc, gfchat->chat_id, buddy->userid);
-	if (len) {
-		purple_debug(PURPLE_DEBUG_MISC, "gfire", "(group chat): inviting %s to %s\n",
-					NN(buddy->name), NN(gfchat->topic));
-		gfire_send(gc, gfire->buff_out, len);
-	}
-}
-
-
-void gfire_chat_leave(PurpleConnection *gc, int id)
-{
-	gfire_data *gfire = NULL;
-	gfire_chat *gfchat = NULL;
-	GList *t = NULL;
-	int len = 0;
-
-	if (!gc || !(gfire = (gfire_data *)gc->proto_data)) return;
-
-	t = gfire_find_chat(gfire->chats, (gpointer *)GINT_TO_POINTER(id), GFFC_PURPLEID);
-	if (!t || !(gfchat = (gfire_chat *)t->data)) return;
-
-	purple_debug(PURPLE_DEBUG_MISC, "gfire", "(group chat): leaving room: %s\n", NN(gfchat->topic));
-	len = gfire_create_chat_leave(gc, gfchat->chat_id);
-	if (len) gfire_send(gc, gfire->buff_out, len);
-/* FIXME: add cleanup code to chat leave() */
-	return;
-}
-
-
-int gfire_chat_send(PurpleConnection *gc, int id, const char *message, PurpleMessageFlags flags)
-{
-	gfire_data *gfire = NULL;
-	gfire_chat *gfchat = NULL;
-	GList *t = NULL;
-	int len = 0;
-
-	if (!gc || !(gfire = (gfire_data *)gc->proto_data) || !message) return -1;
-
-	t = gfire_find_chat(gfire->chats, (gpointer *)GINT_TO_POINTER(id), GFFC_PURPLEID);
-	if (!t || !(gfchat = (gfire_chat *)t->data)) return -1;
-
-	message = purple_unescape_html(message);
-
-	if ((len = gfire_create_chat_message(gc, gfchat->chat_id, message))) {
-		gfire_send(gc, gfire->buff_out, len);
-		return 1;
-	}
-
-	return -1;
-}
-
-
-void gfire_chat_joined(PurpleConnection *gc, GList *members, guint8 *chat_id, gchar *topic, gchar *motd)
-{
-	gchar *tmpmsg = NULL;
-	gfire_buddy *m = NULL;
-	gfire_chat *gfchat = NULL;
-	GList *cl = NULL;
-	gfire_data *gfire = NULL;
-	PurpleConversation *c = NULL;
 	PurpleConvChatBuddyFlags f;
+	switch(p_perm)
+	{
+	case 01:
+		f = PURPLE_CBFLAGS_NONE;
+		break;
 
-	if (!gc || !(gfire = (gfire_data *)gc->proto_data) || !chat_id) return;
+	case 02:
+		f = PURPLE_CBFLAGS_NONE;
+		break;
 
-	cl = gfire_find_chat(gfire->chats, (gpointer *)chat_id, GFFC_CID);
+	case 03:
+		f = PURPLE_CBFLAGS_VOICE;
+		break;
 
-	if (!cl || !(gfchat = (gfire_chat *)cl->data)) {
-		gfchat = g_new0(gfire_chat, 1);
-		gfchat->purple_id = gfire->chat;
-		gfchat->chat_id = chat_id;
-		gfire->chat++;
-		gfire->chats = g_list_append(gfire->chats, gfchat);
+	case 04:
+		f = PURPLE_CBFLAGS_HALFOP;
+		break;
+
+	case 05:
+		f = PURPLE_CBFLAGS_OP;
+		break;
+
+	default:
+		f = PURPLE_CBFLAGS_NONE;
 	}
 
-	gfchat->members = members;
-	gfchat->topic = topic;
-	gfchat->motd = motd;
-	//prefix the window title with "xfire groupchat-" to get arround a nasty 1.5 bug that causes a crash
-	//if groupchat window title matches users username.
-	c = gfchat->c = serv_got_joined_chat(gc, gfchat->purple_id, g_strdup_printf(N_("xfire groupchat-%s"),topic));
-	purple_conv_chat_set_topic(PURPLE_CONV_CHAT(c), NULL, topic);
+	purple_conv_chat_add_user(PURPLE_CONV_CHAT(p_chat->c), gfire_buddy_get_name(p_buddy), NULL, f, p_joined);
 
-	tmpmsg = g_strdup_printf(N_("You are now chatting in %s."), topic);
-	purple_conv_chat_write(PURPLE_CONV_CHAT(c), "", tmpmsg, PURPLE_MESSAGE_SYSTEM, time(NULL));
+	p_buddy->chatperm = p_perm;
+	p_chat->members = g_list_append(p_chat->members, p_buddy);
+}
+
+gfire_buddy *gfire_chat_find_member(gfire_chat *p_chat, guint32 p_userid)
+{
+	if(!p_chat)
+		return NULL;
+
+	GList *cur = p_chat->members;
+	while(cur)
+	{
+		if(gfire_buddy_is_by_userid((gfire_buddy*)cur->data, p_userid))
+			return (gfire_buddy*)cur->data;
+
+		cur = g_list_next(cur);
+	}
+
+	return NULL;
+}
+
+void gfire_chat_got_msg(gfire_chat *p_chat, guint32 p_userid, const gchar *p_msg)
+{
+	if(!p_chat || !p_msg)
+		return;
+
+	gfire_buddy *m = gfire_chat_find_member(p_chat, p_userid);
+	if(!m)
+		return;
+
+	gchar *escaped = gfire_escape_html(p_msg);
+	serv_got_chat_in(purple_conversation_get_gc(p_chat->c), p_chat->purple_id, gfire_buddy_get_name(m),
+					 PURPLE_MESSAGE_RECV, escaped, time(NULL));
+	g_free(escaped);
+}
+
+void gfire_chat_user_left(gfire_chat *p_chat, guint32 p_userid)
+{
+	if(!p_chat)
+		return;
+
+	gfire_buddy *m = gfire_chat_find_member(p_chat, p_userid);
+	if(!m)
+		return;
+
+	purple_conv_chat_remove_user(PURPLE_CONV_CHAT(p_chat->c), gfire_buddy_get_name(m), NULL);
+
+	GList *cur = g_list_find(p_chat->members, m);
+	if(!cur)
+		return;
+
+	gfire_buddy_free(m);
+	p_chat->members = g_list_delete_link(p_chat->members, cur);
+}
+
+void gfire_chat_join(const guint8 *p_chat_id, const gchar *p_room, const gchar *p_pass, PurpleConnection *p_gc)
+{
+	if(!p_gc)
+		return;
+
+	if(!p_room)
+		p_room = gfire_get_name((gfire_data *)p_gc->proto_data);
+
+
+	guint16 packet_len = gfire_chat_proto_create_join(p_chat_id, p_room, p_pass);
+	if(packet_len > 0)
+	{
+		gfire_send(p_gc, packet_len);
+		purple_debug(PURPLE_DEBUG_MISC, "gfire", "(chat): sending join info for room %s\n", NN(p_room));
+		return;
+	}
+}
+
+void gfire_chat_leave(gfire_chat *p_chat)
+{
+	if(!p_chat)
+		return;
+
+	purple_debug(PURPLE_DEBUG_MISC, "gfire", "(group chat): leaving room: %s\n", NN(p_chat->topic));
+	guint16 len = gfire_chat_proto_create_leave(p_chat->chat_id);
+	if(len > 0) gfire_send(p_chat->gc, len);
+}
+
+void gfire_chat_reject(guint8 *p_chat_id, PurpleConnection *p_gc)
+{
+	if(!p_chat_id || !p_gc)
+		return;
+
+	guint16 packet_len = gfire_chat_proto_create_reject(p_chat_id);
+	if(packet_len > 0)
+	{
+		gfire_send(p_gc, packet_len);
+		purple_debug(PURPLE_DEBUG_MISC, "gfire", "(chat): sending reject groupchat invitation\n");
+	}
+}
+
+void gfire_chat_motd_changed(gfire_chat *p_chat, const gchar *p_motd)
+{
+	if(!p_chat || !p_motd)
+		return;
+
+	if(p_chat->motd) g_free(p_chat->motd);
+	p_chat->motd = g_strdup(p_motd);
+
+	purple_debug(PURPLE_DEBUG_MISC, "gfire", "new motd for room %s: %s\n", p_chat->topic, p_motd);
+
+	purple_conv_chat_set_topic(PURPLE_CONV_CHAT(p_chat->c), "", p_motd);
+	gchar *tmpmsg = g_strdup_printf(N_("Today's message changed to:\n%s"), p_motd);
+	purple_conv_chat_write(PURPLE_CONV_CHAT(p_chat->c), "", tmpmsg, PURPLE_MESSAGE_SYSTEM, time(NULL));
+	g_free(tmpmsg);
+}
+
+void gfire_chat_buddy_permission_changed(gfire_chat *p_chat, guint32 p_userid, guint32 p_perm)
+{
+	if(!p_chat)
+		return;
+
+	gfire_buddy *gf_buddy = gfire_chat_find_member(p_chat, p_userid);
+	if(!gf_buddy)
+	{
+		purple_debug(PURPLE_DEBUG_ERROR, "gfire", "gfire_chat_buddy_permission_changed: Unknown buddy!\n");
+		return;
+	}
+
+	PurpleConvChatBuddyFlags f;
+	switch(p_perm)
+	{
+	case 01:
+		f = PURPLE_CBFLAGS_NONE;
+		break;
+
+	case 02:
+		f = PURPLE_CBFLAGS_NONE;
+		break;
+
+	case 03:
+		f = PURPLE_CBFLAGS_VOICE;
+		break;
+
+	case 04:
+		f = PURPLE_CBFLAGS_HALFOP;
+		break;
+
+	case 05:
+		f = PURPLE_CBFLAGS_OP;
+		break;
+
+	default:
+		f = PURPLE_CBFLAGS_NONE;
+	}
+
+	purple_conv_chat_user_set_flags(PURPLE_CONV_CHAT(p_chat->c), gfire_buddy_get_name(gf_buddy), f);
+	gf_buddy->chatperm = p_perm;
+}
+
+void gfire_chat_show(gfire_chat *p_chat)
+{
+	if(!p_chat)
+		return;
+
+	// Create conversation
+	gchar *wnd_title = g_strdup_printf(N_("%s [Xfire Chat]"), p_chat->topic);
+	p_chat->c = serv_got_joined_chat(p_chat->gc, p_chat->purple_id, wnd_title);
+	g_free(wnd_title);
+
+	// Set topic
+	purple_conv_chat_set_topic(PURPLE_CONV_CHAT(p_chat->c), NULL, p_chat->topic);
+
+	// Join message
+	gchar *tmpmsg = g_strdup_printf(N_("You are now chatting in %s."), p_chat->topic);
+	purple_conv_chat_write(PURPLE_CONV_CHAT(p_chat->c), "", tmpmsg, PURPLE_MESSAGE_SYSTEM, time(NULL));
 	g_free(tmpmsg);
 
-	if (NULL != motd) {
-		purple_conv_chat_set_topic(PURPLE_CONV_CHAT(c), "", motd);
-		tmpmsg = g_strdup_printf(N_("Today's Message:\n%s"), motd);
-		purple_conv_chat_write(PURPLE_CONV_CHAT(c), "", tmpmsg, PURPLE_MESSAGE_SYSTEM, time(NULL));
+	// MotD
+	if(p_chat->motd)
+	{
+		gchar *tmpmsg = g_strdup_printf(N_("Today's message:\n%s."), p_chat->motd);
+		purple_conv_chat_write(PURPLE_CONV_CHAT(p_chat->c), "", tmpmsg, PURPLE_MESSAGE_SYSTEM, time(NULL));
 		g_free(tmpmsg);
 	}
-	
-	for (cl = members; NULL != cl; cl = g_list_next(cl)) {
-		m = (gfire_buddy *)cl->data;
-		if (!m) continue;
-		switch(m->chatperm) {
-			case 01:
-				f = PURPLE_CBFLAGS_NONE;
-			break;
-				
-			case 02:
-				f = PURPLE_CBFLAGS_NONE;
-			break;
-			
-			case 03:
-				f = PURPLE_CBFLAGS_VOICE;
-			break;
-			
-			case 04:
-				f = PURPLE_CBFLAGS_HALFOP;
-			break;
-			
-			case 05:
-				f = PURPLE_CBFLAGS_OP;
-			break;
-			
-			default:
-				f = PURPLE_CBFLAGS_NONE;
-		}
-		purple_conv_chat_add_user(PURPLE_CONV_CHAT(c), m->name, NULL, f, FALSE);
-
-	}	
-
-	return;
 }
 
-
-GList *gfire_find_chat(GList *chats, gpointer *data, int mode)
+void gfire_chat_invite(gfire_chat *p_chat, const gfire_buddy *p_buddy)
 {
-	GList *t = chats;
-	gfire_chat *c = NULL;
+	if(!p_chat || !p_buddy)
+		return;
 
-	if (!chats) return NULL;
-
-	switch (mode)
+	// need chat id, and buddy's userid for invite message
+	guint32 len = gfire_chat_proto_create_invite(p_chat->chat_id, p_buddy->userid);
+	if(len > 0)
 	{
-		case GFFC_CID:
-			while (NULL != t){
-				c = (gfire_chat *)t->data;
-				if ((NULL != c->chat_id) && (memcmp(c->chat_id, data, XFIRE_CHATID_LEN) == 0))
-					break;
-				t = g_list_next(t);
-			}
-		break;
-
-		case GFFC_PURPLEID:
-			while (NULL != t){
-				c = (gfire_chat *)t->data;
-				if ( c->purple_id == GPOINTER_TO_INT(data))
-					break;
-				t = g_list_next(t);
-			}
-		break;
-
-		default:
-			purple_debug(PURPLE_DEBUG_ERROR, "gfire", "gfire_find_chat() unknown mode specified\n");
-			return NULL;
+		purple_debug(PURPLE_DEBUG_MISC, "gfire", "(group chat): inviting %s to %s\n",
+					NN(p_buddy->name), NN(p_chat->topic));
+		gfire_send(p_chat->gc, len);
 	}
-
-	return t;
 }
 
-
-void gfire_chat_got_msg(PurpleConnection *gc, gfire_chat_msg *gcm)
+void gfire_chat_send(gfire_chat *p_chat, const gchar *p_msg)
 {
-	gfire_data *gfire = NULL;
-	gfire_chat *gfchat = NULL;
-	GList *t = NULL;
-	gfire_buddy *m = NULL;
-	
-	if (!gc || !(gfire = (gfire_data *)gc->proto_data) || !gfire->chats
-		|| !gcm || !(gcm->chat_id) ) return;
+	if(!p_chat || !p_msg)
+		return;
 
-	t = gfire_find_chat(gfire->chats, (gpointer *)gcm->chat_id, GFFC_CID);
-	if (t && (gfchat = (gfire_chat *)t->data)) {
-
-		t = gfire_find_buddy_in_list(gfchat->members, (gpointer *)gcm->uid, GFFB_UIDBIN);
-		if ( t && (m = (gfire_buddy *)t->data)) {
-			serv_got_chat_in(gc, gfchat->purple_id, m->name, PURPLE_MESSAGE_RECV,
-								gfire_escape_html(gcm->im_str), time(NULL));
-		}
-	}
-	//free gcm
-	if (gcm->chat_id) g_free(gcm->chat_id);
-	if (gcm->uid) g_free(gcm->uid);
-	if (gcm->im_str) g_free(gcm->im_str);
-	g_free(gcm);
+	guint16 len = gfire_chat_proto_create_message(p_chat->chat_id, p_msg);
+	if(len > 0) gfire_send(p_chat->gc, len);
 }
 
-
-
-void gfire_chat_user_leave(PurpleConnection *gc, gfire_chat_msg *gcm)
+void gfire_chat_change_motd(gfire_chat *p_chat, const gchar *p_motd)
 {
-	gfire_data *gfire = NULL;
-	gfire_chat *gfchat = NULL;
-	GList *t = NULL;
-	gfire_buddy *m = NULL;
+	if(!p_chat || !p_motd)
+		return;
 	
-	if (!gc || !(gfire = (gfire_data *)gc->proto_data) || !gfire->chats
-		|| !gcm || !(gcm->chat_id)) return;
-
-	t = gfire_find_chat(gfire->chats, (gpointer *)gcm->chat_id, GFFC_CID);
-	if (t && (gfchat = (gfire_chat *)t->data)) {
-
-		t = gfire_find_buddy_in_list(gfchat->members, (gpointer *)gcm->uid, GFFB_UIDBIN);
-		if ( t && (m = (gfire_buddy *)t->data)) {
-			purple_conv_chat_remove_user(PURPLE_CONV_CHAT(gfchat->c), m->name, NULL);
-		}
-	}
-	/* free gcm */
-	if (gcm->chat_id) g_free(gcm->chat_id);
-	if (gcm->uid) g_free(gcm->uid);
-	if (gcm->im_str) g_free(gcm->im_str);
-	g_free(gcm);
-}
-
-
-void gfire_chat_user_join(PurpleConnection *gc, gfire_chat_msg *gcm)
-{
-	gfire_data *gfire = NULL;
-	gfire_chat *gfchat = NULL;
-	GList *t = NULL;
-	gfire_buddy *m = NULL;
-	PurpleConvChatBuddyFlags f;
-	
-	if (!gc || !(gfire = (gfire_data *)gc->proto_data) || !gfire->chats
-		|| !gcm ||!(gcm->chat_id)) return;
-		
-	t = gfire_find_chat(gfire->chats, (gpointer *)gcm->chat_id, GFFC_CID);
-	if (t && (gfchat = (gfire_chat *)t->data)) {
-		m = gcm->b;
-		/* we need to supress our own join messages, otherwise we show up on the userlist twice */
-		if (memcmp(m->userid, gfire->userid, XFIRE_USERID_LEN) != 0) {
-			switch(m->chatperm) {
-				case 01:
-					f = PURPLE_CBFLAGS_NONE;
-				break;
-					
-				case 02:
-					f = PURPLE_CBFLAGS_NONE;
-				break;
-			
-				case 03:
-					f = PURPLE_CBFLAGS_VOICE;
-				break;
-			
-				case 04:
-					f = PURPLE_CBFLAGS_HALFOP;
-				break;
-			
-				case 05:
-					f = PURPLE_CBFLAGS_OP;
-				break;
-			
-				default:
-					f = PURPLE_CBFLAGS_NONE;
-		}
-			purple_conv_chat_add_user(PURPLE_CONV_CHAT(gfchat->c), m->name, NULL, f, TRUE);
-			m->groupchat = (gboolean )TRUE;
-			gfchat->members = g_list_append(gfchat->members, m);
-		} else {
-			purple_debug(PURPLE_DEBUG_MISC, "gfire", "(group chat): supressing own join message\n");
-			/* free the buddy we already have it in the list */
-			if (NULL != m->name) g_free(m->name);
-			if (NULL != m->alias) g_free(m->alias);
-			if (NULL != m->userid) g_free(m->userid);
-			g_free(m);
-		}
-	}
-	
-	/* free gcm */
-	if (gcm->chat_id) g_free(gcm->chat_id);
-	if (gcm->uid) g_free(gcm->uid);
-	if (gcm->im_str) g_free(gcm->im_str);
-	g_free(gcm);
-
-}
-
-void gfire_chat_change_motd(PurpleConnection *gc, int id, const char *topic)
-{
-	gfire_data *gfire = NULL;
-	gfire_chat *gfchat = NULL;
-	GList *t = NULL;
-	int len = 0;
-
-	if (!gc || !(gfire = (gfire_data *)gc->proto_data) || !topic) return -1;
-
-	t = gfire_find_chat(gfire->chats, (gpointer *)GINT_TO_POINTER(id), GFFC_PURPLEID);
-	if (!t || !(gfchat = (gfire_chat *)t->data)) return -1;
-
-	topic = purple_unescape_html(topic);
-	
-	if (strlen(topic) > 200) {
-		purple_notify_message(NULL, PURPLE_NOTIFY_MSG_WARNING, N_("Xfire Groupchat"), N_("Topic change failed"), N_("The topic contains more than 200 characters."), NULL, NULL);
-		return -1;
-	}
-	
-	if ((len = gfire_create_change_motd(gc, gfchat->chat_id, topic))) {
-		gfire_send(gc, gfire->buff_out, len);
-		return 1;
-	}
-
-	return -1;
-
+	guint16 len = gfire_chat_proto_create_change_motd(p_chat->chat_id, p_motd);
+	if(len > 0) gfire_send(p_chat->gc, len);
 }

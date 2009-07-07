@@ -25,12 +25,11 @@
 static GtkBuilder *gtk_builder = NULL;
 static GtkWidget *search_dialog = NULL;
 
-static void gfire_friend_search_search_cb(PurpleConnection *gc, GtkWidget *p_sender)
+static void gfire_friend_search_search_cb(gfire_data *p_gfire, GtkWidget *p_sender)
 {
-	gfire_data *gfire = (gfire_data*)gc->proto_data;
-	if(!gc || !gfire || !gtk_builder)
+	if(!p_gfire || !gtk_builder)
 	{
-		purple_debug(PURPLE_DEBUG_ERROR, "gfire", "gfire_friend_search_search_cb: GC not set and/or couldn't access gfire data or invalid GtkBuilder\n");
+		purple_debug(PURPLE_DEBUG_ERROR, "gfire", "gfire_friend_search_search_cb: Couldn't access gfire data or invalid GtkBuilder\n");
 		return;
 	}
 
@@ -41,9 +40,9 @@ static void gfire_friend_search_search_cb(PurpleConnection *gc, GtkWidget *p_sen
 	if(strlen(search_str) == 0)
 		return;
 
-	int len = gfire_create_friend_search(gc, search_str);
+	guint16 len = gfire_friend_search_proto_create_request(search_str);
 	if(len > 0)
-		gfire_send(gc, gfire->buff_out, len);
+		gfire_send(gfire_get_connection(p_gfire), len);
 
 	gtk_widget_set_sensitive(p_sender, FALSE);
 
@@ -135,7 +134,7 @@ void gfire_show_friend_search_cb(PurplePluginAction *p_action)
 	gtk_widget_show_all(search_dialog);
 }
 
-void gfire_friend_search_results(PurpleConnection *gc, GList *p_usernames, GList *p_firstnames, GList *p_lastnames)
+void gfire_friend_search_results(GList *p_usernames, GList *p_firstnames, GList *p_lastnames)
 {
 	if(!gtk_builder)
 		return;

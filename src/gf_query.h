@@ -23,6 +23,9 @@
 
 #define MINIQUERY_VERSION   "0.1.1"
 #include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 
 #ifdef _WIN32
     #include <winsock.h>
@@ -123,3 +126,4 @@ typedef struct {
 #define FREEX(X)    freex((void *)&X)
 
 int miniquery(ipdata_t *gip, int type, in_addr_t ip, u16 port);
+void ipdata_free(ipdata_t *ipdata);

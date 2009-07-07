@@ -18,7 +18,7 @@
     http://www.gnu.org/licenses/gpl-2.0.txt
 */
 
-#include "gfire.h"
+#include "gf_query.h"
 
 void freex(void **buff) {
     if(!buff || !*buff) return;
@@ -53,7 +53,7 @@ int udpsocket(void) {
 
 u8 *mychrdup(u8 *str) {
     if(!str || !str[0]) return(NULL);
-    return(strdup(str));
+	return (u8*)strdup((char*)str);
 }
 
 void *mychrdupn(u8 *str, int n) {
@@ -62,7 +62,7 @@ void *mychrdupn(u8 *str, int n) {
     if(!str || !str[0]) return(NULL);
     ret = malloc(n + 1);
     if(!ret) return(NULL);
-    strncpy(ret, str, n);
+	strncpy((char*)ret, (char*)str, n);
     ret[n] = 0;
     return(ret);
 }
@@ -83,10 +83,10 @@ void show_unicode(u8 *data, u32 size) {
 GSLIST_QUERY_PAR_T(handle_query_par) {
     u8      *p;
 
-    p = strchr(data, '_');
+	p = (u8*)strchr((char*)data, '_');
     if(p) data = p + 1;     /* "sv_" and "si_" */
 
-#define K(x)  !stricmp(data, x)
+#define K(x)  !stricmp((char*)data, x)
     if(!(skip & 2) && (
         K("hostname")   || K("name"))) {
         return(1);
@@ -152,12 +152,12 @@ GSLIST_QUERY_VAL_T(handle_query_val) {
         case  1:             ipdata->name    = mychrdup(data);      break;
         case  2:             ipdata->map     = mychrdup(data);      break;
         case  3:             ipdata->type    = mychrdup(data);      break;
-        case  4: if(data[0]) ipdata->players = atoi(data);          break;
-        case  5: if(data[0]) ipdata->max     = atoi(data);          break;
+		case  4: if(data[0]) ipdata->players = atoi((char*)data);   break;
+		case  5: if(data[0]) ipdata->max     = atoi((char*)data);   break;
         case  6:             ipdata->ver     = mychrdup(data);      break;
         case  7: if(data[0]) ipdata->pwd     = *data;               break;
         case  8: if(data[0]) ipdata->ded     = *data;               break;
-        case  9: if(data[0]) ipdata->port    = htons(atoi(data));   break;
+		case  9: if(data[0]) ipdata->port    = htons(atoi((char*)data));   break;
         case 10:             ipdata->mod     = mychrdup(data);      break;
         case 11: if(data[0]) ipdata->pb      = *data;               break;
         case 12:             ipdata->mode    = mychrdup(data);      break;
@@ -192,7 +192,7 @@ GSLIST_QUERY_T(generic_query) {
             *limit;
 
     if((gqd->type == 11) && (len < 20)) {   // Gamespy 3
-        chall = atoi(data + 5);
+		chall = atoi((char*)(data + 5));
         memcpy(minime, GS3_QUERYX, sizeof(GS3_QUERYX) - 1);
         minime[7]  = chall >> 24;
         minime[8]  = chall >> 16;
@@ -219,7 +219,7 @@ GSLIST_QUERY_T(generic_query) {
 
     extra_data = NULL;
     for(next = data; (data < limit) && next; data = next + 1, nt++) {
-        next = strchr(data, gqd->chr);
+		next = (u8*)strchr((char*)data, gqd->chr);
         if(next) *next = 0;
 
                 /* work-around for Quake games with players at end, only for -Q */
@@ -242,7 +242,7 @@ GSLIST_QUERY_T(generic_query) {
             val(data, ipbit, ipdata);
             ipbit = 0;
         } else {
-            if(!*data || !strcmp(data, "queryid") || !strcmp(data, "final")) break;
+			if(!*data || !strcmp((char*)data, "queryid") || !strcmp((char*)data, "final")) break;
             ipbit = par(data, skip);
             skip |= (1 << ipbit);
         }
@@ -262,25 +262,25 @@ GSLIST_QUERY_T(source_query) {
     if(gqd->ipdata) {
         ipdata = &gqd->ipdata[gqd->pos];
 
-        data += strlen(data) + 1;
-        ipdata->name    = mychrdup(data);               data += strlen(data) + 1;
-        ipdata->map     = mychrdup(data);               data += strlen(data) + 1;
-        ipdata->mod     = mychrdup(data);               data += strlen(data) + 1;
-        ipdata->type    = mychrdup(data);               data += strlen(data) + 1;
+		data += strlen((char*)data) + 1;
+		ipdata->name    = mychrdup(data);               data += strlen((char*)data) + 1;
+		ipdata->map     = mychrdup(data);               data += strlen((char*)data) + 1;
+		ipdata->mod     = mychrdup(data);               data += strlen((char*)data) + 1;
+		ipdata->type    = mychrdup(data);               data += strlen((char*)data) + 1;
         ipdata->players = *data++;
         ipdata->max     = *data++;
         ipdata->ver     = malloc(6);
-        sprintf(ipdata->ver, "%hu", *data++);
+		sprintf((char*)ipdata->ver, "%hu", *data++);
         ipdata->ded     = (*data++ == 'd') ? '1' : '0';
         data++;
         ipdata->pwd     = *data;
 
     } else {
-        printf("%28s %s\n",        "Address",          data);   data += strlen(data) + 1;
-        printf("%28s %s\n",        "Hostname",         data);   data += strlen(data) + 1;
-        printf("%28s %s\n",        "Map",              data);   data += strlen(data) + 1;
-        printf("%28s %s\n",        "Mod",              data);   data += strlen(data) + 1;
-        printf("%28s %s\n",        "Description",      data);   data += strlen(data) + 1;
+		printf("%28s %s\n",        "Address",          data);   data += strlen((char*)data) + 1;
+		printf("%28s %s\n",        "Hostname",         data);   data += strlen((char*)data) + 1;
+		printf("%28s %s\n",        "Map",              data);   data += strlen((char*)data) + 1;
+		printf("%28s %s\n",        "Mod",              data);   data += strlen((char*)data) + 1;
+		printf("%28s %s\n",        "Description",      data);   data += strlen((char*)data) + 1;
         printf("%28s %hhu/%hhu\n", "Players",          data[0], data[1]);  data += 2;
         printf("%28s %hhu\n",      "Version",          *data++);
         printf("%28s %c\n",        "Server type",      *data++);
@@ -380,10 +380,10 @@ GSLIST_QUERY_T(dplay8info) {
         if(gqd->ipdata) {
             ipdata->type = malloc(64);
             ipdata->type[0] = 0;
-            if(dplay8->session & 1)   strcat(ipdata->type, "client-server ");
-            if(dplay8->session & 4)   strcat(ipdata->type, "migrate_host ");
-            if(dplay8->session & 64)  strcat(ipdata->type, "no_DPN_server ");
-            if(dplay8->session & 128) strcat(ipdata->type, "password ");
+			if(dplay8->session & 1)   strcat((char*)ipdata->type, "client-server ");
+			if(dplay8->session & 4)   strcat((char*)ipdata->type, "migrate_host ");
+			if(dplay8->session & 64)  strcat((char*)ipdata->type, "no_DPN_server ");
+			if(dplay8->session & 128) strcat((char*)ipdata->type, "password ");
         } else {
             printf("\nSession options:     ");
             if(dplay8->session & 1)   printf("client-server ");
@@ -480,14 +480,14 @@ GSLIST_QUERY_T(ase_query) {
         if(gqd->ipdata) {
             switch(num) {
                 case 0: ipdata->type    = mychrdupn(data + 1, *data - 1);   break;
-                case 1: ipdata->port    = atoi(data + 1);                   break;
+				case 1: ipdata->port    = atoi((char*)(data + 1));          break;
                 case 2: ipdata->name    = mychrdupn(data + 1, *data - 1);   break;
                 case 3: ipdata->mode    = mychrdupn(data + 1, *data - 1);   break;
                 case 4: ipdata->map     = mychrdupn(data + 1, *data - 1);   break;
                 case 5: ipdata->ver     = mychrdupn(data + 1, *data - 1);   break;
-                case 6: ipdata->pwd     = atoi(data + 1);                   break;
-                case 7: ipdata->players = atoi(data + 1);                   break;
-                case 8: ipdata->max     = atoi(data + 1);                   break;
+				case 6: ipdata->pwd     = atoi((char*)(data + 1));          break;
+				case 7: ipdata->players = atoi((char*)(data + 1));          break;
+				case 8: ipdata->max     = atoi((char*)(data + 1));          break;
                 default: break;
             }
 
@@ -531,8 +531,8 @@ u8 *switch_type_query(int type, int *querylen, generic_query_data_t *gqd, GSLIST
     if(gqd) memset(gqd, 0, sizeof(generic_query_data_t));
 
 #define ASSIGN(t,x,y,n,c,f,r,z) {                           \
-            msg   = x;                                      \
-            query = y;                                      \
+			msg   = (u8*)x;                                      \
+			query = (u8*)y;                                      \
             if(querylen) *querylen  = sizeof(y) - 1;        \
             if(gqd) {                                       \
                 memset(gqd, 0, sizeof(generic_query_data_t)); \
