@@ -1053,7 +1053,6 @@ GList *gfire_clan_get_existing()
 			gfire_clan *clan = gfire_clan_create(purple_blist_node_get_int(group_node, "clanid"), NULL, NULL, FALSE);
 			if(clan)
 			{
-				purple_debug_error("gfire", "pre-added clan %s\n", purple_group_get_name((PurpleGroup*)group_node));
 				gfire_clan_set_prpl_group(clan, (PurpleGroup*)group_node);
 				ret = g_list_append(ret, clan);
 			}
