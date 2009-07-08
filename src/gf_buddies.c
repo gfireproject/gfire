@@ -26,6 +26,34 @@
 #include "gf_buddies_proto.h"
 #include "gf_buddies.h"
 
+static im_sent *gfire_im_sent_create(guint32 p_imindex, const gchar *p_msg)
+{
+	im_sent *ret = g_malloc0(sizeof(im_sent));
+	if(!ret)
+		return NULL;
+
+	ret->imindex = p_imindex;
+	if(p_msg)
+		ret->msg = g_strdup(p_msg);
+	else
+		ret->msg = g_strdup("");
+
+	GTimeVal gtv;
+	g_get_current_time(&gtv);
+	ret->time = gtv.tv_sec;
+
+	return ret;
+}
+
+static void gfire_im_sent_free(im_sent *p_data)
+{
+	if(!p_data)
+		return;
+
+	if(p_data->msg) g_free(p_data->msg);
+	g_free(p_data);
+}
+
 static gfire_buddy_clan_data *gfire_buddy_clan_data_create(gfire_clan *p_clan, const gchar *p_alias, gboolean p_default)
 {
 	if(!p_clan)
@@ -91,6 +119,9 @@ gfire_buddy *gfire_buddy_create(guint32 p_userid, const gchar *p_name, const gch
 		goto error;
 	}
 
+	ret->lost_ims_timer = g_timeout_add(XFIRE_SEND_ACK_TIMEOUT * 1000, (GSourceFunc)gfire_buddy_check_pending_ims_cb, ret);
+	ret->status = PURPLE_STATUS_AVAILABLE;
+
 	gfire_buddy_set_alias(ret, p_alias);
 
 	return ret;
@@ -105,8 +136,10 @@ void gfire_buddy_free(gfire_buddy *p_buddy)
 	if(!p_buddy)
 		return;
 
+	g_source_remove(p_buddy->lost_ims_timer);
+
 	if(p_buddy->alias) g_free(p_buddy->alias);
-	if(p_buddy->away_msg) g_free(p_buddy->away_msg);
+	if(p_buddy->status_msg) g_free(p_buddy->status_msg);
 	if(p_buddy->name) g_free(p_buddy->name);
 	if(p_buddy->sid) g_free(p_buddy->sid);
 
@@ -114,7 +147,15 @@ void gfire_buddy_free(gfire_buddy *p_buddy)
 	for(; cur_clan_data; cur_clan_data = g_list_next(cur_clan_data))
 		gfire_buddy_clan_data_free((gfire_buddy_clan_data*)cur_clan_data->data);
 
+	GList *cur_pim_data = p_buddy->pending_ims;
+	for(; cur_pim_data; cur_pim_data = g_list_next(cur_pim_data))
+		gfire_im_sent_free((im_sent*)cur_pim_data->data);
+
+	if(p_buddy->common_buddies)
+		gfire_list_clear(p_buddy->common_buddies);
+
 	g_list_free(p_buddy->clan_data);
+	g_list_free(p_buddy->pending_ims);
 
 	g_free(p_buddy);
 }
@@ -156,6 +197,8 @@ void gfire_buddy_send(gfire_buddy *p_buddy, const gchar *p_msg)
 		return;
 
 	p_buddy->im++;
+
+	p_buddy->pending_ims = g_list_append(p_buddy->pending_ims, gfire_im_sent_create(p_buddy->im, p_msg));
 
 	/* in 2.0 the gtkimhtml stuff started escaping special chars: '&' is now "&amp";
 	   XFire native clients don't handle it. */
@@ -205,6 +248,70 @@ void gfire_buddy_got_typing(const gfire_buddy *p_buddy, gboolean p_typing)
 	purple_debug_info("gfire", "%s %s.\n", gfire_buddy_get_name(p_buddy), p_typing ? "is now typing" : "stopped typing");
 
 	serv_got_typing(p_buddy->gc, gfire_buddy_get_name(p_buddy), XFIRE_SEND_TYPING_TIMEOUT, p_typing ? PURPLE_TYPING : PURPLE_NOT_TYPING);
+}
+
+void gfire_buddy_got_im_ack(gfire_buddy *p_buddy, guint32 p_imindex)
+{
+	if(!p_buddy)
+		return;
+
+	GList *cur = p_buddy->pending_ims;
+	while(cur)
+	{
+		im_sent *ims = cur->data;
+		if(!ims)
+		{
+			cur = g_list_next(cur);
+			continue;
+		}
+
+		if(ims->imindex == p_imindex)
+		{
+			gfire_im_sent_free(ims);
+			p_buddy->pending_ims = g_list_delete_link(p_buddy->pending_ims, cur);
+
+			return;
+		}
+
+		cur = g_list_next(cur);
+	}
+}
+
+gboolean gfire_buddy_check_pending_ims_cb(gfire_buddy *p_buddy)
+{
+	if(!p_buddy)
+		return FALSE;
+
+	GTimeVal gtv;
+	g_get_current_time(&gtv);
+
+	GList *cur = p_buddy->pending_ims;
+	while(cur)
+	{
+		im_sent *ims = cur->data;
+		if(!ims)
+		{
+			cur = g_list_next(cur);
+			continue;
+		}
+
+		if(gtv.tv_sec - ims->time > XFIRE_SEND_ACK_TIMEOUT)
+		{
+			gchar *warn = g_strdup_printf("%s may have not received this message:\n%s", gfire_buddy_get_alias(p_buddy), ims->msg);
+			gchar *escaped = gfire_escape_html(warn);
+			g_free(warn);
+			purple_conv_present_error(gfire_buddy_get_name(p_buddy), purple_buddy_get_account(p_buddy->prpl_buddy), escaped);
+			g_free(escaped);
+
+			gfire_im_sent_free(ims);
+			p_buddy->pending_ims = g_list_delete_link(p_buddy->pending_ims, cur);
+			cur = p_buddy->pending_ims;
+		}
+
+		cur = g_list_next(cur);
+	}
+
+	return TRUE;
 }
 
 static gfire_buddy_clan_data *gfire_buddy_get_default_clan_data(gfire_buddy *p_buddy)
@@ -314,12 +421,7 @@ static void gfire_buddy_update_status(gfire_buddy *p_buddy)
 		return;
 
 	if(gfire_buddy_is_online(p_buddy))
-	{
-		if(p_buddy->away)
-			purple_prpl_got_user_status(purple_buddy_get_account(p_buddy->prpl_buddy), gfire_buddy_get_name(p_buddy), "away", NULL);
-		else
-			purple_prpl_got_user_status(purple_buddy_get_account(p_buddy->prpl_buddy), gfire_buddy_get_name(p_buddy), "available", NULL);
-	}
+		purple_prpl_got_user_status(purple_buddy_get_account(p_buddy->prpl_buddy), gfire_buddy_get_name(p_buddy), purple_primitive_get_id_from_type(p_buddy->status), "message", gfire_buddy_get_status_text(p_buddy), NULL);
 	else
 		purple_prpl_got_user_status(purple_buddy_get_account(p_buddy->prpl_buddy), gfire_buddy_get_name(p_buddy), "offline", NULL);
 }
@@ -345,12 +447,13 @@ void gfire_buddy_set_session_id(gfire_buddy *p_buddy, const guint8 *p_sessionid)
 		memset(&p_buddy->voip_data, 0, sizeof(gfire_game_data));
 
 		// Reset status
-		p_buddy->away = FALSE;
-		if(p_buddy->away_msg) g_free(p_buddy->away_msg);
-		p_buddy->away_msg = NULL;
+		if(p_buddy->status_msg) g_free(p_buddy->status_msg);
+		p_buddy->status_msg = NULL;
 	}
 	else
 	{
+		p_buddy->status = PURPLE_STATUS_AVAILABLE;
+
 		purple_debug_misc("gfire", "requesting advanced info for %s\n", gfire_buddy_get_name(p_buddy));
 		// Request advanced infoview
 		guint16 len = gfire_buddy_proto_create_advanced_info_request(p_buddy->userid);
@@ -426,12 +529,28 @@ const gfire_game_data *gfire_buddy_get_voip_data(const gfire_buddy *p_buddy)
 	return &p_buddy->voip_data;
 }
 
+gboolean gfire_buddy_is_available(const gfire_buddy *p_buddy)
+{
+	if(!p_buddy)
+		return FALSE;
+
+	return p_buddy->status == PURPLE_STATUS_AVAILABLE;
+}
+
 gboolean gfire_buddy_is_away(const gfire_buddy *p_buddy)
 {
 	if(!p_buddy)
 		return FALSE;
 
-	return p_buddy->away;
+	return p_buddy->status == PURPLE_STATUS_AWAY;
+}
+
+gboolean gfire_buddy_is_busy(const gfire_buddy *p_buddy)
+{
+	if(!p_buddy)
+		return FALSE;
+
+	return p_buddy->status == PURPLE_STATUS_UNAVAILABLE;
 }
 
 gboolean gfire_buddy_is_online(const gfire_buddy *p_buddy)
@@ -506,18 +625,36 @@ const gchar *gfire_buddy_get_name(const gfire_buddy *p_buddy)
 	return p_buddy->name;
 }
 
-void gfire_buddy_set_status(gfire_buddy *p_buddy, gboolean p_away, const gchar *p_text)
+void gfire_buddy_set_status(gfire_buddy *p_buddy, const gchar *p_status_msg)
 {
 	if(!p_buddy)
 		return;
 
-	p_buddy->away = p_away;
-
-	if(p_buddy->away_msg) g_free(p_buddy->away_msg);
-	if(p_text)
-		p_buddy->away_msg = g_strdup(p_text);
+	if(p_buddy->status_msg) g_free(p_buddy->status_msg);
+	if(p_status_msg)
+	{
+		p_buddy->status_msg = g_strdup(p_status_msg);
+		if((strncmp(p_status_msg, "(AFK) ", 6) == 0) || (strncmp(p_status_msg, "(ABS) ", 6) == 0))
+		{
+			p_buddy->status = PURPLE_STATUS_AWAY;
+			p_buddy->status_msg = g_strdup(p_status_msg + 6);
+		}
+		else if(strncmp(p_status_msg, "(Busy) ", 7) == 0)
+		{
+			p_buddy->status = PURPLE_STATUS_UNAVAILABLE;
+			p_buddy->status_msg = g_strdup(p_status_msg + 7);
+		}
+		else
+		{
+			p_buddy->status = PURPLE_STATUS_AVAILABLE;
+			p_buddy->status_msg = g_strdup(p_status_msg);
+		}
+	}
 	else
-		p_buddy->away_msg = NULL;
+	{
+		p_buddy->status = PURPLE_STATUS_AVAILABLE;
+		p_buddy->status_msg = NULL;
+	}
 
 	gfire_buddy_update_status(p_buddy);
 }
@@ -527,12 +664,17 @@ gchar *gfire_buddy_get_status_text(const gfire_buddy *p_buddy)
 	if(!p_buddy)
 		return NULL;
 
-	if(gfire_buddy_is_away(p_buddy) && p_buddy->away_msg)
-		return g_strdup(p_buddy->away_msg);
-	else if(p_buddy->game_data.id != 0)
+	if(gfire_buddy_is_playing(p_buddy))
 		return g_strdup_printf(N_("Playing %s"), gfire_game_name(p_buddy->game_data.id));
+	else if(p_buddy->status_msg)
+		return g_strdup(p_buddy->status_msg);
 	else
 		return NULL;
+}
+
+const gchar *gfire_buddy_get_status_name(const gfire_buddy *p_buddy)
+{
+	return purple_primitive_get_name_from_type(p_buddy->status);
 }
 
 void gfire_buddy_set_avatar(gfire_buddy *p_buddy, guchar *p_data, guint32 p_len)
@@ -689,8 +831,8 @@ void gfire_buddy_make_friend(gfire_buddy *p_buddy, PurpleGroup *p_group)
 
 	p_buddy->type = GFBT_FRIEND;
 
-	// Move the buddy to the selected group if he/she is in a clan group
-	if(p_buddy->prpl_buddy && purple_blist_node_get_bool((PurpleBlistNode*)p_buddy->prpl_buddy, "clanmember"))
+	// Move the buddy to the selected group
+	if(p_buddy->prpl_buddy)
 	{
 		if(!p_group)
 		{
@@ -702,7 +844,37 @@ void gfire_buddy_make_friend(gfire_buddy *p_buddy, PurpleGroup *p_group)
 			}
 		}
 		purple_blist_add_buddy(p_buddy->prpl_buddy, NULL, p_group, NULL);
+		purple_blist_node_remove_setting((PurpleBlistNode*)p_buddy->prpl_buddy, "clanmember");
+		purple_blist_node_set_flags((PurpleBlistNode*)p_buddy->prpl_buddy, 0);
 	}
+}
+
+void gfire_buddy_set_common_buddies(gfire_buddy *p_buddy, GList *p_buddies)
+{
+	if(!p_buddy || !gfire_buddy_is_friend_of_friend(p_buddy))
+		return;
+
+	if(p_buddy->common_buddies) gfire_list_clear(p_buddy->common_buddies);
+	p_buddy->common_buddies = p_buddies;
+}
+
+gchar *gfire_buddy_get_common_buddies_str(const gfire_buddy *p_buddy)
+{
+	if(!p_buddy || !gfire_buddy_is_friend_of_friend(p_buddy) || !p_buddy->common_buddies)
+		return NULL;
+
+	GString *str = g_string_new("");
+
+	GList *cur = p_buddy->common_buddies;
+	for(; cur; cur = g_list_next(cur))
+	{
+		if(cur != p_buddy->common_buddies)
+			g_string_append_printf(str, ", %s", (gchar*)cur->data);
+		else
+			g_string_append(str, (gchar*)cur->data);
+	}
+
+	return g_string_free(str, FALSE);
 }
 
 static void gfire_clan_create_group(gfire_clan *p_clan)

@@ -205,9 +205,7 @@ void gfire_parse_packet(gfire_data *p_gfire, guint16 p_packet_len, guint16 p_pac
 			/* load game xml from user dir; these don't need to work unless we are connected */
 			gfire_game_load_games_xml();
 			gfire_game_load_launch_xml();
-			#ifdef IS_NOT_WINDOWS
 			p_gfire->det_source = g_timeout_add(5000, (GSourceFunc)gfire_detect_running_processes_cb, p_gfire);
-			#endif
 		break;
 
 		case 131:
@@ -265,6 +263,7 @@ void gfire_parse_packet(gfire_data *p_gfire, guint16 p_packet_len, guint16 p_pac
 		break;
 
 		case 143:
+			purple_debug(PURPLE_DEBUG_MISC, "gfire", "Received friends search result\n");
 			gfire_friend_search_proto_result(p_gfire, p_packet_len);
 		break;
 
@@ -311,6 +310,11 @@ void gfire_parse_packet(gfire_data *p_gfire, guint16 p_packet_len, guint16 p_pac
 		case 161:
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received buddy nick change packet\n");
 			gfire_buddy_proto_alias_change(p_gfire, p_packet_len);
+		break;
+
+		case 169:
+			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received system broadcast\n");
+			gfire_proto_system_broadcast(p_gfire, p_packet_len);
 		break;
 
 		case 174:

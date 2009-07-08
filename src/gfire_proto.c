@@ -291,7 +291,10 @@ void gfire_proto_buddy_list(gfire_data *p_gfire, guint16 p_packet_len)
 				gfire_add_buddy(p_gfire, gf_buddy, NULL);
 		}
 		else if(!gfire_buddy_is_friend(gf_buddy))
+		{
 			gfire_buddy_make_friend(gf_buddy, NULL);
+			gfire_buddy_set_alias(gf_buddy, (gchar*)n->data);
+		}
 
 		g_free(f->data);
 		g_free(u->data);
@@ -601,4 +604,29 @@ void gfire_proto_clan_blist(gfire_data *p_gfire, gint16 p_packet_len)
 	g_list_free(userids);
 	g_list_free(names);
 	g_list_free(aliases);
+}
+
+void gfire_proto_system_broadcast(gfire_data *p_gfire, gint16 p_packet_len)
+{
+	if(!p_gfire)
+		return;
+
+	guint32 offset = XFIRE_HEADER_LEN;
+
+	guint32 unknown = 0;
+	gchar *msg = NULL;
+
+	offset = gfire_proto_read_attr_int32_bs(p_gfire->buff_in, &unknown, 0x34, offset);
+	if(offset == -1)
+		return;
+
+	offset = gfire_proto_read_attr_string_bs(p_gfire->buff_in, &msg, 0x2E, offset);
+	if(offset == -1 || !msg)
+		return;
+
+	gchar *escaped = gfire_escape_html(msg);
+	purple_notify_info(gfire_get_connection(p_gfire), N_("Xfire System Broadcast"), N_("Xfire System Broadcast Message:"), escaped);
+	g_free(escaped);
+
+	g_free(msg);
 }

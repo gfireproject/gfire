@@ -347,6 +347,7 @@ static guint32 gfire_proto_read_list_value(const guint8 *p_buff, GList **p_dest,
 	for(; i < element_count; i++)
 	{
 		list_type_pointers data;
+		memset(&data, 0, sizeof(list_type_pointers));
 		switch(element_type)
 		{
 			case 0x01:

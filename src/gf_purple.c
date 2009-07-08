@@ -81,9 +81,12 @@ static gchar *gfire_purple_status_text(PurpleBuddy *p_buddy)
 
 	p = purple_buddy_get_presence(p_buddy);
 
-	if (purple_presence_is_online(p))
+	if(purple_presence_is_online(p))
 	{
 		gchar *status = gfire_buddy_get_status_text(gf_buddy);
+		if(!status)
+			return NULL;
+
 		gchar *escaped = gfire_escape_html(status);
 		g_free(status);
 
@@ -147,16 +150,29 @@ static void gfire_purple_blist_tooltip_text(PurpleBuddy *p_buddy, PurpleNotifyUs
 			if(voip_name) g_free(voip_name);
 		}
 
-		// Away status
-		if(gfire_buddy_is_away(gf_buddy))
+		// Status
+		gchar *status_msg = gfire_buddy_get_status_text(gf_buddy);
+		if(status_msg && !gfire_buddy_is_playing(gf_buddy))
 		{
-			gchar *msg = gfire_buddy_get_status_text(gf_buddy);
-			gchar *escaped_away = gfire_escape_html(msg);
-			g_free(msg);
+			gchar *tmp = gfire_escape_html(status_msg);
+			g_free(status_msg);
+			purple_notify_user_info_add_pair(p_user_info, gfire_buddy_get_status_name(gf_buddy), tmp);
+			if(tmp) g_free(tmp);
+		}
+		else
+			purple_notify_user_info_add_pair(p_user_info, N_("Status"), gfire_buddy_get_status_name(gf_buddy));
 
-			purple_notify_user_info_add_pair(p_user_info, N_("Away"), escaped_away);
-
-			g_free(escaped_away);
+		// FoF common friends
+		if(gfire_buddy_is_friend_of_friend(gf_buddy))
+		{
+			gchar *common_friends = gfire_buddy_get_common_buddies_str(gf_buddy);
+			if(common_friends)
+			{
+				gchar *escaped_cf = gfire_escape_html(common_friends);
+				g_free(common_friends);
+				purple_notify_user_info_add_pair(p_user_info, N_("Common Friends"), escaped_cf);
+				g_free(escaped_cf);
+			}
 		}
 	}
 }
@@ -168,11 +184,20 @@ static GList *gfire_purple_status_types(PurpleAccount *p_account)
 	PurpleStatusType *type;
 	GList *types = NULL;
 
-	type = purple_status_type_new(PURPLE_STATUS_AVAILABLE, NULL, NULL, TRUE);
+	type = purple_status_type_new_with_attrs(
+		PURPLE_STATUS_AVAILABLE, NULL, NULL, TRUE, TRUE, FALSE,
+		"message", "Message", purple_value_new(PURPLE_TYPE_STRING),
+		NULL);
 	types = g_list_append(types, type);
 
 	type = purple_status_type_new_with_attrs(
-		PURPLE_STATUS_AWAY, NULL, NULL, FALSE, TRUE, FALSE,
+		PURPLE_STATUS_AWAY, NULL, NULL, TRUE, TRUE, FALSE,
+		"message", "Message", purple_value_new(PURPLE_TYPE_STRING),
+		NULL);
+	types = g_list_append(types, type);
+
+	type = purple_status_type_new_with_attrs(
+		PURPLE_STATUS_UNAVAILABLE, NULL, NULL, TRUE, TRUE, FALSE,
 		"message", "Message", purple_value_new(PURPLE_TYPE_STRING),
 		NULL);
 	types = g_list_append(types, type);
@@ -281,8 +306,6 @@ static void gfire_purple_set_status(PurpleAccount *p_account, PurpleStatus *p_st
 	PurpleConnection *gc = NULL;
 	gfire_data *gfire = NULL;
 
-	const gchar *msg = NULL;
-
 	if (!purple_status_is_active(p_status))
 		return;
 
@@ -293,15 +316,7 @@ static void gfire_purple_set_status(PurpleAccount *p_account, PurpleStatus *p_st
 		NN(purple_status_get_name(p_status)),
 		NN(purple_status_get_id(p_status)));
 
-	msg = purple_status_get_attr_string(p_status, "message");
-	if(((msg == NULL) || (strlen(msg) == 0)) && !purple_status_is_available(p_status))
-		gfire_set_status_text(gfire, "(AFK) Away From Keyboard");
-	else
-	{
-		gchar *unescaped = purple_unescape_html(msg);
-		gfire_set_status_text(gfire, unescaped);
-		g_free(unescaped);
-	}
+	gfire_set_status(gfire, p_status);
 }
 
 

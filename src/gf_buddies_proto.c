@@ -401,14 +401,10 @@ void gfire_buddy_proto_status_msg(gfire_data *p_gfire, guint16 p_packet_len)
 			continue;
 		}
 
-		if(strlen((gchar*)m->data) == 0)
-			gfire_buddy_set_status(gf_buddy, FALSE, NULL);
-		else
-			gfire_buddy_set_status(gf_buddy, TRUE, (gchar*)m->data);
+		gfire_buddy_set_status(gf_buddy, (gchar*)m->data);
 
-		purple_debug(PURPLE_DEBUG_INFO, "gfire", "%s, is %s with msg \"%s\"\n",
-					 gfire_buddy_get_name(gf_buddy), gfire_buddy_is_away(gf_buddy) ? "away" : "back",
-					 gfire_buddy_get_status_text(gf_buddy) ? gfire_buddy_get_status_text(gf_buddy) : "");
+		purple_debug(PURPLE_DEBUG_INFO, "gfire", "%s's status set to \"%s\"\n",
+					 gfire_buddy_get_name(gf_buddy), (gchar*)m->data);
 
 		g_free(s->data);
 		g_free(m->data);
@@ -550,6 +546,13 @@ void gfire_buddy_proto_im(gfire_data *p_gfire, guint16 p_packet_len)
 		case 1:
 			// got an ack packet from a previous IM sent
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "IM ack packet received.\n");
+
+			// IM index ("imindex")
+			offset = gfire_proto_read_attr_int32_ss(p_gfire->buff_in, &imindex, "imindex", offset);
+			if(offset == -1)
+				return;
+
+			gfire_buddy_got_im_ack(gf_buddy, imindex);
 		break;
 		// P2P Info
 		case 2:
@@ -584,7 +587,8 @@ void gfire_buddy_proto_fof_list(gfire_data *p_gfire, guint16 p_packet_len)
 	GList *fofs = NULL;
 	GList *names = NULL;
 	GList *nicks = NULL;
-	GList *f, *na, *n, *s;
+	GList *common = NULL;
+	GList *f, *na, *n, *s, *c;
 
 	offset = XFIRE_HEADER_LEN;
 
@@ -619,10 +623,22 @@ void gfire_buddy_proto_fof_list(gfire_data *p_gfire, guint16 p_packet_len)
 		return;
 	}
 
+	offset = gfire_proto_read_attr_list_ss(p_gfire->buff_in, &common, "friends", offset);
+	// Parsing error -> free other lists and skip further handling
+	if(offset == -1 || !common)
+	{
+		gfire_list_clear(fofsid);
+		gfire_list_clear(fofs);
+		gfire_list_clear(names);
+		gfire_list_clear(nicks);
+		return;
+	}
+
 	s = fofsid;
 	f = fofs;
 	na = names;
 	n = nicks;
+	c = common;
 
 	for(; s; s = g_list_next(s))
 	{
@@ -633,10 +649,12 @@ void gfire_buddy_proto_fof_list(gfire_data *p_gfire, guint16 p_packet_len)
 			g_free(f->data);
 			g_free(na->data);
 			g_free(n->data);
+			gfire_list_clear(c->data);
 
 			f = g_list_next(f);
 			na = g_list_next(na);
 			n = g_list_next(n);
+			c = g_list_next(c);
 
 			continue;
 		}
@@ -650,7 +668,20 @@ void gfire_buddy_proto_fof_list(gfire_data *p_gfire, guint16 p_packet_len)
 				gfire_add_buddy(p_gfire, gf_buddy, NULL);
 				gfire_buddy_set_session_id(gf_buddy, (guint8*)s->data);
 
-				GList *cur = gfire_fof_data;
+				GList *common_names = NULL;
+				GList *cur = c->data;
+				for(; cur; cur = g_list_next(cur))
+				{
+					gfire_buddy *common_buddy = gfire_find_buddy(p_gfire, cur->data, GFFB_USERID);
+					if(common_buddy)
+						common_names = g_list_append(common_names, g_strdup(gfire_buddy_get_name(common_buddy)));
+
+					g_free(cur->data);
+				}
+
+				gfire_buddy_set_common_buddies(gf_buddy, common_names);
+
+				cur = gfire_fof_data;
 				for(; cur; cur = g_list_next(cur))
 				{
 					if(memcmp(((fof_game_data*)cur->data)->sid, s->data, XFIRE_SID_LEN) == 0)
@@ -667,14 +698,17 @@ void gfire_buddy_proto_fof_list(gfire_data *p_gfire, guint16 p_packet_len)
 		g_free(f->data);
 		g_free(na->data);
 		g_free(n->data);
+		g_list_free(c->data);
 
 		f = g_list_next(f);
 		na = g_list_next(na);
 		n = g_list_next(n);
+		c = g_list_next(c);
 	}
 
 	g_list_free(fofsid);
 	g_list_free(fofs);
 	g_list_free(nicks);
 	g_list_free(names);
+	g_list_free(common);
 }

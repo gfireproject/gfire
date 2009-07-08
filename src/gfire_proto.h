@@ -53,5 +53,6 @@ void gfire_proto_invitation(gfire_data *p_gfire, guint16 p_packet_len);
 void gfire_proto_clan_leave(gfire_data *p_gfire, guint16 p_packet_len);
 void gfire_proto_clan_list(gfire_data *p_gfire, guint16 p_packet_len);
 void gfire_proto_clan_blist(gfire_data *p_gfire, gint16 p_packet_len);
+void gfire_proto_system_broadcast(gfire_data *p_gfire, gint16 p_packet_len);
 
 #endif // _GFIRE_PROTO_H

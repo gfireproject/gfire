@@ -66,6 +66,8 @@ void gfire_free(gfire_data *p_gfire)
 	if(!p_gfire)
 		return;
 
+	g_source_remove(p_gfire->det_source);
+
 	if(p_gfire->sid) g_free(p_gfire->sid);
 	if(p_gfire->server_mutex) g_mutex_free(p_gfire->server_mutex);
 	if(p_gfire->buff_in) g_free(p_gfire->buff_in);
@@ -328,17 +330,44 @@ void gfire_authenticate(gfire_data *p_gfire, const gchar *p_salt)
 	purple_connection_update_progress(gfire_get_connection(p_gfire), N_("Login sent"), 2, XFIRE_CONNECT_STEPS);
 }
 
-void gfire_set_status_text(gfire_data *p_gfire, const gchar *p_status)
+void gfire_set_status(gfire_data *p_gfire, const PurpleStatus *p_status)
 {
-	if(!p_gfire)
+	if(!p_gfire || !p_status)
 		return;
 
-	if(!p_status)
-		p_status = "";
+	gchar *msg = purple_unescape_html(purple_status_get_attr_string(p_status, "message"));
+	gchar *status = NULL;
+	switch(purple_status_type_get_primitive(purple_status_get_type(p_status)))
+	{
+		case PURPLE_STATUS_AVAILABLE:
+			if(msg)
+				status = g_strdup(msg);
+			else
+				status = g_strdup("");
+		break;
+		case PURPLE_STATUS_AWAY:
+			if(msg && strlen(msg) > 0)
+				status = g_strdup_printf("(AFK) %s", msg);
+			else
+				status = g_strdup("(AFK) Away From Keyboard");
+		break;
+		case PURPLE_STATUS_UNAVAILABLE:
+			if(msg && strlen(msg) > 0)
+				status = g_strdup_printf("(Busy) %s", msg);
+			else
+				status = g_strdup(N_("(Busy) I'm busy!"));
+		break;
+		default:
+			return;
+	}
 
-	purple_debug(PURPLE_DEBUG_INFO, "gfire", "Setting status message to \"%s\"\n", p_status);
-	guint16 len = gfire_proto_create_status_text(p_status);
+	g_free(msg);
+
+	purple_debug(PURPLE_DEBUG_INFO, "gfire", "Setting status message to \"%s\"\n", status);
+	guint16 len = gfire_proto_create_status_text(status);
 	if(len > 0) gfire_send(gfire_get_connection(p_gfire), len);
+
+	g_free(status);
 }
 
 gboolean gfire_is_self(const gfire_data *p_gfire, guint32 p_userid)
@@ -849,24 +878,27 @@ void gfire_show_buddy_info(gfire_data *p_gfire, const gchar *p_name)
 	gf_buddy = gfire_find_buddy(p_gfire, p_name, GFFB_NAME);
 	if(!gf_buddy) return;
 
-	gchar *status = gfire_buddy_get_status_text(gf_buddy);
-	if(!status)
-	{
-		if (purple_presence_is_online(p) == TRUE)
-			status = g_strdup(N_("Available"));
-		else
-			status = g_strdup(N_("Offline"));
-	}
-
 	// Nickname
 	gchar *tmp = gfire_escape_html(gfire_buddy_get_alias(gf_buddy));
 	purple_notify_user_info_add_pair(user_info, N_("Nickname"), tmp);
 	if(tmp) g_free(tmp);
 
 	// Status
-	tmp = gfire_escape_html(status);
-	purple_notify_user_info_add_pair(user_info, N_("Status"), tmp);
-	if(tmp) g_free(tmp);
+	if (purple_presence_is_online(p) == TRUE)
+	{
+		gchar *status_msg = gfire_buddy_get_status_text(gf_buddy);
+		if(status_msg && !gfire_buddy_is_playing(gf_buddy))
+		{
+			tmp = gfire_escape_html(status_msg);
+			g_free(status_msg);
+			purple_notify_user_info_add_pair(user_info, gfire_buddy_get_status_name(gf_buddy), tmp);
+			if(tmp) g_free(tmp);
+		}
+		else
+			purple_notify_user_info_add_pair(user_info, N_("Status"), gfire_buddy_get_status_name(gf_buddy));
+	}
+	else
+		purple_notify_user_info_add_pair(user_info, N_("Status"), N_("Offline"));
 
 	/*if ((0 != gf_buddy->gameid) && (gf_buddy->away))
 		purple_notify_user_info_add_pair(user_info, N_("Away"), gfire_escape_html(gf_buddy->away_msg));*/
@@ -905,6 +937,19 @@ void gfire_show_buddy_info(gfire_data *p_gfire, const gchar *p_name)
 			purple_notify_user_info_add_pair(user_info, NN(voip_name), N_("unknown"));
 
 		if(voip_name) g_free(voip_name);
+	}
+
+	// FoF common friends
+	if(gfire_buddy_is_friend_of_friend(gf_buddy))
+	{
+		gchar *common_friends = gfire_buddy_get_common_buddies_str(gf_buddy);
+		if(common_friends)
+		{
+			gchar *escaped_cf = gfire_escape_html(common_friends);
+			g_free(common_friends);
+			purple_notify_user_info_add_pair(user_info, N_("Common Friends"), escaped_cf);
+			g_free(escaped_cf);
+		}
 	}
 
 	download_args = g_malloc0(sizeof(get_info_callback_args));

@@ -164,7 +164,7 @@ void gfire_set_alias(gfire_data *p_gfire, const gchar* p_alias); // Local
 void gfire_set_nick(gfire_data *p_gfire, const gchar *p_nick); // Remote
 
 // Status handling
-void gfire_set_status_text(gfire_data *p_gfire, const gchar *p_status);
+void gfire_set_status(gfire_data *p_gfire, const PurpleStatus *p_status);
 
 // Identification
 gboolean gfire_is_self(const gfire_data *p_gfire, guint32 p_userid);

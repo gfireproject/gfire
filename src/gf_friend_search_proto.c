@@ -74,5 +74,5 @@ void gfire_friend_search_proto_result(gfire_data *p_gfire, guint16 p_packet_len)
 		return;
 	}
 
-	gfire_friend_search_results(usernames, firstnames, lastnames);
+	gfire_friend_search_results(p_gfire, usernames, firstnames, lastnames);
 }

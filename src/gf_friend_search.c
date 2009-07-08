@@ -24,74 +24,34 @@
 
 #include "gf_friend_search.h"
 
-static GtkBuilder *gtk_builder = NULL;
-static GtkWidget *search_dialog = NULL;
-
-static void gfire_friend_search_search_cb(PurpleConnection *p_gc, GtkWidget *p_sender)
+static void gfire_friend_search_search_cb(PurpleConnection *p_gc, gchar *p_search_str)
 {
-	if(!p_gc || !gtk_builder)
+	if(!p_gc || !p_search_str)
 	{
-		purple_debug(PURPLE_DEBUG_ERROR, "gfire", "gfire_friend_search_search_cb: Invalid GC or invalid GtkBuilder\n");
+		purple_debug(PURPLE_DEBUG_ERROR, "gfire", "gfire_friend_search_search_cb: Invalid GC or invalid search string\n");
 		return;
 	}
 
-	GtkWidget *search_entry = GTK_WIDGET(gtk_builder_get_object(gtk_builder, "search_entry"));
-
-	const gchar *search_str = gtk_entry_get_text(GTK_ENTRY(search_entry));
-
-	if(strlen(search_str) == 0)
+	if(strlen(p_search_str) == 0)
 		return;
 
-	guint16 len = gfire_friend_search_proto_create_request(search_str);
+	guint16 len = gfire_friend_search_proto_create_request(p_search_str);
 	if(len > 0)
 		gfire_send(p_gc, len);
-
-	gtk_widget_set_sensitive(p_sender, FALSE);
 
 	return;
 }
 
-static void gfire_friend_search_selchange_cb(GtkTreeSelection *p_selection, void *p_unused)
+static void gfire_friend_search_add_cb(PurpleConnection *p_gc, GList *p_row, gpointer p_user_data)
 {
-	GtkTreeModel *model = NULL;
-	GtkTreeIter iter;
-
-	GtkWidget *add_button = GTK_WIDGET(gtk_builder_get_object(gtk_builder, "add_button"));
-	if(!add_button)
+	if(!p_gc || !p_row)
 		return;
 
-	if(gtk_tree_selection_get_selected(p_selection, &model, &iter))
-		gtk_widget_set_sensitive(add_button, TRUE);
-	else
-		gtk_widget_set_sensitive(add_button, FALSE);
-}
-
-static void gfire_friend_search_add_cb(PurpleConnection *p_gc, GtkWidget *p_sender)
-{
-	GtkTreeSelection *selection = NULL;
-	GtkTreeModel *model = NULL;
-	GtkTreeIter iter;
-
-	GtkWidget *results_treeview = GTK_WIDGET(gtk_builder_get_object(gtk_builder, "results_treeview"));
-	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(results_treeview));
-
-	if(!gtk_tree_selection_get_selected(selection, &model, &iter))
-		return;
-
-	gchar *username = NULL;
-	gtk_tree_model_get(model, &iter, 0, &username, -1);
-
-	gtk_widget_destroy(search_dialog);
-
-	purple_blist_request_add_buddy(purple_connection_get_account(p_gc), username, GFIRE_DEFAULT_GROUP_NAME, "");
-	g_free(username);
+	purple_blist_request_add_buddy(purple_connection_get_account(p_gc), (gchar*)g_list_first(p_row)->data, GFIRE_DEFAULT_GROUP_NAME, "");
 }
 
 void gfire_show_friend_search_cb(PurplePluginAction *p_action)
 {
-	if(search_dialog)
-		return;
-
 	PurpleConnection *gc = (PurpleConnection *)p_action->context;
 	gfire_data *gfire = NULL;
 
@@ -101,59 +61,27 @@ void gfire_show_friend_search_cb(PurplePluginAction *p_action)
 		return;
 	}
 
-	gtk_builder = gtk_builder_new();
+	purple_request_input(gc, N_("Xfire Friend Search"), N_("Please enter a Xfire username, name or e-Mail address here:"),
+						 N_("For example: gill123, Gill Bates or gill@bates.net"), "", FALSE, FALSE,
+						 NULL, N_("Search"), G_CALLBACK(gfire_friend_search_search_cb), N_("Cancel"), NULL, purple_connection_get_account(gc),
+						 NULL, NULL, gc);
+}
 
-	GError *builder_error = NULL;
-	gchar *builder_file = g_build_filename(DATADIR, "purple", "gfire", "friend_search.glade", NULL);
-	if(gtk_builder_add_from_file(gtk_builder, builder_file, &builder_error) == 0)
+void gfire_friend_search_results(gfire_data *p_gfire, GList *p_usernames, GList *p_firstnames, GList *p_lastnames)
+{
+	PurpleNotifySearchResults *search_result = purple_notify_searchresults_new();
+	if(!search_result)
 	{
-		purple_debug(PURPLE_DEBUG_ERROR, "gfire", "gfire_show_friend_search_cb: Loading of \"%s\" failed: %s\n", builder_file, builder_error->message);
-		g_error_free(builder_error);
-		if(builder_file)
-			g_free(builder_file);
-
+		gfire_list_clear(p_usernames);
+		gfire_list_clear(p_firstnames);
+		gfire_list_clear(p_lastnames);
 		return;
 	}
 
-	if(builder_file)
-		g_free(builder_file);
-
-	search_dialog =					GTK_WIDGET(gtk_builder_get_object(gtk_builder, "friend_search_dialog"));
-	GtkWidget *search_button =		GTK_WIDGET(gtk_builder_get_object(gtk_builder, "search_button"));
-	GtkWidget *add_button =			GTK_WIDGET(gtk_builder_get_object(gtk_builder, "add_button"));
-	GtkWidget *cancel_button =		GTK_WIDGET(gtk_builder_get_object(gtk_builder, "cancel_button"));
-	GtkWidget *results_treeview =	GTK_WIDGET(gtk_builder_get_object(gtk_builder, "results_treeview"));
-
-	g_signal_connect(search_dialog, "destroy", G_CALLBACK(gtk_widget_destroyed), &search_dialog);
-	g_signal_connect_swapped(cancel_button, "clicked", G_CALLBACK(gtk_widget_destroy), search_dialog);
-	g_signal_connect_swapped(search_button, "clicked", G_CALLBACK(gfire_friend_search_search_cb), gc);
-	g_signal_connect_swapped(add_button, "clicked", G_CALLBACK(gfire_friend_search_add_cb), gc);
-
-	GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(results_treeview));
-	gtk_tree_selection_set_mode(selection, GTK_SELECTION_SINGLE);
-
-	g_signal_connect(selection, "changed", G_CALLBACK(gfire_friend_search_selchange_cb), NULL);
-
-	gtk_widget_show_all(search_dialog);
-}
-
-void gfire_friend_search_results(GList *p_usernames, GList *p_firstnames, GList *p_lastnames)
-{
-	if(!gtk_builder)
-		return;
-
-	GtkTreeIter iter;
-
-	GtkListStore *result_store = GTK_LIST_STORE(gtk_builder_get_object(gtk_builder, "search_result_list_store"));
-	if(!result_store)
-		return;
-
-	gtk_list_store_clear(result_store);
-
-	GtkWidget *users_label = GTK_WIDGET(gtk_builder_get_object(gtk_builder, "users_label"));
-	gchar *label_txt = g_strdup_printf(N_("Found %u users"), g_list_length(p_usernames));
-	gtk_label_set_text(GTK_LABEL(users_label), label_txt);
-	g_free(label_txt);
+	purple_notify_searchresults_column_add(search_result, purple_notify_searchresults_column_new(N_("Username")));
+	purple_notify_searchresults_column_add(search_result, purple_notify_searchresults_column_new(N_("First Name")));
+	purple_notify_searchresults_column_add(search_result, purple_notify_searchresults_column_new(N_("Last Name")));
+	purple_notify_searchresults_button_add(search_result, PURPLE_NOTIFY_BUTTON_INVITE, gfire_friend_search_add_cb);
 
 	GList *cur_username = p_usernames;
 	GList *cur_firstname = p_firstnames;
@@ -161,12 +89,10 @@ void gfire_friend_search_results(GList *p_usernames, GList *p_firstnames, GList 
 
 	while(cur_username)
 	{
-		gtk_list_store_append(result_store, &iter);
-		gtk_list_store_set(result_store, &iter, 0, cur_username->data, 1, cur_firstname->data, 2, cur_lastname->data, -1);
-
-		g_free(cur_username->data);
-		g_free(cur_firstname->data);
-		g_free(cur_lastname->data);
+		GList *row = g_list_append(NULL, cur_username->data);
+		row = g_list_append(row, cur_firstname->data);
+		row = g_list_append(row, cur_lastname->data);
+		purple_notify_searchresults_row_add(search_result, row);
 
 		cur_username = g_list_next(cur_username);
 		cur_firstname = g_list_next(cur_firstname);
@@ -177,6 +103,5 @@ void gfire_friend_search_results(GList *p_usernames, GList *p_firstnames, GList 
 	g_list_free(p_firstnames);
 	g_list_free(p_lastnames);
 
-	GtkWidget *search_button = GTK_WIDGET(gtk_builder_get_object(gtk_builder, "search_button"));
-	gtk_widget_set_sensitive(search_button, TRUE);
+	purple_notify_searchresults(gfire_get_connection(p_gfire), N_("Xfire Friend Search"), N_("Search results"), "", search_result, NULL, NULL);
 }

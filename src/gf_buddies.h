@@ -61,6 +61,14 @@ typedef struct _fof_game_data
 	gfire_game_data game;
 } fof_game_data;
 
+// Stores sent messages, which we haven't received an ack for
+typedef struct _im_sent
+{
+	guint32 imindex;
+	gchar *msg;
+	glong time;
+} im_sent;
+
 
 // Information about a gfire buddy
 typedef struct _gfire_buddy
@@ -75,11 +83,13 @@ typedef struct _gfire_buddy
 	gchar *alias;			// nick (xfire alias)
 
 	// Status data
-	gboolean away;			// set if buddy is away
-	gchar *away_msg;		// away message
+	PurpleStatusPrimitive status;
+	gchar *status_msg;		// away message
 
 	// Chat state
 	guint32	im;				// im index ++'d on each im reception and send
+	GList *pending_ims;		// List of im_sent structs
+	guint lost_ims_timer;	// Timer handle to check for lost IMs
 	guint32 chatperm;		// group chat permissions (only used for group chat members)
 
 	// Game data
@@ -87,6 +97,9 @@ typedef struct _gfire_buddy
 
 	// VoIP data
 	gfire_game_data voip_data;
+
+	// FoF common buddies
+	GList *common_buddies;
 
 	// Buddy type
 	GList *clan_data;		// list of type gfire_buddy_clan_data
@@ -119,6 +132,8 @@ void gfire_buddy_send(gfire_buddy *p_buddy, const gchar *p_msg);
 void gfire_buddy_got_im(gfire_buddy *p_buddy, guint32 p_imindex, const gchar *p_msg);
 void gfire_buddy_send_typing(gfire_buddy *p_buddy, gboolean p_typing);
 void gfire_buddy_got_typing(const gfire_buddy *p_buddy, gboolean p_typing);
+void gfire_buddy_got_im_ack(gfire_buddy *p_buddy, guint32 p_imindex);
+gboolean gfire_buddy_check_pending_ims_cb(gfire_buddy *p_buddy);
 
 // PurpleBuddy creation/deletion
 void gfire_buddy_prpl_add(gfire_buddy *p_buddy, PurpleGroup *p_group);
@@ -134,9 +149,12 @@ const gfire_game_data *gfire_buddy_get_voip_data(const gfire_buddy *p_buddy);
 
 // Status handling
 void gfire_buddy_set_session_id(gfire_buddy *p_buddy, const guint8 *p_sessionid);
-void gfire_buddy_set_status(gfire_buddy *p_buddy, gboolean p_away, const gchar *p_text);
+void gfire_buddy_set_status(gfire_buddy *p_buddy, const gchar *p_status_msg);
 gchar *gfire_buddy_get_status_text(const gfire_buddy *p_buddy);
+const gchar *gfire_buddy_get_status_name(const gfire_buddy *p_buddy);
+gboolean gfire_buddy_is_available(const gfire_buddy *p_buddy);
 gboolean gfire_buddy_is_away(const gfire_buddy *p_buddy);
+gboolean gfire_buddy_is_busy(const gfire_buddy *p_buddy);
 gboolean gfire_buddy_is_online(const gfire_buddy *p_buddy);
 
 // Clan membership handling
@@ -145,6 +163,10 @@ void gfire_buddy_add_to_clan(gfire_buddy *p_buddy, gfire_clan *p_clan, const gch
 void gfire_buddy_remove_clan(gfire_buddy *p_buddy, guint32 p_clanid, guint32 p_newdefault);
 guint32 gfire_buddy_get_default_clan(gfire_buddy *p_buddy);
 void gfire_buddy_make_friend(gfire_buddy *p_buddy, PurpleGroup *p_group);
+
+// FoF handling
+void gfire_buddy_set_common_buddies(gfire_buddy *p_buddy, GList *p_buddies);
+gchar *gfire_buddy_get_common_buddies_str(const gfire_buddy *p_buddy);
 
 // Appearance
 void gfire_buddy_set_alias(gfire_buddy *p_buddy, const gchar *p_alias);
