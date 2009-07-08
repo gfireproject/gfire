@@ -500,9 +500,15 @@ void gfire_proto_clan_list(gfire_data *p_gfire, guint16 p_packet_len)
 	GList *id = clanids; GList *ln = clanLongNames; GList *sn = clanShortNames; GList *t = clanTypes;
 	for(; id; id = g_list_next(id))
 	{
-		newClan = gfire_clan_create(*(guint32*)id->data, (const gchar*)ln->data, (const gchar*)sn->data, TRUE);
-		if(newClan)
-			gfire_add_clan(p_gfire, newClan);
+		newClan = gfire_find_clan(p_gfire, *(guint32*)id->data);
+		if(!newClan)
+		{
+			newClan = gfire_clan_create(*(guint32*)id->data, (const gchar*)ln->data, (const gchar*)sn->data, TRUE);
+			if(newClan)
+				gfire_add_clan(p_gfire, newClan);
+		}
+		else
+			gfire_clan_set_names(newClan, (const gchar*)ln->data, (const gchar*)sn->data);
 
 		g_free(id->data);
 		g_free(ln->data);

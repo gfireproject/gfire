@@ -649,6 +649,13 @@ void gfire_buddy_set_status(gfire_buddy *p_buddy, const gchar *p_status_msg)
 			p_buddy->status = PURPLE_STATUS_AVAILABLE;
 			p_buddy->status_msg = g_strdup(p_status_msg);
 		}
+
+		g_strchomp(g_strchug(p_buddy->status_msg));
+		if(strlen(p_buddy->status_msg) == 0)
+		{
+			g_free(p_buddy->status_msg);
+			p_buddy->status_msg = NULL;
+		}
 	}
 	else
 	{
@@ -665,7 +672,12 @@ gchar *gfire_buddy_get_status_text(const gfire_buddy *p_buddy)
 		return NULL;
 
 	if(gfire_buddy_is_playing(p_buddy))
-		return g_strdup_printf(N_("Playing %s"), gfire_game_name(p_buddy->game_data.id));
+	{
+		gchar *tmp = purple_unescape_html(gfire_game_name(p_buddy->game_data.id));
+		gchar *ret = g_strdup_printf(N_("Playing %s"), tmp);
+		g_free(tmp);
+		return ret;
+	}
 	else if(p_buddy->status_msg)
 		return g_strdup(p_buddy->status_msg);
 	else
@@ -959,6 +971,41 @@ void gfire_clan_free(gfire_clan *p_clan)
 	g_free(p_clan);
 }
 
+void gfire_clan_set_names(gfire_clan *p_clan, const gchar *p_longName, const gchar *p_shortName)
+{
+	if(!p_clan)
+		return;
+
+	if(p_longName)
+	{
+		if(p_clan->long_name) g_free(p_clan->long_name);
+		p_clan->long_name = g_strdup(p_longName);
+	}
+
+	if(p_shortName)
+	{
+		if(p_clan->short_name) g_free(p_clan->short_name);
+		p_clan->short_name = g_strdup(p_shortName);
+	}
+
+	if(p_clan->prpl_group)
+	{
+		gchar *clan_group_name = NULL;
+		if(p_clan->short_name)
+			clan_group_name = g_strdup_printf(GFIRE_CLAN_GROUP_FORMATTING, p_clan->long_name, p_clan->short_name);
+		else
+			clan_group_name = g_strdup(p_clan->long_name);
+
+		if(!clan_group_name)
+			return;
+
+		gchar *escaped = gfire_escape_html(clan_group_name);
+		purple_blist_rename_group(p_clan->prpl_group, escaped);
+		g_free(escaped);
+		g_free(clan_group_name);
+	}
+}
+
 void gfire_clan_set_prpl_group(gfire_clan *p_clan, PurpleGroup *p_group)
 {
 	if(!p_clan)
@@ -1006,6 +1053,7 @@ GList *gfire_clan_get_existing()
 			gfire_clan *clan = gfire_clan_create(purple_blist_node_get_int(group_node, "clanid"), NULL, NULL, FALSE);
 			if(clan)
 			{
+				purple_debug_error("gfire", "pre-added clan %s\n", purple_group_get_name((PurpleGroup*)group_node));
 				gfire_clan_set_prpl_group(clan, (PurpleGroup*)group_node);
 				ret = g_list_append(ret, clan);
 			}

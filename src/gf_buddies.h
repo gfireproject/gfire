@@ -187,6 +187,7 @@ gboolean gfire_clan_is(const gfire_clan *p_clan, guint32 p_clanid);
 // External changes
 void gfire_clan_set_prpl_group(gfire_clan *p_clan, PurpleGroup *p_group);
 PurpleGroup *gfire_clan_get_prpl_group(gfire_clan *p_clan);
+void gfire_clan_set_names(gfire_clan *p_clan, const gchar *p_longName, const gchar *p_shortName);
 
 // PurpleGroup deletion
 void gfire_clan_prpl_remove(gfire_clan *p_clan);

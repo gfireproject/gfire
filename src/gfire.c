@@ -146,6 +146,8 @@ static void gfire_login_cb(gpointer p_data, gint p_source, const gchar *p_error_
 	if(length) gfire_send(gfire_get_connection(gfire), length);
 
 	gfire_get_connection(gfire)->inpa = purple_input_add(gfire->fd, PURPLE_INPUT_READ, gfire_input_cb, gfire);
+
+	gfire->clans = gfire_clan_get_existing();
 }
 
 void gfire_login(gfire_data *p_gfire)
