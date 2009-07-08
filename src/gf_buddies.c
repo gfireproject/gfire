@@ -234,15 +234,20 @@ guint32 gfire_buddy_get_default_clan(gfire_buddy *p_buddy)
 		return 0;
 }
 
-void gfire_buddy_prpl_add(gfire_buddy *p_buddy, PurpleAccount *p_account, PurpleGroup *p_group)
+void gfire_buddy_prpl_add(gfire_buddy *p_buddy, PurpleGroup *p_group)
 {
-	if(!p_buddy || !p_account || p_buddy->prpl_buddy)
+	if(!p_buddy || !p_buddy->gc || p_buddy->prpl_buddy)
 		return;
 
-	PurpleBuddy *prpl_buddy = purple_find_buddy(p_account, p_buddy->name);
+	PurpleBuddy *prpl_buddy = purple_find_buddy(purple_connection_get_account(p_buddy->gc), gfire_buddy_get_name(p_buddy));
 	if(!prpl_buddy)
 	{
-		prpl_buddy = purple_buddy_new(p_account, p_buddy->name, p_buddy->alias);
+		prpl_buddy = purple_buddy_new(purple_connection_get_account(p_buddy->gc), gfire_buddy_get_name(p_buddy), gfire_buddy_get_alias(p_buddy));
+		if(!prpl_buddy)
+		{
+			purple_debug_error("gfire", "gfire_buddy_prpl_add: Creation of PurpleBuddy failed\n");
+			return;
+		}
 
 		if(gfire_buddy_is_friend(p_buddy))
 		{
@@ -273,7 +278,6 @@ void gfire_buddy_prpl_add(gfire_buddy *p_buddy, PurpleAccount *p_account, Purple
 				p_group = purple_group_new(GFIRE_FRIENDS_OF_FRIENDS_GROUP_NAME);
 				purple_blist_add_group(p_group, NULL);
 				purple_blist_node_set_bool((PurpleBlistNode*)p_group, "collapsed", TRUE);
-				purple_blist_node_set_flags((PurpleBlistNode*)p_group, PURPLE_BLIST_NODE_FLAG_NO_SAVE);
 			}
 		}
 
@@ -286,13 +290,13 @@ void gfire_buddy_prpl_add(gfire_buddy *p_buddy, PurpleAccount *p_account, Purple
 	}
 	else
 	{
-		p_buddy->avatarnumber = purple_blist_node_get_int(&prpl_buddy->node, "avatarnumber");
-		p_buddy->avatartype = purple_blist_node_get_int(&prpl_buddy->node, "avatartype");
+		p_buddy->avatarnumber = purple_blist_node_get_int((PurpleBlistNode*)prpl_buddy, "avatarnumber");
+		p_buddy->avatartype = purple_blist_node_get_int((PurpleBlistNode*)prpl_buddy, "avatartype");
 	}
 
 	p_buddy->prpl_buddy = prpl_buddy;
 
-	serv_got_alias(purple_account_get_connection(p_account), p_buddy->name, gfire_buddy_get_alias(p_buddy));
+	serv_got_alias(p_buddy->gc, gfire_buddy_get_name(p_buddy), gfire_buddy_get_alias(p_buddy));
 }
 
 void gfire_buddy_prpl_remove(gfire_buddy *p_buddy)
@@ -312,12 +316,12 @@ static void gfire_buddy_update_status(gfire_buddy *p_buddy)
 	if(gfire_buddy_is_online(p_buddy))
 	{
 		if(p_buddy->away)
-			purple_prpl_got_user_status(p_buddy->prpl_buddy->account, p_buddy->name, "away", NULL);
+			purple_prpl_got_user_status(purple_buddy_get_account(p_buddy->prpl_buddy), gfire_buddy_get_name(p_buddy), "away", NULL);
 		else
-			purple_prpl_got_user_status(p_buddy->prpl_buddy->account, p_buddy->name, "available", NULL);
+			purple_prpl_got_user_status(purple_buddy_get_account(p_buddy->prpl_buddy), gfire_buddy_get_name(p_buddy), "available", NULL);
 	}
 	else
-		purple_prpl_got_user_status(p_buddy->prpl_buddy->account, p_buddy->name, "offline", NULL);
+		purple_prpl_got_user_status(purple_buddy_get_account(p_buddy->prpl_buddy), gfire_buddy_get_name(p_buddy), "offline", NULL);
 }
 
 void gfire_buddy_set_session_id(gfire_buddy *p_buddy, const guint8 *p_sessionid)
@@ -330,11 +334,24 @@ void gfire_buddy_set_session_id(gfire_buddy *p_buddy, const guint8 *p_sessionid)
 	// Reset Game states
 	if(!gfire_buddy_is_online(p_buddy))
 	{
+		// Remove offline FoF
+		if(gfire_buddy_is_friend_of_friend(p_buddy))
+		{
+			gfire_remove_buddy((gfire_data*)purple_account_get_connection(purple_buddy_get_account(p_buddy->prpl_buddy))->proto_data, p_buddy, FALSE, TRUE);
+			return;
+		}
+
 		memset(&p_buddy->game_data, 0, sizeof(gfire_game_data));
 		memset(&p_buddy->voip_data, 0, sizeof(gfire_game_data));
+
+		// Reset status
+		p_buddy->away = FALSE;
+		if(p_buddy->away_msg) g_free(p_buddy->away_msg);
+		p_buddy->away_msg = NULL;
 	}
 	else
 	{
+		purple_debug_misc("gfire", "requesting advanced info for %s\n", gfire_buddy_get_name(p_buddy));
 		// Request advanced infoview
 		guint16 len = gfire_buddy_proto_create_advanced_info_request(p_buddy->userid);
 		if(len > 0) gfire_send(p_buddy->gc, len);
@@ -675,8 +692,6 @@ void gfire_buddy_make_friend(gfire_buddy *p_buddy, PurpleGroup *p_group)
 	// Move the buddy to the selected group if he/she is in a clan group
 	if(p_buddy->prpl_buddy && purple_blist_node_get_bool((PurpleBlistNode*)p_buddy->prpl_buddy, "clanmember"))
 	{
-		purple_blist_remove_buddy(p_buddy->prpl_buddy);
-
 		if(!p_group)
 		{
 			p_group = purple_find_group(GFIRE_DEFAULT_GROUP_NAME);

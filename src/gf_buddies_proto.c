@@ -169,7 +169,6 @@ void gfire_buddy_proto_on_off(gfire_data *p_gfire, guint16 p_packet_len)
 		}
 
 		gfire_buddy_set_session_id(gf_buddy, (guint8*)s->data);
-		gfire_buddy_set_status(gf_buddy, FALSE, NULL);
 
 		purple_debug(PURPLE_DEBUG_INFO, "gfire", "%s is now %s\n", gfire_buddy_get_name(gf_buddy),
 					gfire_buddy_is_online(gf_buddy) ? "online" : "offline");

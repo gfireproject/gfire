@@ -121,7 +121,7 @@ void gfire_buddy_send_typing(gfire_buddy *p_buddy, gboolean p_typing);
 void gfire_buddy_got_typing(const gfire_buddy *p_buddy, gboolean p_typing);
 
 // PurpleBuddy creation/deletion
-void gfire_buddy_prpl_add(gfire_buddy *p_buddy, PurpleAccount *p_account, PurpleGroup *p_group);
+void gfire_buddy_prpl_add(gfire_buddy *p_buddy, PurpleGroup *p_group);
 void gfire_buddy_prpl_remove(gfire_buddy *p_buddy);
 
 // Game/VoIP status

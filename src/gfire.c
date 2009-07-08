@@ -242,11 +242,9 @@ void gfire_add_buddy(gfire_data *p_gfire, gfire_buddy *p_buddy, PurpleGroup *p_g
 	if(!p_gfire || !p_buddy)
 		return;
 
-	PurpleAccount *account = purple_connection_get_account(gfire_get_connection(p_gfire));
-
 	p_buddy->gc = gfire_get_connection(p_gfire);
 	p_gfire->buddies = g_list_append(p_gfire->buddies, p_buddy);
-	gfire_buddy_prpl_add(p_buddy, account, p_group);
+	gfire_buddy_prpl_add(p_buddy, p_group);
 
 	purple_debug_info("gfire", "Added Buddy: Name=%s / Alias=%s / Type=%u\n",
 					  gfire_buddy_get_name(p_buddy), gfire_buddy_get_alias(p_buddy), p_buddy->type);
