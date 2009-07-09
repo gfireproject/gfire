@@ -170,6 +170,6 @@ void gfire_set_status(gfire_data *p_gfire, const PurpleStatus *p_status);
 gboolean gfire_is_self(const gfire_data *p_gfire, guint32 p_userid);
 
 // Detection
-int gfire_detect_running_processes_cb(gfire_data *p_gfire);
+gboolean gfire_detect_running_processes_cb(gfire_data *p_gfire);
 
 #endif // _GFIRE_H

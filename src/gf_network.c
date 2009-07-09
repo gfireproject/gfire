@@ -205,7 +205,7 @@ void gfire_parse_packet(gfire_data *p_gfire, guint16 p_packet_len, guint16 p_pac
 			/* load game xml from user dir; these don't need to work unless we are connected */
 			gfire_game_load_games_xml();
 			gfire_game_load_launch_xml();
-			p_gfire->det_source = g_timeout_add(5000, (GSourceFunc)gfire_detect_running_processes_cb, p_gfire);
+			p_gfire->det_source = g_timeout_add_seconds(5, (GSourceFunc)gfire_detect_running_processes_cb, p_gfire);
 		break;
 
 		case 131:
@@ -318,8 +318,13 @@ void gfire_parse_packet(gfire_data *p_gfire, guint16 p_packet_len, guint16 p_pac
 		break;
 
 		case 174:
-			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received avatar info packet\n");
+			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received avatar info\n");
 			gfire_buddy_proto_changed_avatar(p_gfire, p_packet_len);
+		break;
+
+		case 176:
+			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received clan member info\n");
+			gfire_buddy_proto_clans(p_gfire, p_packet_len);
 		break;
 
 		case 351:

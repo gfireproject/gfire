@@ -575,13 +575,21 @@ static void gfire_get_info_parse_gamerig_cb(PurpleUtilFetchUrlData *p_url_data, 
 		else if(xmlnode_get_child(gamerig, "error"))
 		{
 			gchar *tmp = xmlnode_get_data(xmlnode_get_child(gamerig, "error"));
-			purple_notify_user_info_add_pair(args->user_info, "Game Rig", NN(tmp));
+			purple_notify_user_info_add_pair(args->user_info, "Gaming Rig", NN(tmp));
 			if(tmp) g_free(tmp);
 			xmlnode_free(gamerig);
 		}
 		else
 		{
 			gchar *tmp = NULL;
+
+			// Heading
+			gchar *escaped_alias = gfire_escape_html(gfire_buddy_get_alias(args->gf_buddy));
+			tmp = g_strdup_printf(N_("%ss Gaming Rig:"), escaped_alias);
+			g_free(escaped_alias);
+			purple_notify_user_info_add_pair(args->user_info, tmp, NULL);
+			g_free(tmp);
+
 			// Manufacturer
 			xmlnode *data = xmlnode_get_child(gamerig, "manufacturer");
 			tmp = xmlnode_get_data(data);
@@ -753,6 +761,14 @@ static void gfire_get_info_parse_profile_cb(PurpleUtilFetchUrlData *p_url_data, 
 		else
 		{
 			gchar *tmp = NULL;
+
+			// Heading
+			gchar *escaped_alias = gfire_escape_html(gfire_buddy_get_alias(args->gf_buddy));
+			tmp = g_strdup_printf(N_("%ss Profile:"), escaped_alias);
+			g_free(escaped_alias);
+			purple_notify_user_info_add_pair(args->user_info, tmp, NULL);
+			g_free(tmp);
+
 			// Real Name
 			xmlnode *data = xmlnode_get_child(profile, "realname");
 			tmp = xmlnode_get_data(data);
@@ -902,9 +918,6 @@ void gfire_show_buddy_info(gfire_data *p_gfire, const gchar *p_name)
 	else
 		purple_notify_user_info_add_pair(user_info, N_("Status"), N_("Offline"));
 
-	/*if ((0 != gf_buddy->gameid) && (gf_buddy->away))
-		purple_notify_user_info_add_pair(user_info, N_("Away"), gfire_escape_html(gf_buddy->away_msg));*/
-
 	// Game Info
 	if(gfire_buddy_is_playing(gf_buddy))
 	{
@@ -954,12 +967,51 @@ void gfire_show_buddy_info(gfire_data *p_gfire, const gchar *p_name)
 		}
 	}
 
+	// Clans
+	GList *clan_info = gfire_buddy_get_clans_info(gf_buddy);
+	if(clan_info)
+	{
+		purple_notify_user_info_add_section_break(user_info);
+		gchar *escaped_alias = gfire_escape_html(gfire_buddy_get_alias(gf_buddy));
+		tmp = g_strdup_printf(N_("%ss Clans:"), escaped_alias);
+		g_free(escaped_alias);
+		purple_notify_user_info_add_pair(user_info, tmp, NULL);
+		g_free(tmp);
+
+		GList *cur = clan_info;
+		while(cur)
+		{
+			tmp = gfire_clan_get_name((gfire_clan*)cur->data);
+			gchar *clan_name = gfire_escape_html(tmp);
+			g_free(tmp);
+			const gchar *clan_shortname = gfire_clan_get_short_name((gfire_clan*)cur->data);
+			cur = g_list_next(cur);
+
+			if(cur->data)
+			{
+				escaped_alias = gfire_escape_html((gchar*)cur->data);
+				g_free(cur->data);
+				tmp = g_strdup_printf("<a href=\"http://www.xfire.com/clans/%s/\">%s</a>: %s", clan_shortname, clan_name, escaped_alias);
+				g_free(escaped_alias);
+			}
+			else
+				tmp = g_strdup_printf("<a href=\"http://www.xfire.com/clans/%s/\">%s</a>", clan_shortname, clan_name);
+
+			purple_notify_user_info_add_pair(user_info, NULL, tmp);
+			g_free(tmp);
+			g_free(clan_name);
+			cur = g_list_next(cur);
+		}
+
+		g_list_free(clan_info);
+	}
+
+	// Fetch Profile XML data
 	download_args = g_malloc0(sizeof(get_info_callback_args));
 	download_args->gfire = p_gfire;
 	download_args->user_info = user_info;
 	download_args->gf_buddy = gf_buddy;
 
-	// Fetch Profile XML data
 	infoURL = g_strdup_printf(XFIRE_XML_INFO_URL, gfire_buddy_get_name(gf_buddy), "profile");
 	purple_debug(PURPLE_DEBUG_MISC, "gfire", "User Info Profile XML Download: Starting download from %s.\n", infoURL);
 	purple_util_fetch_url(infoURL, TRUE, "Purple-xfire", TRUE, gfire_get_info_parse_profile_cb, (void *)download_args);
@@ -1229,17 +1281,17 @@ static void gfire_handle_game_detection(gfire_data *p_gfire, guint32 p_gameid, g
 	if(game_name) g_free(game_name);
 }
 
-int gfire_detect_running_processes_cb(gfire_data *p_gfire)
+gboolean gfire_detect_running_processes_cb(gfire_data *p_gfire)
 {
 	if (!p_gfire)
 	{
 		purple_debug_error("gfire", "gfire_detect_running_processes_cb: Gfire not set.\n");
-		return -1;
+		return FALSE;
 	}
 
 	gboolean norm = purple_account_get_bool(purple_connection_get_account(gfire_get_connection(p_gfire)), "ingamedetectionnorm", TRUE);
 	if(norm == FALSE)
-		return 0;
+		return TRUE;
 
 	xmlnode *gfire_launch = gfire_game_launch_node_first();
 	for (; gfire_launch != NULL;
@@ -1283,7 +1335,7 @@ int gfire_detect_running_processes_cb(gfire_data *p_gfire)
 		if(game_executable) g_free(game_executable);
 	}
 
-	return 0;
+	return TRUE;
 }
 
 /**

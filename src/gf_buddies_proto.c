@@ -485,6 +485,110 @@ void gfire_buddy_proto_changed_avatar(gfire_data *p_gfire, guint16 p_packet_len)
 		gfire_buddy_download_avatar(gf_buddy, avatarType, avatarNum);
 }
 
+void gfire_buddy_proto_clans(gfire_data *p_gfire, guint16 p_packet_len)
+{
+	guint32 offset;
+	guint32 uid;
+	GList *clanids = NULL;
+	GList *clanShortNames = NULL;
+	GList *clanLongNames = NULL;
+	GList *clanNicks = NULL;
+	GList *ci, *csn, *cln, *cn;
+	gfire_buddy *gf_buddy = NULL;
+	gfire_clan *gf_clan = NULL;
+
+	offset = XFIRE_HEADER_LEN;
+
+	// grab the userid
+	offset = gfire_proto_read_attr_int32_bs(p_gfire->buff_in, &uid, 0x01, offset);
+	if(offset == -1)
+		return;
+
+	// grab the clanids
+	offset = gfire_proto_read_attr_list_bs(p_gfire->buff_in, &clanids, 0x6C, offset);
+	if(offset == -1 || !clanids)
+		return;
+
+	// grab the clanShortNames
+	offset = gfire_proto_read_attr_list_bs(p_gfire->buff_in, &clanShortNames, 0x72, offset);
+	if(offset == -1 || !clanShortNames)
+	{
+		gfire_list_clear(clanids);
+		return;
+	}
+
+	// grab the clanLongNames
+	offset = gfire_proto_read_attr_list_bs(p_gfire->buff_in, &clanLongNames, 0x81, offset);
+	if(offset == -1 || !clanLongNames)
+	{
+		gfire_list_clear(clanids);
+		gfire_list_clear(clanShortNames);
+		return;
+	}
+
+	// grab the clanNicks
+	offset = gfire_proto_read_attr_list_bs(p_gfire->buff_in, &clanNicks, 0x6D, offset);
+	if(offset == -1 || !clanNicks)
+	{
+		gfire_list_clear(clanids);
+		gfire_list_clear(clanShortNames);
+		gfire_list_clear(clanLongNames);
+		return;
+	}
+
+	gf_buddy = gfire_find_buddy(p_gfire, (gpointer) &uid, GFFB_USERID);
+	if(!gf_buddy)
+	{
+		purple_debug(PURPLE_DEBUG_ERROR, "gfire", "gfire_buddy_proto_clans: unknown user ID from Xfire\n");
+		gfire_list_clear(clanids);
+		gfire_list_clear(clanShortNames);
+		gfire_list_clear(clanLongNames);
+		gfire_list_clear(clanNicks);
+		return;
+	}
+
+	ci = clanids;
+	csn = clanShortNames;
+	cln = clanLongNames;
+	cn = clanNicks;
+
+	while(ci)
+	{
+		gf_clan = gfire_find_clan(p_gfire, *(guint32*)ci->data);
+		if(!gf_clan)
+		{
+			gf_clan = gfire_clan_create(*(guint32*)ci->data, (gchar*)cln->data, (gchar*)csn->data, FALSE);
+			if(gf_clan)
+				gfire_add_clan(p_gfire, gf_clan);
+		}
+
+		g_free(ci->data);
+		g_free(csn->data);
+		g_free(cln->data);
+
+		ci = g_list_next(ci);
+		csn = g_list_next(csn);
+		cln = g_list_next(cln);
+
+		if(!gf_clan)
+		{
+			g_free(cn->data);
+			cn = g_list_next(cn);
+
+			continue;
+		}
+
+		gfire_buddy_add_to_clan(gf_buddy, gf_clan, (gchar*)cn->data, FALSE);
+		g_free(cn->data);
+		cn = g_list_next(cn);
+	}
+
+	g_list_free(clanids);
+	g_list_free(clanShortNames);
+	g_list_free(clanLongNames);
+	g_list_free(clanNicks);
+}
+
 void gfire_buddy_proto_im(gfire_data *p_gfire, guint16 p_packet_len)
 {
 	guint8 *sid, peermsg;

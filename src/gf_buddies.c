@@ -66,7 +66,7 @@ static gfire_buddy_clan_data *gfire_buddy_clan_data_create(gfire_clan *p_clan, c
 	ret->clan = p_clan;
 	ret->is_default = p_default;
 
-	if(p_alias)
+	if(p_alias && strlen(p_alias) > 0)
 	{
 		ret->clan_alias = g_strdup(p_alias);
 		if(!ret->clan_alias)
@@ -119,7 +119,7 @@ gfire_buddy *gfire_buddy_create(guint32 p_userid, const gchar *p_name, const gch
 		goto error;
 	}
 
-	ret->lost_ims_timer = g_timeout_add(XFIRE_SEND_ACK_TIMEOUT * 1000, (GSourceFunc)gfire_buddy_check_pending_ims_cb, ret);
+	ret->lost_ims_timer = g_timeout_add_seconds(XFIRE_SEND_ACK_TIMEOUT, (GSourceFunc)gfire_buddy_check_pending_ims_cb, ret);
 	ret->status = PURPLE_STATUS_AVAILABLE;
 
 	gfire_buddy_set_alias(ret, p_alias);
@@ -137,6 +137,9 @@ void gfire_buddy_free(gfire_buddy *p_buddy)
 		return;
 
 	g_source_remove(p_buddy->lost_ims_timer);
+
+	if(p_buddy->prpl_buddy && gfire_buddy_is_friend_of_friend(p_buddy))
+		purple_blist_remove_buddy(p_buddy->prpl_buddy);
 
 	if(p_buddy->alias) g_free(p_buddy->alias);
 	if(p_buddy->status_msg) g_free(p_buddy->status_msg);
@@ -298,10 +301,8 @@ gboolean gfire_buddy_check_pending_ims_cb(gfire_buddy *p_buddy)
 		if(gtv.tv_sec - ims->time > XFIRE_SEND_ACK_TIMEOUT)
 		{
 			gchar *warn = g_strdup_printf("%s may have not received this message:\n%s", gfire_buddy_get_alias(p_buddy), ims->msg);
-			gchar *escaped = gfire_escape_html(warn);
+			purple_conv_present_error(gfire_buddy_get_name(p_buddy), purple_buddy_get_account(p_buddy->prpl_buddy), warn);
 			g_free(warn);
-			purple_conv_present_error(gfire_buddy_get_name(p_buddy), purple_buddy_get_account(p_buddy->prpl_buddy), escaped);
-			g_free(escaped);
 
 			gfire_im_sent_free(ims);
 			p_buddy->pending_ims = g_list_delete_link(p_buddy->pending_ims, cur);
@@ -339,6 +340,25 @@ guint32 gfire_buddy_get_default_clan(gfire_buddy *p_buddy)
 		return data->clan->id;
 	else
 		return 0;
+}
+
+GList *gfire_buddy_get_clans_info(const gfire_buddy *p_buddy)
+{
+	if(!p_buddy || !p_buddy->clan_data)
+		return NULL;
+
+	GList *ret = NULL;
+	GList *cur = p_buddy->clan_data;
+	for(; cur; cur = g_list_next(cur))
+	{
+		ret = g_list_append(ret, ((gfire_buddy_clan_data*)cur->data)->clan);
+		if(((gfire_buddy_clan_data*)cur->data)->clan_alias)
+			ret = g_list_append(ret, g_strdup(((gfire_buddy_clan_data*)cur->data)->clan_alias));
+		else
+			ret = g_list_append(ret, NULL);
+	}
+
+	return ret;
 }
 
 void gfire_buddy_prpl_add(gfire_buddy *p_buddy, PurpleGroup *p_group)
@@ -1004,6 +1024,33 @@ void gfire_clan_set_names(gfire_clan *p_clan, const gchar *p_longName, const gch
 		g_free(escaped);
 		g_free(clan_group_name);
 	}
+}
+
+const gchar *gfire_clan_get_long_name(const gfire_clan *p_clan)
+{
+	if(!p_clan)
+		return NULL;
+
+	return p_clan->long_name;
+}
+
+const gchar *gfire_clan_get_short_name(const gfire_clan *p_clan)
+{
+	if(!p_clan)
+		return NULL;
+
+	return p_clan->short_name;
+}
+
+gchar *gfire_clan_get_name(const gfire_clan *p_clan)
+{
+	if(!p_clan)
+		return NULL;
+
+	if(p_clan->short_name)
+		return g_strdup_printf("%s [%s]", p_clan->long_name, p_clan->short_name);
+	else
+		return g_strdup(p_clan->long_name);
 }
 
 void gfire_clan_set_prpl_group(gfire_clan *p_clan, PurpleGroup *p_group)

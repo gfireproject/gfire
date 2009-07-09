@@ -43,6 +43,7 @@ void gfire_buddy_proto_voip_status(gfire_data *p_gfire, guint16 p_packet_len);
 void gfire_buddy_proto_status_msg(gfire_data *p_gfire, guint16 p_packet_len);
 void gfire_buddy_proto_alias_change(gfire_data *p_gfire, guint16 p_packet_len);
 void gfire_buddy_proto_changed_avatar(gfire_data *p_gfire, guint16 p_packet_len);
+void gfire_buddy_proto_clans(gfire_data *p_gfire, guint16 p_packet_len);
 void gfire_buddy_proto_im(gfire_data *p_gfire, guint16 packet_len);
 void gfire_buddy_proto_fof_list(gfire_data *p_gfire, guint16 p_packet_len);
 

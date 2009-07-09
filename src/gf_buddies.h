@@ -162,6 +162,7 @@ gboolean gfire_buddy_is_clan_member_of(const gfire_buddy *p_buddy, guint32 p_cla
 void gfire_buddy_add_to_clan(gfire_buddy *p_buddy, gfire_clan *p_clan, const gchar *p_clanalias, gboolean p_default);
 void gfire_buddy_remove_clan(gfire_buddy *p_buddy, guint32 p_clanid, guint32 p_newdefault);
 guint32 gfire_buddy_get_default_clan(gfire_buddy *p_buddy);
+GList *gfire_buddy_get_clans_info(const gfire_buddy *p_buddy);
 void gfire_buddy_make_friend(gfire_buddy *p_buddy, PurpleGroup *p_group);
 
 // FoF handling
@@ -188,6 +189,9 @@ gboolean gfire_clan_is(const gfire_clan *p_clan, guint32 p_clanid);
 void gfire_clan_set_prpl_group(gfire_clan *p_clan, PurpleGroup *p_group);
 PurpleGroup *gfire_clan_get_prpl_group(gfire_clan *p_clan);
 void gfire_clan_set_names(gfire_clan *p_clan, const gchar *p_longName, const gchar *p_shortName);
+const gchar *gfire_clan_get_long_name(const gfire_clan *p_clan);
+const gchar *gfire_clan_get_short_name(const gfire_clan *p_clan);
+gchar *gfire_clan_get_name(const gfire_clan *p_clan);
 
 // PurpleGroup deletion
 void gfire_clan_prpl_remove(gfire_clan *p_clan);
