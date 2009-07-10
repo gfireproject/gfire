@@ -113,6 +113,9 @@ void gfire_input_cb(gpointer p_data, gint p_source, PurpleInputCondition p_condi
 				purple_debug(PURPLE_DEBUG_MISC, "gfire", "(input): read 0 bytes, connection closed by peer\n");
 				purple_connection_error(gfire_get_connection(gfire), N_("Connection closed by peer."));
 			}
+			// We couldn't read now; not necessarily an error
+			else if(errno == EAGAIN)
+				return;
 			else
 			{
 				purple_debug(PURPLE_DEBUG_ERROR, "gfire", "Reading from socket failed errno = %d err_str = %s.\n",
@@ -144,6 +147,9 @@ void gfire_input_cb(gpointer p_data, gint p_source, PurpleInputCondition p_condi
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "(input): read 0 bytes, connection closed by peer\n");
 			purple_connection_error(gfire_get_connection(gfire), N_("Connection closed by peer."));
 		}
+		// We couldn't read now; not necessarily an error
+		else if(errno == EAGAIN)
+			return;
 		else
 		{
 			purple_debug(PURPLE_DEBUG_ERROR, "gfire", "Reading from socket failed errno = %d err_str = %s.\n",

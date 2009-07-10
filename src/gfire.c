@@ -66,8 +66,6 @@ void gfire_free(gfire_data *p_gfire)
 	if(!p_gfire)
 		return;
 
-	g_source_remove(p_gfire->det_source);
-
 	if(p_gfire->sid) g_free(p_gfire->sid);
 	if(p_gfire->server_mutex) g_mutex_free(p_gfire->server_mutex);
 	if(p_gfire->buff_in) g_free(p_gfire->buff_in);
