@@ -142,7 +142,7 @@ guint16 gfire_proto_create_invitation_reject(const gchar *p_name)
 	guint32 offset = XFIRE_HEADER_LEN;
 
 	// "name"
-	offset = gfire_proto_write_attr_ss("nick", 0x01, p_name, strlen(p_name), offset);
+	offset = gfire_proto_write_attr_ss("name", 0x01, p_name, strlen(p_name), offset);
 
 	gfire_proto_write_header(offset, 0x08, 1, 0);
 	return offset;
@@ -156,7 +156,7 @@ guint16 gfire_proto_create_invitation_accept(const gchar *p_name)
 	guint32 offset = XFIRE_HEADER_LEN;
 
 	// "name"
-	offset = gfire_proto_write_attr_ss("nick", 0x01, p_name, strlen(p_name), offset);
+	offset = gfire_proto_write_attr_ss("name", 0x01, p_name, strlen(p_name), offset);
 
 	gfire_proto_write_header(offset, 0x07, 1, 0);
 	return offset;
@@ -240,6 +240,9 @@ guint16 gfire_proto_create_join_voip(const gfire_game_data *p_voip)
 // reads buddy list from server and populates purple blist
 void gfire_proto_buddy_list(gfire_data *p_gfire, guint16 p_packet_len)
 {
+	if(!p_gfire)
+		return;
+
 	guint32 offset;
 	gfire_buddy *gf_buddy = NULL;
 	GList *friends = NULL;
@@ -307,6 +310,25 @@ void gfire_proto_buddy_list(gfire_data *p_gfire, guint16 p_packet_len)
 	g_list_free(friends);
 	g_list_free(nicks);
 	g_list_free(userids);
+}
+
+void gfire_proto_buddy_remove(gfire_data *p_gfire, guint16 p_packet_len)
+{
+	guint32 offset;
+	gfire_buddy *gf_buddy = NULL;
+	guint32 userid = 0;
+
+	offset = XFIRE_HEADER_LEN;
+	offset = gfire_proto_read_attr_int32_ss(p_gfire->buff_in, &userid, "userid", offset);
+
+	gf_buddy = gfire_find_buddy(p_gfire, &userid, GFFB_USERID);
+	// Looks like buddy is already removed
+	if(!gf_buddy)
+		return;
+
+	// Remove buddy
+	purple_debug_info("gfire", "Removing buddy %s\n", gfire_buddy_get_name(gf_buddy));
+	gfire_remove_buddy(p_gfire, gf_buddy, FALSE, TRUE);
 }
 
 void gfire_proto_clan_leave(gfire_data *p_gfire, guint16 p_packet_len)

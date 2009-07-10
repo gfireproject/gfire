@@ -47,6 +47,7 @@ guint16 gfire_proto_create_join_voip(const gfire_game_data *p_voip);
 
 // Packet parsing
 void gfire_proto_buddy_list(gfire_data *p_gfire, guint16 p_packet_len);
+void gfire_proto_buddy_remove(gfire_data *p_gfire, guint16 p_packet_len);
 void gfire_proto_login_salt(gfire_data *p_gfire, guint16 p_packet_len);
 void gfire_proto_session_info(gfire_data *p_gfire, guint16 p_packet_len);
 void gfire_proto_invitation(gfire_data *p_gfire, guint16 p_packet_len);

@@ -176,8 +176,6 @@ void gfire_parse_packet(gfire_data *p_gfire, guint16 p_packet_len, guint16 p_pac
 	guint32 newver = 0;
 	char tmp[100] = "";
 	PurpleAccount *account = NULL;
-	gfire_buddy *buddy = NULL;
-	
 
 	switch(p_packet_id)
 	{
@@ -255,11 +253,8 @@ void gfire_parse_packet(gfire_data *p_gfire, guint16 p_packet_len, guint16 p_pac
 		break;	
 
 		case 139:
-			purple_debug(PURPLE_DEBUG_MISC, "gfire", "Remove buddy ack received\n");
-			if(p_packet_len < 14) return;
-
-			buddy = gfire_find_buddy(p_gfire, (p_gfire->buff_in + 13), GFFB_USERID);
-			gfire_remove_buddy(p_gfire, buddy, FALSE, TRUE);
+			purple_debug(PURPLE_DEBUG_MISC, "gfire", "Remove buddy received\n");
+			gfire_proto_buddy_remove(p_gfire, p_packet_len);
 		break;
 
 		case 143:

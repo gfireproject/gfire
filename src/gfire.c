@@ -259,14 +259,8 @@ void gfire_remove_buddy(gfire_data *p_gfire, gfire_buddy *p_buddy, gboolean p_fr
 	if(!p_gfire || !p_buddy)
 		return;
 
-	if(!p_force && !gfire_buddy_is_friend(p_buddy))
-	{
-		purple_notify_message((void *)p_gfire->gc, PURPLE_NOTIFY_MSG_INFO, N_("Xfire Buddy Removal Denied"), N_("Tried removal of Clan Buddy or Friend of Friend"), N_("Only Xfire friends can be removed."), NULL, NULL);
-		return;
-	}
-
 	// Delete from server
-	if(p_fromServer)
+	if(p_fromServer && gfire_buddy_is_friend(p_buddy))
 	{
 		guint16 packet_len = gfire_proto_create_delete_buddy(p_buddy->userid);
 		gfire_send(gfire_get_connection(p_gfire), packet_len);
@@ -277,7 +271,7 @@ void gfire_remove_buddy(gfire_data *p_gfire, gfire_buddy *p_buddy, gboolean p_fr
 	if(!entry)
 		return;
 
-	gfire_buddy_prpl_remove((gfire_buddy*)entry->data);
+	if(p_force) gfire_buddy_prpl_remove((gfire_buddy*)entry->data);
 	gfire_buddy_free((gfire_buddy*)entry->data);
 	p_gfire->buddies = g_list_delete_link(p_gfire->buddies, entry);
 }

@@ -326,9 +326,15 @@ static void gfire_purple_add_buddy(PurpleConnection *p_gc, PurpleBuddy *p_buddy,
 	guint16 packet_len = 0;
 	if(!p_gc || !(gfire = (gfire_data *)p_gc->proto_data) || !p_buddy || !p_buddy->name) return;
 
-	gfire_buddy *gf_buddy = gfire_buddy_create(0, p_buddy->name, p_buddy->alias, GFBT_FRIEND);
+	gfire_buddy *gf_buddy = gfire_find_buddy(gfire, purple_buddy_get_name(p_buddy), GFFB_NAME);
 	if(!gf_buddy)
-		return;
+	{
+		gfire_buddy_create(0, p_buddy->name, p_buddy->alias, GFBT_FRIEND);
+		if(!gf_buddy)
+			return;
+	}
+	else
+		gfire_buddy_make_friend(gf_buddy, p_group);
 
 	gfire_add_buddy(gfire, gf_buddy, p_group);
 	packet_len = gfire_proto_create_invitation(p_buddy->name, "");
@@ -354,17 +360,16 @@ static void gfire_purple_remove_buddy(PurpleConnection *p_gc, PurpleBuddy *p_bud
 	}
 
 	buddynorm = purple_account_get_bool(account, "buddynorm", TRUE);
-	if(buddynorm)
+	if(buddynorm && gfire_buddy_is_friend(gf_buddy))
 	{
-		gchar *tmp = g_strdup_printf(N_("Not Removing %s"), NN(p_buddy->name));
-		purple_debug(PURPLE_DEBUG_MISC, "gfire", "gfire_remove_buddy: buddynorm TRUE not removing buddy %s.\n",
-					NN(p_buddy->name));
+		gchar *tmp = g_strdup_printf(N_("Not Removing %s"), gfire_buddy_get_name(gf_buddy));
+		purple_debug(PURPLE_DEBUG_MISC, "gfire", "gfire_purple_remove_buddy: buddynorm TRUE not removing buddy %s.\n", gfire_buddy_get_name(gf_buddy));
 		purple_notify_message((void *)p_gc, PURPLE_NOTIFY_MSG_INFO, N_("Xfire Buddy Removal Denied"), tmp, N_("Account settings are set to not remove buddies\n"
 																													   "The buddy will be restored on your next login"), NULL, NULL);
 		if(tmp) g_free(tmp);
 	}
 
-	purple_debug(PURPLE_DEBUG_MISC, "gfire", "Removing buddy: %s\n", NN(p_buddy->name));
+	purple_debug(PURPLE_DEBUG_MISC, "gfire", "Removing buddy: %s\n", gfire_buddy_get_name(gf_buddy));
 	gfire_remove_buddy(gfire, gf_buddy, !buddynorm, FALSE);
 }
 
