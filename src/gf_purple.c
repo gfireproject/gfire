@@ -324,12 +324,13 @@ static void gfire_purple_add_buddy(PurpleConnection *p_gc, PurpleBuddy *p_buddy,
 {
 	gfire_data *gfire = NULL;
 	guint16 packet_len = 0;
-	if(!p_gc || !(gfire = (gfire_data *)p_gc->proto_data) || !p_buddy || !p_buddy->name) return;
+	if(!p_gc || !(gfire = (gfire_data *)p_gc->proto_data) || !p_buddy || !purple_buddy_get_name(p_buddy))
+		return;
 
 	gfire_buddy *gf_buddy = gfire_find_buddy(gfire, purple_buddy_get_name(p_buddy), GFFB_NAME);
 	if(!gf_buddy)
 	{
-		gfire_buddy_create(0, p_buddy->name, p_buddy->alias, GFBT_FRIEND);
+		gf_buddy = gfire_buddy_create(0, purple_buddy_get_name(p_buddy), purple_buddy_get_alias(p_buddy), GFBT_FRIEND);
 		if(!gf_buddy)
 			return;
 	}
@@ -337,6 +338,7 @@ static void gfire_purple_add_buddy(PurpleConnection *p_gc, PurpleBuddy *p_buddy,
 		gfire_buddy_make_friend(gf_buddy, p_group);
 
 	gfire_add_buddy(gfire, gf_buddy, p_group);
+
 	packet_len = gfire_proto_create_invitation(p_buddy->name, "");
 	if(packet_len > 0) gfire_send(p_gc, packet_len);
 }

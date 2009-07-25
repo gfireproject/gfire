@@ -447,6 +447,8 @@ void gfire_buddy_proto_alias_change(gfire_data *p_gfire, guint16 p_packet_len)
 			gfire_buddy_get_name(gf_buddy), gfire_buddy_get_alias(gf_buddy), NN(nick));
 
 	gfire_buddy_set_alias(gf_buddy, nick);
+
+	g_free(nick);
 }
 
 void gfire_buddy_proto_changed_avatar(gfire_data *p_gfire, guint16 p_packet_len)
@@ -815,4 +817,47 @@ void gfire_buddy_proto_fof_list(gfire_data *p_gfire, guint16 p_packet_len)
 	g_list_free(nicks);
 	g_list_free(names);
 	g_list_free(common);
+}
+
+void gfire_buddy_proto_clan_alias_change(gfire_data *p_gfire, guint16 p_packet_len)
+{
+	guint32 offset;
+	guint32 clanid = 0;
+	guint32 uid = 0;
+	gchar *nick = NULL;
+	gfire_buddy *gf_buddy = NULL;
+
+	offset = XFIRE_HEADER_LEN;
+
+	// grab the clanid
+	offset = gfire_proto_read_attr_int32_bs(p_gfire->buff_in, &clanid, 0x6C, offset);
+	if(offset == -1)
+		return;
+
+	// grab the userid
+	offset = gfire_proto_read_attr_int32_bs(p_gfire->buff_in, &uid, 0x01, offset);
+	if(offset == -1)
+		return;
+
+	// grab the new nick
+	offset = gfire_proto_read_attr_string_bs(p_gfire->buff_in, &nick, 0x0D, offset);
+	if(offset == -1 || !nick)
+		return;
+
+	gf_buddy = gfire_find_buddy(p_gfire, (gpointer) &uid, GFFB_USERID);
+	if (!gf_buddy)
+	{
+		purple_debug(PURPLE_DEBUG_ERROR, "gfire", "gfire_buddy_proto_clan_alias_change: unknown user ID from Xfire\n");
+		g_free(nick);
+		return;
+	}
+
+	gfire_clan *clan = gfire_find_clan(p_gfire, clanid);
+	if(clan)
+		purple_debug(PURPLE_DEBUG_INFO, "gfire", "User %s changed nick for clan %s (%u) to \"%s\"\n",
+					 gfire_buddy_get_name(gf_buddy), clan->long_name, clanid, nick);
+
+	gfire_buddy_set_clan_alias(gf_buddy, clanid, nick);
+
+	g_free(nick);
 }

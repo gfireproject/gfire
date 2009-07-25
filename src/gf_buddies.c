@@ -800,13 +800,48 @@ void gfire_buddy_add_to_clan(gfire_buddy *p_buddy, gfire_clan *p_clan, const gch
 	if(!p_buddy || !p_clan)
 		return;
 
-	if(gfire_buddy_is_clan_member_of(p_buddy, p_clan->id) || (p_default && gfire_buddy_get_default_clan_data(p_buddy)))
+	if(gfire_buddy_is_clan_member_of(p_buddy, p_clan->id))
 		return;
+
+	if(p_default && gfire_buddy_get_default_clan_data(p_buddy))
+		p_default = FALSE;
 
 	gfire_buddy_clan_data *clan_data = gfire_buddy_clan_data_create(p_clan, p_clanalias, p_default);
 
 	if(clan_data)
+	{
 		p_buddy->clan_data = g_list_append(p_buddy->clan_data, clan_data);
+		if(gfire_buddy_is_clan_member(p_buddy) && p_default)
+			serv_got_alias(purple_account_get_connection(purple_buddy_get_account(p_buddy->prpl_buddy)), gfire_buddy_get_name(p_buddy), clan_data->clan_alias);
+	}
+}
+
+void gfire_buddy_set_clan_alias(gfire_buddy *p_buddy, guint32 p_clanid, const gchar *p_alias)
+{
+	if(p_buddy)
+		return;
+
+	if(gfire_buddy_is_clan_member_of(p_buddy, p_clanid))
+	{
+		GList *cur = p_buddy->clan_data;
+		for(; cur; cur = g_list_next(cur))
+		{
+			if(((gfire_buddy_clan_data*)cur->data)->clan->id == p_clanid)
+			{
+				if(((gfire_buddy_clan_data*)cur->data)->clan_alias)
+					g_free(((gfire_buddy_clan_data*)cur->data)->clan_alias);
+				((gfire_buddy_clan_data*)cur->data)->clan_alias = NULL;
+
+				if(p_alias)
+					((gfire_buddy_clan_data*)cur->data)->clan_alias = g_strdup(p_alias);
+
+				break;
+			}
+		}
+
+		if(gfire_buddy_is_clan_member(p_buddy) && p_buddy->prpl_buddy && cur && ((gfire_buddy_clan_data*)cur->data)->is_default)
+			serv_got_alias(purple_account_get_connection(purple_buddy_get_account(p_buddy->prpl_buddy)), gfire_buddy_get_name(p_buddy), ((gfire_buddy_clan_data*)cur->data)->clan_alias);
+	}
 }
 
 void gfire_buddy_remove_clan(gfire_buddy *p_buddy, guint32 p_clanid, guint32 p_newdefault)

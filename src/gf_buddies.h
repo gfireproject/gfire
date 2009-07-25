@@ -161,6 +161,7 @@ gboolean gfire_buddy_is_online(const gfire_buddy *p_buddy);
 gboolean gfire_buddy_is_clan_member_of(const gfire_buddy *p_buddy, guint32 p_clanid);
 void gfire_buddy_add_to_clan(gfire_buddy *p_buddy, gfire_clan *p_clan, const gchar *p_clanalias, gboolean p_default);
 void gfire_buddy_remove_clan(gfire_buddy *p_buddy, guint32 p_clanid, guint32 p_newdefault);
+void gfire_buddy_set_clan_alias(gfire_buddy *p_buddy, guint32 p_clanid, const gchar *p_alias);
 guint32 gfire_buddy_get_default_clan(gfire_buddy *p_buddy);
 GList *gfire_buddy_get_clans_info(const gfire_buddy *p_buddy);
 void gfire_buddy_make_friend(gfire_buddy *p_buddy, PurpleGroup *p_group);

@@ -313,6 +313,11 @@ void gfire_parse_packet(gfire_data *p_gfire, guint16 p_packet_len, guint16 p_pac
 			gfire_buddy_proto_alias_change(p_gfire, p_packet_len);
 		break;
 
+		case 162:
+			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received clan buddy nick change packet\n");
+			gfire_buddy_proto_clan_alias_change(p_gfire, p_packet_len);
+		break;
+
 		case 169:
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received system broadcast\n");
 			gfire_proto_system_broadcast(p_gfire, p_packet_len);
