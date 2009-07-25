@@ -616,20 +616,20 @@ void gfire_buddy_set_alias(gfire_buddy *p_buddy, const gchar *p_alias)
 
 	if(p_buddy->prpl_buddy &&
 	   !(gfire_buddy_is_clan_member(p_buddy) &&
-	   p_buddy->clan_data &&
-	   ((gfire_buddy_clan_data*)p_buddy->clan_data->data)->clan_alias))
-		serv_got_alias(purple_account_get_connection(p_buddy->prpl_buddy->account), p_buddy->name, p_buddy->alias);
+		 gfire_buddy_get_default_clan_data(p_buddy) &&
+		 gfire_buddy_get_default_clan_data(p_buddy)->clan_alias))
+		serv_got_alias(purple_account_get_connection(purple_buddy_get_account(p_buddy->prpl_buddy)), p_buddy->name, p_buddy->alias);
 }
 
-const gchar *gfire_buddy_get_alias(const gfire_buddy *p_buddy)
+const gchar *gfire_buddy_get_alias(gfire_buddy *p_buddy)
 {
 	if(!p_buddy)
 		return NULL;
 
 	if(gfire_buddy_is_clan_member(p_buddy) &&
-	   p_buddy->clan_data &&
-	   ((gfire_buddy_clan_data*)p_buddy->clan_data->data)->clan_alias)
-		return ((gfire_buddy_clan_data*)p_buddy->clan_data->data)->clan_alias;
+	   gfire_buddy_get_default_clan_data(p_buddy) &&
+	   gfire_buddy_get_default_clan_data(p_buddy)->clan_alias)
+		return gfire_buddy_get_default_clan_data(p_buddy)->clan_alias;
 
 	if(p_buddy->alias)
 		return p_buddy->alias;

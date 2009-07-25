@@ -171,7 +171,7 @@ gchar *gfire_buddy_get_common_buddies_str(const gfire_buddy *p_buddy);
 
 // Appearance
 void gfire_buddy_set_alias(gfire_buddy *p_buddy, const gchar *p_alias);
-const gchar *gfire_buddy_get_alias(const gfire_buddy *p_buddy);
+const gchar *gfire_buddy_get_alias(gfire_buddy *p_buddy);
 const gchar *gfire_buddy_get_name(const gfire_buddy *p_buddy);
 void gfire_buddy_set_avatar(gfire_buddy *p_buddy, guchar *p_data, guint32 p_len);
 void gfire_buddy_download_avatar(gfire_buddy *p_buddy, guint32 p_type, guint32 p_avatarNum);

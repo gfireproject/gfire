@@ -431,7 +431,7 @@ void gfire_buddy_proto_alias_change(gfire_data *p_gfire, guint16 p_packet_len)
 		return;
 
 	// grab the new nick
-	offset = gfire_proto_read_attr_string_bs(p_gfire->buff_in, &nick, 0x01, offset);
+	offset = gfire_proto_read_attr_string_bs(p_gfire->buff_in, &nick, 0x0D, offset);
 	if(offset == -1 || !nick)
 		return;
 
@@ -443,7 +443,7 @@ void gfire_buddy_proto_alias_change(gfire_data *p_gfire, guint16 p_packet_len)
 		return;
 	}
 
-	purple_debug(PURPLE_DEBUG_INFO, "gfire", "User %s changed alias from \"%s\" to \"%s\"\n",
+	purple_debug(PURPLE_DEBUG_INFO, "gfire", "User %s changed nick from \"%s\" to \"%s\"\n",
 			gfire_buddy_get_name(gf_buddy), gfire_buddy_get_alias(gf_buddy), NN(nick));
 
 	gfire_buddy_set_alias(gf_buddy, nick);
