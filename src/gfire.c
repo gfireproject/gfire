@@ -46,6 +46,8 @@ gfire_data *gfire_create(PurpleConnection *p_gc)
 	if(!ret->buff_in)
 		goto error;
 
+	ret->fd = -1;
+
 	gfire_network_init();
 
 	// Create server_ip_mutex
@@ -115,18 +117,21 @@ const gchar *gfire_get_name(const gfire_data *p_gfire)
 static void gfire_login_cb(gpointer p_data, gint p_source, const gchar *p_error_message)
 {
 	gfire_data *gfire = (gfire_data*)p_data;
+	if(!gfire)
+		return;
+
+	if(p_source < 0)
+	{
+		purple_connection_error_reason(gfire_get_connection(gfire), PURPLE_CONNECTION_ERROR_NETWORK_ERROR, p_error_message);
+		return;
+	}
+
 	PurpleAccount *account = purple_connection_get_account(gfire_get_connection(gfire));
 
 	purple_debug(PURPLE_DEBUG_MISC, "gfire", "connected file descriptor = %d\n", p_source);
 	if(!g_list_find(purple_connections_get_all(), gfire_get_connection(gfire)))
 	{
 		close(p_source);
-		return;
-	}
-
-	if(p_source < 0)
-	{
-		purple_connection_error(gfire_get_connection(gfire), N_("Unable to connect to host."));
 		return;
 	}
 
@@ -161,7 +166,7 @@ void gfire_login(gfire_data *p_gfire)
 				purple_account_get_int(account, "port", XFIRE_PORT),
 				gfire_login_cb, p_gfire) == NULL)
 	{
-			purple_connection_error(gfire_get_connection(p_gfire), N_("Couldn't create socket."));
+			purple_connection_error_reason(gfire_get_connection(p_gfire), PURPLE_CONNECTION_ERROR_NETWORK_ERROR, N_("Couldn't create socket."));
 			return;
 	}
 }
@@ -191,6 +196,7 @@ void gfire_close(gfire_data *p_gfire)
 	{
 		purple_debug(PURPLE_DEBUG_MISC, "gfire", "CONN: closing source file descriptor\n");
 		close(p_gfire->fd);
+		p_gfire->fd = -1;
 	}
 
 	gc->proto_data = NULL;
@@ -1012,11 +1018,17 @@ void gfire_show_buddy_info(gfire_data *p_gfire, const gchar *p_name)
 
 void gfire_keep_alive(gfire_data *p_gfire)
 {
-	if(p_gfire)
+	if(!p_gfire)
 		return;
 
 	GTimeVal gtv;
 	g_get_current_time(&gtv);
+
+	if((gtv.tv_sec - p_gfire->last_response) > XFIRE_KEEPALIVE_TIME)
+	{
+		purple_connection_error_reason(gfire_get_connection(p_gfire), PURPLE_CONNECTION_ERROR_NETWORK_ERROR, N_("Connection timed out"));
+		return;
+	}
 
 	if((gtv.tv_sec - p_gfire->last_packet) > XFIRE_KEEPALIVE_TIME)
 	{

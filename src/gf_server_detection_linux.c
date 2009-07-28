@@ -54,7 +54,7 @@ static gboolean check_process_argument(const int process_id, const gchar *proces
 
 	pclose(cmd);
 
-	char *argument_match = strstr(&buf, process_argument);
+	char *argument_match = strstr(buf, process_argument);
 	if (argument_match == NULL) return FALSE;
 	else return TRUE;
 }
@@ -283,7 +283,7 @@ void gfire_server_detection_detect(gfire_data *p_gfire)
 	if (!p_gfire) return;
 
 	/* Get the local and remote ip, needed to be able to filter them out */
-	char *local_ip, *remote_ip;
+	char *local_ip = NULL, *remote_ip = NULL;
 
 	struct ifaddrs *if_addresses, *if_adresses_tmp;
 	int address_family, address;
@@ -324,9 +324,9 @@ void gfire_server_detection_detect(gfire_data *p_gfire)
 
 	const gfire_game_data *game_data = gfire_get_game_data(p_gfire);
 
-	gchar *server_ip;
-	gboolean server_detect_udp;
-	int server_port;
+	gchar *server_ip = NULL;
+	gboolean server_detect_udp = FALSE;
+	int server_port = 0;
 
 	// Get all infos needed for detection
 	gfire_game_detection_info *detection_info = gfire_game_detection_info_get(game_data->id);
@@ -394,7 +394,7 @@ void gfire_server_detection_detect(gfire_data *p_gfire)
 			if (regex_match == TRUE) server_detect_udp = TRUE;
 			else server_detect_udp = FALSE;
 
-			fclose(command_pipe);
+			pclose(command_pipe);
 		}
 
 		/* Get ip using udp if needed */
@@ -466,7 +466,7 @@ void gfire_server_detection_detect(gfire_data *p_gfire)
 					}
 				}
 
-				fclose(command_pipe);
+				pclose(command_pipe);
 			}
 		}
 

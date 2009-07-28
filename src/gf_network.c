@@ -111,7 +111,7 @@ void gfire_input_cb(gpointer p_data, gint p_source, PurpleInputCondition p_condi
 			if(tmp == 0)
 			{
 				purple_debug(PURPLE_DEBUG_MISC, "gfire", "(input): read 0 bytes, connection closed by peer\n");
-				purple_connection_error(gfire_get_connection(gfire), N_("Connection closed by peer."));
+				purple_connection_error_reason(gfire_get_connection(gfire), PURPLE_CONNECTION_ERROR_NETWORK_ERROR, N_("Connection closed by peer."));
 			}
 			// We couldn't read now; not necessarily an error
 			else if(errno == EAGAIN)
@@ -120,7 +120,7 @@ void gfire_input_cb(gpointer p_data, gint p_source, PurpleInputCondition p_condi
 			{
 				purple_debug(PURPLE_DEBUG_ERROR, "gfire", "Reading from socket failed errno = %d err_str = %s.\n",
 						errno, strerror(errno));
-				purple_connection_error(gfire_get_connection(gfire), N_("Socket read failure."));
+				purple_connection_error_reason(gfire_get_connection(gfire), PURPLE_CONNECTION_ERROR_NETWORK_ERROR, N_("Socket read failure."));
 			}
 			gfire->bytes_read = 0;
 			return;
@@ -145,7 +145,7 @@ void gfire_input_cb(gpointer p_data, gint p_source, PurpleInputCondition p_condi
 		if(tmp == 0)
 		{
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "(input): read 0 bytes, connection closed by peer\n");
-			purple_connection_error(gfire_get_connection(gfire), N_("Connection closed by peer."));
+			purple_connection_error_reason(gfire_get_connection(gfire), PURPLE_CONNECTION_ERROR_NETWORK_ERROR, N_("Connection closed by peer."));
 		}
 		// We couldn't read now; not necessarily an error
 		else if(errno == EAGAIN)
@@ -154,7 +154,7 @@ void gfire_input_cb(gpointer p_data, gint p_source, PurpleInputCondition p_condi
 		{
 			purple_debug(PURPLE_DEBUG_ERROR, "gfire", "Reading from socket failed errno = %d err_str = %s.\n",
 				errno, strerror(errno));
-			purple_connection_error(gfire_get_connection(gfire), N_("Socket read failure."));
+			purple_connection_error_reason(gfire_get_connection(gfire), PURPLE_CONNECTION_ERROR_NETWORK_ERROR, N_("Socket read failure."));
 		}
 		gfire->bytes_read = 0;
 		return;
@@ -170,6 +170,10 @@ void gfire_input_cb(gpointer p_data, gint p_source, PurpleInputCondition p_condi
 	//		Get packet id
 	memcpy(&pkt_id, gfire->buff_in + 2, sizeof(pkt_id));
 	pkt_id = GUINT16_FROM_LE(pkt_id);
+
+	GTimeVal gtv;
+	g_get_current_time(&gtv);
+	gfire->last_response = gtv.tv_sec;
 
 	gfire->bytes_read = 0;
 	gfire_parse_packet(gfire, packet_len, pkt_id);
@@ -192,7 +196,7 @@ void gfire_parse_packet(gfire_data *p_gfire, guint16 p_packet_len, guint16 p_pac
 
 		case 129:
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received: wrong passwd/username\n");
-			purple_connection_error(gfire_get_connection(p_gfire), N_("Password or Username Incorrect."));
+			purple_connection_error_reason(gfire_get_connection(p_gfire), PURPLE_CONNECTION_ERROR_AUTHENTICATION_FAILED, N_("Password or Username Incorrect."));
 		break;
 	
 		case 130:
@@ -236,7 +240,7 @@ void gfire_parse_packet(gfire_data *p_gfire, guint16 p_packet_len, guint16 p_pac
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "login ok, but version too old, needs to be = %d\n", newver);
 			account = purple_connection_get_account(gfire_get_connection(p_gfire));
 			purple_account_set_int(account, "version", newver);
-			purple_connection_error(gfire_get_connection(p_gfire), tmp);
+			purple_connection_error_reason(gfire_get_connection(p_gfire), PURPLE_CONNECTION_ERROR_NETWORK_ERROR, tmp);
 		break;
 
 		case 135:

@@ -110,9 +110,9 @@
 #define XFIRE_CHATID_LEN 21
 #define XFIRE_SERVER "cs.xfire.com"
 #define XFIRE_PORT 25999
-#define XFIRE_PROTO_VERSION 111
+#define XFIRE_PROTO_VERSION 112
 #define XFIRE_CONNECT_STEPS 3
-#define XFIRE_KEEPALIVE_TIME 300  // see gfire_keep_alive for more info
+#define XFIRE_KEEPALIVE_TIME 180  // see gfire_keep_alive for more info
 #define XFIRE_PROFILE_URL "http://www.xfire.com/profile/"
 #define XFIRE_XML_INFO_URL "http://www.xfire.com/xml/%s/%s/" // username, info-type
 #define XFIRE_AVATAR_URL "http://screenshot.xfire.com/avatar/%s.jpg?%u" // username, revision number

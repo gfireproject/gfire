@@ -69,6 +69,7 @@ struct _gfire_data
 	guint8 *buff_in;
 	guint16 bytes_read;
 	gulong last_packet;			/* time (in seconds) of our last packet */
+	gulong last_response;		// time (in seconds) of the last packet from server
 	PurpleConnection *gc;
 
 	// Xfire session
