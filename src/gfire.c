@@ -1024,7 +1024,7 @@ void gfire_keep_alive(gfire_data *p_gfire)
 	GTimeVal gtv;
 	g_get_current_time(&gtv);
 
-	if((gtv.tv_sec - p_gfire->last_response) > XFIRE_KEEPALIVE_TIME)
+	if((gtv.tv_sec - p_gfire->last_response) > (XFIRE_KEEPALIVE_TIME + 60))
 	{
 		purple_connection_error_reason(gfire_get_connection(p_gfire), PURPLE_CONNECTION_ERROR_NETWORK_ERROR, N_("Connection timed out"));
 		return;
