@@ -29,6 +29,7 @@
 #include "gfire.h"
 #include "gf_server_browser_proto.h"
 
+#ifdef HAVE_GTK
 typedef struct _server_browser_callback_args
 {
 	gfire_data *gfire;
@@ -37,5 +38,6 @@ typedef struct _server_browser_callback_args
 
 void gfire_server_browser_show(PurplePluginAction *p_action);
 void *gfire_server_browser_update_server_list_thread(GtkListStore *p_server_list_store);
+#endif // HAVE_GTK
 
 #endif // _GF_SERVER_BROWSER_H

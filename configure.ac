@@ -41,9 +41,9 @@ CFLAGS_save="$CFLAGS"
 AC_PROG_CC
 CFLAGS="$CFLAGS_save"
 
-AC_ARG_ENABLE(debug, [  --enable-debug  Compile with debugging support.],, enable_debug=no)
+AC_ARG_ENABLE(debug, [  --enable-debug          Compile with debugging support.],, enable_debug=no)
 
-if test "$enable_debug"="yes"; then
+if test $enable_debug = "yes"; then
 	DEBUG_CFLAGS="$DEBUG_CFLAGS -DG_DISABLE_DEPRECATED -DGDK_DISABLE_DEPRECATED -DGDK_PIXBUF_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED"
 	AC_DEFINE(DEBUG, 1, [Define if debugging is enabled.])
 fi
@@ -66,6 +66,16 @@ AC_SUBST(PIDGIN_LIBS)
 #
 # Check for GTK+ and other dependencies
 #
+AC_ARG_ENABLE(gtk, [  --disable-gtk           Don't compile with GTK+ support. (no server browser, no game manager)],, enable_gtk=yes)
+if test $enable_gtk = "yes"; then
+	PKG_CHECK_MODULES(GTK, gtk+-2.0, AC_DEFINE(HAVE_GTK, 1, [Define if we've support for GTK+]), AC_MSG_ERROR([
+*** GTK+ 2.0 is required to build gfire; please make sure you have
+*** the GLib development headers installed. The latest version of GLib is
+*** always available at http://www.gtk.org]))
+	AC_SUBST(GTK_CFLAGS)
+	AC_SUBST(GTK_LIBS)
+fi
+
 AM_PATH_GLIB_2_0(2.0.0,, AC_MSG_ERROR([
 *** GLib 2.0 is required to build gfire; please make sure you have
 *** the GLib development headers installed. The latest version of GLib is

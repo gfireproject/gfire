@@ -28,6 +28,8 @@
 // Globally required headers ////////////////////////////////////////
 #ifdef HAVE_CONFIG_H
 	#include <gfire_config.h>
+#else
+	#undef HAVE_GTK
 #endif // HAVE_CONFIG_H
 
 // Standard libraries
@@ -36,6 +38,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <sys/types.h>
+#include <errno.h>
 
 // Glib
 #include <glib-object.h>
@@ -43,14 +46,16 @@
 #include <glib/gprintf.h>
 #include <glib/gthread.h>
 
-#ifdef _WIN32
-#else
-	#include <gtk/gtk.h>
-	#include <gio/gio.h>
-	#include <errno.h>
-#endif /* _WIN32 */
+#ifdef HAVE_GTK
+	#ifdef _WIN32
+	#else
+		#include <gtk/gtk.h>
+		#include <gio/gio.h>
+	#endif /* _WIN32 */
+#endif // HAVE_GTK
 
 // Libpurple
+#include "core.h"
 #include "util.h"
 #include "server.h"
 #include "notify.h"

@@ -27,6 +27,9 @@
 /* Define if the GNU gettext() function is already present or preinstalled. */
 #define HAVE_GETTEXT 1
 
+/* Define if we've support for GTK+ */
+#define HAVE_GTK 1
+
 /* Define to 1 if you have the <inttypes.h> header file. */
 #define HAVE_INTTYPES_H 1
 
@@ -65,6 +68,10 @@
 
 /* Define the location where the catalogs will be installed */
 #define LOCALEDIR "/usr/share/locale"
+
+/* Define to the sub-directory in which libtool stores uninstalled libraries.
+   */
+#define LT_OBJDIR ".libs/"
 
 /* Define to the address where bug reports for this package should be sent. */
 #define SNPP_PACKAGE_BUGREPORT ""

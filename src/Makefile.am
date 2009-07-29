@@ -39,13 +39,14 @@ libxfire_la_SOURCES = \
 	gf_server_detection_linux.c
 
 libxfire_la_LIBADD = \
-	$(GLIB_LIBS) $(SSL_LIBS)
+	$(GLIB_LIBS) $(GTK_LIBS) $(SSL_LIBS)
 endif
 
 AM_CPPFLAGS = \
 	-DLIBDIR=\"$(libdir)/purple-2/\" \
 	-DDATADIR=\"$(datadir)\" \
 	$(GLIB_CFLAGS) \
+	$(GTK_CFLAGS) \
 	$(PIDGIN_CFLAGS) \
 	$(SSL_CFLAGS) \
 	$(DEBUG_CFLAGS)

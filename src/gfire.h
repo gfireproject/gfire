@@ -95,8 +95,10 @@ struct _gfire_data
 	guint xqf_source;			/* g_timeout_add source number for xqf callback */
 	guint det_source;			/* g_timeout_add source number for game detection callback */
 
+#ifdef HAVE_GTK
 	// Server Browser
 	GtkBuilder *server_browser;
+#endif // HAVE_GTK
 
 	// Server Detection
 	GList *server_list;

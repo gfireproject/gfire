@@ -512,12 +512,19 @@ static GList *gfire_purple_actions(PurplePlugin *p_plugin, gpointer p_context)
 	act = purple_plugin_action_new(N_("Friend Search"),
 			gfire_show_friend_search_cb);
 	m = g_list_append(m, act);
-	act = purple_plugin_action_new(N_("Manage Games"),
-			gfire_game_manager_show);
-	m = g_list_append(m, act);
-	act = purple_plugin_action_new(N_("Server Browser"),
-		gfire_server_browser_show);
-	m = g_list_append(m, act);
+
+#ifdef HAVE_GTK
+	if(strcmp(purple_core_get_ui(), "gnt-purple") != 0)
+	{
+		act = purple_plugin_action_new(N_("Manage Games"),
+									   gfire_game_manager_show);
+		m = g_list_append(m, act);
+		act = purple_plugin_action_new(N_("Server Browser"),
+									   gfire_server_browser_show);
+		m = g_list_append(m, act);
+	}
+#endif // HAVE_GTK
+
 	m = g_list_append(m, NULL);
 	act = purple_plugin_action_new(N_("About"),
 			gfire_menu_action_about_cb);

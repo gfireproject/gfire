@@ -25,6 +25,8 @@
 #include "gf_query.h"
 #include "gf_server_browser.h"
 
+#ifdef HAVE_GTK
+
 static void gfire_server_browser_connect_cb(server_browser_callback_args *p_args, GtkWidget *p_sender)
 {
 	gfire_data *gfire = p_args->gfire;
@@ -209,3 +211,5 @@ void gfire_server_browser_show(PurplePluginAction *p_action)
 
 	gtk_widget_show_all(server_browser_window);
 }
+
+#endif // HAVE_GTK

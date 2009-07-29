@@ -103,6 +103,8 @@ xmlnode *gfire_game_launch_node_first();
 xmlnode *gfire_game_launch_node_next(xmlnode *p_node);
 
 // GFIRE GAME MANAGER ///////////////////////////////////////////////
+#ifdef HAVE_GTK
 void gfire_game_manager_show(PurplePluginAction *p_action);
+#endif // HAVE_GTK
 
 #endif // _GF_GAMES_H

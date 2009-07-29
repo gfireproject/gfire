@@ -42,6 +42,10 @@ void gfire_server_browser_proto_serverlist(gfire_data *p_gfire, guint16 p_packet
 	if(!p_gfire)
 		return;
 
+#ifndef HAVE_GTK
+	return;
+#else
+
 	guint32 offset = XFIRE_HEADER_LEN;
 	guint32 gameid;
 	GList *ips = NULL;
@@ -103,4 +107,7 @@ void gfire_server_browser_proto_serverlist(gfire_data *p_gfire, guint16 p_packet
 	}
 	// Create a thread to update the server list
 	g_thread_create((GThreadFunc)gfire_server_browser_update_server_list_thread, list_store, FALSE, NULL);
+
+#endif // HAVE_GTK
+
 }

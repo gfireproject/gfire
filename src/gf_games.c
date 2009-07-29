@@ -635,6 +635,7 @@ gfire_game_detection_info *gfire_game_detection_info_get(guint32 p_gameid)
 	return ret;
 }
 
+#ifdef HAVE_GTK
 static void gfire_game_manager_update_executable_toggled_cb(GtkBuilder *p_builder, GtkWidget *p_executable_check_button)
 {
 	if (p_builder == NULL)
@@ -1093,3 +1094,4 @@ void gfire_game_manager_show(PurplePluginAction *p_action)
 
 	gtk_widget_show_all(manage_games_window);
 }
+#endif // HAVE_GTK
