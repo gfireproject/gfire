@@ -2,8 +2,9 @@
 # Most of this configure script was ripped from gaim-netsoul,
 # thank you guys!!!
 #
-AC_INIT(src/gfire.c)
+AC_INIT([gfire],, [gfireteam@gmail.com], [http://gfireproject.org])
 AC_PREREQ(2.50)
+AC_CONFIG_SRCDIR([src/gfire.c])
 
 GFIRE_VERSION="`cat ./VERSION`"
 
@@ -15,12 +16,12 @@ AC_CONFIG_MACRO_DIR([m4])
 #
 # Internationalisation support
 #
+AC_PROG_INTLTOOL
 GETTEXT_PACKAGE="$PACKAGE"
 AC_SUBST(GETTEXT_PACKAGE)
+AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, ["$GETTEXT_PACKAGE"], [Define the gettext package to be used])
+ALL_LINGUAS="de es_ES"
 AM_GLIB_GNU_GETTEXT
-AM_GLIB_DEFINE_LOCALEDIR(LOCALEDIR)
-
-IT_PROG_INTLTOOL([0.35.0])
 
 #
 # Define Gfire header
@@ -32,7 +33,6 @@ AH_TOP([
 AH_BOTTOM([#endif])
 
 AC_DEFINE_UNQUOTED([GFIRE_VERSION], ["$GFIRE_VERSION"], [Gfire version])
-AC_DEFINE_UNQUOTED([PAKAGE], ["$PACKAGE"], [PACKAGE])
 
 #
 # Check C compiler

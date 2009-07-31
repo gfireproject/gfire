@@ -96,7 +96,7 @@ void gfire_server_browser_proto_serverlist(gfire_data *p_gfire, guint16 p_packet
 		gchar *addr = gfire_game_data_addr_str(&ip_data);
 
 		gtk_list_store_append(list_store, &iter);
-		gtk_list_store_set(list_store, &iter, 0, addr, 1, addr, 2, N_("N/A"), 3, N_("N/A"), -1);
+		gtk_list_store_set(list_store, &iter, 0, addr, 1, addr, 2, _("N/A"), 3, _("N/A"), -1);
 
 		g_free(addr);
 

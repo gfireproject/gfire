@@ -473,11 +473,6 @@ void gfire_buddy_set_session_id(gfire_buddy *p_buddy, const guint8 *p_sessionid)
 	else
 	{
 		p_buddy->status = PURPLE_STATUS_AVAILABLE;
-
-		purple_debug_misc("gfire", "requesting advanced info for %s\n", gfire_buddy_get_name(p_buddy));
-		// Request advanced infoview
-		guint16 len = gfire_buddy_proto_create_advanced_info_request(p_buddy->userid);
-		if(len > 0) gfire_send(p_buddy->gc, len);
 	}
 
 	gfire_buddy_update_status(p_buddy);
@@ -571,6 +566,25 @@ gboolean gfire_buddy_is_busy(const gfire_buddy *p_buddy)
 		return FALSE;
 
 	return p_buddy->status == PURPLE_STATUS_UNAVAILABLE;
+}
+
+void gfire_buddy_request_info(const gfire_buddy *p_buddy)
+{
+	if(!p_buddy)
+		return;
+
+	purple_debug_misc("gfire", "requesting advanced info for %s\n", gfire_buddy_get_name(p_buddy));
+	// Request advanced infoview
+	guint16 len = gfire_buddy_proto_create_advanced_info_request(p_buddy->userid);
+	if(len > 0) gfire_send(p_buddy->gc, len);
+}
+
+gboolean gfire_buddy_got_info(const gfire_buddy *p_buddy)
+{
+	if(!p_buddy)
+		return FALSE;
+
+	return p_buddy->got_info;
 }
 
 gboolean gfire_buddy_is_online(const gfire_buddy *p_buddy)
@@ -694,7 +708,7 @@ gchar *gfire_buddy_get_status_text(const gfire_buddy *p_buddy)
 	if(gfire_buddy_is_playing(p_buddy))
 	{
 		gchar *tmp = purple_unescape_html(gfire_game_name(p_buddy->game_data.id));
-		gchar *ret = g_strdup_printf(N_("Playing %s"), tmp);
+		gchar *ret = g_strdup_printf(_("Playing %s"), tmp);
 		g_free(tmp);
 		return ret;
 	}
@@ -746,6 +760,8 @@ void gfire_buddy_download_avatar(gfire_buddy *p_buddy, guint32 p_type, guint32 p
 {
 	if(!p_buddy || !p_buddy->prpl_buddy)
 		return;
+
+	p_buddy->got_info = TRUE;
 
 	gchar *avatar_url = NULL;
 	PurpleBuddyIcon *buddy_icon = NULL;

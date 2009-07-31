@@ -206,7 +206,7 @@ void gfire_chat_motd_changed(gfire_chat *p_chat, const gchar *p_motd)
 	purple_debug(PURPLE_DEBUG_MISC, "gfire", "new motd for room %s: %s\n", p_chat->topic, p_motd);
 
 	purple_conv_chat_set_topic(PURPLE_CONV_CHAT(p_chat->c), "", p_motd);
-	gchar *tmpmsg = g_strdup_printf(N_("Today's message changed to:\n%s"), p_motd);
+	gchar *tmpmsg = g_strdup_printf(_("Today's message changed to:\n%s"), p_motd);
 	purple_conv_chat_write(PURPLE_CONV_CHAT(p_chat->c), "", tmpmsg, PURPLE_MESSAGE_SYSTEM, time(NULL));
 	g_free(tmpmsg);
 }
@@ -260,7 +260,7 @@ void gfire_chat_show(gfire_chat *p_chat)
 		return;
 
 	// Create conversation
-	gchar *wnd_title = g_strdup_printf(N_("%s [Xfire Chat]"), p_chat->topic);
+	gchar *wnd_title = g_strdup_printf(_("%s [Xfire Chat]"), p_chat->topic);
 	p_chat->c = serv_got_joined_chat(p_chat->gc, p_chat->purple_id, wnd_title);
 	g_free(wnd_title);
 
@@ -268,14 +268,14 @@ void gfire_chat_show(gfire_chat *p_chat)
 	purple_conv_chat_set_topic(PURPLE_CONV_CHAT(p_chat->c), NULL, p_chat->topic);
 
 	// Join message
-	gchar *tmpmsg = g_strdup_printf(N_("You are now chatting in %s."), p_chat->topic);
+	gchar *tmpmsg = g_strdup_printf(_("You are now chatting in %s."), p_chat->topic);
 	purple_conv_chat_write(PURPLE_CONV_CHAT(p_chat->c), "", tmpmsg, PURPLE_MESSAGE_SYSTEM, time(NULL));
 	g_free(tmpmsg);
 
 	// MotD
 	if(p_chat->motd)
 	{
-		gchar *tmpmsg = g_strdup_printf(N_("Today's message:\n%s."), p_chat->motd);
+		gchar *tmpmsg = g_strdup_printf(_("Today's message:\n%s."), p_chat->motd);
 		purple_conv_chat_write(PURPLE_CONV_CHAT(p_chat->c), "", tmpmsg, PURPLE_MESSAGE_SYSTEM, time(NULL));
 		g_free(tmpmsg);
 	}

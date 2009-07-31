@@ -114,19 +114,21 @@ static void gfire_purple_blist_tooltip_text(PurpleBuddy *p_buddy, PurpleNotifyUs
 
 	if(purple_presence_is_online(p))
 	{
+		gfire_buddy_request_info(gf_buddy);
+
 		// Game Info
 		if(gfire_buddy_is_playing(gf_buddy))
 		{
 			const gfire_game_data *game_data = gfire_buddy_get_game_data(gf_buddy);
 
 			gchar *game_name = gfire_game_name(game_data->id);
-			purple_notify_user_info_add_pair(p_user_info, N_("Game"), NN(game_name));
+			purple_notify_user_info_add_pair(p_user_info, _("Game"), NN(game_name));
 			if(game_name) g_free(game_name);
 
 			if(gfire_game_data_has_addr(game_data))
 			{
 				gchar *addr = gfire_game_data_addr_str(game_data);
-				purple_notify_user_info_add_pair(p_user_info, N_("Server"), addr);
+				purple_notify_user_info_add_pair(p_user_info, _("Server"), addr);
 				g_free(addr);
 			}
 		}
@@ -145,7 +147,7 @@ static void gfire_purple_blist_tooltip_text(PurpleBuddy *p_buddy, PurpleNotifyUs
 				g_free(addr);
 			}
 			else
-				purple_notify_user_info_add_pair(p_user_info, NN(voip_name), N_("unknown"));
+				purple_notify_user_info_add_pair(p_user_info, NN(voip_name), _("unknown"));
 
 			if(voip_name) g_free(voip_name);
 		}
@@ -160,7 +162,7 @@ static void gfire_purple_blist_tooltip_text(PurpleBuddy *p_buddy, PurpleNotifyUs
 			if(tmp) g_free(tmp);
 		}
 		else
-			purple_notify_user_info_add_pair(p_user_info, N_("Status"), gfire_buddy_get_status_name(gf_buddy));
+			purple_notify_user_info_add_pair(p_user_info, _("Status"), gfire_buddy_get_status_name(gf_buddy));
 
 		// FoF common friends
 		if(gfire_buddy_is_friend_of_friend(gf_buddy))
@@ -170,7 +172,7 @@ static void gfire_purple_blist_tooltip_text(PurpleBuddy *p_buddy, PurpleNotifyUs
 			{
 				gchar *escaped_cf = gfire_escape_html(common_friends);
 				g_free(common_friends);
-				purple_notify_user_info_add_pair(p_user_info, N_("Common Friends"), escaped_cf);
+				purple_notify_user_info_add_pair(p_user_info, _("Common Friends"), escaped_cf);
 				g_free(escaped_cf);
 			}
 		}
@@ -220,7 +222,7 @@ static void gfire_purple_login(PurpleAccount *p_account)
 	gfire = gfire_create(gc);
 	if(!gfire)
 	{
-		purple_connection_error(gc, N_("Protocol initialization failed."));
+		purple_connection_error(gc, _("Protocol initialization failed."));
 		return;
 	}
 
@@ -253,7 +255,7 @@ static gint32 gfire_purple_im_send(PurpleConnection *p_gc, const gchar *p_who, c
 	buddy = purple_find_buddy(account, gf_buddy->name);
 	if(!buddy)
 	{
-		purple_conv_present_error(p_who, account, N_("Message could not be sent. Buddy not in contact list"));
+		purple_conv_present_error(p_who, account, _("Message could not be sent. Buddy not in contact list"));
 		return 1;
 	}
 
@@ -266,7 +268,7 @@ static gint32 gfire_purple_im_send(PurpleConnection *p_gc, const gchar *p_who, c
 	}
 	else
 	{
-		purple_conv_present_error(p_who, account, N_("Message could not be sent. Buddy offline"));
+		purple_conv_present_error(p_who, account, _("Message could not be sent. Buddy offline"));
 		return 1;
 	}
 }
@@ -364,9 +366,9 @@ static void gfire_purple_remove_buddy(PurpleConnection *p_gc, PurpleBuddy *p_bud
 	buddynorm = purple_account_get_bool(account, "buddynorm", TRUE);
 	if(buddynorm && gfire_buddy_is_friend(gf_buddy))
 	{
-		gchar *tmp = g_strdup_printf(N_("Not Removing %s"), gfire_buddy_get_name(gf_buddy));
+		gchar *tmp = g_strdup_printf(_("Not Removing %s"), gfire_buddy_get_name(gf_buddy));
 		purple_debug(PURPLE_DEBUG_MISC, "gfire", "gfire_purple_remove_buddy: buddynorm TRUE not removing buddy %s.\n", gfire_buddy_get_name(gf_buddy));
-		purple_notify_message((void *)p_gc, PURPLE_NOTIFY_MSG_INFO, N_("Xfire Buddy Removal Denied"), tmp, N_("Account settings are set to not remove buddies\n"
+		purple_notify_message((void *)p_gc, PURPLE_NOTIFY_MSG_INFO, _("Xfire Buddy Removal Denied"), tmp, _("Account settings are set to not remove buddies\n"
 																													   "The buddy will be restored on your next login"), NULL, NULL);
 		if(tmp) g_free(tmp);
 	}
@@ -425,7 +427,7 @@ static GList *gfire_purple_node_menu(PurpleBlistNode *p_node)
 
 	if(!gfire_buddy_is_friend(gf_buddy))
 	{
-		me = purple_menu_action_new(N_("Add as friend"),
+		me = purple_menu_action_new(_("Add as friend"),
 									PURPLE_CALLBACK(gfire_buddy_menu_add_as_friend_cb),NULL, NULL);
 
 		if (!me)
@@ -440,7 +442,7 @@ static GList *gfire_purple_node_menu(PurpleBlistNode *p_node)
 
 		if(gfire_game_playable(game_data->id))
 		{
-			me = purple_menu_action_new(N_("Join Game ..."),
+			me = purple_menu_action_new(_("Join Game ..."),
 										PURPLE_CALLBACK(gfire_buddy_menu_joingame_cb),NULL, NULL);
 
 			if(!me)
@@ -456,7 +458,7 @@ static GList *gfire_purple_node_menu(PurpleBlistNode *p_node)
 
 		if(gfire_game_playable(voip_data->id))
 		{
-			me = purple_menu_action_new(N_("Join VoIP ..."),
+			me = purple_menu_action_new(_("Join VoIP ..."),
 										PURPLE_CALLBACK(gfire_buddy_menu_joinvoip_cb),NULL, NULL);
 
 			if (!me)
@@ -466,7 +468,7 @@ static GList *gfire_purple_node_menu(PurpleBlistNode *p_node)
 		}
 	}
 
-	me = purple_menu_action_new(N_("Xfire Profile"),
+	me = purple_menu_action_new(_("Xfire Profile"),
 								PURPLE_CALLBACK(gfire_buddy_menu_profile_cb),NULL, NULL);
 
 	if (!me)
@@ -493,40 +495,40 @@ static GList *gfire_purple_actions(PurplePlugin *p_plugin, gpointer p_context)
 	GList *m = NULL;
 	PurplePluginAction *act;
 
-	act = purple_plugin_action_new(N_("Change Nickname"),
+	act = purple_plugin_action_new(_("Change Nickname"),
 			gfire_menu_action_nick_change_cb);
 	m = g_list_append(m, act);
-	act = purple_plugin_action_new(N_("My Profile Page"),
+	act = purple_plugin_action_new(_("My Profile Page"),
 			gfire_menu_action_profile_page_cb);
 	m = g_list_append(m, act);
 	m = g_list_append(m, NULL);
-	act = purple_plugin_action_new(N_("Reload Launch Config"),
+	act = purple_plugin_action_new(_("Reload Game Config"),
 			gfire_menu_action_reload_lconfig_cb);
 	m = g_list_append(m, act);
-	act = purple_plugin_action_new(N_("Reload Game ID List"),
+	act = purple_plugin_action_new(_("Reload Game ID List"),
 			gfire_menu_action_reload_gconfig_cb);
 	m = g_list_append(m, act);
-	act = purple_plugin_action_new(N_("Get Game ID List"),
+	act = purple_plugin_action_new(_("Get Game ID List"),
 			gfire_menu_action_get_gconfig_cb);
 	m = g_list_append(m, act);
-	act = purple_plugin_action_new(N_("Friend Search"),
+	act = purple_plugin_action_new(_("Friend Search"),
 			gfire_show_friend_search_cb);
 	m = g_list_append(m, act);
 
 #ifdef HAVE_GTK
 	if(strcmp(purple_core_get_ui(), "gnt-purple") != 0)
 	{
-		act = purple_plugin_action_new(N_("Manage Games"),
+		act = purple_plugin_action_new(_("Manage Games"),
 									   gfire_game_manager_show);
 		m = g_list_append(m, act);
-		act = purple_plugin_action_new(N_("Server Browser"),
+		act = purple_plugin_action_new(_("Server Browser"),
 									   gfire_server_browser_show);
 		m = g_list_append(m, act);
 	}
 #endif // HAVE_GTK
 
 	m = g_list_append(m, NULL);
-	act = purple_plugin_action_new(N_("About"),
+	act = purple_plugin_action_new(_("About"),
 			gfire_menu_action_about_cb);
 	m = g_list_append(m, act);
 	return m;
@@ -691,7 +693,7 @@ static void gfire_purple_chat_change_motd(PurpleConnection *p_gc, int p_id, cons
 
 	if(strlen(unescaped) > 200)
 	{
-		purple_notify_message(NULL, PURPLE_NOTIFY_MSG_WARNING, N_("Xfire Groupchat"), N_("MotD change failed"), N_("The MotD contains more than 200 characters."), NULL, NULL);
+		purple_notify_message(NULL, PURPLE_NOTIFY_MSG_WARNING, _("Xfire Groupchat"), _("MotD change failed"), _("The MotD contains more than 200 characters."), NULL, NULL);
 		g_free(unescaped);
 		return;
 	}
@@ -792,10 +794,10 @@ static PurplePluginInfo info =
 	NULL,						/* dependencies */
 	PURPLE_PRIORITY_DEFAULT,	/* priority */
 	"prpl-xfire",				/* id */
-	"Xfire",					/* name */
+	NULL,						/* name (done for NLS in _init_plugin) */
 	GFIRE_VERSION,				/* version */
-	"Xfire Protocol Plugin",	/* summary */
-	"Xfire Protocol Plugin",	/* description */
+	NULL,						/* summary (done for NLS in _init_plugin) */
+	NULL,						/* description (done for NLS in _init_plugin) */
 	NULL,						/* author */
 	GFIRE_WEBSITE,				/* homepage */
 	NULL,						/* load */
@@ -817,33 +819,38 @@ static void _init_plugin(PurplePlugin *plugin)
 {
 	PurpleAccountOption *option;
 
-	option = purple_account_option_string_new(N_("Server"), "server",XFIRE_SERVER);
+	option = purple_account_option_string_new(_("Server"), "server",XFIRE_SERVER);
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options,option);
 
-	option = purple_account_option_int_new(N_("Port"), "port", XFIRE_PORT);
+	option = purple_account_option_int_new(_("Port"), "port", XFIRE_PORT);
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options,option);
 
-	option = purple_account_option_int_new(N_("Version"), "version", XFIRE_PROTO_VERSION);
+	option = purple_account_option_int_new(_("Version"), "version", XFIRE_PROTO_VERSION);
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options,option);
 
-	option = purple_account_option_bool_new(N_("Don't delete buddies from server"), "buddynorm", FALSE);
+	option = purple_account_option_bool_new(_("Don't delete buddies from server"), "buddynorm", FALSE);
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options,option);
 
-	option = purple_account_option_bool_new(N_("Buddies can see if I'm typing"), "typenorm", TRUE);
+	option = purple_account_option_bool_new(_("Buddies can see if I'm typing"), "typenorm", TRUE);
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options,option);
 
-	option = purple_account_option_bool_new(N_("Auto detect for ingame status"), "ingamedetectionnorm", TRUE);
+	option = purple_account_option_bool_new(_("Auto detect for ingame status"), "ingamedetectionnorm", TRUE);
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options,option);
 
-	option = purple_account_option_bool_new(N_("Notify me when my status is ingame"), "ingamenotificationnorm", FALSE);
+	option = purple_account_option_bool_new(_("Notify me when my status is ingame"), "ingamenotificationnorm", FALSE);
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options,option);
 
-	option = purple_account_option_bool_new(N_("Use server detection"), "server_detection_option", FALSE);
+	option = purple_account_option_bool_new(_("Use server detection"), "server_detection_option", FALSE);
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
 
-	setlocale(LC_ALL, "");
-	bindtextdomain("gfire", LOCALEDIR);
-	textdomain("gfire");
+#ifdef ENABLE_NLS
+	bindtextdomain(GETTEXT_PACKAGE, LOCALEDIR);
+	bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
+#endif // ENABLE_NLS
+
+	info.name = _("Xfire");
+	info.summary = _("Xfire Protocol Plugin");
+	info.description = _("Xfire Protocol Plugin");
 
 	_gfire_plugin = plugin;
 }

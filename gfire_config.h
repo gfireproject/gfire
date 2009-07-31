@@ -12,6 +12,9 @@
 /* always defined to indicate that i18n is enabled */
 #define ENABLE_NLS 1
 
+/* Define the gettext package to be used */
+#define GETTEXT_PACKAGE "gfire"
+
 /* Gfire version */
 #define GFIRE_VERSION "0.9.0"
 
@@ -66,9 +69,6 @@
 /* Define to 1 if you have the <unistd.h> header file. */
 #define HAVE_UNISTD_H 1
 
-/* Define the location where the catalogs will be installed */
-#define LOCALEDIR "/usr/share/locale"
-
 /* Define to the sub-directory in which libtool stores uninstalled libraries.
    */
 #define LT_OBJDIR ".libs/"
@@ -87,9 +87,6 @@
 
 /* Define to the version of this package. */
 #define SNPP_PACKAGE_VERSION ""
-
-/* PACKAGE */
-#define PAKAGE "gfire"
 
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1

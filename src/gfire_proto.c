@@ -384,7 +384,7 @@ void gfire_proto_login_salt(gfire_data *p_gfire, guint16 p_packet_len)
 	offset = gfire_proto_read_attr_string_ss(p_gfire->buff_in, &salt, "salt", offset);
 	if(offset == -1 || !salt)
 	{
-		purple_connection_error(gfire_get_connection(p_gfire), N_("Received invalid login salt!"));
+		purple_connection_error(gfire_get_connection(p_gfire), _("Received invalid login salt!"));
 		return;
 	}
 
@@ -653,7 +653,7 @@ void gfire_proto_system_broadcast(gfire_data *p_gfire, gint16 p_packet_len)
 		return;
 
 	gchar *escaped = gfire_escape_html(msg);
-	purple_notify_info(gfire_get_connection(p_gfire), N_("Xfire System Broadcast"), N_("Xfire System Broadcast Message:"), escaped);
+	purple_notify_info(gfire_get_connection(p_gfire), _("Xfire System Broadcast"), _("Xfire System Broadcast Message:"), escaped);
 	g_free(escaped);
 
 	g_free(msg);

@@ -61,9 +61,9 @@ void gfire_show_friend_search_cb(PurplePluginAction *p_action)
 		return;
 	}
 
-	purple_request_input(gc, N_("Xfire Friend Search"), N_("Please enter a Xfire username, name or e-Mail address here:"),
-						 N_("For example: gill123, Gill Bates or gill@bates.net"), "", FALSE, FALSE,
-						 NULL, N_("Search"), G_CALLBACK(gfire_friend_search_search_cb), N_("Cancel"), NULL, purple_connection_get_account(gc),
+	purple_request_input(gc, _("Xfire Friend Search"), _("Please enter a Xfire username, name or e-Mail address here:"),
+						 _("For example: gill123, Gill Bates or gill@bates.net"), "", FALSE, FALSE,
+						 NULL, _("Search"), G_CALLBACK(gfire_friend_search_search_cb), _("Cancel"), NULL, purple_connection_get_account(gc),
 						 NULL, NULL, gc);
 }
 
@@ -78,9 +78,9 @@ void gfire_friend_search_results(gfire_data *p_gfire, GList *p_usernames, GList 
 		return;
 	}
 
-	purple_notify_searchresults_column_add(search_result, purple_notify_searchresults_column_new(N_("Username")));
-	purple_notify_searchresults_column_add(search_result, purple_notify_searchresults_column_new(N_("First Name")));
-	purple_notify_searchresults_column_add(search_result, purple_notify_searchresults_column_new(N_("Last Name")));
+	purple_notify_searchresults_column_add(search_result, purple_notify_searchresults_column_new(_("Username")));
+	purple_notify_searchresults_column_add(search_result, purple_notify_searchresults_column_new(_("First Name")));
+	purple_notify_searchresults_column_add(search_result, purple_notify_searchresults_column_new(_("Last Name")));
 	purple_notify_searchresults_button_add(search_result, PURPLE_NOTIFY_BUTTON_INVITE, gfire_friend_search_add_cb);
 
 	GList *cur_username = p_usernames;
@@ -103,5 +103,5 @@ void gfire_friend_search_results(gfire_data *p_gfire, GList *p_usernames, GList 
 	g_list_free(p_firstnames);
 	g_list_free(p_lastnames);
 
-	purple_notify_searchresults(gfire_get_connection(p_gfire), N_("Xfire Friend Search"), N_("Search results"), "", search_result, NULL, NULL);
+	purple_notify_searchresults(gfire_get_connection(p_gfire), _("Xfire Friend Search"), _("Search results"), "", search_result, NULL, NULL);
 }

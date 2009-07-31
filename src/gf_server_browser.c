@@ -177,6 +177,8 @@ void gfire_server_browser_show(PurplePluginAction *p_action)
 	GtkBuilder *builder = gtk_builder_new();
 	gchar *builder_file;
 
+	gtk_builder_set_translation_domain(builder, GETTEXT_PACKAGE);
+
 	builder_file = g_build_filename(DATADIR, "purple", "gfire", "servers.glade", NULL);
 	gtk_builder_add_from_file(builder, builder_file, NULL);
 	g_free(builder_file);
@@ -202,8 +204,8 @@ void gfire_server_browser_show(PurplePluginAction *p_action)
 	g_signal_connect_swapped(refresh_button, "clicked", G_CALLBACK(gfire_server_browser_request_list_cb), args);
 	g_signal_connect_swapped(connect_button, "clicked", G_CALLBACK(gfire_server_browser_connect_cb), args);
 
-	xmlnode *node_child = gfire_game_launch_node_first();
-	for(; node_child; node_child = gfire_game_launch_node_next(node_child))
+	xmlnode *node_child = gfire_game_config_node_first();
+	for(; node_child; node_child = gfire_game_config_node_next(node_child))
 	{
 		const gchar *game_name = xmlnode_get_attrib(node_child, "name");
 		gtk_combo_box_append_text(GTK_COMBO_BOX(game_combo), game_name);

@@ -160,7 +160,7 @@
                   <object class="GtkTreeViewColumn" id="name_column">
                     <property name="resizable">True</property>
                     <property name="max_width">256</property>
-                    <property name="title">Server name</property>
+                    <property name="title" translatable="yes">Server name</property>
                     <property name="expand">True</property>
                     <child>
                       <object class="GtkCellRendererText" id="name_cell_renderer"/>
@@ -173,7 +173,7 @@
                 <child>
                   <object class="GtkTreeViewColumn" id="ip_column">
                     <property name="resizable">True</property>
-                    <property name="title">Server IP</property>
+                    <property name="title" translatable="yes">Server IP</property>
                     <child>
                       <object class="GtkCellRendererText" id="adress_cell_renderer"/>
                       <attributes>
@@ -185,7 +185,7 @@
                 <child>
                   <object class="GtkTreeViewColumn" id="ping_column">
                     <property name="resizable">True</property>
-                    <property name="title">Ping</property>
+                    <property name="title" translatable="yes">Ping</property>
                     <child>
                       <object class="GtkCellRendererText" id="ping_cell_renderer"/>
                       <attributes>
@@ -197,7 +197,7 @@
                 <child>
                   <object class="GtkTreeViewColumn" id="players_column">
                     <property name="resizable">True</property>
-                    <property name="title">Players</property>
+                    <property name="title" translatable="yes">Players</property>
                     <child>
                       <object class="GtkCellRendererText" id="players_cell_renderer"/>
                       <attributes>

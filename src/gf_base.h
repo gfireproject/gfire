@@ -81,12 +81,12 @@
 
 
 // Internationalization /////////////////////////////////////////////
-#include <libintl.h>
-#include <locale.h>
-
-#define _(string) gettext (string)
-#define gettext_noop(string) string
-#define N_(string) gettext (string)
+#ifdef ENABLE_NLS
+	#include <glib/gi18n-lib.h>
+#else
+	#define _(string) (const char*)(string)
+	#define N_(string) _(string)
+#endif // ENABLE_NLS
 
 #ifndef G_GNUC_NULL_TERMINATED
 	#if __GNUC__ >= 4
@@ -101,7 +101,7 @@
 #define GFIRE_WIKI "http://my-trac.assembla.com/gfire/wiki"
 #define GFIRE_XQF_FILENAME "ingame.tmp"
 #define GFIRE_DEFAULT_GROUP_NAME "Xfire"
-#define GFIRE_FRIENDS_OF_FRIENDS_GROUP_NAME "Xfire - Friends of Friends"
+#define GFIRE_FRIENDS_OF_FRIENDS_GROUP_NAME _("Xfire - Friends of Friends")
 #define GFIRE_CLAN_GROUP_NAME "Clan"
 #define GFIRE_CLAN_GROUP_FORMATTING "%s [%s]" // long name, short name
 #define GFIRE_GAMES_XML_URL "http://gfireproject.org/files/gfire_games.xml"

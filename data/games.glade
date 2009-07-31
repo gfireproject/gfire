@@ -47,10 +47,10 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkLabel" id="add_path_label">
+                              <object class="GtkLabel" id="add_detection_executable_label">
                                 <property name="visible">True</property>
                                 <property name="xalign">0</property>
-                                <property name="label" translatable="yes">Game path:</property>
+                                <property name="label" translatable="yes">Detection Executable:</property>
                               </object>
                               <packing>
                                 <property name="top_attach">1</property>
@@ -59,10 +59,10 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkLabel" id="add_executable_label">
+                              <object class="GtkLabel" id="add_launch_executable_label">
                                 <property name="visible">True</property>
                                 <property name="xalign">0</property>
-                                <property name="label" translatable="yes">Game executable:</property>
+                                <property name="label" translatable="yes">Launch Executable:</property>
                               </object>
                               <packing>
                                 <property name="top_attach">2</property>
@@ -96,7 +96,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkFileChooserButton" id="add_path_button">
+                              <object class="GtkFileChooserButton" id="add_detection_button">
                                 <property name="visible">True</property>
                               </object>
                               <packing>
@@ -112,7 +112,7 @@
                                 <property name="visible">True</property>
                                 <child>
                                   <object class="GtkCheckButton" id="add_executable_check_button">
-                                    <property name="label" translatable="yes">Use game path</property>
+                                    <property name="label" translatable="yes">Use detection</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">False</property>
@@ -126,7 +126,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkFileChooserButton" id="add_executable_button">
+                                  <object class="GtkFileChooserButton" id="add_launch_button">
                                     <property name="visible">True</property>
                                     <property name="sensitive">False</property>
                                   </object>
@@ -204,7 +204,7 @@
                               <object class="GtkLabel" id="add_launch_label">
                                 <property name="visible">True</property>
                                 <property name="xalign">0</property>
-                                <property name="label" translatable="yes">Launch options:</property>
+                                <property name="label" translatable="yes">Launch arguments:</property>
                               </object>
                               <packing>
                                 <property name="top_attach">1</property>
@@ -237,7 +237,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkEntry" id="add_launch_entry">
+                              <object class="GtkEntry" id="add_launch_args_entry">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="invisible_char">&#x25CF;</property>
@@ -297,7 +297,7 @@
                     <property name="visible">True</property>
                     <child>
                       <object class="GtkButton" id="add_add_button">
-                        <property name="label" translatable="yes">gtk-add</property>
+                        <property name="label">gtk-add</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
@@ -309,7 +309,7 @@
                     </child>
                     <child>
                       <object class="GtkButton" id="add_close_button">
-                        <property name="label" translatable="yes">gtk-close</property>
+                        <property name="label">gtk-close</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
@@ -367,10 +367,10 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkLabel" id="edit_game_path">
+                              <object class="GtkLabel" id="edit_detection_executable_label">
                                 <property name="visible">True</property>
                                 <property name="xalign">0</property>
-                                <property name="label" translatable="yes">Game path:</property>
+                                <property name="label" translatable="yes">Detection Executable:</property>
                               </object>
                               <packing>
                                 <property name="top_attach">1</property>
@@ -379,10 +379,10 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkLabel" id="edit_executable_label">
+                              <object class="GtkLabel" id="edit_launch_executable_label">
                                 <property name="visible">True</property>
                                 <property name="xalign">0</property>
-                                <property name="label" translatable="yes">Game executable:</property>
+                                <property name="label" translatable="yes">Launch Executable:</property>
                               </object>
                               <packing>
                                 <property name="top_attach">2</property>
@@ -403,7 +403,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkFileChooserButton" id="edit_path_button">
+                              <object class="GtkFileChooserButton" id="edit_detection_button">
                                 <property name="visible">True</property>
                               </object>
                               <packing>
@@ -419,7 +419,7 @@
                                 <property name="visible">True</property>
                                 <child>
                                   <object class="GtkCheckButton" id="edit_executable_check_button">
-                                    <property name="label" translatable="yes">Use game path</property>
+                                    <property name="label" translatable="yes">Use detection</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">False</property>
@@ -433,7 +433,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkFileChooserButton" id="edit_executable_button">
+                                  <object class="GtkFileChooserButton" id="edit_launch_button">
                                     <property name="visible">True</property>
                                     <property name="sensitive">False</property>
                                   </object>
@@ -531,7 +531,7 @@
                               <object class="GtkLabel" id="edit_launch_label">
                                 <property name="visible">True</property>
                                 <property name="xalign">0</property>
-                                <property name="label" translatable="yes">Launch options:</property>
+                                <property name="label" translatable="yes">Launch arguments:</property>
                               </object>
                               <packing>
                                 <property name="top_attach">1</property>
@@ -564,7 +564,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkEntry" id="edit_launch_entry">
+                              <object class="GtkEntry" id="edit_launch_args_entry">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="invisible_char">&#x25CF;</property>
@@ -624,7 +624,7 @@
                     <property name="visible">True</property>
                     <child>
                       <object class="GtkButton" id="edit_apply_button">
-                        <property name="label" translatable="yes">gtk-apply</property>
+                        <property name="label">gtk-apply</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
@@ -636,7 +636,7 @@
                     </child>
                     <child>
                       <object class="GtkButton" id="edit_remove_button">
-                        <property name="label" translatable="yes">gtk-remove</property>
+                        <property name="label">gtk-remove</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
@@ -648,7 +648,7 @@
                     </child>
                     <child>
                       <object class="GtkButton" id="edit_close_button">
-                        <property name="label" translatable="yes">gtk-close</property>
+                        <property name="label">gtk-close</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>

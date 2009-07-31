@@ -52,24 +52,24 @@ gchar *gfire_game_data_ip_str(const gfire_game_data *p_game);
 gchar *gfire_game_data_port_str(const gfire_game_data *p_game);
 gchar *gfire_game_data_addr_str(const gfire_game_data *p_game);
 
-// GFIRE GAME LAUNCH INFO ///////////////////////////////////////////
-typedef struct _gfire_game_launch_info
+// GFIRE GAME CONFIG INFO ///////////////////////////////////////////
+typedef struct _gfire_game_config_info
 {
 	guint32 game_id;
 	gchar *game_name;
 	gchar *game_prefix;
-	gchar *game_path;
 	gchar *game_launch;
+	gchar *game_launch_args;
 	gchar *game_connect;
-} gfire_game_launch_info;
+} gfire_game_config_info;
 
 // Creation and freeing
-gfire_game_launch_info *gfire_game_launch_info_new();
-void gfire_game_launch_info_free(gfire_game_launch_info *p_launch_info);
+gfire_game_config_info *gfire_game_config_info_new();
+void gfire_game_config_info_free(gfire_game_config_info *p_launch_info);
 
 // Parsing
-gfire_game_launch_info *gfire_game_launch_info_get(guint32 p_gameid);
-gchar *gfire_game_launch_info_get_command(gfire_game_launch_info *game_launch_info, const gfire_game_data *p_game_data);
+gfire_game_config_info *gfire_game_config_info_get(guint32 p_gameid);
+gchar *gfire_game_config_info_get_command(gfire_game_config_info *game_config_info, const gfire_game_data *p_game_data);
 
 // GFIRE GAME DETECTION INFO ////////////////////////////////////////
 typedef struct _gfire_game_detection_info
@@ -96,11 +96,11 @@ xmlnode *gfire_game_node_first();
 xmlnode *gfire_game_node_next(xmlnode *p_node);
 void gfire_xml_download_cb(PurpleUtilFetchUrlData *p_url_data, gpointer p_data, const gchar *p_buf, gsize p_len, const gchar *p_error_message);
 
-// GFIRE GAME LAUNCH XML ////////////////////////////////////////////
-gboolean gfire_game_load_launch_xml();
+// GFIRE GAME CONFIG XML ////////////////////////////////////////////
+gboolean gfire_game_load_config_xml();
 gboolean gfire_game_playable(guint32 p_gameid);
-xmlnode *gfire_game_launch_node_first();
-xmlnode *gfire_game_launch_node_next(xmlnode *p_node);
+xmlnode *gfire_game_config_node_first();
+xmlnode *gfire_game_config_node_next(xmlnode *p_node);
 
 // GFIRE GAME MANAGER ///////////////////////////////////////////////
 #ifdef HAVE_GTK

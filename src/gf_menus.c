@@ -104,24 +104,24 @@ void gfire_menu_action_nick_change_cb(PurplePluginAction *p_action)
 	PurpleConnection *gc = (PurpleConnection *)p_action->context;
 	PurpleAccount *account = purple_connection_get_account(gc);
 
-	purple_request_input(gc, NULL, N_("Change Xfire nickname"), N_("Leaving empty will clear your current nickname."), purple_connection_get_display_name(gc),
-		FALSE, FALSE, NULL, N_("OK"), G_CALLBACK(gfire_purple_nick_change_cb), N_("Cancel"), NULL, account, NULL, NULL, gc);
+	purple_request_input(gc, NULL, _("Change Xfire nickname"), _("Leaving empty will clear your current nickname."), purple_connection_get_display_name(gc),
+		FALSE, FALSE, NULL, _("OK"), G_CALLBACK(gfire_purple_nick_change_cb), _("Cancel"), NULL, account, NULL, NULL, gc);
 }
 
 void gfire_menu_action_reload_lconfig_cb(PurplePluginAction *p_action)
 {
-	if(!gfire_game_load_launch_xml())
-		purple_notify_message(p_action->context, PURPLE_NOTIFY_MSG_ERROR, N_("Gfire XML Reload"), N_("Reloading gfire_launch.xml"), N_("Operation failed. File not found or content was incorrect."), NULL, NULL);
+	if(!gfire_game_load_config_xml())
+		purple_notify_message(p_action->context, PURPLE_NOTIFY_MSG_ERROR, _("Gfire XML Reload"), _("Reloading gfire_game_config.xml"), _("Operation failed. File not found or content was incorrect."), NULL, NULL);
 	else
-		purple_notify_message(p_action->context, PURPLE_NOTIFY_MSG_INFO, N_("Gfire XML Reload"), N_("Reloading gfire_launch.xml"), N_("Reloading was successful."), NULL, NULL);
+		purple_notify_message(p_action->context, PURPLE_NOTIFY_MSG_INFO, _("Gfire XML Reload"), _("Reloading gfire_game_config.xml"), _("Reloading was successful."), NULL, NULL);
 }
 
 void gfire_menu_action_reload_gconfig_cb(PurplePluginAction *p_action)
 {
 	if (!gfire_game_load_games_xml())
-		purple_notify_message(p_action->context, PURPLE_NOTIFY_MSG_ERROR, N_("Gfire XML Reload"), N_("Reloading gfire_games.xml"), N_("Operation failed. File not found or content was incorrect."), NULL, NULL);
+		purple_notify_message(p_action->context, PURPLE_NOTIFY_MSG_ERROR, _("Gfire XML Reload"), _("Reloading gfire_games.xml"), _("Operation failed. File not found or content was incorrect."), NULL, NULL);
 	else
-		purple_notify_message(p_action->context, PURPLE_NOTIFY_MSG_INFO, N_("Gfire XML Reload"), N_("Reloading gfire_games.xml"), N_("Reloading was successful."), NULL, NULL);
+		purple_notify_message(p_action->context, PURPLE_NOTIFY_MSG_INFO, _("Gfire XML Reload"), _("Reloading gfire_games.xml"), _("Reloading was successful."), NULL, NULL);
 }
 
 static void gfire_menu_action_website_cb(PurpleConnection *p_gc)
@@ -143,19 +143,19 @@ void gfire_menu_action_about_cb(PurplePluginAction *p_action)
 
 	if(version_str && g_strcmp0(version_str, "100") != 0)
 	{
-		msg = g_strdup_printf(N_("Gfire Version:\t\t%s\nGame List Version:\t%s"), GFIRE_VERSION, version_str);
+		msg = g_strdup_printf(_("Gfire Version:\t\t%s\nGame List Version:\t%s"), GFIRE_VERSION, version_str);
 		g_free(version_str);
 	}
 	else
 	{
 		if(version_str) g_free(version_str);
-		msg = g_strdup_printf(N_("Gfire Version: %s"), GFIRE_VERSION);
+		msg = g_strdup_printf(_("Gfire Version: %s"), GFIRE_VERSION);
 	}
 
-	purple_request_action(gc, N_("About Gfire"), N_("Xfire Plugin for Pidgin"), msg, PURPLE_DEFAULT_ACTION_NONE,
-						  purple_connection_get_account(gc), NULL, NULL, gc, 3, N_("Close"), NULL,
-						  N_("Website"), G_CALLBACK(gfire_menu_action_website_cb),
-						  N_("Wiki"), G_CALLBACK(gfire_menu_action_wiki_cb));
+	purple_request_action(gc, _("About Gfire"), _("Xfire Plugin for Pidgin"), msg, PURPLE_DEFAULT_ACTION_NONE,
+						  purple_connection_get_account(gc), NULL, NULL, gc, 3, _("Close"), NULL,
+						  _("Website"), G_CALLBACK(gfire_menu_action_website_cb),
+						  _("Wiki"), G_CALLBACK(gfire_menu_action_wiki_cb));
 
 	if(msg) g_free(msg);
 }

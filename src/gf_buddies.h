@@ -101,6 +101,9 @@ typedef struct _gfire_buddy
 	// FoF common buddies
 	GList *common_buddies;
 
+	// Got advanced info
+	gboolean got_info;
+
 	// Buddy type
 	GList *clan_data;		// list of type gfire_buddy_clan_data
 	gfire_buddy_type type;	// buddy type
@@ -156,6 +159,10 @@ gboolean gfire_buddy_is_available(const gfire_buddy *p_buddy);
 gboolean gfire_buddy_is_away(const gfire_buddy *p_buddy);
 gboolean gfire_buddy_is_busy(const gfire_buddy *p_buddy);
 gboolean gfire_buddy_is_online(const gfire_buddy *p_buddy);
+
+// Extended info
+void gfire_buddy_request_info(const gfire_buddy *p_buddy);
+gboolean gfire_buddy_got_info(const gfire_buddy *p_buddy);
 
 // Clan membership handling
 gboolean gfire_buddy_is_clan_member_of(const gfire_buddy *p_buddy, guint32 p_clanid);
