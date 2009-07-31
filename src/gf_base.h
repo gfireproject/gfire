@@ -101,7 +101,7 @@
 #define GFIRE_WIKI "http://my-trac.assembla.com/gfire/wiki"
 #define GFIRE_XQF_FILENAME "ingame.tmp"
 #define GFIRE_DEFAULT_GROUP_NAME "Xfire"
-#define GFIRE_FRIENDS_OF_FRIENDS_GROUP_NAME _("Xfire - Friends of Friends")
+#define GFIRE_FRIENDS_OF_FRIENDS_GROUP_NAME _("Xfire - Friends of Friends playing games")
 #define GFIRE_CLAN_GROUP_NAME "Clan"
 #define GFIRE_CLAN_GROUP_FORMATTING "%s [%s]" // long name, short name
 #define GFIRE_GAMES_XML_URL "http://gfireproject.org/files/gfire_games.xml"
