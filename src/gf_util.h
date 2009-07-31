@@ -30,5 +30,6 @@
 gchar *gfire_escape_color_codes(const gchar *p_string);
 gchar *gfire_escape_html(const gchar *p_html);
 void gfire_list_clear(GList *p_list);
+gchar *gfire_strip_character_range(gchar *p_string, gchar p_start, gchar p_end);
 
 #endif // _GF_UTIL_H

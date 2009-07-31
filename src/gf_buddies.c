@@ -626,7 +626,10 @@ void gfire_buddy_set_alias(gfire_buddy *p_buddy, const gchar *p_alias)
 	if(strlen(p_alias) == 0)
 		p_buddy->alias = NULL;
 	else
+	{
 		p_buddy->alias = g_strdup(p_alias);
+		gfire_strip_character_range(p_buddy->alias, 0x01, 0x1F);
+	}
 
 	if(p_buddy->prpl_buddy &&
 	   !(gfire_buddy_is_clan_member(p_buddy) &&

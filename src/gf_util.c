@@ -103,3 +103,22 @@ void gfire_list_clear(GList *p_list)
 
 	g_list_free(p_list);
 }
+
+gchar *gfire_strip_character_range(gchar *p_string, gchar p_start, gchar p_end)
+{
+	if(!p_string)
+		return NULL;
+
+	int i = 0;
+
+	for(; i < strlen(p_string); i++)
+	{
+		if((p_string[i] >= p_start) && (p_string[i] <= p_end))
+		{
+			memcpy(&p_string[i], &p_string[i + 1], strlen(&p_string[i + 1]) + 1);
+			i--;
+		}
+	}
+
+	return p_string;
+}
