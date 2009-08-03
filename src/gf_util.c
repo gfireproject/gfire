@@ -109,14 +109,16 @@ gchar *gfire_strip_character_range(gchar *p_string, gchar p_start, gchar p_end)
 	if(!p_string)
 		return NULL;
 
-	int i = 0;
+	int i;
+	int len = strlen(p_string);
 
-	for(; i < strlen(p_string); i++)
+	for(i = 0; i < len; i++)
 	{
 		if((p_string[i] >= p_start) && (p_string[i] <= p_end))
 		{
-			memcpy(&p_string[i], &p_string[i + 1], strlen(&p_string[i + 1]) + 1);
+			memcpy(&p_string[i], &p_string[i + 1], len - i);
 			i--;
+			len--;
 		}
 	}
 

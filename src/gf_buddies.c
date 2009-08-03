@@ -627,8 +627,13 @@ void gfire_buddy_set_alias(gfire_buddy *p_buddy, const gchar *p_alias)
 		p_buddy->alias = NULL;
 	else
 	{
-		p_buddy->alias = g_strdup(p_alias);
-		gfire_strip_character_range(p_buddy->alias, 0x01, 0x1F);
+		if(g_utf8_validate(p_alias, -1, NULL))
+		{
+			p_buddy->alias = g_strdup(p_alias);
+			gfire_strip_character_range(p_buddy->alias, 0x01, 0x1F);
+		}
+		else
+			p_buddy->alias = NULL;
 	}
 
 	if(p_buddy->prpl_buddy &&
