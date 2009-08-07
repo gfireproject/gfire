@@ -76,11 +76,17 @@ void gfire_send(PurpleConnection *p_gc, guint16 p_size)
 	GTimeVal gtv;
 	int tmp = 0;
 	
-	if (gfire->fd > 0)
+	if (gfire->fd >= 0)
 	{
-		tmp = write(gfire->fd, gfire_buffout, p_size);
+		tmp = send(gfire->fd, gfire_buffout, p_size, 0);
 		if(tmp < 0)
-			purple_debug(PURPLE_DEBUG_ERROR, "gfire", "gfire_send: error %d: %s\n", errno, strerror(errno));
+		{
+			if(errno != EAGAIN)
+			{
+				purple_debug(PURPLE_DEBUG_ERROR, "gfire", "gfire_send: error %d: %s\n", errno, strerror(errno));
+				purple_connection_error_reason(gfire_get_connection(gfire), PURPLE_CONNECTION_ERROR_NETWORK_ERROR, strerror(errno));
+			}
+		}
 		else
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "(send): wrote %d Bytes\n", tmp);
 	}
@@ -103,7 +109,7 @@ void gfire_input_cb(gpointer p_data, gint p_source, PurpleInputCondition p_condi
 	if(gfire->bytes_read < 2)
 	{
 		// Read the first 2 bytes (packet len)
-		tmp = read(p_source, (void*)gfire->buff_in, 2);
+		tmp = recv(p_source, (void*)gfire->buff_in, 2, 0);
 		// Check for errors
 		if(tmp <= 0)
 		{
@@ -137,7 +143,7 @@ void gfire_input_cb(gpointer p_data, gint p_source, PurpleInputCondition p_condi
 	packet_len = GUINT16_FROM_LE(packet_len);
 
 	// Read the rest of the packet
-	tmp = read(p_source, (void*)gfire->buff_in + gfire->bytes_read, packet_len - gfire->bytes_read);
+	tmp = recv(p_source, (void*)gfire->buff_in + gfire->bytes_read, packet_len - gfire->bytes_read, 0);
 	// Check for errors
 	if(tmp <= 0)
 	{
@@ -335,6 +341,11 @@ void gfire_parse_packet(gfire_data *p_gfire, guint16 p_packet_len, guint16 p_pac
 		case 176:
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received clan member info\n");
 			gfire_buddy_proto_clans(p_gfire, p_packet_len);
+		break;
+
+		case 183:
+			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received external game info\n");
+			gfire_proto_external_game(p_gfire, p_packet_len);
 		break;
 
 		case 351:

@@ -26,18 +26,23 @@
 #define _GF_BASE_H
 
 // Globally required headers ////////////////////////////////////////
-#ifdef HAVE_CONFIG_H
-	#include <gfire_config.h>
+#ifdef _WIN32
+	#include "internal.h"
+	#undef _
+	#include "gfire_config.h"
 #else
-	#undef HAVE_GTK
-#endif // HAVE_CONFIG_H
+	#ifdef HAVE_CONFIG_H
+		#include "gfire_config.h"
+	#endif // HAVE_CONFIG_H
+	#include <sys/socket.h>
+	#include <sys/types.h>
+	#include <unistd.h>
+#endif // _WIN32
 
 // Standard libraries
 #include <stddef.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
-#include <sys/types.h>
 #include <errno.h>
 
 // Glib
@@ -47,11 +52,8 @@
 #include <glib/gthread.h>
 
 #ifdef HAVE_GTK
-	#ifdef _WIN32
-	#else
-		#include <gtk/gtk.h>
-		#include <gio/gio.h>
-	#endif /* _WIN32 */
+	#include <gtk/gtk.h>
+	#include <gio/gio.h>
 #endif // HAVE_GTK
 
 // Libpurple

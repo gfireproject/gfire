@@ -20,6 +20,10 @@
 
 #include "gf_query.h"
 
+#ifdef _WIN32
+	#define close       closesocket
+#endif // _WIN32
+
 void freex(void **buff) {
     if(!buff || !*buff) return;
     free(*buff);

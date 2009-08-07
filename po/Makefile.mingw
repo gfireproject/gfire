@@ -1,0 +1,24 @@
+GFIRE_DIR = ..
+# All personal changes usually go into this file
+include ../mingw.mak
+
+.SUFFIXES: .po .gmo
+
+CATALOGS = $(patsubst %.po,%.gmo,$(wildcard *.po))
+LINGUAS = $(patsubst %.po,%,$(wildcard *.po))
+
+.po.gmo:
+	rm -f $@ && ${GMSGFMT} -o $@ $^
+
+.PHONY: all clean
+
+all: $(CATALOGS)
+
+clean:
+	rm -f *.gmo
+
+install: all
+	list='${LINGUAS}'; for lang in $$list; do \
+		mkdir -p ${WIN32_INSTALL_DIR}/locale/$$lang/LC_MESSAGES; \
+		cp $$lang.gmo ${WIN32_INSTALL_DIR}/locale/$$lang/LC_MESSAGES/gfire.mo; \
+	done

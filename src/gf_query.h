@@ -30,11 +30,10 @@
 #include <stdio.h>
 
 #ifdef _WIN32
-    #include <winsock.h>
+	#include <winsock2.h>
     #include <windows.h>
     #include <direct.h>
     #include <io.h>
-    #include "winerr.h"
 #else
     #include <unistd.h>
     #include <sys/socket.h>
@@ -53,8 +52,7 @@ typedef uint8_t     u8;
 typedef uint16_t    u16;
 typedef uint32_t    u32;
 
-#ifdef WIN32
-    #define close       closesocket
+#ifdef _WIN32
     #define in_addr_t   u32
     #define TEMPOZ1
     #define TEMPOZ2     GetTickCount()

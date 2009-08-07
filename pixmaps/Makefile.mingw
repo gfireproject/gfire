@@ -1,0 +1,19 @@
+GFIRE_DIR = ..
+include ../mingw.mak
+
+.PHONY: all clean
+
+all: 16/gfire.png 22/gfire.png 48/gfire.png
+
+clean:
+
+install: all
+	mkdir -p ${WIN32_INSTALL_DIR}/pixmaps/pidgin/protocols/16
+	mkdir -p ${WIN32_INSTALL_DIR}/pixmaps/pidgin/protocols/22
+	mkdir -p ${WIN32_INSTALL_DIR}/pixmaps/pidgin/protocols/48
+	cp 16/gfire.png ${WIN32_INSTALL_DIR}/pixmaps/pidgin/protocols/16/
+	cp 22/gfire.png ${WIN32_INSTALL_DIR}/pixmaps/pidgin/protocols/22/
+	cp 48/gfire.png ${WIN32_INSTALL_DIR}/pixmaps/pidgin/protocols/48/
+	mkdir -p ${WIN32_INSTALL_DIR}/pixmaps/pidgin/emblems/16
+	cp emblems/voip.png ${WIN32_INSTALL_DIR}/pixmaps/pidgin/emblems/16/
+	cp emblems/game-voip.png ${WIN32_INSTALL_DIR}/pixmaps/pidgin/emblems/16/

@@ -300,7 +300,7 @@ gboolean gfire_buddy_check_pending_ims_cb(gfire_buddy *p_buddy)
 
 		if(gtv.tv_sec - ims->time > XFIRE_SEND_ACK_TIMEOUT)
 		{
-			gchar *warn = g_strdup_printf("%s may have not received this message:\n%s", gfire_buddy_get_alias(p_buddy), ims->msg);
+			gchar *warn = g_strdup_printf(_("%s may have not received this message:\n%s"), gfire_buddy_get_alias(p_buddy), ims->msg);
 			purple_conv_present_error(gfire_buddy_get_name(p_buddy), purple_buddy_get_account(p_buddy->prpl_buddy), warn);
 			g_free(warn);
 

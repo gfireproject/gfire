@@ -1,0 +1,67 @@
+GFIRE_DIR = ..
+# All personal changes usually go into this file
+include ../mingw.mak
+
+LIBPURPLE_CFLAGS = -I${WIN32_PIDGIN_DIR}/libpurple -I${WIN32_PIDGIN_DIR}/libpurple/win32 -DPURPLE_PLUGINS -DENABLE_NLS -DNO_ZLIB
+WIN32_CFLAGS = \
+	-I${WIN32_GTK_DIR}/include/glib-2.0 \
+	-I${WIN32_PIDGIN_DIR}/libpurple/win32 \
+	-I${WIN32_DEV_DIR}/gtk_2_0/include \
+	-I${WIN32_DEV_DIR}/gtk_2_0/include/glib-2.0 \
+	-I${WIN32_GTK_DIR}/lib/glib-2.0/include \
+	-I${WIN32_DEV_DIR}/gtk_2_0/include/gtk-2.0 \
+	-I${WIN32_DEV_DIR}/gtk_2_0/include/pango-1.0 \
+	-I${WIN32_DEV_DIR}/gtk_2_0/include/libpng13 \
+	-I${WIN32_DEV_DIR}/gtk_2_0/include/fontconfig \
+	-I${WIN32_DEV_DIR}/gtk_2_0/include/freetype2 \
+	-I${WIN32_DEV_DIR}/gtk_2_0/lib/gtk-2.0/include \
+	-I${WIN32_DEV_DIR}/gtk_2_0/lib/glib-2.0/include \
+	-I${WIN32_DEV_DIR}/gtk_2_0/include/atk-1.0 \
+	-I${WIN32_DEV_DIR}/gtk_2_0/include/cairo
+WIN32_LIBS = -L${WIN32_GTK_DIR}/lib -L${WIN32_PIDGIN_DIR}/libpurple -lgobject-2.0 -lglib-2.0 -lws2_32 -lintl -lgdk-win32-2.0 -lgtk-win32-2.0 -lpurple
+GFIRE_SRC_DIR = .
+
+CFLAGS = -O2 -pipe -mno-cygwin -Wall -I. -I${GFIRE_DIR} -I${GFIRE_SRC_DIR} ${WIN32_CFLAGS} ${LIBPURPLE_CFLAGS}
+LFLAGS = -shared -Wl,--strip-all,--enable-auto-image-base
+
+GFIRE_SOURCES = \
+	${GFIRE_SRC_DIR}/gfire.c \
+	${GFIRE_SRC_DIR}/gf_chat.c \
+	${GFIRE_SRC_DIR}/gf_chat_proto.c \
+	${GFIRE_SRC_DIR}/gf_games.c \
+	${GFIRE_SRC_DIR}/gf_buddies.c \
+	${GFIRE_SRC_DIR}/gf_buddies_proto.c \
+	${GFIRE_SRC_DIR}/gf_friend_search.c \
+	${GFIRE_SRC_DIR}/gf_friend_search_proto.c \
+	${GFIRE_SRC_DIR}/gf_menus.c \
+	${GFIRE_SRC_DIR}/gf_protocol.c \
+	${GFIRE_SRC_DIR}/gf_purple.c \
+	${GFIRE_SRC_DIR}/gf_server_browser.c \
+	${GFIRE_SRC_DIR}/gf_server_browser_proto.c \
+	${GFIRE_SRC_DIR}/gf_server_detection_win.c \
+	${GFIRE_SRC_DIR}/gf_util.c \
+	${GFIRE_SRC_DIR}/gfire_proto.c \
+	${GFIRE_SRC_DIR}/gf_network.c \
+	${GFIRE_SRC_DIR}/gf_query.c
+
+GFIRE_OBJECTS = ${GFIRE_SOURCES:%.c=%.o}
+
+
+# Standard stuff here
+.PHONY:	all clean
+
+all: libxfire.dll
+
+clean:
+	rm -f libxfire.dll
+	rm -f ${GFIRE_OBJECTS}
+
+install: all
+	mkdir -p ${WIN32_INSTALL_DIR}/plugins
+	cp libxfire.dll ${WIN32_INSTALL_DIR}/plugins
+
+.c.o:
+	${WIN32_COMPILER} ${CFLAGS} -o $@ -c $^
+
+libxfire.dll: ${GFIRE_OBJECTS}
+	${WIN32_COMPILER} $^ ${WIN32_LIBS} ${LFLAGS} -o libxfire.dll

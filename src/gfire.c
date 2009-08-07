@@ -1262,6 +1262,33 @@ void gfire_check_for_left_clan_members(PurpleConnection *gc, guint32 clanid)
 	}
 }*/
 
+void gfire_playing_external_game(gfire_data *p_gfire, guint32 p_gameid)
+{
+	if(!p_gfire)
+		return;
+
+	gfire_game_data_reset(&p_gfire->game_data);
+	if(p_gameid > 0)
+	{
+		p_gfire->game_data.id = p_gameid;
+		p_gfire->external_game = TRUE;
+
+		gchar *game_name = gfire_game_name(p_gameid);
+		purple_debug_info("gfire", "%s is running. Telling Xfire ingame status.\n", NN(game_name));
+
+		if(purple_account_get_bool(purple_connection_get_account(gfire_get_connection(p_gfire)), "ingamenotificationnorm", FALSE))
+			purple_notify_message(NULL, PURPLE_NOTIFY_MSG_INFO, _("Ingame status"),
+								  NN(game_name), _("Your status has been changed."), NULL, NULL);
+
+		g_free(game_name);
+	}
+	else
+		p_gfire->external_game = FALSE;
+
+	guint16 len = gfire_proto_create_join_game(&p_gfire->game_data);
+	if(len > 0) gfire_send(gfire_get_connection(p_gfire), len);
+}
+
 static void gfire_handle_game_detection(gfire_data *p_gfire, guint32 p_gameid, gboolean p_running, const gchar *p_executable)
 {
 	if (!p_gfire)
@@ -1343,6 +1370,9 @@ gboolean gfire_detect_running_processes_cb(gfire_data *p_gfire)
 
 	gboolean norm = purple_account_get_bool(purple_connection_get_account(gfire_get_connection(p_gfire)), "ingamedetectionnorm", TRUE);
 	if(norm == FALSE)
+		return TRUE;
+
+	if(p_gfire->external_game)
 		return TRUE;
 
 	xmlnode *gfire_game = gfire_game_config_node_first();

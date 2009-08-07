@@ -1,0 +1,16 @@
+GFIRE_DIR = ..
+include ../mingw.mak
+
+.PHONY: all clean
+
+FILES = games.glade servers.glade
+
+all: ${FILES}
+
+clean:
+
+install: all
+	mkdir -p ${WIN32_INSTALL_DIR}/purple/gfire
+	list='${FILES}'; for file in $$list; do \
+		cp $$file ${WIN32_INSTALL_DIR}/purple/gfire/; \
+	done;

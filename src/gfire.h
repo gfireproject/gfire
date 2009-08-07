@@ -35,9 +35,9 @@ typedef struct _gfire_data gfire_data;
 #include "gf_games.h"
 
 /* we only include this on win32 builds */
-#  ifdef _WIN32
+/*#  ifdef _WIN32
 #    include "internal.h"
-#  endif /* _WIN32 */
+#  endif */ /* _WIN32 */
 
 // gfire_find_buddy modes
 typedef enum _gfire_find_buddy_mode
@@ -89,6 +89,7 @@ struct _gfire_data
 
 	// Detected programs
 	gfire_game_data game_data;
+	gboolean external_game;
 	gfire_game_data voip_data;
 
 	// Timer callbacks

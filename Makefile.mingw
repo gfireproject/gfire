@@ -1,0 +1,35 @@
+GFIRE_DIR = .
+include mingw.mak
+
+
+SUBDIRS = src po data pixmaps
+
+.PHONY: all clean installer
+
+all: gfire_config.h
+	list='${SUBDIRS}'; for subdir in $$list; do \
+		(make -C $$subdir -f Makefile.mingw all) || exit 1; \
+	done;
+
+clean:
+	list='${SUBDIRS}'; for subdir in $$list; do \
+		(make -C $$subdir -f Makefile.mingw clean) || exit 1; \
+	done;
+	rm -f gfire_config.h
+	rm -rf ${WIN32_INSTALL_DIR}
+	rm -f Gfire-`cat VERSION`.exe
+
+install: all
+	list='${SUBDIRS}'; for subdir in $$list; do \
+		(make -C $$subdir -f Makefile.mingw install) || exit 1; \
+	done;
+
+installer: install VERSION
+	${MAKENSIS} /V3 /DGFIRE_VERSION="`cat VERSION`" /DGFIRE_INSTALL_DIR="${WIN32_INSTALL_DIR}" ${GFIRE_DIR}/nsis/gfire-installer.nsi
+	#${MAKENSIS} ${GFIRE_DIR}/nsis/gfire-installer.nsi
+
+gfire_config.h: pre_config.h.in
+	sed -e 's/^.*HAVE_GTK/#define HAVE_GTK 1/g' \
+	  -e 's/^.*ENABLE_NLS/#define ENABLE_NLS 1/g' \
+	  -e 's/^.*GETTEXT_PACKAGE/#define GETTEXT_PACKAGE "gfire"/g' \
+	  -e 's/^.*GFIRE_VERSION/#define GFIRE_VERSION "'`cat VERSION`'"/g' $^ > $@
