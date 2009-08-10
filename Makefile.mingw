@@ -18,6 +18,7 @@ clean:
 	rm -f gfire_config.h
 	rm -rf ${WIN32_INSTALL_DIR}
 	rm -f Gfire-`cat VERSION`.exe
+	rm -f Gfire-`cat VERSION`.zip
 
 install: all
 	list='${SUBDIRS}'; for subdir in $$list; do \
@@ -27,6 +28,9 @@ install: all
 installer: install VERSION
 	${MAKENSIS} /V3 /DGFIRE_VERSION="`cat VERSION`" /DGFIRE_INSTALL_DIR="${WIN32_INSTALL_DIR}" ${GFIRE_DIR}/nsis/gfire-installer.nsi
 	#${MAKENSIS} ${GFIRE_DIR}/nsis/gfire-installer.nsi
+
+installer-zip: install VERSION
+	cd ${WIN32_INSTALL_DIR} && /usr/bin/zip -ru ../Gfire-`cat ../VERSION`.zip *
 
 gfire_config.h: pre_config.h.in
 	sed -e 's/^.*HAVE_GTK/#define HAVE_GTK 1/g' \

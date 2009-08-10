@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Gfire 0.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-08-01 00:24+0200\n"
-"PO-Revision-Date: 2009-08-01 00:34+0100\n"
+"POT-Creation-Date: 2009-08-07 15:04+0200\n"
+"PO-Revision-Date: 2009-08-07 15:07+0100\n"
 "Last-Translator: Beyecixramd <beyecixramd@gmail.com>\n"
 "Language-Team: Spanish <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -96,11 +96,20 @@ msgstr "Nombre del servidor"
 msgid "bookmark-new"
 msgstr "memorizar-nuevo"
 
-#: ../src/gf_base.h:104
+#: ../src/gf_base.h:106
 msgid "Xfire - Friends of Friends playing games"
 msgstr "Xfire - Amigos de amigos jugando"
 
-#: ../src/gf_buddies.c:714
+#: ../src/gf_buddies.c:303
+#, c-format
+msgid ""
+"%s may have not received this message:\n"
+"%s"
+msgstr ""
+"Puede que %s no haya recibido este mensaje:\n"
+"%s"
+
+#: ../src/gf_buddies.c:719
 #, c-format
 msgid "Playing %s"
 msgstr "Jugando a %s"
@@ -304,26 +313,26 @@ msgstr "Configuración de juegos incompatible"
 msgid "Your current games configuration is incompatible with this version of Gfire. Please remove it and try again."
 msgstr "La configuración de juegos es incompatible con esta versión de Gfire. Por favor, elimínala e intenta de nuevo."
 
-#: ../src/gf_network.c:114
-#: ../src/gf_network.c:148
+#: ../src/gf_network.c:120
+#: ../src/gf_network.c:154
 msgid "Connection closed by peer."
 msgstr "El equipo remoto canceló la conexión."
 
-#: ../src/gf_network.c:123
-#: ../src/gf_network.c:157
+#: ../src/gf_network.c:129
+#: ../src/gf_network.c:163
 msgid "Socket read failure."
 msgstr "Error de lectura local."
 
-#: ../src/gf_network.c:199
+#: ../src/gf_network.c:205
 msgid "Password or Username Incorrect."
 msgstr "Usuario o contraseña incorrectos."
 
-#: ../src/gf_network.c:239
+#: ../src/gf_network.c:245
 #, c-format
 msgid "Protocol version mismatch, needs to be %d. Auto set to new value."
 msgstr "La versión del protocolo no coincide, debería ser %d. Se ha corregido al nuevo valor automáticamente."
 
-#: ../src/gf_network.c:282
+#: ../src/gf_network.c:288
 msgid "You have signed on from another location."
 msgstr "Has iniciado sesión en otro sitio."
 
@@ -650,11 +659,13 @@ msgstr "Clanes de %s:"
 msgid "Connection timed out"
 msgstr "Tiempo de conexion expirado"
 
-#: ../src/gfire.c:1288
+#: ../src/gfire.c:1280
+#: ../src/gfire.c:1315
 msgid "Ingame status"
 msgstr "Estado ingame"
 
-#: ../src/gfire.c:1289
+#: ../src/gfire.c:1281
+#: ../src/gfire.c:1316
 msgid "Your status has been changed."
 msgstr "Tu estado ha sido cambiado"
 

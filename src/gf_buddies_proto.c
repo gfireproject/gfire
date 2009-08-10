@@ -249,7 +249,7 @@ void gfire_buddy_proto_game_status(gfire_data *p_gfire, guint16 p_packet_len)
 			continue;
 		}
 
-		gfire_buddy_set_game_status(gf_buddy, *(guint32*)g->data, *(guint32*)gp->data & 0xFFFF, *(guint32*)ip->data);
+		gfire_buddy_set_game_status(gf_buddy, *(guint32*)g->data, *(guint32*)gp->data & 0xFFFF, GUINT32_FROM_LE(*(guint32*)ip->data));
 
 		// Remove FoF as soon as he stops playing
 		if(gfire_buddy_is_friend_of_friend(gf_buddy) && !gfire_buddy_is_playing(gf_buddy))
@@ -345,7 +345,7 @@ void gfire_buddy_proto_voip_status(gfire_data *p_gfire, guint16 p_packet_len)
 			continue;
 		}
 
-		gfire_buddy_set_voip_status(gf_buddy, *(guint32*)v->data, *(guint32*)vp->data & 0xFFFF, *(guint32*)ip->data);
+		gfire_buddy_set_voip_status(gf_buddy, *(guint32*)v->data, *(guint32*)vp->data & 0xFFFF, GUINT32_FROM_LE(*(guint32*)ip->data));
 
 		g_free(s->data);
 		g_free(v->data);
