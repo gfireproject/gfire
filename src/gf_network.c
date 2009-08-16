@@ -284,8 +284,7 @@ void gfire_parse_packet(gfire_data *p_gfire, guint16 p_packet_len, guint16 p_pac
 
 		case 145:	
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "ERROR: You have signed on from another location.\n");	
-			gfire_get_connection(p_gfire)->wants_to_die = TRUE;
-			purple_connection_error(gfire_get_connection(p_gfire), _("You have signed on from another location."));
+			purple_connection_error_reason(gfire_get_connection(p_gfire), PURPLE_CONNECTION_ERROR_NAME_IN_USE, _("You have signed on from another location."));
 		break;
 
 		case 147:
