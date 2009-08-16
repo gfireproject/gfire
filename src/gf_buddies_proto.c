@@ -62,7 +62,7 @@ guint16 gfire_buddy_proto_create_typing_notification(const guint8 *p_sid, guint3
 	offset = gfire_proto_write_attr_ss("imindex", 0x02, &p_imindex, sizeof(p_imindex), offset);
 
 	// "peermsg"->"typing"
-	guint32 typing = GUINT32_TO_LE(typing ? 1 : 0);
+	guint32 typing = GUINT32_TO_LE(p_typing ? 1 : 0);
 	offset = gfire_proto_write_attr_ss("typing", 0x02, &typing, sizeof(typing), offset);
 
 	gfire_proto_write_header(offset, 0x02, 2, 0);

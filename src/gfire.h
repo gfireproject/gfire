@@ -33,6 +33,7 @@ typedef struct _gfire_data gfire_data;
 #include "gf_buddies.h"
 #include "gf_chat.h"
 #include "gf_games.h"
+#include "gf_game_detection.h"
 
 /* we only include this on win32 builds */
 /*#  ifdef _WIN32
@@ -88,6 +89,7 @@ struct _gfire_data
 
 
 	// Detected programs
+	gfire_process_list *process_list;
 	gfire_game_data game_data;
 	gboolean external_game;
 	gfire_game_data voip_data;

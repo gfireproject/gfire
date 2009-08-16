@@ -1,12 +1,30 @@
 EXTRA_DIST = \
 	gfire.h \
+	gfire_proto.h \
 	debug.h \
 	gf_network.h \
-	gf_packet.h \
 	gf_games.h \
 	gf_chat.h \
+	gf_chat_proto.h \
 	gf_friend_search.h \
-	gf_query.h
+	gf_friend_search_proto.h \
+	gf_query.h \
+	gf_protocol.h \
+	gf_purple.h \
+	gf_menus.h \
+	gf_util.h \
+	gf_server_detection.h \
+	gf_server_detection_linux.h \
+	gf_server_detection_win.h \
+	gf_server_detection_win.c \
+	gf_game_detection.h \
+	gf_game_detection_linux.h \
+	gf_game_detection_win.h \
+	gf_game_detection_win.c \
+	gf_server_browser.h \
+	gf_server_browser_proto.h \
+	gf_buddies.h \
+	gf_buddies_proto.h
 
 INCLUDES = \
 	-I$(top_srcdir) \
@@ -36,7 +54,9 @@ libxfire_la_SOURCES = \
 	gf_server_browser_proto.c \
 	gf_menus.c \
 	gf_util.c \
-	gf_server_detection_linux.c
+	gf_server_detection_linux.c \
+	gf_game_detection.c \
+	gf_game_detection_linux.c
 
 libxfire_la_LIBADD = \
 	$(GLIB_LIBS) $(GTK_LIBS) $(SSL_LIBS)

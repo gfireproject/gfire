@@ -22,16 +22,30 @@
  * along with Gfire.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifdef _WIN32
+#ifndef _GF_GAME_DETECTION_H
 
-#include "gf_server_detection_win.h"
+#include "gf_base.h"
 
-void gfire_detect_teamspeak_server(guint8 **voip_ip, guint32 *voip_port)
+typedef struct _process_info
 {
-}
+	gchar *name;
+	gchar **args;
+} process_info;
 
-void gfire_server_detection_detect(gfire_data *p_gfire)
+typedef struct _gfire_process_list
 {
-}
+	GList *processes;
+} gfire_process_list;
 
-#endif // _WIN32
+// OS independent (gf_game_detection.c)
+gfire_process_list *gfire_process_list_new();
+void gfire_process_list_free(gfire_process_list *p_list);
+void gfire_process_list_clear(gfire_process_list *p_list);
+gboolean gfire_process_list_contains(const gfire_process_list *p_list, const gchar *p_name, const gchar *p_args);
+	// For internal use only
+process_info *gfire_process_info_new(const gchar *p_name, const gchar *p_args);
+
+// OS dependent (gf_game_detection_X.c)
+void gfire_process_list_update(gfire_process_list *p_list);
+
+#endif // _GF_GAME_DETECTION_H

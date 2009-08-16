@@ -46,6 +46,10 @@ gfire_data *gfire_create(PurpleConnection *p_gc)
 	if(!ret->buff_in)
 		goto error;
 
+	ret->process_list = gfire_process_list_new();
+	if(!ret->process_list)
+		goto error;
+
 	ret->fd = -1;
 
 	gfire_network_init();
@@ -92,6 +96,8 @@ void gfire_free(gfire_data *p_gfire)
 		gfire_chat_free((gfire_chat*)p_gfire->chats->data);
 		p_gfire->chats = g_list_delete_link(p_gfire->chats, p_gfire->chats);
 	}
+
+	gfire_process_list_free(p_gfire->process_list);
 
 	g_free(p_gfire);
 
@@ -1375,6 +1381,8 @@ gboolean gfire_detect_running_processes_cb(gfire_data *p_gfire)
 	if(p_gfire->external_game)
 		return TRUE;
 
+	gfire_process_list_update(p_gfire->process_list);
+
 	xmlnode *gfire_game = gfire_game_config_node_first();
 	for (; gfire_game != NULL;
 		 gfire_game = gfire_game_config_node_next(gfire_game))
@@ -1408,7 +1416,7 @@ gboolean gfire_detect_running_processes_cb(gfire_data *p_gfire)
 			game_id_int = atoi(game_id);
 
 		char *game_executable_name = g_path_get_basename(game_executable);
-		gboolean process_running = check_process(game_executable_name, game_executable_argument);
+		gboolean process_running = gfire_process_list_contains(p_gfire->process_list, game_executable_name, game_executable_argument);
 		if(game_executable_name) g_free(game_executable_name);
 
 

@@ -58,7 +58,8 @@ am__libxfire_la_SOURCES_DIST = gf_buddies.c gf_buddies_proto.c \
 	gf_friend_search_proto.c gf_games.c gf_network.c gf_protocol.c \
 	gf_purple.c gf_query.c gfire.c gfire_proto.c \
 	gf_server_browser.c gf_server_browser_proto.c gf_menus.c \
-	gf_util.c gf_server_detection_linux.c
+	gf_util.c gf_server_detection_linux.c gf_game_detection.c \
+	gf_game_detection_linux.c
 @PLUGINS_TRUE@am_libxfire_la_OBJECTS = gf_buddies.lo \
 @PLUGINS_TRUE@	gf_buddies_proto.lo gf_chat.lo gf_chat_proto.lo \
 @PLUGINS_TRUE@	gf_friend_search.lo gf_friend_search_proto.lo \
@@ -66,7 +67,8 @@ am__libxfire_la_SOURCES_DIST = gf_buddies.c gf_buddies_proto.c \
 @PLUGINS_TRUE@	gf_purple.lo gf_query.lo gfire.lo gfire_proto.lo \
 @PLUGINS_TRUE@	gf_server_browser.lo gf_server_browser_proto.lo \
 @PLUGINS_TRUE@	gf_menus.lo gf_util.lo \
-@PLUGINS_TRUE@	gf_server_detection_linux.lo
+@PLUGINS_TRUE@	gf_server_detection_linux.lo \
+@PLUGINS_TRUE@	gf_game_detection.lo gf_game_detection_linux.lo
 libxfire_la_OBJECTS = $(am_libxfire_la_OBJECTS)
 libxfire_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
@@ -255,13 +257,31 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 EXTRA_DIST = \
 	gfire.h \
+	gfire_proto.h \
 	debug.h \
 	gf_network.h \
-	gf_packet.h \
 	gf_games.h \
 	gf_chat.h \
+	gf_chat_proto.h \
 	gf_friend_search.h \
-	gf_query.h
+	gf_friend_search_proto.h \
+	gf_query.h \
+	gf_protocol.h \
+	gf_purple.h \
+	gf_menus.h \
+	gf_util.h \
+	gf_server_detection.h \
+	gf_server_detection_linux.h \
+	gf_server_detection_win.h \
+	gf_server_detection_win.c \
+	gf_game_detection.h \
+	gf_game_detection_linux.h \
+	gf_game_detection_win.h \
+	gf_game_detection_win.c \
+	gf_server_browser.h \
+	gf_server_browser_proto.h \
+	gf_buddies.h \
+	gf_buddies_proto.h
 
 INCLUDES = \
 	-I$(top_srcdir) \
@@ -288,7 +308,9 @@ libxfire_la_LDFLAGS = -module -avoid-version
 @PLUGINS_TRUE@	gf_server_browser_proto.c \
 @PLUGINS_TRUE@	gf_menus.c \
 @PLUGINS_TRUE@	gf_util.c \
-@PLUGINS_TRUE@	gf_server_detection_linux.c
+@PLUGINS_TRUE@	gf_server_detection_linux.c \
+@PLUGINS_TRUE@	gf_game_detection.c \
+@PLUGINS_TRUE@	gf_game_detection_linux.c
 
 @PLUGINS_TRUE@libxfire_la_LIBADD = \
 @PLUGINS_TRUE@	$(GLIB_LIBS) $(GTK_LIBS) $(SSL_LIBS)
@@ -378,6 +400,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gf_chat_proto.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gf_friend_search.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gf_friend_search_proto.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gf_game_detection.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gf_game_detection_linux.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gf_games.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gf_menus.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gf_network.Plo@am__quote@
