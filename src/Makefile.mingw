@@ -46,11 +46,15 @@ GFIRE_SOURCES = \
 	${GFIRE_SRC_DIR}/gf_game_detection.c \
 	${GFIRE_SRC_DIR}/gf_game_detection_win.c
 
-GFIRE_OBJECTS = ${GFIRE_SOURCES:%.c=%.o}
+GFIRE_RESOURCES = \
+	${GFIRE_SRC_DIR}/gfirerc.rc
+
+GFIRE_OBJECTS = ${GFIRE_SOURCES:%.c=%.o} ${GFIRE_RESOURCES:%.rc=%.o}
 
 
 # Standard stuff here
 .PHONY:	all clean
+.SUFFIXES: .rc
 
 all: libxfire.dll
 
@@ -64,6 +68,9 @@ install: all
 
 .c.o:
 	${WIN32_COMPILER} ${CFLAGS} -o $@ -c $^
+
+.rc.o:
+	${WIN32_WINDRES} -i $^ -o $@
 
 libxfire.dll: ${GFIRE_OBJECTS}
 	${WIN32_COMPILER} $^ ${WIN32_LIBS} ${LFLAGS} -o libxfire.dll

@@ -1,5 +1,6 @@
 # The name of your windows compiler
 WIN32_COMPILER = i686-mingw32-gcc
+WIN32_WINDRES = i686-mingw32-windres
 
 # The directory containing the GTK and GLib files
 WIN32_DEV_DIR = ${GFIRE_DIR}/../pidgin_mingw/win32-dev
