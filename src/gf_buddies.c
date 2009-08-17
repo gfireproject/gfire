@@ -204,11 +204,14 @@ void gfire_buddy_send(gfire_buddy *p_buddy, const gchar *p_msg)
 	p_buddy->pending_ims = g_list_append(p_buddy->pending_ims, gfire_im_sent_create(p_buddy->im, p_msg));
 
 	/* in 2.0 the gtkimhtml stuff started escaping special chars: '&' is now "&amp";
-	   XFire native clients don't handle it. */
-	p_msg = purple_unescape_html(p_msg);
-	purple_debug(PURPLE_DEBUG_MISC, "gfire", "Sending IM to %s: %s\n", gfire_buddy_get_name(p_buddy), NN(p_msg));
-	guint16 packet_len = gfire_buddy_proto_create_send_im(p_buddy->sid, p_buddy->im, p_msg);
+	   Xfire native clients don't handle it (and HTML at all). */
+	gchar *no_html = purple_markup_strip_html(p_msg);
+	gchar *unescaped = purple_unescape_html(no_html);
+	g_free(no_html);
+	purple_debug(PURPLE_DEBUG_MISC, "gfire", "Sending IM to %s: %s\n", gfire_buddy_get_name(p_buddy), NN(unescaped));
+	guint16 packet_len = gfire_buddy_proto_create_send_im(p_buddy->sid, p_buddy->im, unescaped);
 	if(packet_len > 0) gfire_send(p_buddy->gc, packet_len);
+	g_free(unescaped);
 }
 
 void gfire_buddy_got_im(gfire_buddy *p_buddy, guint32 p_imindex, const gchar *p_msg)
