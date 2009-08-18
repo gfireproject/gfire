@@ -33,6 +33,7 @@
 // Used for server detection
 #include <netdb.h>
 #include <ifaddrs.h>
+#include <netinet/in.h>
 
 // Used for teamspeak detection
 #include <sys/socket.h>
