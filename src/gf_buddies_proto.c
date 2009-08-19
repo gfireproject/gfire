@@ -249,7 +249,7 @@ void gfire_buddy_proto_game_status(gfire_data *p_gfire, guint16 p_packet_len)
 			continue;
 		}
 
-		gfire_buddy_set_game_status(gf_buddy, *(guint32*)g->data, *(guint32*)gp->data & 0xFFFF, GUINT32_FROM_LE(*(guint32*)ip->data));
+		gfire_buddy_set_game_status(gf_buddy, *(guint32*)g->data, *(guint32*)gp->data & 0xFFFF, *(guint32*)ip->data);
 
 		// Remove FoF as soon as he stops playing
 		if(gfire_buddy_is_friend_of_friend(gf_buddy) && !gfire_buddy_is_playing(gf_buddy))
@@ -345,7 +345,7 @@ void gfire_buddy_proto_voip_status(gfire_data *p_gfire, guint16 p_packet_len)
 			continue;
 		}
 
-		gfire_buddy_set_voip_status(gf_buddy, *(guint32*)v->data, *(guint32*)vp->data & 0xFFFF, GUINT32_FROM_LE(*(guint32*)ip->data));
+		gfire_buddy_set_voip_status(gf_buddy, *(guint32*)v->data, *(guint32*)vp->data & 0xFFFF, *(guint32*)ip->data);
 
 		g_free(s->data);
 		g_free(v->data);
@@ -765,37 +765,76 @@ void gfire_buddy_proto_fof_list(gfire_data *p_gfire, guint16 p_packet_len)
 			continue;
 		}
 
-		gf_buddy = gfire_find_buddy(p_gfire, na->data, GFFB_NAME);
-		if(!gf_buddy)
+		if(!gfire_is_self(p_gfire, *(guint32*)f->data))
 		{
-			gf_buddy = gfire_buddy_create(*(guint32*)f->data, (gchar*)na->data, (gchar*)n->data, GFBT_FRIEND_OF_FRIEND);
-			if(gf_buddy)
+			gf_buddy = gfire_find_buddy(p_gfire, na->data, GFFB_NAME);
+			if(!gf_buddy)
 			{
-				gfire_add_buddy(p_gfire, gf_buddy, NULL);
-				gfire_buddy_set_session_id(gf_buddy, (guint8*)s->data);
-
-				GList *common_names = NULL;
-				GList *cur = c->data;
-				for(; cur; cur = g_list_next(cur))
+				gf_buddy = gfire_buddy_create(*(guint32*)f->data, (gchar*)na->data, (gchar*)n->data, GFBT_FRIEND_OF_FRIEND);
+				if(gf_buddy)
 				{
-					gfire_buddy *common_buddy = gfire_find_buddy(p_gfire, cur->data, GFFB_USERID);
-					if(common_buddy)
-						common_names = g_list_append(common_names, g_strdup(gfire_buddy_get_name(common_buddy)));
+					gfire_add_buddy(p_gfire, gf_buddy, NULL);
+					gfire_buddy_set_session_id(gf_buddy, (guint8*)s->data);
 
-					g_free(cur->data);
+					GList *common_names = NULL;
+					GList *cur = c->data;
+					for(; cur; cur = g_list_next(cur))
+					{
+						gfire_buddy *common_buddy = gfire_find_buddy(p_gfire, cur->data, GFFB_USERID);
+						if(common_buddy)
+							common_names = g_list_append(common_names, g_strdup(gfire_buddy_get_name(common_buddy)));
+
+						g_free(cur->data);
+					}
+
+					gfire_buddy_set_common_buddies(gf_buddy, common_names);
+
+					cur = gfire_fof_data;
+					for(; cur; cur = g_list_next(cur))
+					{
+						if(memcmp(((fof_game_data*)cur->data)->sid, s->data, XFIRE_SID_LEN) == 0)
+						{
+							gfire_buddy_set_game_status(gf_buddy, ((fof_game_data*)cur->data)->game.id, ((fof_game_data*)cur->data)->game.port, ((fof_game_data*)cur->data)->game.ip.value);
+							gfire_fof_game_data_free((fof_game_data*)cur->data);
+							gfire_fof_data = g_list_delete_link(gfire_fof_data, cur);
+						}
+					}
 				}
-
-				gfire_buddy_set_common_buddies(gf_buddy, common_names);
-
-				cur = gfire_fof_data;
+				else
+				{
+					GList *cur = gfire_fof_data;
+					for(; cur; cur = g_list_next(cur))
+					{
+						if(memcmp(((fof_game_data*)cur->data)->sid, s->data, XFIRE_SID_LEN) == 0)
+						{
+							gfire_fof_game_data_free((fof_game_data*)cur->data);
+							gfire_fof_data = g_list_delete_link(gfire_fof_data, cur);
+						}
+					}
+				}
+			}
+			else
+			{
+				GList *cur = gfire_fof_data;
 				for(; cur; cur = g_list_next(cur))
 				{
 					if(memcmp(((fof_game_data*)cur->data)->sid, s->data, XFIRE_SID_LEN) == 0)
 					{
-						gfire_buddy_set_game_status(gf_buddy, ((fof_game_data*)cur->data)->game.id, ((fof_game_data*)cur->data)->game.port, ((fof_game_data*)cur->data)->game.ip.value);
 						gfire_fof_game_data_free((fof_game_data*)cur->data);
 						gfire_fof_data = g_list_delete_link(gfire_fof_data, cur);
 					}
+				}
+			}
+		}
+		else
+		{
+			GList *cur = gfire_fof_data;
+			for(; cur; cur = g_list_next(cur))
+			{
+				if(memcmp(((fof_game_data*)cur->data)->sid, s->data, XFIRE_SID_LEN) == 0)
+				{
+					gfire_fof_game_data_free((fof_game_data*)cur->data);
+					gfire_fof_data = g_list_delete_link(gfire_fof_data, cur);
 				}
 			}
 		}

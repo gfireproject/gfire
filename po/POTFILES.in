@@ -21,3 +21,7 @@ src/gf_server_browser_proto.c
 src/gf_menus.c
 src/gf_util.c
 src/gf_server_detection_linux.c
+src/gf_server_detection_win.c
+src/gf_game_detection.c
+src/gf_game_detection_linux.c
+src/gf_game_detection_win.c
