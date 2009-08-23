@@ -470,8 +470,8 @@ void gfire_got_invitation(gfire_data *p_gfire, const gchar *p_name, const gchar 
 	args->name = g_strdup(p_name);
 
 	purple_account_request_authorization(purple_connection_get_account(gfire_get_connection(p_gfire)), p_name,
-										 NULL, p_alias, p_msg, gfire_find_buddy(p_gfire, p_name, GFFB_NAME) ? TRUE : FALSE,
-										 gfire_buddy_invitation_authorize_cb, gfire_buddy_invitation_deny_cb, args);
+										 NULL, p_alias, p_msg, TRUE, gfire_buddy_invitation_authorize_cb,
+										 gfire_buddy_invitation_deny_cb, args);
 }
 
 void gfire_set_userid(gfire_data *p_gfire, guint32 p_userid)

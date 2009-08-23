@@ -238,7 +238,7 @@ void gfire_buddy_got_im(gfire_buddy *p_buddy, guint32 p_imindex, const gchar *p_
 
 void gfire_buddy_send_typing(gfire_buddy *p_buddy, gboolean p_typing)
 {
-	if(!p_buddy)
+	if(!p_buddy || !gfire_buddy_is_online(p_buddy))
 		return;
 
 	p_buddy->im++;
