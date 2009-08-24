@@ -920,27 +920,34 @@ void gfire_buddy_make_friend(gfire_buddy *p_buddy, PurpleGroup *p_group)
 	if(!p_buddy || gfire_buddy_is_friend(p_buddy))
 		return;
 
+	// Move the buddy to the selected group
+	if(p_buddy->prpl_buddy)
+	{
+		// Only move the buddy if it is in the clan/fof group
+		PurpleGroup *old_group = purple_buddy_get_group(p_buddy->prpl_buddy);
+		gfire_buddy_clan_data *clan_data = gfire_buddy_get_default_clan_data(p_buddy);
+		if((clan_data && gfire_clan_is(clan_data->clan, purple_blist_node_get_int((PurpleBlistNode*)old_group, "clanid"))) ||
+		   purple_find_buddy_in_group(purple_connection_get_account(p_buddy->gc), gfire_buddy_get_name(p_buddy), GFIRE_FRIENDS_OF_FRIENDS_GROUP_NAME))
+		{
+			if(!p_group)
+			{
+				p_group = purple_find_group(GFIRE_DEFAULT_GROUP_NAME);
+				if(!p_group)
+				{
+					p_group = purple_group_new(GFIRE_DEFAULT_GROUP_NAME);
+					purple_blist_add_group(p_group, NULL);
+				}
+			}
+			purple_blist_add_buddy(p_buddy->prpl_buddy, NULL, p_group, NULL);
+			purple_blist_node_remove_setting((PurpleBlistNode*)p_buddy->prpl_buddy, "clanmember");
+			purple_blist_node_set_flags((PurpleBlistNode*)p_buddy->prpl_buddy, 0);
+		}
+	}
+
 	if(gfire_buddy_is_clan_member(p_buddy) && p_buddy->clan_data)
 		((gfire_buddy_clan_data*)p_buddy->clan_data->data)->is_default = FALSE;
 
 	p_buddy->type = GFBT_FRIEND;
-
-	// Move the buddy to the selected group
-	if(p_buddy->prpl_buddy)
-	{
-		if(!p_group)
-		{
-			p_group = purple_find_group(GFIRE_DEFAULT_GROUP_NAME);
-			if(!p_group)
-			{
-				p_group = purple_group_new(GFIRE_DEFAULT_GROUP_NAME);
-				purple_blist_add_group(p_group, NULL);
-			}
-		}
-		purple_blist_add_buddy(p_buddy->prpl_buddy, NULL, p_group, NULL);
-		purple_blist_node_remove_setting((PurpleBlistNode*)p_buddy->prpl_buddy, "clanmember");
-		purple_blist_node_set_flags((PurpleBlistNode*)p_buddy->prpl_buddy, 0);
-	}
 }
 
 void gfire_buddy_set_common_buddies(gfire_buddy *p_buddy, GList *p_buddies)
