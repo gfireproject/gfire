@@ -216,7 +216,10 @@ void gfire_parse_packet(gfire_data *p_gfire, guint16 p_packet_len, guint16 p_pac
 			ob_len = gfire_proto_create_collective_statistics(getenv("LANG") ? getenv("LANG") : "en_GB", "Gfire", GFIRE_VERSION, "");
 			if(ob_len > 0) gfire_send(gfire_get_connection(p_gfire), ob_len);
 
-			/* load game xml from user dir; these don't need to work unless we are connected */
+			// Update current status
+			gfire_set_current_status(p_gfire);
+
+			// load game xml from user dir; these don't need to work unless we are connected
 			gfire_game_load_games_xml();
 			gfire_game_load_config_xml();
 			p_gfire->det_source = g_timeout_add_seconds(5, (GSourceFunc)gfire_detect_running_processes_cb, p_gfire);

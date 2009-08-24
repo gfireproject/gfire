@@ -355,12 +355,15 @@ void gfire_set_status(gfire_data *p_gfire, const PurpleStatus *p_status)
 			if(msg && strlen(msg) > 0)
 				status = g_strdup_printf("(AFK) %s", msg);
 			else
-				status = g_strdup("(AFK) Away From Keyboard");
+				// TRANSLATORS: Keep "(AFK)" as is!
+				// Suggestion: Use Xfires original AFK message here
+				status = g_strdup(_("(AFK) Away From Keyboard"));
 		break;
 		case PURPLE_STATUS_UNAVAILABLE:
 			if(msg && strlen(msg) > 0)
 				status = g_strdup_printf("(Busy) %s", msg);
 			else
+				// TRANSLATORS: Keep "(Busy)" as is!
 				status = g_strdup(_("(Busy) I'm busy!"));
 		break;
 		default:
@@ -374,6 +377,14 @@ void gfire_set_status(gfire_data *p_gfire, const PurpleStatus *p_status)
 	if(len > 0) gfire_send(gfire_get_connection(p_gfire), len);
 
 	g_free(status);
+}
+
+void gfire_set_current_status(gfire_data *p_gfire)
+{
+	if(!p_gfire)
+		return;
+
+	gfire_set_status(p_gfire, purple_account_get_active_status(purple_connection_get_account(gfire_get_connection(p_gfire))));
 }
 
 gboolean gfire_is_self(const gfire_data *p_gfire, guint32 p_userid)

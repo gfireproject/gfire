@@ -372,7 +372,7 @@ void gfire_buddy_prpl_add(gfire_buddy *p_buddy, PurpleGroup *p_group)
 	PurpleBuddy *prpl_buddy = purple_find_buddy(purple_connection_get_account(p_buddy->gc), gfire_buddy_get_name(p_buddy));
 	if(!prpl_buddy)
 	{
-		prpl_buddy = purple_buddy_new(purple_connection_get_account(p_buddy->gc), gfire_buddy_get_name(p_buddy), gfire_buddy_get_alias(p_buddy));
+		prpl_buddy = purple_buddy_new(purple_connection_get_account(p_buddy->gc), gfire_buddy_get_name(p_buddy), NULL);
 		if(!prpl_buddy)
 		{
 			purple_debug_error("gfire", "gfire_buddy_prpl_add: Creation of PurpleBuddy failed\n");
@@ -838,7 +838,7 @@ void gfire_buddy_add_to_clan(gfire_buddy *p_buddy, gfire_clan *p_clan, const gch
 	if(clan_data)
 	{
 		p_buddy->clan_data = g_list_append(p_buddy->clan_data, clan_data);
-		if(gfire_buddy_is_clan_member(p_buddy) && p_default)
+		if(p_buddy->prpl_buddy && gfire_buddy_is_clan_member(p_buddy) && p_default)
 			serv_got_alias(purple_account_get_connection(purple_buddy_get_account(p_buddy->prpl_buddy)), gfire_buddy_get_name(p_buddy), clan_data->clan_alias);
 	}
 }
