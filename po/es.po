@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Gfire 0.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-08-24 21:43+0200\n"
-"PO-Revision-Date: 2009-08-07 15:07+0100\n"
+"POT-Creation-Date: 2009-08-28 04:06+0200\n"
+"PO-Revision-Date: 2009-08-28 04:09+0100\n"
 "Last-Translator: Beyecixramd <beyecixramd@gmail.com>\n"
 "Language-Team: Spanish <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -32,7 +32,7 @@ msgstr "Añadir un juego"
 
 #: ../data/games.glade.h:4
 msgid "Connect option:"
-msgstr "Opción de conexión"
+msgstr "Opciones de conexión:"
 
 #: ../data/games.glade.h:5
 msgid "Detection Executable:"
@@ -58,7 +58,7 @@ msgstr "Opciones:"
 msgid "Launch prefix:"
 msgstr "Prefijo de inicio:"
 
-#: ../data/games.glade.h:11 ../src/gf_purple.c:521
+#: ../data/games.glade.h:11 ../src/gf_purple.c:530
 msgid "Manage Games"
 msgstr "Administrar juegos"
 
@@ -78,7 +78,7 @@ msgstr "Ping"
 msgid "Players"
 msgstr "Jugadores"
 
-#: ../data/servers.glade.h:3 ../src/gf_purple.c:524
+#: ../data/servers.glade.h:3 ../src/gf_purple.c:533
 msgid "Server Browser"
 msgstr "Navegador de servidores"
 
@@ -98,7 +98,7 @@ msgstr "memorizar-nuevo"
 msgid "Xfire - Friends of Friends playing games"
 msgstr "Xfire - Amigos de amigos jugando"
 
-#: ../src/gf_buddies.c:306
+#: ../src/gf_buddies.c:389
 #, c-format
 msgid ""
 "%s may have not received this message:\n"
@@ -107,7 +107,7 @@ msgstr ""
 "Puede que %s no haya recibido este mensaje:\n"
 "%s"
 
-#: ../src/gf_buddies.c:722
+#: ../src/gf_buddies.c:837
 #, c-format
 msgid "Playing %s"
 msgstr "Jugando a %s"
@@ -131,7 +131,7 @@ msgstr "%s [Charla Xfire]"
 #: ../src/gf_chat.c:271
 #, c-format
 msgid "You are now chatting in %s."
-msgstr "Ahora estás hablando en %s"
+msgstr "Ahora estás chateando %s."
 
 #: ../src/gf_chat.c:278
 #, c-format
@@ -144,7 +144,7 @@ msgstr ""
 
 #: ../src/gf_friend_search.c:64 ../src/gf_friend_search.c:106
 msgid "Xfire Friend Search"
-msgstr "Buscar amigos en Xfire"
+msgstr "Búsqueda de amigos de Xfire"
 
 #: ../src/gf_friend_search.c:64
 msgid "Please enter a Xfire username, name or e-Mail address here:"
@@ -195,7 +195,7 @@ msgstr "Nueva versión de la lista de juegos: %s"
 
 #: ../src/gf_games.c:51
 msgid "Download successful"
-msgstr "La descarga se ha completado con éxito"
+msgstr "Descarga completada con éxito"
 
 #: ../src/gf_games.c:57
 msgid "Unable to write gfire_games.xml"
@@ -278,7 +278,7 @@ msgstr "Juego eliminado"
 
 #: ../src/gf_games.c:893
 msgid "The game has been successfully removed."
-msgstr "El juego se ha eliminado con éxito"
+msgstr "El juego se ha eliminado con éxito."
 
 #: ../src/gf_games.c:898 ../src/gf_games.c:907
 msgid "Couldn't remove game"
@@ -303,12 +303,12 @@ msgid ""
 "Your current games configuration is incompatible with this version of Gfire. "
 "Please remove it and try again."
 msgstr ""
-"La configuración de juegos es incompatible con esta versión de Gfire. Por "
-"favor, elimínala e intenta de nuevo."
+"La configuración de juegos actual es incompatible con esta versión de Gfire. "
+"Por favor, elimínala e intenta de nuevo."
 
 #: ../src/gf_network.c:120 ../src/gf_network.c:154
 msgid "Connection closed by peer."
-msgstr "El equipo remoto canceló la conexión."
+msgstr "El equipo remoto cerró la conexión."
 
 #: ../src/gf_network.c:129 ../src/gf_network.c:163
 msgid "Socket read failure."
@@ -321,9 +321,7 @@ msgstr "Usuario o contraseña incorrectos."
 #: ../src/gf_network.c:248
 #, c-format
 msgid "Protocol version mismatch, needs to be %d. Auto set to new value."
-msgstr ""
-"La versión del protocolo no coincide, debería ser %d. Se ha corregido al "
-"nuevo valor automáticamente."
+msgstr "La versión del protocolo no coincide, debería ser %d. Reconfigurado."
 
 #: ../src/gf_network.c:290
 msgid "You have signed on from another location."
@@ -333,143 +331,143 @@ msgstr "Has iniciado sesión en otro sitio."
 msgid "Game"
 msgstr "Juego"
 
-#: ../src/gf_purple.c:131 ../src/gf_purple.c:822 ../src/gfire.c:967
+#: ../src/gf_purple.c:131 ../src/gf_purple.c:836 ../src/gfire.c:967
 msgid "Server"
 msgstr "Servidor"
 
-#: ../src/gf_purple.c:150 ../src/gfire.c:986
+#: ../src/gf_purple.c:159 ../src/gfire.c:986
 msgid "unknown"
 msgstr "desconocido"
 
-#: ../src/gf_purple.c:165 ../src/gfire.c:950 ../src/gfire.c:953
+#: ../src/gf_purple.c:174 ../src/gfire.c:950 ../src/gfire.c:953
 msgid "Status"
 msgstr "Estado"
 
-#: ../src/gf_purple.c:175 ../src/gfire.c:999
+#: ../src/gf_purple.c:184 ../src/gfire.c:999
 msgid "Common Friends"
 msgstr "Amigos en común"
 
-#: ../src/gf_purple.c:225
+#: ../src/gf_purple.c:234
 msgid "Protocol initialization failed."
 msgstr "Error de inicio del protocolo."
 
-#: ../src/gf_purple.c:258
+#: ../src/gf_purple.c:267
 msgid "Message could not be sent. Buddy not in contact list"
 msgstr ""
-"Mensaje no enviado. El usuario no se encuentra en la lista de contactos."
+"Mensaje no enviado. El usuario no se encuentra en la lista de contactos"
 
-#: ../src/gf_purple.c:271
+#: ../src/gf_purple.c:280
 msgid "Message could not be sent. Buddy offline"
-msgstr "Mensaje no enviado. Usuario desconectado."
+msgstr "Mensaje no enviado. Usuario desconectado"
 
-#: ../src/gf_purple.c:369
+#: ../src/gf_purple.c:378
 #, c-format
 msgid "Not Removing %s"
 msgstr "No se ha eliminado a %s"
 
-#: ../src/gf_purple.c:371
+#: ../src/gf_purple.c:380
 msgid "Xfire Buddy Removal Denied"
-msgstr "El contacto no se ha eliminado"
+msgstr "Contacto de Xfire no eliminado"
 
-#: ../src/gf_purple.c:371
+#: ../src/gf_purple.c:380
 msgid ""
 "Account settings are set to not remove buddies\n"
 "The buddy will be restored on your next login"
 msgstr ""
-"La configuración se ha ajustado para no eliminar contactos\n"
-"El usuario será restaurado en el siguiente inicio de sesión"
+"La configuración de la cuenta se ha ajustado para no eliminar contactos\n"
+"El usuario será restablecido en el siguiente inicio de sesión"
 
-#: ../src/gf_purple.c:430
+#: ../src/gf_purple.c:439
 msgid "Add as friend"
 msgstr "Añadir como amigo"
 
-#: ../src/gf_purple.c:445
+#: ../src/gf_purple.c:454
 msgid "Join Game ..."
 msgstr "Unirse al juego ..."
 
-#: ../src/gf_purple.c:461
+#: ../src/gf_purple.c:470
 msgid "Join VoIP ..."
 msgstr "Unirse a VoIP ..."
 
-#: ../src/gf_purple.c:471
+#: ../src/gf_purple.c:480
 msgid "Xfire Profile"
 msgstr "Perfil Xfire"
 
-#: ../src/gf_purple.c:498
+#: ../src/gf_purple.c:507
 msgid "Change Nickname"
 msgstr "Cambiar apodo"
 
-#: ../src/gf_purple.c:501
+#: ../src/gf_purple.c:510
 msgid "My Profile Page"
 msgstr "Mi perfil"
 
-#: ../src/gf_purple.c:505
+#: ../src/gf_purple.c:514
 msgid "Reload Game Config"
 msgstr "Actualizar configuración de juegos"
 
-#: ../src/gf_purple.c:508
+#: ../src/gf_purple.c:517
 msgid "Reload Game ID List"
 msgstr "Actualizar lista de juegos"
 
-#: ../src/gf_purple.c:511
+#: ../src/gf_purple.c:520
 msgid "Get Game ID List"
 msgstr "Descargar lista de juegos"
 
-#: ../src/gf_purple.c:514
+#: ../src/gf_purple.c:523
 msgid "Friend Search"
 msgstr "Búsqueda de amigos"
 
-#: ../src/gf_purple.c:531
+#: ../src/gf_purple.c:540
 msgid "About"
 msgstr "Información sobre Gfire"
 
-#: ../src/gf_purple.c:696
+#: ../src/gf_purple.c:705
 msgid "Xfire Groupchat"
 msgstr "Charla grupal de Xfire"
 
-#: ../src/gf_purple.c:696
+#: ../src/gf_purple.c:705
 msgid "MotD change failed"
 msgstr "Error al cambiar MdD (MotD)"
 
-#: ../src/gf_purple.c:696
+#: ../src/gf_purple.c:705
 msgid "The MotD contains more than 200 characters."
 msgstr "El MdD (MotD) contiene más de 200 caracteres."
 
-#: ../src/gf_purple.c:825
+#: ../src/gf_purple.c:839
 msgid "Port"
 msgstr "Puerto"
 
-#: ../src/gf_purple.c:828
+#: ../src/gf_purple.c:842
 msgid "Version"
 msgstr "Versión"
 
-#: ../src/gf_purple.c:831
+#: ../src/gf_purple.c:845
 msgid "Don't delete buddies from server"
-msgstr "No eliminar contactos del servidor"
+msgstr "No eliminar los contactos del servidor"
 
-#: ../src/gf_purple.c:834
+#: ../src/gf_purple.c:848
 msgid "Buddies can see if I'm typing"
-msgstr "Los contactos pueden ver si estoy escribiendo"
+msgstr "Los contactos pueden ver cuando escribo"
 
-#: ../src/gf_purple.c:837
+#: ../src/gf_purple.c:851
 msgid "Auto detect for ingame status"
 msgstr "Detección automática de estado"
 
-#: ../src/gf_purple.c:840
+#: ../src/gf_purple.c:854
 msgid "Notify me when my status is ingame"
-msgstr "Notificarme cuando mi estado sea ingame"
+msgstr "Notificarme si mi estado es ingame"
 
-#: ../src/gf_purple.c:843
+#: ../src/gf_purple.c:857
 msgid "Use server detection"
-msgstr "Usar la detección del servidor"
+msgstr "Usar detección del servidor"
 
-#: ../src/gf_purple.c:851
+#: ../src/gf_purple.c:860
 msgid "Xfire"
 msgstr "Xfire"
 
-#: ../src/gf_purple.c:852 ../src/gf_purple.c:853
+#: ../src/gf_purple.c:861 ../src/gf_purple.c:862
 msgid "Xfire Protocol Plugin"
-msgstr "Añadido de protocolo de Xfire"
+msgstr "Plugin de protocolo Xfire"
 
 #: ../src/gfire.c:169
 msgid "Connecting"
@@ -477,7 +475,7 @@ msgstr "Conectando"
 
 #: ../src/gfire.c:175
 msgid "Couldn't create socket."
-msgstr "No se pudo crear la conexión."
+msgstr "No se pudo establecer la conexión."
 
 #: ../src/gfire.c:336
 msgid "Login sent"
@@ -487,12 +485,12 @@ msgstr "Datos de inicio de sesión enviados"
 #. Suggestion: Use Xfires original AFK message here
 #: ../src/gfire.c:360
 msgid "(AFK) Away From Keyboard"
-msgstr ""
+msgstr "(AFK) Lejos Del Teclado"
 
 #. TRANSLATORS: Keep "(Busy)" as is!
 #: ../src/gfire.c:367
 msgid "(Busy) I'm busy!"
-msgstr "(Ocupado) ¡Estoy ocupado!"
+msgstr "(Busy) ¡Estoy ocupado!"
 
 #: ../src/gfire.c:579 ../src/gfire.c:588 ../src/gfire.c:758 ../src/gfire.c:767
 msgid "Error"
@@ -500,16 +498,16 @@ msgstr "Error"
 
 #: ../src/gfire.c:579
 msgid "Retrieving gamerig data failed!"
-msgstr "¡Error al recopilar los datos del equipo!"
+msgstr "¡Error al recopilar los datos del ordenador!"
 
 #: ../src/gfire.c:588
 msgid "Invalid gamerig data received!"
-msgstr "¡Los datos del equipo recibidos no son válidos!"
+msgstr "¡Los datos del ordenador que han sido recibidos son inválidos!"
 
 #: ../src/gfire.c:603
 #, c-format
 msgid "%ss Gaming Rig:"
-msgstr " Equipo de %s:"
+msgstr "Equipo de %s:"
 
 #: ../src/gfire.c:613
 msgid "Manufacturer"
@@ -561,7 +559,7 @@ msgstr "Altavoces"
 
 #: ../src/gfire.c:721
 msgid "Computer Case"
-msgstr "Caja"
+msgstr "Caja del ordenador"
 
 #: ../src/gfire.c:730
 msgid "Operating System"
@@ -640,34 +638,38 @@ msgstr "Apodo"
 msgid "Offline"
 msgstr "Desconectado"
 
-#: ../src/gfire.c:1010
+#: ../src/gfire.c:1009
+msgid "Additional game info:"
+msgstr "Información adicional:"
+
+#: ../src/gfire.c:1025
 #, c-format
 msgid "%ss Clans:"
 msgstr "Clanes de %s:"
 
-#: ../src/gfire.c:1094
+#: ../src/gfire.c:1109
 msgid "Connection timed out"
 msgstr "Tiempo de conexion expirado"
 
-#: ../src/gfire.c:1297 ../src/gfire.c:1332
+#: ../src/gfire.c:1312 ../src/gfire.c:1347
 msgid "Ingame status"
 msgstr "Estado ingame"
 
-#: ../src/gfire.c:1298 ../src/gfire.c:1333
+#: ../src/gfire.c:1313 ../src/gfire.c:1348
 msgid "Your status has been changed."
-msgstr "Tu estado ha sido cambiado"
+msgstr "Tu estado ha sido cambiado."
 
 #: ../src/gfire_proto.c:387
 msgid "Received invalid login salt!"
-msgstr "¡Datos de inicio de sesión recibidos inváildos!"
+msgstr "¡Datos de inicio de sesión inváildos!"
 
 #: ../src/gfire_proto.c:656
 msgid "Xfire System Broadcast"
-msgstr "Transmisión del sistema"
+msgstr "Transmisión del sistema Xfire"
 
 #: ../src/gfire_proto.c:656
 msgid "Xfire System Broadcast Message:"
-msgstr "Mensaje del sistema:"
+msgstr "Mensaje del sistema Xfire:"
 
 #: ../src/gf_server_browser_proto.c:99
 msgid "N/A"
@@ -679,7 +681,7 @@ msgstr "Cambiar apodo de Xfire"
 
 #: ../src/gf_menus.c:107
 msgid "Leaving empty will clear your current nickname."
-msgstr "Si lo dejas en blanco, tu apodo será borrado."
+msgstr "Si lo dejas en blanco, borrará tu apodo actual"
 
 #: ../src/gf_menus.c:108
 msgid "OK"
@@ -726,7 +728,7 @@ msgstr "Información sobre Gfire"
 
 #: ../src/gf_menus.c:155
 msgid "Xfire Plugin for Pidgin"
-msgstr "Plugin Xfire para Pidgin"
+msgstr "Plugin de Xfire para Pidgin"
 
 #: ../src/gf_menus.c:156
 msgid "Close"

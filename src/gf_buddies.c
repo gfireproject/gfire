@@ -93,6 +93,83 @@ static void gfire_buddy_clan_data_free(gfire_buddy_clan_data *p_data)
 	g_free(p_data);
 }
 
+static game_client_data *gfire_game_client_data_create(const gchar *p_key, const gchar *p_value)
+{
+	game_client_data *ret = g_malloc0(sizeof(game_client_data));
+	if(!ret)
+		goto error;
+
+	if(p_key)
+		ret->key = g_strdup(p_key);
+
+	if(p_value)
+		ret->value = g_strdup(p_value);
+
+	return ret;
+
+error:
+	purple_debug(PURPLE_DEBUG_ERROR, "gfire", "gfire_game_client_data_create: Out of memory!\n");
+	return NULL;
+}
+
+static void gfire_game_client_data_free(game_client_data *p_data)
+{
+	if(!p_data)
+		return;
+
+	if(p_data->key)
+		g_free(p_data->key);
+
+	if(p_data->value)
+		g_free(p_data->value);
+
+	g_free(p_data);
+}
+
+GList *gfire_game_client_data_parse(const gchar *p_datastring)
+{
+	if(!p_datastring)
+		return NULL;
+
+	static const gchar delimit_pairs[] = {0x02, 0x00};
+	static const gchar delimit_values[] = {0x01, 0x00};
+
+	GList *ret = NULL;
+
+	gchar **pieces = g_strsplit(p_datastring, delimit_pairs, 0);
+	if(!pieces)
+		return NULL;
+
+	int i;
+	for(i = 0; i < g_strv_length(pieces); i++)
+	{
+		if(!pieces[i] || pieces[i][0] == 0)
+			continue;
+
+		gchar **pair = g_strsplit(pieces[i], delimit_values, 2);
+		if(!pair)
+			continue;
+		else if(g_strv_length(pair) != 2)
+		{
+			g_strfreev(pair);
+			continue;
+		}
+
+		game_client_data *gcd = gfire_game_client_data_create(pair[0], pair[1]);
+		if(!gcd)
+		{
+			g_strfreev(pair);
+			continue;
+		}
+
+		ret = g_list_append(ret, gcd);
+		g_strfreev(pair);
+	}
+
+	g_strfreev(pieces);
+	return ret;
+}
+
 gfire_buddy *gfire_buddy_create(guint32 p_userid, const gchar *p_name, const gchar *p_alias, gfire_buddy_type p_type)
 {
 	if(!p_name)
@@ -156,6 +233,12 @@ void gfire_buddy_free(gfire_buddy *p_buddy)
 
 	if(p_buddy->common_buddies)
 		gfire_list_clear(p_buddy->common_buddies);
+
+	while(p_buddy->game_client_data)
+	{
+		gfire_game_client_data_free(p_buddy->game_client_data->data);
+		p_buddy->game_client_data = g_list_delete_link(p_buddy->game_client_data, p_buddy->game_client_data);
+	}
 
 	g_list_free(p_buddy->clan_data);
 	g_list_free(p_buddy->pending_ims);
@@ -490,12 +573,36 @@ void gfire_buddy_set_game_status(gfire_buddy *p_buddy, guint32 p_gameid, guint32
 	p_buddy->game_data.port = p_port;
 	p_buddy->game_data.ip.value = p_ip;
 
+	// Delete game client data
+	if(p_buddy->game_data.id <= 0)
+	{
+		while(p_buddy->game_client_data)
+		{
+			gfire_game_client_data_free(p_buddy->game_client_data->data);
+			p_buddy->game_client_data = g_list_delete_link(p_buddy->game_client_data, p_buddy->game_client_data);
+		}
+	}
+
 	gfire_buddy_update_status(p_buddy);
 
 	purple_debug(PURPLE_DEBUG_INFO, "gfire", "%s is playing %d on %d.%d.%d.%d:%d\n",
 					 gfire_buddy_get_name(p_buddy), p_buddy->game_data.id, p_buddy->game_data.ip.octets[0],
 					 p_buddy->game_data.ip.octets[1], p_buddy->game_data.ip.octets[2],
 					 p_buddy->game_data.ip.octets[3], p_buddy->game_data.port);
+}
+
+void gfire_buddy_set_game_client_data(gfire_buddy *p_buddy, GList *p_data)
+{
+	if(!p_buddy || !p_data)
+		return;
+
+	while(p_buddy->game_client_data)
+	{
+		gfire_game_client_data_free(p_buddy->game_client_data->data);
+		p_buddy->game_client_data = g_list_delete_link(p_buddy->game_client_data, p_buddy->game_client_data);
+	}
+
+	p_buddy->game_client_data = p_data;
 }
 
 void gfire_buddy_set_voip_status(gfire_buddy *p_buddy, guint32 p_voipid, guint32 p_port, guint32 p_ip)
@@ -537,6 +644,14 @@ const gfire_game_data *gfire_buddy_get_game_data(const gfire_buddy *p_buddy)
 		return NULL;
 
 	return &p_buddy->game_data;
+}
+
+const GList *gfire_buddy_get_game_client_data(const gfire_buddy *p_buddy)
+{
+	if(!p_buddy)
+		return NULL;
+
+	return p_buddy->game_client_data;
 }
 
 const gfire_game_data *gfire_buddy_get_voip_data(const gfire_buddy *p_buddy)
@@ -927,7 +1042,7 @@ void gfire_buddy_make_friend(gfire_buddy *p_buddy, PurpleGroup *p_group)
 		PurpleGroup *old_group = purple_buddy_get_group(p_buddy->prpl_buddy);
 		gfire_buddy_clan_data *clan_data = gfire_buddy_get_default_clan_data(p_buddy);
 		if((clan_data && gfire_clan_is(clan_data->clan, purple_blist_node_get_int((PurpleBlistNode*)old_group, "clanid"))) ||
-		   purple_find_buddy_in_group(purple_connection_get_account(p_buddy->gc), gfire_buddy_get_name(p_buddy), GFIRE_FRIENDS_OF_FRIENDS_GROUP_NAME))
+		   purple_find_buddy_in_group(purple_connection_get_account(p_buddy->gc), gfire_buddy_get_name(p_buddy), purple_find_group(GFIRE_FRIENDS_OF_FRIENDS_GROUP_NAME)))
 		{
 			if(!p_group)
 			{
@@ -1215,5 +1330,10 @@ void gfire_fof_game_data_free(fof_game_data *p_data)
 		return;
 
 	if(p_data->sid) g_free(p_data->sid);
+	while(p_data->gcd)
+	{
+		gfire_game_client_data_free(p_data->gcd->data);
+		p_data->gcd = g_list_delete_link(p_data->gcd, p_data->gcd);
+	}
 	g_free(p_data);
 }

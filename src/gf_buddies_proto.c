@@ -795,6 +795,13 @@ void gfire_buddy_proto_fof_list(gfire_data *p_gfire, guint16 p_packet_len)
 						if(memcmp(((fof_game_data*)cur->data)->sid, s->data, XFIRE_SID_LEN) == 0)
 						{
 							gfire_buddy_set_game_status(gf_buddy, ((fof_game_data*)cur->data)->game.id, ((fof_game_data*)cur->data)->game.port, ((fof_game_data*)cur->data)->game.ip.value);
+
+							if(((fof_game_data*)cur->data)->gcd)
+							{
+								gfire_buddy_set_game_client_data(gf_buddy, ((fof_game_data*)cur->data)->gcd);
+								((fof_game_data*)cur->data)->gcd = NULL;
+							}
+
 							gfire_fof_game_data_free((fof_game_data*)cur->data);
 							gfire_fof_data = g_list_delete_link(gfire_fof_data, cur);
 						}
@@ -899,4 +906,74 @@ void gfire_buddy_proto_clan_alias_change(gfire_data *p_gfire, guint16 p_packet_l
 	gfire_buddy_set_clan_alias(gf_buddy, clanid, nick);
 
 	g_free(nick);
+}
+
+void gfire_buddy_proto_game_client_data(gfire_data *p_gfire, guint16 p_packet_len)
+{
+	guint32 offset;
+	GList *sids = NULL, *data = NULL;
+	gfire_buddy *gf_buddy = NULL;
+
+	offset = XFIRE_HEADER_LEN;
+
+	offset = gfire_proto_read_attr_list_ss(p_gfire->buff_in, &sids, "sid", offset);
+	if(!sids || offset == -1)
+		return;
+
+	offset = gfire_proto_read_attr_list_ss(p_gfire->buff_in, &data, "gcd", offset);
+	if(!data || offset == -1)
+	{
+		gfire_list_clear(sids);
+		return;
+	}
+
+	GList *sid = g_list_first(sids);
+	GList *gcd = g_list_first(data);
+
+	for(; sid; sid = g_list_next(sid))
+	{
+		gf_buddy = gfire_find_buddy(p_gfire, (const void*)sid->data, GFFB_SID);
+		if(gf_buddy)
+		{
+			purple_debug_misc("gfire", "Got Game Client Data for buddy %s:\n", gfire_buddy_get_name(gf_buddy));
+			GList *game_data = gfire_game_client_data_parse((gchar*)gcd->data);
+
+			GList *current = g_list_first(game_data);
+			for(; current; current = g_list_next(current))
+				purple_debug_misc("gfire", "\t%s=%s\n", NN(((game_client_data*)current->data)->key), NN(((game_client_data*)current->data)->value));
+
+			gfire_buddy_set_game_client_data(gf_buddy, game_data);
+		}
+		else
+		{
+			GList *cur = gfire_fof_data;
+			for(; cur; cur = g_list_next(cur))
+			{
+				if(memcmp(((fof_game_data*)cur->data)->sid, sid->data, XFIRE_SID_LEN) == 0)
+					break;
+			}
+
+			if(cur)
+			{
+				purple_debug_misc("gfire", "Got Game Client Data for requested FoF:\n");
+				GList *game_data = gfire_game_client_data_parse((gchar*)gcd->data);
+
+				GList *current = g_list_first(game_data);
+				for(; current; current = g_list_next(current))
+					purple_debug_misc("gfire", "\t%s=%s\n", NN(((game_client_data*)current->data)->key), NN(((game_client_data*)current->data)->value));
+
+				((fof_game_data*)cur->data)->gcd = game_data;
+			}
+			else
+				purple_debug_error("gfire", "got unknown SID from Xfire\n");
+		}
+
+		g_free(sid->data);
+		g_free(gcd->data);
+
+		gcd = g_list_next(gcd);
+	}
+
+	g_list_free(sids);
+	g_list_free(data);
 }

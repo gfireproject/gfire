@@ -1001,6 +1001,21 @@ static gboolean gfire_show_buddy_info_cb(gfire_buddy_info_args *p_args)
 		}
 	}
 
+	// Game Client Data
+	const GList *gcd = gfire_buddy_get_game_client_data(gf_buddy);
+	if(gcd)
+	{
+		purple_notify_user_info_add_section_break(user_info);
+		purple_notify_user_info_add_pair(user_info, _("Additional game info:"), NULL);
+
+		const GList *cur = gcd;
+		while(cur)
+		{
+			purple_notify_user_info_add_pair(user_info, ((game_client_data*)cur->data)->key, ((game_client_data*)cur->data)->value);
+			cur = g_list_next(cur);
+		}
+	}
+
 	// Clans
 	GList *clan_info = gfire_buddy_get_clans_info(gf_buddy);
 	if(clan_info)

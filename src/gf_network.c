@@ -301,8 +301,13 @@ void gfire_parse_packet(gfire_data *p_gfire, guint16 p_packet_len, guint16 p_pac
 		break;
 
 		case 154:
-			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received away status packet.\n");
+			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received status packet.\n");
 			gfire_buddy_proto_status_msg(p_gfire, p_packet_len);
+		break;
+
+		case 156:
+			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received game client data packet.\n");
+			gfire_buddy_proto_game_client_data(p_gfire, p_packet_len);
 		break;
 
 		case 158:

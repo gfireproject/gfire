@@ -133,6 +133,15 @@ static void gfire_purple_blist_tooltip_text(PurpleBuddy *p_buddy, PurpleNotifyUs
 			}
 		}
 
+		if(gfire_buddy_get_game_client_data(gf_buddy))
+		{
+			const GList *current = gfire_buddy_get_game_client_data(gf_buddy);
+			for(; current; current = g_list_next(current))
+			{
+				purple_notify_user_info_add_pair(p_user_info, NN(((game_client_data*)current->data)->key), NN(((game_client_data*)current->data)->value));
+			}
+		}
+
 		// VoIP Info
 		if(gfire_buddy_is_talking(gf_buddy))
 		{

@@ -54,11 +54,19 @@ typedef struct _gfire_buddy_clan_data
 	gboolean is_default;
 } gfire_buddy_clan_data;
 
+// Stores game client info (belonging to Xfire SDK)
+typedef struct _game_client_data
+{
+	gchar *key;
+	gchar *value;
+} game_client_data;
+
 // Stores a FoF buddies game data
 typedef struct _fof_game_data
 {
 	guint8 *sid;
 	gfire_game_data game;
+	GList *gcd;
 } fof_game_data;
 
 // Stores sent messages, which we haven't received an ack for
@@ -94,6 +102,7 @@ typedef struct _gfire_buddy
 
 	// Game data
 	gfire_game_data game_data;
+	GList *game_client_data;
 
 	// VoIP data
 	gfire_game_data voip_data;
@@ -145,10 +154,12 @@ void gfire_buddy_prpl_remove(gfire_buddy *p_buddy);
 // Game/VoIP status
 void gfire_buddy_set_game_status(gfire_buddy *p_buddy, guint32 p_id, guint32 p_port, guint32 p_ip);
 void gfire_buddy_set_voip_status(gfire_buddy *p_buddy, guint32 p_id, guint32 p_port, guint32 p_ip);
+void gfire_buddy_set_game_client_data(gfire_buddy *p_buddy, GList *p_data);
 gboolean gfire_buddy_is_playing(const gfire_buddy *p_buddy);
 gboolean gfire_buddy_is_talking(const gfire_buddy *p_buddy);
 const gfire_game_data *gfire_buddy_get_game_data(const gfire_buddy *p_buddy);
 const gfire_game_data *gfire_buddy_get_voip_data(const gfire_buddy *p_buddy);
+const GList *gfire_buddy_get_game_client_data(const gfire_buddy *p_buddy);
 
 // Status handling
 void gfire_buddy_set_session_id(gfire_buddy *p_buddy, const guint8 *p_sessionid);
@@ -210,5 +221,8 @@ GList *gfire_clan_get_existing();
 // FOF GAME DATA
 fof_game_data *gfire_fof_game_data_create(const guint8 *p_sid, guint32 p_game, guint32 p_ip, guint16 p_port);
 void gfire_fof_game_data_free(fof_game_data *p_data);
+
+// GAME CLIENT DATA
+GList *gfire_game_client_data_parse(const gchar *p_datastring);
 
 #endif // _GF_BUDDIES_H
