@@ -143,8 +143,7 @@ static void gfire_login_cb(gpointer p_data, gint p_source, const gchar *p_error_
 
 	gfire->fd = p_source;
 
-	/* Update the login progress status display */
-
+	// Update the login progress status display
 	purple_connection_update_progress(gfire_get_connection(gfire), "Login", 1, XFIRE_CONNECT_STEPS);
 
 	gfire_network_buffout_write("UA01", 4, 0);
@@ -157,6 +156,27 @@ static void gfire_login_cb(gpointer p_data, gint p_source, const gchar *p_error_
 	gfire_get_connection(gfire)->inpa = purple_input_add(gfire->fd, PURPLE_INPUT_READ, gfire_input_cb, gfire);
 
 	gfire->clans = gfire_clan_get_existing();
+
+	// Get the latest game config
+	if (!gfire_game_config_update(gfire))
+	{
+			purple_connection_error_reason(gfire_get_connection(gfire), PURPLE_CONNECTION_ERROR_NETWORK_ERROR, _("Couldn't get the latest game config."));
+			return;
+	}
+}
+
+gboolean gfire_game_config_update(gfire_data *p_gfire)
+{
+	if (!p_gfire)
+		return FALSE;
+
+	PurpleConnection *gc;
+	gc = gfire_get_connection(p_gfire);
+
+	if (!gc)
+		return;
+
+	purple_util_fetch_url(GFIRE_GAMES_XML_URL, TRUE, "purple-xfire", TRUE, gfire_xml_download_cb, (void *)gc);
 }
 
 void gfire_login(gfire_data *p_gfire)

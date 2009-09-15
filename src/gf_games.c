@@ -30,31 +30,15 @@ static xmlnode *gfire_game_config_xml = NULL;
 
 void gfire_xml_download_cb(PurpleUtilFetchUrlData *p_url_data, gpointer p_data, const gchar *p_buf, gsize p_len, const gchar *p_error_message)
 {
-	char *successmsg = NULL;
 	PurpleConnection *gc = (PurpleConnection *)p_data;
 
 	if (!p_data || !p_buf || !p_len)
-	{
-		purple_notify_message(gc, PURPLE_NOTIFY_MSG_ERROR, _("Gfire Game List Download"), _("Download failed"), NN(p_error_message), NULL, NULL);
 		return;
-	}
 
 	if(purple_util_write_data_to_file("gfire_games.xml", p_buf, p_len))
 	{
 		gfire_game_load_games_xml();
-
-		if(g_strcmp0(gfire_game_name(100), "100") != 0)
-			successmsg = g_strdup_printf(_("New Game List Version: %s"), gfire_game_name(100));
-		else
-			successmsg = NULL;
-
-		purple_notify_message(gc, PURPLE_NOTIFY_MSG_INFO, _("Gfire Game List Download"), _("Download successful"), successmsg, NULL, NULL);
-
-		if(successmsg) g_free(successmsg);
-
 	}
-	else
-		purple_notify_message(gc, PURPLE_NOTIFY_MSG_ERROR, _("Gfire Game List Download"), _("Download failed"), _("Unable to write gfire_games.xml"), NULL, NULL);
 }
 
 void gfire_game_data_reset(gfire_game_data *p_game)

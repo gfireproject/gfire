@@ -134,6 +134,9 @@ void gfire_close(gfire_data *p_gfire);
 void gfire_authenticate(gfire_data *p_gfire, const gchar *p_salt);
 void gfire_keep_alive(gfire_data *p_gfire);
 
+// Game config downloading and updating
+gboolean gfire_game_config_update(gfire_data *p_gfire);
+
 // Session
 void gfire_set_userid(gfire_data *p_gfire, guint32 p_userid);
 void gfire_set_sid(gfire_data *p_gfire, guint8 *p_sid);
