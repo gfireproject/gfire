@@ -25,6 +25,7 @@
 #include "gf_network.h"
 #include "gf_buddies_proto.h"
 #include "gf_buddies.h"
+#include "gf_p2p_im_handler.h"
 
 static im_sent *gfire_im_sent_create(guint32 p_imindex, const gchar *p_msg)
 {
@@ -188,6 +189,7 @@ gfire_buddy *gfire_buddy_create(guint32 p_userid, const gchar *p_name, const gch
 
 	ret->userid = p_userid;
 	ret->type = p_type;
+	ret->hasP2P = GFP2P_UNKNOWN;
 
 	ret->name = g_strdup(p_name);
 	if(!ret->name)
@@ -212,6 +214,12 @@ void gfire_buddy_free(gfire_buddy *p_buddy)
 {
 	if(!p_buddy)
 		return;
+
+	if(p_buddy->p2p)
+	{
+		gfire_p2p_connection_remove_session(gfire_get_p2p(p_buddy->gc->proto_data), p_buddy->p2p);
+		gfire_p2p_session_free(p_buddy->p2p, TRUE);
+	}
 
 	g_source_remove(p_buddy->lost_ims_timer);
 
@@ -292,8 +300,16 @@ void gfire_buddy_send(gfire_buddy *p_buddy, const gchar *p_msg)
 	gchar *unescaped = purple_unescape_html(no_html);
 	g_free(no_html);
 	purple_debug(PURPLE_DEBUG_MISC, "gfire", "Sending IM to %s: %s\n", gfire_buddy_get_name(p_buddy), NN(unescaped));
-	guint16 packet_len = gfire_buddy_proto_create_send_im(p_buddy->sid, p_buddy->im, unescaped);
-	if(packet_len > 0) gfire_send(p_buddy->gc, packet_len);
+	if(gfire_buddy_uses_p2p(p_buddy))
+		gfire_p2p_im_handler_send_im(p_buddy->p2p, p_buddy->sid, p_buddy->im, unescaped);
+	else
+	{
+		guint16 packet_len = gfire_buddy_proto_create_send_im(p_buddy->sid, p_buddy->im, unescaped);
+		if(packet_len > 0) gfire_send(p_buddy->gc, packet_len);
+
+		if(gfire_buddy_has_p2p(p_buddy) && !gfire_buddy_uses_p2p(p_buddy))
+			gfire_buddy_request_p2p(p_buddy, FALSE);
+	}
 	g_free(unescaped);
 }
 
@@ -305,8 +321,13 @@ void gfire_buddy_got_im(gfire_buddy *p_buddy, guint32 p_imindex, const gchar *p_
 	purple_debug(PURPLE_DEBUG_MISC, "gfire", "Received IM from %s: %s\n", gfire_buddy_get_name(p_buddy), p_msg);
 
 	// Send ACK
-	guint16 len = gfire_buddy_proto_create_ack(p_buddy->sid, p_imindex);
-	if(len > 0) gfire_send(p_buddy->gc, len);
+	if(gfire_buddy_uses_p2p(p_buddy))
+		gfire_p2p_im_handler_send_ack(p_buddy->p2p, p_buddy->sid, p_imindex);
+	else
+	{
+		guint16 len = gfire_buddy_proto_create_ack(p_buddy->sid, p_imindex);
+		if(len > 0) gfire_send(p_buddy->gc, len);
+	}
 
 	// Show IM
 	PurpleAccount *account = purple_connection_get_account(p_buddy->gc);
@@ -325,8 +346,14 @@ void gfire_buddy_send_typing(gfire_buddy *p_buddy, gboolean p_typing)
 		return;
 
 	p_buddy->im++;
-	guint16 packet_len = gfire_buddy_proto_create_typing_notification(p_buddy->sid, p_buddy->im, p_typing);
-	if(packet_len > 0) gfire_send(p_buddy->gc, packet_len);
+
+	if(gfire_buddy_uses_p2p(p_buddy))
+		gfire_p2p_im_handler_send_typing(p_buddy->p2p, p_buddy->sid, p_buddy->im, p_typing);
+	else
+	{
+		guint16 packet_len = gfire_buddy_proto_create_typing_notification(p_buddy->sid, p_buddy->im, p_typing);
+		if(packet_len > 0) gfire_send(p_buddy->gc, packet_len);
+	}
 }
 
 void gfire_buddy_got_typing(const gfire_buddy *p_buddy, gboolean p_typing)
@@ -485,10 +512,10 @@ void gfire_buddy_prpl_add(gfire_buddy *p_buddy, PurpleGroup *p_group)
 		}
 		else if(gfire_buddy_is_friend_of_friend(p_buddy))
 		{
-			p_group = purple_find_group(GFIRE_FRIENDS_OF_FRIENDS_GROUP_NAME);
+			p_group = purple_find_group(purple_account_get_string(purple_connection_get_account(p_buddy->gc), "fof_group_name", GFIRE_FRIENDS_OF_FRIENDS_GROUP_NAME));
 			if(!p_group)
 			{
-				p_group = purple_group_new(GFIRE_FRIENDS_OF_FRIENDS_GROUP_NAME);
+				p_group = purple_group_new(purple_account_get_string(purple_connection_get_account(p_buddy->gc), "fof_group_name", GFIRE_FRIENDS_OF_FRIENDS_GROUP_NAME));
 				purple_blist_add_group(p_group, NULL);
 				purple_blist_node_set_bool((PurpleBlistNode*)p_group, "collapsed", TRUE);
 			}
@@ -555,6 +582,15 @@ void gfire_buddy_set_session_id(gfire_buddy *p_buddy, const guint8 *p_sessionid)
 		// Reset status
 		if(p_buddy->status_msg) g_free(p_buddy->status_msg);
 		p_buddy->status_msg = NULL;
+
+		// Close P2P
+		if(p_buddy->p2p)
+		{
+			gfire_p2p_connection_remove_session(gfire_get_p2p(p_buddy->gc->proto_data), p_buddy->p2p);
+			gfire_p2p_session_free(p_buddy->p2p, TRUE);
+			p_buddy->p2p = NULL;
+			p_buddy->hasP2P = GFP2P_UNKNOWN;
+		}
 	}
 	else
 	{
@@ -686,9 +722,17 @@ gboolean gfire_buddy_is_busy(const gfire_buddy *p_buddy)
 	return p_buddy->status == PURPLE_STATUS_UNAVAILABLE;
 }
 
-void gfire_buddy_request_info(const gfire_buddy *p_buddy)
+void gfire_buddy_request_info(gfire_buddy *p_buddy)
 {
 	if(!p_buddy)
+		return;
+
+	GTimeVal gtv;
+	g_get_current_time(&gtv);
+
+	if((gtv.tv_sec - p_buddy->get_info_block) > 300)
+		p_buddy->get_info_block = gtv.tv_sec;
+	else
 		return;
 
 	purple_debug_misc("gfire", "requesting advanced info for %s\n", gfire_buddy_get_name(p_buddy));
@@ -1042,7 +1086,7 @@ void gfire_buddy_make_friend(gfire_buddy *p_buddy, PurpleGroup *p_group)
 		PurpleGroup *old_group = purple_buddy_get_group(p_buddy->prpl_buddy);
 		gfire_buddy_clan_data *clan_data = gfire_buddy_get_default_clan_data(p_buddy);
 		if((clan_data && gfire_clan_is(clan_data->clan, purple_blist_node_get_int((PurpleBlistNode*)old_group, "clanid"))) ||
-		   purple_find_buddy_in_group(purple_connection_get_account(p_buddy->gc), gfire_buddy_get_name(p_buddy), purple_find_group(GFIRE_FRIENDS_OF_FRIENDS_GROUP_NAME)))
+		   purple_find_buddy_in_group(purple_connection_get_account(p_buddy->gc), gfire_buddy_get_name(p_buddy), purple_find_group(purple_account_get_string(purple_connection_get_account(p_buddy->gc), "fof_group_name", GFIRE_FRIENDS_OF_FRIENDS_GROUP_NAME))))
 		{
 			if(!p_group)
 			{
@@ -1093,6 +1137,149 @@ gchar *gfire_buddy_get_common_buddies_str(const gfire_buddy *p_buddy)
 	}
 
 	return g_string_free(str, FALSE);
+}
+
+gboolean gfire_buddy_has_p2p(const gfire_buddy *p_buddy)
+{
+	return (p_buddy && p_buddy->gc && !gfire_is_self(p_buddy->gc->proto_data, p_buddy->userid) &&
+			(gfire_buddy_is_friend(p_buddy) || gfire_buddy_is_clan_member(p_buddy)) &&
+			(p_buddy->hasP2P == GFP2P_YES || p_buddy->hasP2P == GFP2P_UNKNOWN));
+}
+
+gboolean gfire_buddy_uses_p2p(const gfire_buddy *p_buddy)
+{
+	return (p_buddy && gfire_p2p_session_connected(p_buddy->p2p));
+}
+
+void gfire_buddy_request_p2p(gfire_buddy *p_buddy, gboolean p_notify)
+{
+	if(!p_buddy || p_buddy->p2p)
+		return;
+
+	if(!gfire_has_p2p(p_buddy->gc->proto_data))
+		return;
+
+	gfire_p2p_connection *p2p_con = gfire_get_p2p(p_buddy->gc->proto_data);
+
+	purple_debug_info("gfire", "Sending P2P request to buddy %s...\n", gfire_buddy_get_name(p_buddy));
+
+	gchar *salt = g_malloc0(41);
+	gchar *random_str = g_strdup_printf("%d", rand());
+	hashSha1(random_str, salt);
+
+	guint16 len = gfire_buddy_proto_create_p2p(p_buddy->sid, gfire_p2p_connection_ip(p2p_con),
+											   gfire_p2p_connection_port(p2p_con),
+											   gfire_p2p_connection_local_ip(p2p_con),
+											   gfire_p2p_connection_port(p2p_con), 4, salt);
+	if(len > 0)
+	{
+		gfire_send(p_buddy->gc, len);
+		p_buddy->p2p_requested = TRUE;
+
+		p_buddy->p2p = gfire_p2p_session_create(p_buddy, salt);
+		gfire_p2p_connection_add_session(p2p_con, p_buddy->p2p, !p_buddy->p2p_requested);
+	}
+
+	if(p_buddy->hasP2P == GFP2P_UNKNOWN)
+		p_buddy->p2p_notify = p_notify;
+
+	g_free(salt);
+	g_free(random_str);
+}
+
+void gfire_buddy_got_p2p_data(gfire_buddy *p_buddy, guint32 p_ip, guint16 p_port, const gchar *p_salt)
+{
+	if(!p_buddy || !p_salt)
+		return;
+
+	p_buddy->p2p_notify = FALSE;
+
+	if(gfire_has_p2p(p_buddy->gc->proto_data))
+	{
+		gfire_p2p_connection *p2p_con = gfire_get_p2p(p_buddy->gc->proto_data);
+
+		if(!p_buddy->p2p)
+		{
+			p_buddy->p2p = gfire_p2p_session_create(p_buddy, p_salt);
+			gfire_p2p_connection_add_session(p2p_con, p_buddy->p2p, !p_buddy->p2p_requested);
+		}
+
+		gfire_p2p_session_set_addr(p_buddy->p2p, p_ip, p_port);
+
+		if(p_buddy->p2p_requested)
+		{
+			p_buddy->p2p_requested = FALSE;
+			purple_debug_misc("gfire", "Received P2P information, sent handshake\n");
+		}
+		else
+		{
+			guint16 len = gfire_buddy_proto_create_p2p(p_buddy->sid, gfire_p2p_connection_ip(p2p_con),
+												   gfire_p2p_connection_port(p2p_con),
+												   gfire_p2p_connection_local_ip(p2p_con),
+												   gfire_p2p_connection_port(p2p_con), 4, p_salt);
+			if(len > 0) gfire_send(p_buddy->gc, len);
+
+			purple_debug_misc("gfire", "Received P2P request, sent our own data; waiting for handshake...\n");
+		}
+	}
+	else if(!p_buddy->p2p_requested)
+	{
+		guint16 len = gfire_buddy_proto_create_p2p(p_buddy->sid, 0,
+												   0,
+												   0,
+												   0, 0, p_salt);
+		if(len > 0) gfire_send(p_buddy->gc, len);
+
+		purple_debug_misc("gfire", "Received P2P request, denied!\n");
+	}
+}
+
+void gfire_buddy_p2p_timedout(gfire_buddy *p_buddy)
+{
+	if(!p_buddy)
+		return;
+
+	if(p_buddy->p2p)
+	{
+		gfire_p2p_connection_remove_session(gfire_get_p2p(p_buddy->gc->proto_data), p_buddy->p2p);
+		gfire_p2p_session_free(p_buddy->p2p, FALSE);
+		p_buddy->p2p = NULL;
+	}
+}
+
+void gfire_buddy_p2p_uncapable(gfire_buddy *p_buddy)
+{
+	if(!p_buddy)
+		return;
+
+	purple_debug_info("gfire", "Buddy %s is unable to use P2P.\n", gfire_buddy_get_name(p_buddy));
+
+	p_buddy->hasP2P = GFP2P_NO;
+
+	if(p_buddy->p2p)
+	{
+		gfire_p2p_connection_remove_session(gfire_get_p2p(p_buddy->gc->proto_data), p_buddy->p2p);
+		gfire_p2p_session_free(p_buddy->p2p, FALSE);
+		p_buddy->p2p = NULL;
+	}
+
+	if(p_buddy->p2p_notify)
+	{
+		p_buddy->p2p_notify = FALSE;
+		purple_notify_message(p_buddy->gc, PURPLE_NOTIFY_MSG_ERROR, _("P2P Connection not possible"), _("P2P Connection not possible"), _("We're not able to establish a connection to your buddy. File transfer and P2P messaging will not be possible."), NULL, NULL);
+	}
+}
+
+void gfire_buddy_p2p_ft_init(PurpleXfer *p_xfer)
+{
+	if(!p_xfer)
+		return;
+
+	gfire_buddy *gf_buddy = p_xfer->data;
+	if(!gf_buddy->p2p)
+		return;
+
+	gfire_p2p_session_add_file_transfer(gf_buddy->p2p, p_xfer);
 }
 
 static void gfire_clan_create_group(gfire_clan *p_clan)

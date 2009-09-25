@@ -61,16 +61,16 @@ void gfire_game_data_ip_from_str(gfire_game_data *p_game, const gchar *p_ipstr)
 		return;
 
 	guint8 i = 0;
-	for(i = 0; i < 4; i++)
+	for(i = 4; i >= 0; i--)
 	{
-		if(!ip_octet_strs[i])
+		if(!ip_octet_strs[4 - i])
 		{
 			p_game->ip.value = 0;
 			g_strfreev(ip_octet_strs);
 			return;
 		}
 
-		p_game->ip.octets[i] = atoi(ip_octet_strs[i]);
+		p_game->ip.octets[i] = atoi(ip_octet_strs[4 - i]);
 	}
 
 	g_strfreev(ip_octet_strs);
@@ -91,7 +91,7 @@ gchar *gfire_game_data_ip_str(const gfire_game_data *p_game)
 	if(!p_game)
 		return NULL;
 
-	return g_strdup_printf("%u.%u.%u.%u", p_game->ip.octets[0], p_game->ip.octets[1], p_game->ip.octets[2], p_game->ip.octets[3]);
+	return g_strdup_printf("%u.%u.%u.%u", p_game->ip.octets[3], p_game->ip.octets[2], p_game->ip.octets[1], p_game->ip.octets[0]);
 }
 
 gchar *gfire_game_data_port_str(const gfire_game_data *p_game)
@@ -107,7 +107,7 @@ gchar *gfire_game_data_addr_str(const gfire_game_data *p_game)
 	if(!p_game)
 		return NULL;
 
-	return g_strdup_printf("%u.%u.%u.%u:%u", p_game->ip.octets[0], p_game->ip.octets[1], p_game->ip.octets[2], p_game->ip.octets[3], p_game->port);
+	return g_strdup_printf("%u.%u.%u.%u:%u", p_game->ip.octets[3], p_game->ip.octets[2], p_game->ip.octets[1], p_game->ip.octets[0], p_game->port);
 }
 
 static xmlnode *gfire_game_node_by_id(guint32 p_gameid)

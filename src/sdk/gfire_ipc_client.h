@@ -22,24 +22,31 @@
  * along with Gfire.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _GF_NETWORK_H
-#define _GF_NETWORK_H
+#ifndef _GFIRE_IPC_CLIENT_H
+#define _GFIRE_IPC_CLIENT_H
 
-#include "gf_base.h"
-#include "gfire.h"
+#ifdef _WIN32
+	#include <winsock2.h>
+	#include <windows.h>
+#endif // _WIN32
 
-#define GFIRE_BUFFOUT_SIZE 65535
-#define GFIRE_BUFFIN_SIZE 65535
+#include "gfire_ipc.h"
 
-// Network system
-void gfire_network_init();
-void gfire_network_cleanup();
-void gfire_network_buffout_write(const void *p_data, guint16 p_len, guint16 p_offset);
-void gfire_network_buffout_copy(void *p_buffer, guint16 p_len);
+typedef struct _gfire_ipc_client
+{
+#ifdef _WIN32
+	WSADATA wsaData;
+#endif // _WIN32
 
-// Traffic handling
-void gfire_send(PurpleConnection *p_gc, guint16 p_size);
-void gfire_input_cb(gpointer p_data, gint p_source, PurpleInputCondition p_condition);
-void gfire_parse_packet(gfire_data *p_gfire, guint16 p_packet_len, guint16 p_packet_id);
+	int socket;
+	struct sockaddr_in addr;
 
-#endif // _GF_NETWORK_H
+	char *out_buffer;
+} gfire_ipc_client;
+
+gfire_ipc_client *gfire_ipc_client_create();
+int gfire_ipc_client_init(gfire_ipc_client *p_ipc);
+void gfire_ipc_client_cleanup(gfire_ipc_client *p_ipc);
+int gfire_ipc_client_send(gfire_ipc_client *p_ipc, unsigned short p_id, void *p_data, unsigned int p_len);
+
+#endif // _GFIRE_IPC_CLIENT_H

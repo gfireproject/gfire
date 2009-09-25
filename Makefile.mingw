@@ -17,8 +17,8 @@ clean:
 	done;
 	rm -f gfire_config.h
 	rm -rf ${WIN32_INSTALL_DIR}
-	rm -f Gfire-`cat VERSION`.exe
-	rm -f Gfire-`cat VERSION`.zip
+	rm -f pidgin-gfire-`cat VERSION`.exe
+	rm -f pidgin-gfire-`cat VERSION`.zip
 
 install: all
 	list='${SUBDIRS}'; for subdir in $$list; do \
@@ -30,7 +30,7 @@ installer: install VERSION
 	#${MAKENSIS} ${GFIRE_DIR}/nsis/gfire-installer.nsi
 
 installer-zip: install VERSION
-	cd ${WIN32_INSTALL_DIR} && /usr/bin/zip -ru ../Gfire-`cat ../VERSION`.zip *
+	cd ${WIN32_INSTALL_DIR} && /usr/bin/zip -ru ../pidgin-gfire-`cat ../VERSION`.zip *
 
 gfire_config.h: pre_config.h.in
 	sed -e 's/^.*HAVE_GTK/#define HAVE_GTK 1/g' \

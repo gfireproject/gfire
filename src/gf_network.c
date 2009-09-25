@@ -64,6 +64,17 @@ void gfire_network_buffout_write(const void *p_data, guint16 p_len, guint16 p_of
 	memcpy(gfire_buffout + p_offset, p_data, p_len);
 }
 
+void gfire_network_buffout_copy(void *p_buffer, guint16 p_len)
+{
+	if(!p_buffer || !p_len)
+		return;
+
+	if(!gfire_buffout)
+		gfire_network_init();
+
+	memcpy(p_buffer, gfire_buffout, (p_len < GFIRE_BUFFOUT_SIZE) ? p_len : GFIRE_BUFFOUT_SIZE);
+}
+
 void gfire_send(PurpleConnection *p_gc, guint16 p_size)
 {
 	if(!p_gc || p_size == 0)

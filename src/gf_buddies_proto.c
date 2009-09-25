@@ -124,6 +124,41 @@ guint16 gfire_buddy_proto_create_ack(const guint8 *p_sid, guint32 p_imindex)
 	return offset;
 }
 
+guint16 gfire_buddy_proto_create_p2p(const guint8 *p_sid, guint32 p_ip, guint16 p_port, guint32 p_local_ip, guint16 p_local_port, guint32 p_nat_type, const gchar *p_salt)
+{
+	if(!p_sid || !p_salt)
+		return 0;
+
+	guint32 offset = XFIRE_HEADER_LEN;
+
+	guint32	msgtype = GUINT32_TO_LE(2);
+
+	offset = gfire_proto_write_attr_ss("sid", 0x03, p_sid, XFIRE_SID_LEN, offset);
+	offset = gfire_proto_write_attr_ss("peermsg", 0x05, NULL, 7, offset);
+	offset = gfire_proto_write_attr_ss("msgtype", 0x02, &msgtype, sizeof(msgtype), offset);
+
+	p_ip = GUINT32_TO_LE(p_ip);
+	offset = gfire_proto_write_attr_ss("ip", 0x02, &p_ip, sizeof(p_ip), offset);
+
+	guint32 port = GUINT32_TO_LE((guint32)p_port);
+	offset = gfire_proto_write_attr_ss("port", 0x02, &port, sizeof(port), offset);
+
+	p_local_ip = GUINT32_TO_LE(p_local_ip);
+	offset = gfire_proto_write_attr_ss("localip", 0x02, &p_local_ip, sizeof(p_local_ip), offset);
+
+	guint32 local_port = GUINT32_TO_LE((guint32)p_local_port);
+	offset = gfire_proto_write_attr_ss("localport", 0x02, &local_port, sizeof(local_port), offset);
+
+	p_nat_type = GUINT32_TO_LE(p_nat_type);
+	offset = gfire_proto_write_attr_ss("status", 0x02, &p_nat_type, sizeof(p_nat_type), offset);
+
+	offset = gfire_proto_write_attr_ss("salt", 0x01, p_salt, strlen(p_salt), offset);
+
+	gfire_proto_write_header(offset, 0x02, 2, 0);
+
+	return offset;
+}
+
 void gfire_buddy_proto_on_off(gfire_data *p_gfire, guint16 p_packet_len)
 {
 	guint32 offset = 0;
@@ -663,7 +698,40 @@ void gfire_buddy_proto_im(gfire_data *p_gfire, guint16 p_packet_len)
 		// P2P Info
 		case 2:
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "Got P2P info.\n");
-			// TODO: Add handling of P2P data
+
+			guint32 ip, localip;
+			guint32 port, localport;
+			guint32 status;
+			gchar *salt = NULL;
+
+			offset = gfire_proto_read_attr_int32_ss(p_gfire->buff_in, &ip, "ip", offset);
+			if(offset == -1)
+				return;
+
+			offset = gfire_proto_read_attr_int32_ss(p_gfire->buff_in, &port, "port", offset);
+			if(offset == -1)
+				return;
+
+			offset = gfire_proto_read_attr_int32_ss(p_gfire->buff_in, &localip, "localip", offset);
+			if(offset == -1)
+				return;
+
+			offset = gfire_proto_read_attr_int32_ss(p_gfire->buff_in, &localport, "localport", offset);
+			if(offset == -1)
+				return;
+
+			offset = gfire_proto_read_attr_int32_ss(p_gfire->buff_in, &status, "status", offset);
+			if(offset == -1)
+				return;
+
+			offset = gfire_proto_read_attr_string_ss(p_gfire->buff_in, &salt, "salt", offset);
+			if(offset == -1)
+				return;
+
+			if(status > 0)
+				gfire_buddy_got_p2p_data(gf_buddy, GUINT32_FROM_LE(ip), (guint16)GUINT32_FROM_LE(port), salt);
+
+			g_free(salt);
 		break;
 		// Typing notification
 		case 3:

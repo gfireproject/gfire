@@ -25,6 +25,7 @@
 #include "gfire_proto.h"
 #include "gf_network.h"
 #include "gf_server_detection.h"
+#include "gf_ipc_server.h"
 #include "gfire.h"
 
 gfire_data *gfire_create(PurpleConnection *p_gc)
@@ -97,6 +98,12 @@ void gfire_free(gfire_data *p_gfire)
 		p_gfire->chats = g_list_delete_link(p_gfire->chats, p_gfire->chats);
 	}
 
+	if(p_gfire->p2p)
+		gfire_p2p_connection_close(p_gfire->p2p);
+
+	// Unregister this Gfire session with the IPC server
+	gfire_ipc_server_unregister(p_gfire);
+
 	gfire_process_list_free(p_gfire->process_list);
 
 	g_free(p_gfire);
@@ -157,6 +164,40 @@ static void gfire_login_cb(gpointer p_data, gint p_source, const gchar *p_error_
 
 	gfire->clans = gfire_clan_get_existing();
 
+	// Register this Gfire session with the IPC server
+	gfire_ipc_server_register(gfire);
+
+	// Setup P2P connection
+	if(purple_account_get_bool(purple_connection_get_account(gfire_get_connection(gfire)), "p2p_option", TRUE))
+	{
+		// Check for valid ports
+		gint min_port = purple_account_get_int(purple_connection_get_account(gfire_get_connection(gfire)), "p2p_min_port", 30000);
+		gint max_port = purple_account_get_int(purple_connection_get_account(gfire_get_connection(gfire)), "p2p_max_port", 40000);
+
+		if(min_port < 1024 || min_port > 65535)
+		{
+			purple_debug_warning("gfire", "Set min. P2P port is out of range. Fixing this...\n");
+			min_port = 30000;
+			purple_account_set_int(purple_connection_get_account(gfire_get_connection(gfire)), "p2p_min_port", min_port);
+		}
+
+		if(max_port < 1024 || max_port > 65535)
+		{
+			purple_debug_warning("gfire", "Set max. P2P port is out of range. Fixing this...\n");
+			max_port = 40000;
+			purple_account_set_int(purple_connection_get_account(gfire_get_connection(gfire)), "p2p_max_port", max_port);
+		}
+
+		if(min_port > max_port)
+		{
+			purple_debug_warning("gfire", "Set min. P2P port is greater then the maximum. Fixing this...\n");
+			min_port = max_port;
+			purple_account_set_int(purple_connection_get_account(gfire_get_connection(gfire)), "p2p_min_port", min_port);
+		}
+
+		gfire->p2p = gfire_p2p_connection_create(min_port, max_port);
+	}
+
 	// Get the latest game config
 	if (!gfire_game_config_update(gfire))
 	{
@@ -183,6 +224,10 @@ void gfire_login(gfire_data *p_gfire)
 {
 	if(!p_gfire)
 		return;
+
+	// Init threading system
+	if(!g_thread_supported())
+		g_thread_init(NULL);
 
 	PurpleAccount *account = purple_connection_get_account(gfire_get_connection(p_gfire));
 
@@ -225,8 +270,9 @@ void gfire_close(gfire_data *p_gfire)
 		p_gfire->fd = -1;
 	}
 
-	gc->proto_data = NULL;
 	gfire_free(p_gfire);
+
+	gc->proto_data = NULL;
 }
 
 gfire_buddy *gfire_find_buddy(gfire_data *p_gfire, const void *p_data, gfire_find_buddy_mode p_mode)
@@ -304,31 +350,6 @@ void gfire_remove_buddy(gfire_data *p_gfire, gfire_buddy *p_buddy, gboolean p_fr
 	if(p_force) gfire_buddy_prpl_remove((gfire_buddy*)entry->data);
 	gfire_buddy_free((gfire_buddy*)entry->data);
 	p_gfire->buddies = g_list_delete_link(p_gfire->buddies, entry);
-}
-
-static void hashSha1(const gchar *p_input, gchar *p_digest)
-//based on code from purple_util_get_image_filename in the pidgin 2.2.0 source
-{
-	if(!p_digest)
-		return;
-
-	PurpleCipherContext *context;
-
-	context = purple_cipher_context_new_by_name("sha1", NULL);
-	if (context == NULL)
-	{
-		purple_debug_error("gfire", "Could not find sha1 cipher\n");
-		return;
-	}
-
-	purple_cipher_context_append(context, (guchar*)p_input, strlen(p_input));
-	if (!purple_cipher_context_digest_to_str(context, 41, p_digest, NULL))
-	{
-		purple_debug_error("gfire", "Failed to get SHA-1 digest.\n");
-		return;
-	}
-	purple_cipher_context_destroy(context);
-	p_digest[40]=0;
 }
 
 void gfire_authenticate(gfire_data *p_gfire, const gchar *p_salt)
@@ -1230,6 +1251,20 @@ const gfire_game_data *gfire_get_voip_data(gfire_data *p_gfire)
 
 	return &p_gfire->voip_data;
 }
+
+gboolean gfire_has_p2p(const gfire_data *p_gfire)
+{
+	return gfire_p2p_connection_running(p_gfire->p2p);
+}
+
+gfire_p2p_connection *gfire_get_p2p(const gfire_data *p_gfire)
+{
+	if(p_gfire && gfire_p2p_connection_running(p_gfire->p2p))
+		return p_gfire->p2p;
+	else
+		return NULL;
+}
+
 /*
 void gfire_check_for_left_clan_members(PurpleConnection *gc, guint32 clanid)
 {

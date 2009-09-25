@@ -34,6 +34,7 @@ typedef struct _gfire_data gfire_data;
 #include "gf_chat.h"
 #include "gf_games.h"
 #include "gf_game_detection.h"
+#include "gf_p2p.h"
 
 /* we only include this on win32 builds */
 /*#  ifdef _WIN32
@@ -77,6 +78,9 @@ struct _gfire_data
 	guint32 userid;				/* our userid on the xfire network */
 	guint8 *sid;				/* our session id for this connection */
 	gchar *alias;				/* our current server alias */
+
+	// P2P Connection
+	gfire_p2p_connection *p2p;
 
 	// Buddies
 	GList *buddies;
@@ -134,9 +138,6 @@ void gfire_close(gfire_data *p_gfire);
 void gfire_authenticate(gfire_data *p_gfire, const gchar *p_salt);
 void gfire_keep_alive(gfire_data *p_gfire);
 
-// Game config downloading and updating
-gboolean gfire_game_config_update(gfire_data *p_gfire);
-
 // Session
 void gfire_set_userid(gfire_data *p_gfire, guint32 p_userid);
 void gfire_set_sid(gfire_data *p_gfire, guint8 *p_sid);
@@ -178,6 +179,10 @@ void gfire_set_current_status(gfire_data *p_gfire);
 
 // Identification
 gboolean gfire_is_self(const gfire_data *p_gfire, guint32 p_userid);
+
+// P2P
+gboolean gfire_has_p2p(const gfire_data *p_gfire);
+gfire_p2p_connection *gfire_get_p2p(const gfire_data *p_gfire);
 
 // Detection
 gboolean gfire_detect_running_processes_cb(gfire_data *p_gfire);

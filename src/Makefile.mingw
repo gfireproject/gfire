@@ -2,6 +2,8 @@ GFIRE_DIR = ..
 # All personal changes usually go into this file
 include ../mingw.mak
 
+SUBDIRS = sdk
+
 LIBPURPLE_CFLAGS = -I${WIN32_PIDGIN_DIR}/libpurple -I${WIN32_PIDGIN_DIR}/libpurple/win32 -DPURPLE_PLUGINS -DENABLE_NLS -DNO_ZLIB
 WIN32_CFLAGS = \
 	-I${WIN32_GTK_DIR}/include/glib-2.0 \
@@ -18,7 +20,7 @@ WIN32_CFLAGS = \
 	-I${WIN32_DEV_DIR}/gtk_2_0/lib/glib-2.0/include \
 	-I${WIN32_DEV_DIR}/gtk_2_0/include/atk-1.0 \
 	-I${WIN32_DEV_DIR}/gtk_2_0/include/cairo
-WIN32_LIBS = -L${WIN32_GTK_DIR}/lib -L${WIN32_PIDGIN_DIR}/libpurple -lgobject-2.0 -lglib-2.0 -lws2_32 -lintl -lgdk-win32-2.0 -lgtk-win32-2.0 -lpurple
+WIN32_LIBS = -L${WIN32_GTK_DIR}/lib -L${WIN32_PIDGIN_DIR}/libpurple -lgobject-2.0 -lglib-2.0 -lgthread-2.0 -lws2_32 -lintl -lgdk-win32-2.0 -lgtk-win32-2.0 -lpurple
 GFIRE_SRC_DIR = .
 
 CFLAGS = -O2 -pipe -mno-cygwin -Wall -I. -I${GFIRE_DIR} -I${GFIRE_SRC_DIR} ${WIN32_CFLAGS} ${LIBPURPLE_CFLAGS}
@@ -44,7 +46,13 @@ GFIRE_SOURCES = \
 	${GFIRE_SRC_DIR}/gf_network.c \
 	${GFIRE_SRC_DIR}/gf_query.c \
 	${GFIRE_SRC_DIR}/gf_game_detection.c \
-	${GFIRE_SRC_DIR}/gf_game_detection_win.c
+	${GFIRE_SRC_DIR}/gf_game_detection_win.c \
+	${GFIRE_SRC_DIR}/gf_ipc_server.c \
+	${GFIRE_SRC_DIR}/gf_ipc_proto.c \
+	${GFIRE_SRC_DIR}/gf_p2p.c \
+	${GFIRE_SRC_DIR}/gf_p2p_session.c \
+	${GFIRE_SRC_DIR}/gf_p2p_dl_handler.c \
+	${GFIRE_SRC_DIR}/gf_p2p_im_handler.c
 
 GFIRE_RESOURCES = \
 	${GFIRE_SRC_DIR}/gfirerc.rc
@@ -57,14 +65,23 @@ GFIRE_OBJECTS = ${GFIRE_SOURCES:%.c=%.o} ${GFIRE_RESOURCES:%.rc=%.o}
 .SUFFIXES: .rc
 
 all: libxfire.dll
+	list='${SUBDIRS}'; for subdir in $$list; do \
+		(make -C $$subdir -f Makefile.mingw all) || exit 1; \
+	done;
 
 clean:
 	rm -f libxfire.dll
 	rm -f ${GFIRE_OBJECTS}
+	list='${SUBDIRS}'; for subdir in $$list; do \
+		(make -C $$subdir -f Makefile.mingw clean) || exit 1; \
+	done;
 
 install: all
 	mkdir -p ${WIN32_INSTALL_DIR}/plugins
 	cp libxfire.dll ${WIN32_INSTALL_DIR}/plugins
+		list='${SUBDIRS}'; for subdir in $$list; do \
+		(make -C $$subdir -f Makefile.mingw install) || exit 1; \
+	done;
 
 .c.o:
 	${WIN32_COMPILER} ${CFLAGS} -o $@ -c $^

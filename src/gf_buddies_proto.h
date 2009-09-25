@@ -35,6 +35,7 @@ guint16 gfire_buddy_proto_create_typing_notification(const guint8 *p_sid, guint3
 guint16 gfire_buddy_proto_create_send_im(const guint8 *p_sid, guint32 p_imindex, const gchar *p_msg);
 guint16 gfire_buddy_proto_create_fof_request(GList *p_sids);
 guint16 gfire_buddy_proto_create_ack(const guint8 *p_sid, guint32 p_imindex);
+guint16 gfire_buddy_proto_create_p2p(const guint8 *p_sid, guint32 p_ip, guint16 p_port, guint32 p_local_ip, guint16 p_local_port, guint32 p_nat_type, const gchar *p_salt);
 
 // Packet parsing
 void gfire_buddy_proto_on_off(gfire_data *p_gfire, guint16 p_packet_len);

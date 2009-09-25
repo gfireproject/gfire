@@ -22,24 +22,19 @@
  * along with Gfire.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _GF_NETWORK_H
-#define _GF_NETWORK_H
+#ifndef _GF_P2P_IM_HANDLER_H
+#define _GF_P2P_IM_HANDLER_H
 
 #include "gf_base.h"
-#include "gfire.h"
+#include "gf_protocol.h"
+#include "gf_p2p_session.h"
 
-#define GFIRE_BUFFOUT_SIZE 65535
-#define GFIRE_BUFFIN_SIZE 65535
+// Parsing
+void gfire_p2p_im_handler_handle(gfire_p2p_session *p_session, guint8 *p_data, guint32 p_len);
 
-// Network system
-void gfire_network_init();
-void gfire_network_cleanup();
-void gfire_network_buffout_write(const void *p_data, guint16 p_len, guint16 p_offset);
-void gfire_network_buffout_copy(void *p_buffer, guint16 p_len);
+// Sending
+void gfire_p2p_im_handler_send_im(gfire_p2p_session *p_session, const guint8 *p_sid, guint32 p_imindex, const gchar *p_msg);
+void gfire_p2p_im_handler_send_ack(gfire_p2p_session *p_session, const guint8 *p_sid, guint32 p_imindex);
+void gfire_p2p_im_handler_send_typing(gfire_p2p_session *p_session, const guint8 *p_sid, guint32 p_imindex, gboolean p_typing);
 
-// Traffic handling
-void gfire_send(PurpleConnection *p_gc, guint16 p_size);
-void gfire_input_cb(gpointer p_data, gint p_source, PurpleInputCondition p_condition);
-void gfire_parse_packet(gfire_data *p_gfire, guint16 p_packet_len, guint16 p_packet_id);
-
-#endif // _GF_NETWORK_H
+#endif // _GF_P2P_IM_HANDLER_H

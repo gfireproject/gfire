@@ -67,5 +67,6 @@ guint32 gfire_proto_write_attr_bs(guint8 p_id, guint8 p_type, const void *p_data
 guint32 gfire_proto_write_attr_list_ss(const gchar *p_name, GList *p_list, guint8 p_type, guint16 p_typelen, guint32 p_offset);
 guint32 gfire_proto_write_attr_list_bs(guint8 p_id, GList *p_list, guint8 p_type, guint16 p_typelen, guint32 p_offset);
 guint32 gfire_proto_write_header(guint16 p_length, guint16 p_type, guint8 p_atts, guint32 p_offset);
+guint32 gfire_proto_write_header32(guint32 p_length, guint16 p_type, guint8 p_atts, guint32 p_offset);
 
 #endif // _GF_PROTOCOL_H

@@ -22,24 +22,23 @@
  * along with Gfire.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _GF_NETWORK_H
-#define _GF_NETWORK_H
+#ifndef _GFIRE_IPC_H
+#define _GFIRE_IPC_H
 
-#include "gf_base.h"
-#include "gfire.h"
+#define GFIRE_IPC_PORT 52634
+#define GFIRE_IPC_BUFFER_LEN 65535
 
-#define GFIRE_BUFFOUT_SIZE 65535
-#define GFIRE_BUFFIN_SIZE 65535
+/*
+ * Layout of an IPC packet
+ *
+ * Header:
+ *   2 bytes - length of whole packet
+ *   2 bytes - ID (type) of packet
+ *   * bytes - ID dependend data
+ *
+ */
 
-// Network system
-void gfire_network_init();
-void gfire_network_cleanup();
-void gfire_network_buffout_write(const void *p_data, guint16 p_len, guint16 p_offset);
-void gfire_network_buffout_copy(void *p_buffer, guint16 p_len);
+// IPC Packet Type IDs
+#define GFIRE_IPC_ID_SDK 1
 
-// Traffic handling
-void gfire_send(PurpleConnection *p_gc, guint16 p_size);
-void gfire_input_cb(gpointer p_data, gint p_source, PurpleInputCondition p_condition);
-void gfire_parse_packet(gfire_data *p_gfire, guint16 p_packet_len, guint16 p_packet_id);
-
-#endif // _GF_NETWORK_H
+#endif // _GFIRE_IPC_H

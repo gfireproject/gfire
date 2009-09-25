@@ -24,7 +24,14 @@ EXTRA_DIST = \
 	gf_server_browser.h \
 	gf_server_browser_proto.h \
 	gf_buddies.h \
-	gf_buddies_proto.h
+	gf_buddies_proto.h \
+	gf_ipc_server.h \
+	gfire_ipc.h \
+	gf_ipc_proto.h \
+	gf_p2p.h \
+	gf_p2p_session.h \
+	gf_p2p_im_handler.h \
+	gf_p2p_dl_handler.h
 
 INCLUDES = \
 	-I$(top_srcdir) \
@@ -56,7 +63,13 @@ libxfire_la_SOURCES = \
 	gf_util.c \
 	gf_server_detection_linux.c \
 	gf_game_detection.c \
-	gf_game_detection_linux.c
+	gf_game_detection_linux.c \
+	gf_ipc_server.c \
+	gf_ipc_proto.c \
+	gf_p2p.c \
+	gf_p2p_session.c \
+	gf_p2p_im_handler.c \
+	gf_p2p_dl_handler.c
 
 libxfire_la_LIBADD = \
 	$(GLIB_LIBS) $(GTK_LIBS) $(SSL_LIBS)

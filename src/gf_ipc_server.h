@@ -22,24 +22,26 @@
  * along with Gfire.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _GF_NETWORK_H
-#define _GF_NETWORK_H
+#ifndef _GF_IPC_SERVER_H
+#define _GF_IPC_SERVER_H
 
 #include "gf_base.h"
+#include "gfire_ipc.h"
 #include "gfire.h"
 
-#define GFIRE_BUFFOUT_SIZE 65535
-#define GFIRE_BUFFIN_SIZE 65535
+typedef struct _gfire_ipc_server
+{
+	// IPC connection
+	int socket;
+	gchar *buff_out;
+	gchar *buff_in;
+	int prpl_inpa;
 
-// Network system
-void gfire_network_init();
-void gfire_network_cleanup();
-void gfire_network_buffout_write(const void *p_data, guint16 p_len, guint16 p_offset);
-void gfire_network_buffout_copy(void *p_buffer, guint16 p_len);
+	// Registered Gfire instances
+	GList *instances;
+} gfire_ipc_server;
 
-// Traffic handling
-void gfire_send(PurpleConnection *p_gc, guint16 p_size);
-void gfire_input_cb(gpointer p_data, gint p_source, PurpleInputCondition p_condition);
-void gfire_parse_packet(gfire_data *p_gfire, guint16 p_packet_len, guint16 p_packet_id);
+void gfire_ipc_server_register(gfire_data *p_gfire);
+void gfire_ipc_server_unregister(gfire_data *p_gfire);
 
-#endif // _GF_NETWORK_H
+#endif // _GF_IPC_SERVER_H

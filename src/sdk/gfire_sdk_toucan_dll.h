@@ -22,24 +22,26 @@
  * along with Gfire.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _GF_NETWORK_H
-#define _GF_NETWORK_H
+#ifndef _GFIRE_SDK_TOUCAN_DLL_H
+#define _GFIRE_SDK_TOUCAN_DLL_H
 
-#include "gf_base.h"
-#include "gfire.h"
+#include "gfire_ipc_client.h"
+#include <windows.h>
 
-#define GFIRE_BUFFOUT_SIZE 65535
-#define GFIRE_BUFFIN_SIZE 65535
+#define DLL_EXPORT __declspec(dllexport)
 
-// Network system
-void gfire_network_init();
-void gfire_network_cleanup();
-void gfire_network_buffout_write(const void *p_data, guint16 p_len, guint16 p_offset);
-void gfire_network_buffout_copy(void *p_buffer, guint16 p_len);
+#ifdef __cplusplus
+extern "C" {
+#endif // __cplusplus
 
-// Traffic handling
-void gfire_send(PurpleConnection *p_gc, guint16 p_size);
-void gfire_input_cb(gpointer p_data, gint p_source, PurpleInputCondition p_condition);
-void gfire_parse_packet(gfire_data *p_gfire, guint16 p_packet_len, guint16 p_packet_id);
+LRESULT DLL_EXPORT CALLBACK CBTProc(int nCode, WPARAM wParam, LPARAM lParam);
 
-#endif // _GF_NETWORK_H
+int DLL_EXPORT ToucanSendGameClientDataA_V1(int p_numkeys, const char **p_keys, const char **p_values);
+int DLL_EXPORT ToucanSendGameClientDataW_V1(int p_numkeys, const wchar_t **p_keys, const wchar_t **p_values);
+int DLL_EXPORT ToucanSendGameClientDataUTF8_V1(int p_numkeys, const char **p_keys, const char **p_values);
+
+#ifdef __cplusplus
+}
+#endif // __cplusplus
+
+#endif // _GFIRE_SDK_TOUCAN_DLL_H

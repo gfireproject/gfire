@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Gfire 0.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-08-28 04:06+0200\n"
+"POT-Creation-Date: 2009-09-11 18:03+0200\n"
 "PO-Revision-Date: 2009-08-24 18:47+0100\n"
 "Last-Translator: Rizzly/Erynhenwe <rockrobban@gmail.com>\n"
 "Language-Team: Swedish <rockrobban@gmail.com>\n"
@@ -98,7 +98,7 @@ msgstr "Nytt bokmärke"
 msgid "Xfire - Friends of Friends playing games"
 msgstr "Xfire - Vänner till vänner som spelar"
 
-#: ../src/gf_buddies.c:389
+#: ../src/gf_buddies.c:416
 #, c-format
 msgid ""
 "%s may have not received this message:\n"
@@ -107,10 +107,20 @@ msgstr ""
 "%s kanske inte har mottagit detta meddelande:\n"
 "%s"
 
-#: ../src/gf_buddies.c:837
+#: ../src/gf_buddies.c:881
 #, c-format
 msgid "Playing %s"
 msgstr "Spelar %s"
+
+#: ../src/gf_buddies.c:1269
+msgid "P2P Connection not possible"
+msgstr ""
+
+#: ../src/gf_buddies.c:1269
+msgid ""
+"We're not able to establish a connection to your buddy. File transfer and "
+"P2P messaging will not be possible."
+msgstr ""
 
 #: ../src/gf_chat.c:209
 #, c-format
@@ -302,46 +312,46 @@ msgstr ""
 "Din nuvarande spelkonfiguration är inte kompatibel med den här versionen av "
 "Gfire. Var vänlig radera den och försök igen."
 
-#: ../src/gf_network.c:120 ../src/gf_network.c:154
+#: ../src/gf_network.c:131 ../src/gf_network.c:165
 msgid "Connection closed by peer."
 msgstr "Anslutning stängd av användaren."
 
-#: ../src/gf_network.c:129 ../src/gf_network.c:163
+#: ../src/gf_network.c:140 ../src/gf_network.c:174
 msgid "Socket read failure."
 msgstr "Fel vid inläsning av anslutning."
 
-#: ../src/gf_network.c:205
+#: ../src/gf_network.c:216
 msgid "Password or Username Incorrect."
 msgstr "Lösenord eller användarnamn är inkorrekt."
 
-#: ../src/gf_network.c:248
+#: ../src/gf_network.c:259
 #, c-format
 msgid "Protocol version mismatch, needs to be %d. Auto set to new value."
 msgstr ""
 "Protokollversionen stämmer inte, den måste vara %d. Ställer in det nya "
 "värdet automatiskt."
 
-#: ../src/gf_network.c:290
+#: ../src/gf_network.c:301
 msgid "You have signed on from another location."
 msgstr "Du har loggat in från någon annanstans."
 
-#: ../src/gf_purple.c:125 ../src/gfire.c:961
+#: ../src/gf_purple.c:125 ../src/gfire.c:953
 msgid "Game"
 msgstr "Spel"
 
-#: ../src/gf_purple.c:131 ../src/gf_purple.c:836 ../src/gfire.c:967
+#: ../src/gf_purple.c:131 ../src/gf_purple.c:901 ../src/gfire.c:959
 msgid "Server"
 msgstr "Server"
 
-#: ../src/gf_purple.c:159 ../src/gfire.c:986
+#: ../src/gf_purple.c:159 ../src/gfire.c:978
 msgid "unknown"
 msgstr "okänd"
 
-#: ../src/gf_purple.c:174 ../src/gfire.c:950 ../src/gfire.c:953
+#: ../src/gf_purple.c:174 ../src/gfire.c:942 ../src/gfire.c:945
 msgid "Status"
 msgstr "Status"
 
-#: ../src/gf_purple.c:184 ../src/gfire.c:999
+#: ../src/gf_purple.c:184 ../src/gfire.c:991
 msgid "Common Friends"
 msgstr "Gemensamma vänner"
 
@@ -430,241 +440,245 @@ msgstr "Ändring av dagens meddelande misslyckades."
 msgid "The MotD contains more than 200 characters."
 msgstr "Ditt dagsmeddelande innehåller mer än 200 tecken."
 
-#: ../src/gf_purple.c:839
+#: ../src/gf_purple.c:904
 msgid "Port"
 msgstr "Port"
 
-#: ../src/gf_purple.c:842
+#: ../src/gf_purple.c:907
 msgid "Version"
 msgstr "Version"
 
-#: ../src/gf_purple.c:845
+#: ../src/gf_purple.c:910
 msgid "Don't delete buddies from server"
 msgstr "Ta inte bort kontakter från servern"
 
-#: ../src/gf_purple.c:848
+#: ../src/gf_purple.c:913
 msgid "Buddies can see if I'm typing"
 msgstr "Kontakter kan se om jag skriver"
 
-#: ../src/gf_purple.c:851
+#: ../src/gf_purple.c:916
 msgid "Auto detect for ingame status"
 msgstr "Automatisk igenkänning för spelstatus"
 
-#: ../src/gf_purple.c:854
+#: ../src/gf_purple.c:919
 msgid "Notify me when my status is ingame"
 msgstr "Notifiera mig när min spelstatus ändras"
 
-#: ../src/gf_purple.c:857
+#: ../src/gf_purple.c:922
 msgid "Use server detection"
 msgstr "Använd serverigenkänning"
 
-#: ../src/gf_purple.c:860
+#: ../src/gf_purple.c:925
+msgid "Use Xfires P2P features"
+msgstr ""
+
+#: ../src/gf_purple.c:928
 msgid "Xfire"
 msgstr "Xfire"
 
-#: ../src/gf_purple.c:861 ../src/gf_purple.c:862
+#: ../src/gf_purple.c:929 ../src/gf_purple.c:930
 msgid "Xfire Protocol Plugin"
 msgstr "Xfire-insticksmodul"
 
-#: ../src/gfire.c:169
+#: ../src/gfire.c:187
 msgid "Connecting"
 msgstr "Ansluter"
 
-#: ../src/gfire.c:175
+#: ../src/gfire.c:193
 msgid "Couldn't create socket."
 msgstr "Kunde skapa anslutning."
 
-#: ../src/gfire.c:336
+#: ../src/gfire.c:328
 msgid "Login sent"
 msgstr "Inloggningsinformation skickad"
 
 #. TRANSLATORS: Keep "(AFK)" as is!
 #. Suggestion: Use Xfires original AFK message here
-#: ../src/gfire.c:360
+#: ../src/gfire.c:352
 msgid "(AFK) Away From Keyboard"
 msgstr "(AFK) Borta från tangenbordet"
 
 #. TRANSLATORS: Keep "(Busy)" as is!
-#: ../src/gfire.c:367
+#: ../src/gfire.c:359
 msgid "(Busy) I'm busy!"
 msgstr "(Busy) Jag är upptagen!"
 
-#: ../src/gfire.c:579 ../src/gfire.c:588 ../src/gfire.c:758 ../src/gfire.c:767
+#: ../src/gfire.c:571 ../src/gfire.c:580 ../src/gfire.c:750 ../src/gfire.c:759
 msgid "Error"
 msgstr "Fel"
 
-#: ../src/gfire.c:579
+#: ../src/gfire.c:571
 msgid "Retrieving gamerig data failed!"
 msgstr "Hämtning av data om speldator misslyckades!"
 
-#: ../src/gfire.c:588
+#: ../src/gfire.c:580
 msgid "Invalid gamerig data received!"
 msgstr "Felaktig data om speldator mottogs!"
 
-#: ../src/gfire.c:603
+#: ../src/gfire.c:595
 #, c-format
 msgid "%ss Gaming Rig:"
 msgstr "%ss speldator:"
 
-#: ../src/gfire.c:613
+#: ../src/gfire.c:605
 msgid "Manufacturer"
 msgstr "Tillverkare"
 
-#: ../src/gfire.c:622
+#: ../src/gfire.c:614
 msgid "Processor"
 msgstr "Processor"
 
-#: ../src/gfire.c:631
+#: ../src/gfire.c:623
 msgid "Memory"
 msgstr "Minne"
 
-#: ../src/gfire.c:640
+#: ../src/gfire.c:632
 msgid "Video Card"
 msgstr "Grafikkort"
 
-#: ../src/gfire.c:649
+#: ../src/gfire.c:641
 msgid "Sound Card"
 msgstr "Ljudkort"
 
-#: ../src/gfire.c:658
+#: ../src/gfire.c:650
 msgid "Mainboard"
 msgstr "Moderkort"
 
-#: ../src/gfire.c:667
+#: ../src/gfire.c:659
 msgid "Hard Drive"
 msgstr "Hårddisk"
 
-#: ../src/gfire.c:676
+#: ../src/gfire.c:668
 msgid "Monitor"
 msgstr "Skärm"
 
-#: ../src/gfire.c:685
+#: ../src/gfire.c:677
 msgid "Keyboard"
 msgstr "Tangentbord"
 
-#: ../src/gfire.c:694
+#: ../src/gfire.c:686
 msgid "Mouse"
 msgstr "Mus"
 
-#: ../src/gfire.c:703
+#: ../src/gfire.c:695
 msgid "Mouse Surface"
 msgstr "Musmatta"
 
-#: ../src/gfire.c:712
+#: ../src/gfire.c:704
 msgid "Speakers"
 msgstr "Högtalare"
 
-#: ../src/gfire.c:721
+#: ../src/gfire.c:713
 msgid "Computer Case"
 msgstr "Datorchassi"
 
-#: ../src/gfire.c:730
+#: ../src/gfire.c:722
 msgid "Operating System"
 msgstr "Operativsystem"
 
-#: ../src/gfire.c:758
+#: ../src/gfire.c:750
 msgid "Retrieving profile data failed!"
 msgstr "Hämtning av profildata misslyckades!"
 
-#: ../src/gfire.c:767
+#: ../src/gfire.c:759
 msgid "Invalid profile data received!"
 msgstr "Felaktig profildata mottogs!"
 
-#: ../src/gfire.c:772
+#: ../src/gfire.c:764
 msgid "Profile"
 msgstr "Profil"
 
-#: ../src/gfire.c:782
+#: ../src/gfire.c:774
 #, c-format
 msgid "%ss Profile:"
 msgstr "%ss profil:"
 
-#: ../src/gfire.c:792
+#: ../src/gfire.c:784
 msgid "Real Name"
 msgstr "Riktigt namn"
 
-#: ../src/gfire.c:801
+#: ../src/gfire.c:793
 msgid "Age"
 msgstr "Ålder"
 
-#: ../src/gfire.c:810
+#: ../src/gfire.c:802
 msgid "Gender"
 msgstr "Kön"
 
-#: ../src/gfire.c:810
+#: ../src/gfire.c:802
 msgid "Male"
 msgstr "Man"
 
-#: ../src/gfire.c:810
+#: ../src/gfire.c:802
 msgid "Female"
 msgstr "Kvinna"
 
-#: ../src/gfire.c:819
+#: ../src/gfire.c:811
 msgid "Occupation"
 msgstr "Sysselsättning"
 
-#: ../src/gfire.c:828
+#: ../src/gfire.c:820
 msgid "Country"
 msgstr "Land"
 
-#: ../src/gfire.c:837
+#: ../src/gfire.c:829
 msgid "Location"
 msgstr "Område"
 
-#: ../src/gfire.c:846
+#: ../src/gfire.c:838
 msgid "Gaming Style"
 msgstr "Spelstil"
 
-#: ../src/gfire.c:855
+#: ../src/gfire.c:847
 msgid "Interests"
 msgstr "Intressen"
 
-#: ../src/gfire.c:864
+#: ../src/gfire.c:856
 msgid "Friends"
 msgstr "Vänner"
 
-#: ../src/gfire.c:873
+#: ../src/gfire.c:865
 msgid "Join Date"
 msgstr "Registreringsdatum"
 
-#: ../src/gfire.c:935
+#: ../src/gfire.c:927
 msgid "Nickname"
 msgstr "Smeknamn"
 
-#: ../src/gfire.c:953
+#: ../src/gfire.c:945
 msgid "Offline"
 msgstr "Frånkopplad"
 
-#: ../src/gfire.c:1009
+#: ../src/gfire.c:1001
 msgid "Additional game info:"
 msgstr ""
 
-#: ../src/gfire.c:1025
+#: ../src/gfire.c:1017
 #, c-format
 msgid "%ss Clans:"
 msgstr "%ss klaner:"
 
-#: ../src/gfire.c:1109
+#: ../src/gfire.c:1101
 msgid "Connection timed out"
 msgstr "Anslutningstidsfrist har gått ut"
 
-#: ../src/gfire.c:1312 ../src/gfire.c:1347
+#: ../src/gfire.c:1318 ../src/gfire.c:1353
 msgid "Ingame status"
 msgstr "Spelstatus"
 
-#: ../src/gfire.c:1313 ../src/gfire.c:1348
+#: ../src/gfire.c:1319 ../src/gfire.c:1354
 msgid "Your status has been changed."
 msgstr "Din status har ändrats."
 
-#: ../src/gfire_proto.c:387
+#: ../src/gfire_proto.c:415
 msgid "Received invalid login salt!"
 msgstr "Mottog felaktig inloggningssaltning!"
 
-#: ../src/gfire_proto.c:656
+#: ../src/gfire_proto.c:684
 msgid "Xfire System Broadcast"
 msgstr "Xfire-systemmeddelande"
 
-#: ../src/gfire_proto.c:656
+#: ../src/gfire_proto.c:684
 msgid "Xfire System Broadcast Message:"
 msgstr "Systemmeddelande från Xfire:"
 
@@ -740,3 +754,12 @@ msgstr "Hemsida"
 #: ../src/gf_menus.c:158
 msgid "Wiki"
 msgstr "Wiki"
+
+#: ../src/gf_p2p_dl_handler.c:434
+#, fuzzy, c-format
+msgid "File Description: %s"
+msgstr "Gfire-version: %s"
+
+#: ../src/gf_p2p_dl_handler.c:434
+msgid "No description entered"
+msgstr ""

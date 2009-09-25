@@ -7716,7 +7716,7 @@ fi
 
 
   pkg_config_args=glib-2.0
-  for module in .
+  for module in . gthread
   do
       case "$module" in
          gmodule)
@@ -7861,7 +7861,7 @@ fi
     PKG_CONFIG=no
   fi
 
-  min_glib_version=2.0.0
+  min_glib_version=2.16.0
   { $as_echo "$as_me:$LINENO: checking for GLIB - version >= $min_glib_version" >&5
 $as_echo_n "checking for GLIB - version >= $min_glib_version... " >&6; }
 
@@ -11264,6 +11264,10 @@ _lt_linker_boilerplate=`cat conftest.err`
 $RM -r conftest*
 
 
+## CAVEAT EMPTOR:
+## There is no encapsulation within the following macros, do not change
+## the running order or otherwise move them around unless you know exactly
+## what you are doing...
 if test -n "$compiler"; then
 
 lt_prog_compiler_no_builtin_flag=
@@ -11289,11 +11293,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:11292: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:11296: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:11296: \$? = $ac_status" >&5
+   echo "$as_me:11300: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -11628,11 +11632,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:11631: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:11635: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:11635: \$? = $ac_status" >&5
+   echo "$as_me:11639: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -11733,11 +11737,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:11736: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:11740: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:11740: \$? = $ac_status" >&5
+   echo "$as_me:11744: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -11788,11 +11792,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:11791: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:11795: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:11795: \$? = $ac_status" >&5
+   echo "$as_me:11799: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -14601,7 +14605,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 14604 "configure"
+#line 14608 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14697,7 +14701,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 14700 "configure"
+#line 14704 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

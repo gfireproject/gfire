@@ -25,3 +25,7 @@ src/gf_server_detection_win.c
 src/gf_game_detection.c
 src/gf_game_detection_linux.c
 src/gf_game_detection_win.c
+src/gf_p2p.c
+src/gf_p2p_session.c
+src/gf_p2p_im_handler.c
+src/gf_p2p_dl_handler.c

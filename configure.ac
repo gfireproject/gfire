@@ -76,10 +76,10 @@ if test $enable_gtk = "yes"; then
 	AC_SUBST(GTK_LIBS)
 fi
 
-AM_PATH_GLIB_2_0(2.0.0,, AC_MSG_ERROR([
+AM_PATH_GLIB_2_0(2.16.0,, AC_MSG_ERROR([
 *** GLib 2.0 is required to build gfire; please make sure you have
 *** the GLib development headers installed. The latest version of GLib is
-*** always available at http://www.gtk.org]))
+*** always available at http://www.gtk.org]), gthread)
 AC_SUBST(GLIB_CFLAGS)
 AC_SUBST(GLIB_LIBS)
 

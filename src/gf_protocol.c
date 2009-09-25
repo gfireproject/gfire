@@ -291,13 +291,9 @@ static guint32 gfire_proto_read_boolean_value(const guint8 *p_buff, gboolean *p_
 	if(!p_dest || !p_buff)
 		return -1;
 
-	guint8 value = *(guint8*)(p_buff + p_offset);
-	if(value != 0)
-		*p_dest = TRUE;
-	else
-		*p_dest = FALSE;
+	*p_dest = (gboolean)(*(guint8*)(p_buff + p_offset));
 
-	p_offset += sizeof(*p_dest);
+	p_offset += sizeof(guint8);
 
 	return p_offset;
 }
@@ -620,6 +616,22 @@ guint32 gfire_proto_write_attr_list_bs(guint8 p_id, GList *p_list, guint8 p_type
 guint32 gfire_proto_write_header(guint16 p_length, guint16 p_type, guint8 p_atts, guint32 p_offset)
 {
 	p_length = GUINT16_TO_LE(p_length);
+	gfire_network_buffout_write(&p_length, sizeof(p_length), p_offset);
+	p_offset += sizeof(p_length);
+
+	p_type = GUINT16_TO_LE(p_type);
+	gfire_network_buffout_write(&p_type, sizeof(p_type), p_offset);
+	p_offset += sizeof(p_type);
+
+	gfire_network_buffout_write(&p_atts, sizeof(p_atts), p_offset);
+	p_offset += sizeof(p_atts);
+
+	return p_offset;
+}
+
+guint32 gfire_proto_write_header32(guint32 p_length, guint16 p_type, guint8 p_atts, guint32 p_offset)
+{
+	p_length = GUINT32_TO_LE(p_length);
 	gfire_network_buffout_write(&p_length, sizeof(p_length), p_offset);
 	p_offset += sizeof(p_length);
 

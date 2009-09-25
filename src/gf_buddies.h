@@ -25,8 +25,11 @@
 #ifndef _GF_BUDDIES_H
 #define _GF_BUDDIES_H
 
+typedef struct _gfire_buddy gfire_buddy;
+
 #include "gf_base.h"
 #include "gf_games.h"
+#include "gf_p2p_session.h"
 
 // Stores information about all clans this gfire session has to handle with
 typedef struct _gfire_clan
@@ -77,9 +80,15 @@ typedef struct _im_sent
 	glong time;
 } im_sent;
 
+typedef enum _can_handle_p2p
+{
+	GFP2P_UNKNOWN,
+	GFP2P_YES,
+	GFP2P_NO
+} can_handle_p2p;
 
 // Information about a gfire buddy
-typedef struct _gfire_buddy
+struct _gfire_buddy
 {
 	// Connection for sending
 	PurpleConnection *gc;
@@ -100,6 +109,12 @@ typedef struct _gfire_buddy
 	guint lost_ims_timer;	// Timer handle to check for lost IMs
 	guint32 chatperm;		// group chat permissions (only used for group chat members)
 
+	// P2P
+	can_handle_p2p hasP2P;
+	gboolean p2p_requested;
+	gboolean p2p_notify;
+	gfire_p2p_session *p2p;
+
 	// Game data
 	gfire_game_data game_data;
 	GList *game_client_data;
@@ -111,6 +126,7 @@ typedef struct _gfire_buddy
 	GList *common_buddies;
 
 	// Got advanced info
+	glong get_info_block;
 	gboolean got_info;
 
 	// Buddy type
@@ -123,7 +139,7 @@ typedef struct _gfire_buddy
 
 	// Purple Buddy
 	PurpleBuddy *prpl_buddy;
-} gfire_buddy;
+};
 
 // GFIRE BUDDIES ////////////////////////////////////////////////////
 // Creation and freeing
@@ -172,7 +188,7 @@ gboolean gfire_buddy_is_busy(const gfire_buddy *p_buddy);
 gboolean gfire_buddy_is_online(const gfire_buddy *p_buddy);
 
 // Extended info
-void gfire_buddy_request_info(const gfire_buddy *p_buddy);
+void gfire_buddy_request_info(gfire_buddy *p_buddy);
 gboolean gfire_buddy_got_info(const gfire_buddy *p_buddy);
 
 // Clan membership handling
@@ -194,6 +210,15 @@ const gchar *gfire_buddy_get_alias(gfire_buddy *p_buddy);
 const gchar *gfire_buddy_get_name(const gfire_buddy *p_buddy);
 void gfire_buddy_set_avatar(gfire_buddy *p_buddy, guchar *p_data, guint32 p_len);
 void gfire_buddy_download_avatar(gfire_buddy *p_buddy, guint32 p_type, guint32 p_avatarNum);
+
+// P2P
+gboolean gfire_buddy_has_p2p(const gfire_buddy *p_buddy);
+gboolean gfire_buddy_uses_p2p(const gfire_buddy *p_buddy);
+void gfire_buddy_request_p2p(gfire_buddy *p_buddy, gboolean p_notify);
+void gfire_buddy_got_p2p_data(gfire_buddy *p_buddy, guint32 p_ip, guint16 p_port, const gchar *p_salt);
+void gfire_buddy_p2p_timedout(gfire_buddy *p_buddy);
+void gfire_buddy_p2p_uncapable(gfire_buddy *p_buddy);
+void gfire_buddy_p2p_ft_init(PurpleXfer *p_xfer);
 
 
 // GFIRE CLANS //////////////////////////////////////////////////////

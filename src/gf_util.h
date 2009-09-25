@@ -25,11 +25,35 @@
 #ifndef _GF_UTIL_H
 #define _GF_UTIL_H
 
+typedef struct _gfire_bitlist gfire_bitlist;
+
 #include "gf_base.h"
 
 gchar *gfire_escape_color_codes(const gchar *p_string);
 gchar *gfire_escape_html(const gchar *p_html);
 void gfire_list_clear(GList *p_list);
 gchar *gfire_strip_character_range(gchar *p_string, gchar p_start, gchar p_end);
+void hashSha1(const gchar *p_input, gchar *p_digest);
+void hashSha1_to_bin(const gchar *p_input, guint8 *p_digest);
+void hashSha1_bin(const guchar *p_input, int p_len, guchar *p_digest);
+void hashSha1_file_to_str(FILE *p_file, gchar *p_digest);
+gchar *gfire_hex_bin_to_str(guint8 *p_data, guint32 p_len);
+guint8 *gfire_hex_str_to_bin(const gchar *p_str);
+guint32 gfire_crc32(const void *p_data, guint32 p_len);
+
+// Dynamic Bitlist
+struct _gfire_bitlist
+{
+	guint8 *data;
+	guint32 size;
+	guint32 bits_set;
+};
+
+gfire_bitlist *gfire_bitlist_new();
+void gfire_bitlist_free(gfire_bitlist *p_list);
+gboolean gfire_bitlist_get(const gfire_bitlist *p_list, guint32 p_index);
+void gfire_bitlist_set(gfire_bitlist *p_list, guint32 p_index, gboolean p_isset);
+guint32 gfire_bitlist_bits_set(const gfire_bitlist *p_list);
+guint32 gfire_bitlist_bits_unset(const gfire_bitlist *p_list);
 
 #endif // _GF_UTIL_H

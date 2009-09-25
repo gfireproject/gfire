@@ -1,0 +1,37 @@
+GFIRE_DIR = ../..
+GFIRE_SRC_DIR = ${GFIRE_DIR}/src
+include ${GFIRE_DIR}/mingw.mak
+
+GFIRE_SDK_TOUCAN_LIB_SOURCES = \
+	gfire_ipc_client.c \
+	gfire_sdk_toucan_dll.c
+
+GFIRE_SDK_TOUCAN_LIB_OBJECTS = ${GFIRE_SDK_TOUCAN_LIB_SOURCES:%.c=%.o}
+
+GFIRE_SDK_TOUCAN_LIB_LDFLAGS = -shared --dll -lws2_32
+
+GFIRE_SDK_INJECT_EXE_SOURCES = \
+	gfire_sdk_inject.c
+
+GFIRE_SDK_INJECT_EXE_OBJECTS = ${GFIRE_SDK_INJECT_EXE_SOURCES:%.c=%.o}
+
+CFLAGS = -O2 -pipe -mno-cygwin -Wall -I. -I${GFIRE_DIR} -I${GFIRE_SRC_DIR}
+
+.PHONY: all clean install
+
+all: xfire_toucan_gfire_0.1.dll gfire_sdk_inject.exe
+
+clean:
+	rm -f *.o
+	rm -f *.dll *.exe
+
+.c.o:
+	${WIN32_COMPILER} ${CFLAGS} -o $@ -c $^
+
+xfire_toucan_gfire_0.1.dll: ${GFIRE_SDK_TOUCAN_LIB_OBJECTS}
+	${WIN32_COMPILER} $^ -o $@ ${GFIRE_SDK_TOUCAN_LIB_LDFLAGS}
+
+gfire_sdk_inject.exe: ${GFIRE_SDK_INJECT_EXE_OBJECTS}
+	${WIN32_COMPILER} $^ -o $@
+
+install: all

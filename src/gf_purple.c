@@ -422,7 +422,6 @@ static GList *gfire_purple_node_menu(PurpleBlistNode *p_node)
 	PurpleConnection *gc = NULL;
 	gfire_data *gfire = NULL;
 
-
 	if(!PURPLE_BLIST_NODE_IS_BUDDY(p_node))
 		return NULL;
 
@@ -514,14 +513,12 @@ static GList *gfire_purple_actions(PurplePlugin *p_plugin, gpointer p_context)
 	act = purple_plugin_action_new(_("Reload Game Config"),
 			gfire_menu_action_reload_lconfig_cb);
 	m = g_list_append(m, act);
-	/* Disable: improve game config, leave commented it until approved
 	act = purple_plugin_action_new(_("Reload Game ID List"),
 			gfire_menu_action_reload_gconfig_cb);
 	m = g_list_append(m, act);
 	act = purple_plugin_action_new(_("Get Game ID List"),
 			gfire_menu_action_get_gconfig_cb);
 	m = g_list_append(m, act);
-	*/
 	act = purple_plugin_action_new(_("Friend Search"),
 			gfire_show_friend_search_cb);
 	m = g_list_append(m, act);
@@ -532,11 +529,9 @@ static GList *gfire_purple_actions(PurplePlugin *p_plugin, gpointer p_context)
 		act = purple_plugin_action_new(_("Manage Games"),
 									   gfire_game_manager_show);
 		m = g_list_append(m, act);
-		/* Disable for the moment: not fully implemented
 		act = purple_plugin_action_new(_("Server Browser"),
 									   gfire_server_browser_show);
 		m = g_list_append(m, act);
-		*/
 	}
 #endif // HAVE_GTK
 
@@ -715,6 +710,80 @@ static void gfire_purple_chat_change_motd(PurpleConnection *p_gc, int p_id, cons
 	g_free(unescaped);
 }
 
+// By default everyone can receive a file
+static gboolean gfire_purple_can_receive_file(PurpleConnection *p_gc, const gchar *p_who)
+{
+	if(!p_gc || !p_gc->proto_data || !p_who)
+		return FALSE;
+
+	gfire_data *gfire = p_gc->proto_data;
+
+	gfire_buddy *gf_buddy = gfire_find_buddy(gfire, p_who, GFFB_NAME);
+	if(!gf_buddy)
+	{
+		purple_debug_warning("gfire", "gfire_purple_can_receive_file: called on invalid buddy\n");
+		return FALSE;
+	}
+
+	return (gfire_has_p2p(gfire) && gfire_buddy_has_p2p(gf_buddy));
+}
+
+static PurpleXfer *gfire_purple_new_xfer(PurpleConnection *p_gc, const gchar *p_who)
+{
+	if(!p_gc || !p_gc->proto_data || !p_who)
+		return NULL;
+
+	gfire_data *gfire = p_gc->proto_data;
+
+	gfire_buddy *gf_buddy = gfire_find_buddy(gfire, p_who, GFFB_NAME);
+	if(!gf_buddy)
+	{
+		purple_debug_warning("gfire", "gfire_purple_new_xfer: called on invalid buddy\n");
+		return NULL;
+	}
+
+	if(!gfire_buddy_uses_p2p(gf_buddy))
+		gfire_buddy_request_p2p(gf_buddy, TRUE);
+
+	PurpleXfer *xfer = purple_xfer_new(purple_connection_get_account(p_gc), PURPLE_XFER_SEND, p_who);
+	if(!xfer)
+	{
+		purple_debug_warning("gfire", "gfire_purple_new_xfer: xfer creation failed\n");
+		return NULL;
+	}
+
+	xfer->data = gf_buddy;
+	purple_xfer_set_init_fnc(xfer, gfire_buddy_p2p_ft_init);
+
+	return xfer;
+}
+
+static void gfire_purple_send_file(PurpleConnection *p_gc, const gchar *p_who, const gchar *p_filename)
+{
+	if(!p_gc || !p_gc->proto_data || !p_who)
+		return;
+
+	purple_debug_info("gfire", "request for a file transfer!\n");
+
+	PurpleXfer *xfer = gfire_purple_new_xfer(p_gc, p_who);
+	if(!xfer)
+		return;
+
+	if(p_filename)
+		purple_xfer_request_accepted(xfer, p_filename);
+	else
+		purple_xfer_request(xfer);
+}
+
+static void gfire_purple_rename_group(PurpleConnection *p_gc, const gchar *p_old_name, PurpleGroup *p_group, GList *p_buddies)
+{
+	if(g_utf8_collate(p_old_name, purple_account_get_string(purple_connection_get_account(p_gc), "fof_group_name", GFIRE_FRIENDS_OF_FRIENDS_GROUP_NAME)) == 0)
+	{
+		purple_debug_info("gfire", "FoF group has been renamed, updating account options...\n");
+		purple_account_set_string(purple_connection_get_account(p_gc), "fof_group_name", purple_group_get_name(p_group));
+	}
+}
+
 /**
  *
  * Plugin initialization section
@@ -767,7 +836,7 @@ static PurplePluginProtocolInfo prpl_info =
 	NULL,								/* get_cb_away */
 	NULL,								/* alias_buddy */
 	NULL,								/* group_buddy */
-	NULL,								/* rename_group */
+	gfire_purple_rename_group,			/* rename_group */
 	NULL,								/* buddy_free */
 	NULL,								/* convo_closed */
 	purple_normalize_nocase,			/* normalize */
@@ -779,9 +848,9 @@ static PurplePluginProtocolInfo prpl_info =
 	NULL,								/* roomlist_get_list */
 	NULL,								/* roomlist_cancel */
 	NULL,								/* roomlist_expand_category */
-	NULL,								/* can_receive_file */
-	NULL,								/* send_file */
-	NULL,								/* new_xfer */
+	gfire_purple_can_receive_file,		/* can_receive_file */
+	gfire_purple_send_file,				/* send_file */
+	gfire_purple_new_xfer,				/* new_xfer */
 	NULL,								/* offline_message */
 	NULL,								/* whiteboard_prpl_ops */
 	NULL,								/* send_raw */
@@ -859,6 +928,18 @@ static void _init_plugin(PurplePlugin *plugin)
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options,option);
 
 	option = purple_account_option_bool_new(_("Use server detection"), "server_detection_option", FALSE);
+	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
+
+	option = purple_account_option_bool_new(_("Use Xfires P2P features"), "p2p_option", TRUE);
+	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
+
+	option = purple_account_option_int_new(_("P2P Port Range min. (1024-65535)"), "p2p_min_port", 30000);
+	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
+
+	option = purple_account_option_int_new(_("P2P Port Range max. (1024-65535)"), "p2p_max_port", 40000);
+	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
+
+	option = purple_account_option_string_new(_("Friends of Friends Group Name"), "fof_group_name", GFIRE_FRIENDS_OF_FRIENDS_GROUP_NAME);
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
 
 	info.name = _("Xfire");

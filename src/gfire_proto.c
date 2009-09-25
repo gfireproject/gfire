@@ -237,6 +237,34 @@ guint16 gfire_proto_create_join_voip(const gfire_game_data *p_voip)
 	return offset;
 }
 
+guint16 gfire_proto_create_game_sdk(GList *p_keys, GList *p_values)
+{
+	if(g_list_length(p_keys) != g_list_length(p_values))
+		return 0;
+
+	guint32 offset = XFIRE_HEADER_LEN;
+
+	GString *str = g_string_new("");
+
+	GList *curkey = p_keys;
+	GList *curval = p_values;
+
+	while(curkey)
+	{
+		g_string_append_printf(str, "%s\1%s\2", (const gchar*)curkey->data, (const gchar*)curval->data);
+
+		curkey = g_list_next(curkey);
+		curval = g_list_next(curval);
+	}
+
+	offset = gfire_proto_write_attr_bs(0x5B, 0x01, str->str, strlen(str->str), offset);
+
+	g_string_free(str, TRUE);
+
+	gfire_proto_write_header(offset, 0x23, 1, 0);
+	return offset;
+}
+
 // reads buddy list from server and populates purple blist
 void gfire_proto_buddy_list(gfire_data *p_gfire, guint16 p_packet_len)
 {

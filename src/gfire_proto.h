@@ -44,6 +44,7 @@ guint16 gfire_proto_create_delete_buddy(guint32 p_userid);
 guint16 gfire_proto_create_change_alias(const gchar *p_alias);
 guint16 gfire_proto_create_join_game(const gfire_game_data *p_game);
 guint16 gfire_proto_create_join_voip(const gfire_game_data *p_voip);
+guint16 gfire_proto_create_game_sdk(GList *p_keys, GList *p_values);
 
 // Packet parsing
 void gfire_proto_buddy_list(gfire_data *p_gfire, guint16 p_packet_len);

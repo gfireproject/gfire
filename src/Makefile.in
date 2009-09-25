@@ -35,7 +35,10 @@ host_triplet = @host@
 subdir = src
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/configure.ac
+am__aclocal_m4_deps = $(top_srcdir)/m4/intltool.m4 \
+	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/ltoptions.m4 \
+	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
+	$(top_srcdir)/m4/lt~obsolete.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
@@ -59,7 +62,9 @@ am__libxfire_la_SOURCES_DIST = gf_buddies.c gf_buddies_proto.c \
 	gf_purple.c gf_query.c gfire.c gfire_proto.c \
 	gf_server_browser.c gf_server_browser_proto.c gf_menus.c \
 	gf_util.c gf_server_detection_linux.c gf_game_detection.c \
-	gf_game_detection_linux.c
+	gf_game_detection_linux.c gf_ipc_server.c gf_ipc_proto.c \
+	gf_p2p.c gf_p2p_session.c gf_p2p_im_handler.c \
+	gf_p2p_dl_handler.c
 @PLUGINS_TRUE@am_libxfire_la_OBJECTS = gf_buddies.lo \
 @PLUGINS_TRUE@	gf_buddies_proto.lo gf_chat.lo gf_chat_proto.lo \
 @PLUGINS_TRUE@	gf_friend_search.lo gf_friend_search_proto.lo \
@@ -68,7 +73,10 @@ am__libxfire_la_SOURCES_DIST = gf_buddies.c gf_buddies_proto.c \
 @PLUGINS_TRUE@	gf_server_browser.lo gf_server_browser_proto.lo \
 @PLUGINS_TRUE@	gf_menus.lo gf_util.lo \
 @PLUGINS_TRUE@	gf_server_detection_linux.lo \
-@PLUGINS_TRUE@	gf_game_detection.lo gf_game_detection_linux.lo
+@PLUGINS_TRUE@	gf_game_detection.lo gf_game_detection_linux.lo \
+@PLUGINS_TRUE@	gf_ipc_server.lo gf_ipc_proto.lo gf_p2p.lo \
+@PLUGINS_TRUE@	gf_p2p_session.lo gf_p2p_im_handler.lo \
+@PLUGINS_TRUE@	gf_p2p_dl_handler.lo
 libxfire_la_OBJECTS = $(am_libxfire_la_OBJECTS)
 libxfire_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
@@ -281,7 +289,14 @@ EXTRA_DIST = \
 	gf_server_browser.h \
 	gf_server_browser_proto.h \
 	gf_buddies.h \
-	gf_buddies_proto.h
+	gf_buddies_proto.h \
+	gf_ipc_server.h \
+	gfire_ipc.h \
+	gf_ipc_proto.h \
+	gf_p2p.h \
+	gf_p2p_session.h \
+	gf_p2p_im_handler.h \
+	gf_p2p_dl_handler.h
 
 INCLUDES = \
 	-I$(top_srcdir) \
@@ -310,7 +325,13 @@ libxfire_la_LDFLAGS = -module -avoid-version
 @PLUGINS_TRUE@	gf_util.c \
 @PLUGINS_TRUE@	gf_server_detection_linux.c \
 @PLUGINS_TRUE@	gf_game_detection.c \
-@PLUGINS_TRUE@	gf_game_detection_linux.c
+@PLUGINS_TRUE@	gf_game_detection_linux.c \
+@PLUGINS_TRUE@	gf_ipc_server.c \
+@PLUGINS_TRUE@	gf_ipc_proto.c \
+@PLUGINS_TRUE@	gf_p2p.c \
+@PLUGINS_TRUE@	gf_p2p_session.c \
+@PLUGINS_TRUE@	gf_p2p_im_handler.c \
+@PLUGINS_TRUE@	gf_p2p_dl_handler.c
 
 @PLUGINS_TRUE@libxfire_la_LIBADD = \
 @PLUGINS_TRUE@	$(GLIB_LIBS) $(GTK_LIBS) $(SSL_LIBS)
@@ -403,8 +424,14 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gf_game_detection.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gf_game_detection_linux.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gf_games.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gf_ipc_proto.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gf_ipc_server.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gf_menus.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gf_network.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gf_p2p.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gf_p2p_dl_handler.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gf_p2p_im_handler.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gf_p2p_session.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gf_protocol.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gf_purple.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gf_query.Plo@am__quote@
