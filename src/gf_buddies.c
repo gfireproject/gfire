@@ -576,8 +576,8 @@ void gfire_buddy_set_session_id(gfire_buddy *p_buddy, const guint8 *p_sessionid)
 			return;
 		}
 
-		memset(&p_buddy->game_data, 0, sizeof(gfire_game_data));
-		memset(&p_buddy->voip_data, 0, sizeof(gfire_game_data));
+		gfire_game_data_reset(&p_buddy->game_data);
+		gfire_game_data_reset(&p_buddy->voip_data);
 
 		// Reset status
 		if(p_buddy->status_msg) g_free(p_buddy->status_msg);

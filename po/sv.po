@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Gfire 0.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-09-11 18:03+0200\n"
+"POT-Creation-Date: 2009-09-26 23:53+0200\n"
 "PO-Revision-Date: 2009-08-24 18:47+0100\n"
 "Last-Translator: Rizzly/Erynhenwe <rockrobban@gmail.com>\n"
 "Language-Team: Swedish <rockrobban@gmail.com>\n"
@@ -58,7 +58,7 @@ msgstr "Startargument:"
 msgid "Launch prefix:"
 msgstr "Startprefix:"
 
-#: ../data/games.glade.h:11 ../src/gf_purple.c:530
+#: ../data/games.glade.h:11 ../src/gf_purple.c:529
 msgid "Manage Games"
 msgstr "Hantera Spel"
 
@@ -78,7 +78,7 @@ msgstr "Ping"
 msgid "Players"
 msgstr "Spelare"
 
-#: ../data/servers.glade.h:3 ../src/gf_purple.c:533
+#: ../data/servers.glade.h:3 ../src/gf_purple.c:532
 msgid "Server Browser"
 msgstr "Serverbläddrare"
 
@@ -188,123 +188,102 @@ msgstr "Efternamn"
 msgid "Search results"
 msgstr "Sökresultat"
 
-#: ../src/gf_games.c:38 ../src/gf_games.c:51 ../src/gf_games.c:57
-msgid "Gfire Game List Download"
-msgstr "Ladda ner Gfire-spellista"
-
-#: ../src/gf_games.c:38 ../src/gf_games.c:57
-msgid "Download failed"
-msgstr "Nedladdning misslyckades"
-
-#: ../src/gf_games.c:47
-#, c-format
-msgid "New Game List Version: %s"
-msgstr "Ny version av spellista: %s"
-
-#: ../src/gf_games.c:51
-msgid "Download successful"
-msgstr "Nedladdning lyckades"
-
-#: ../src/gf_games.c:57
-msgid "Unable to write gfire_games.xml"
-msgstr "Kunde inte skriva till gfire-games.xml"
-
-#: ../src/gf_games.c:725 ../src/gf_games.c:829
+#: ../src/gf_games.c:709 ../src/gf_games.c:813
 msgid "Manage Games: warning"
 msgstr "Hantera spel: varning"
 
-#: ../src/gf_games.c:725
+#: ../src/gf_games.c:709
 msgid "Game already added"
 msgstr "Spelet är redan tillagt"
 
-#: ../src/gf_games.c:726
+#: ../src/gf_games.c:710
 msgid "This game is already added, you can configure it if you want."
 msgstr "Det här spelet är redan tillagt, du kan konfigurera det om du vill."
 
-#: ../src/gf_games.c:747 ../src/gf_games.c:760 ../src/gf_games.c:843
-#: ../src/gf_games.c:855 ../src/gf_games.c:897 ../src/gf_games.c:906
-#: ../src/gf_games.c:1042
+#: ../src/gf_games.c:731 ../src/gf_games.c:744 ../src/gf_games.c:827
+#: ../src/gf_games.c:839 ../src/gf_games.c:881 ../src/gf_games.c:890
+#: ../src/gf_games.c:1026
 msgid "Manage Games: error"
 msgstr "Hantera spel: fel"
 
-#: ../src/gf_games.c:747 ../src/gf_games.c:761 ../src/gf_games.c:843
+#: ../src/gf_games.c:731 ../src/gf_games.c:745 ../src/gf_games.c:827
 msgid "Couldn't add game"
 msgstr "Kunde inte lägga till spel"
 
-#: ../src/gf_games.c:748
+#: ../src/gf_games.c:732
 msgid "Please try again. An error occured while adding the game."
 msgstr "Var vänlig försök igen. Ett fel uppstod när spelet skulle läggas till."
 
-#: ../src/gf_games.c:753
+#: ../src/gf_games.c:737
 msgid "Manage Games: game added"
 msgstr "Hantera spel: spel tillagt"
 
-#: ../src/gf_games.c:754
+#: ../src/gf_games.c:738
 msgid "The game has been successfully added."
 msgstr "Spelet har blivit tillagt."
 
-#: ../src/gf_games.c:761 ../src/gf_games.c:856
+#: ../src/gf_games.c:745 ../src/gf_games.c:840
 msgid "Please try again. Make sure you fill in all fields."
 msgstr "Var vänlig försök igen. Se till att alla fält är ifyllda."
 
-#: ../src/gf_games.c:829
+#: ../src/gf_games.c:813
 msgid "Game launch data not found"
 msgstr "Spelstartsdata hittades inte"
 
-#: ../src/gf_games.c:830
+#: ../src/gf_games.c:814
 msgid "This game is not yet added as it seems, please add it first!"
 msgstr ""
 "Det här spelet verkar inte vara tillagt än, var vänlig lägg till det först!"
 
-#: ../src/gf_games.c:844
+#: ../src/gf_games.c:828
 msgid "Please try again. An error occured while editing the game."
 msgstr "Var vänlig försök igen. Ett fel uppstod medan du redigerade spelet."
 
-#: ../src/gf_games.c:849
+#: ../src/gf_games.c:833
 msgid "Manage Games: game edited"
 msgstr "Hantera spel: spelet redigerat"
 
-#: ../src/gf_games.c:850
+#: ../src/gf_games.c:834
 msgid "Game edited"
 msgstr "Spelet redigerat"
 
-#: ../src/gf_games.c:850
+#: ../src/gf_games.c:834
 msgid "The game has been successfully edited."
 msgstr "Spelet har blivit redigerat"
 
-#: ../src/gf_games.c:856
+#: ../src/gf_games.c:840
 msgid "Couldn't edit game"
 msgstr "Kunde inte redigera spelet"
 
-#: ../src/gf_games.c:892
+#: ../src/gf_games.c:876
 msgid "Manage Games: game removed"
 msgstr "Hantera spel: spel borttaget"
 
-#: ../src/gf_games.c:893
+#: ../src/gf_games.c:877
 msgid "Game removed"
 msgstr "Spel borttaget"
 
-#: ../src/gf_games.c:893
+#: ../src/gf_games.c:877
 msgid "The game has been successfully removed."
 msgstr "Spelet har blivit borttaget."
 
-#: ../src/gf_games.c:898 ../src/gf_games.c:907
+#: ../src/gf_games.c:882 ../src/gf_games.c:891
 msgid "Couldn't remove game"
 msgstr "Kunde inte ta bort spelet"
 
-#: ../src/gf_games.c:898
+#: ../src/gf_games.c:882
 msgid "Please try again. An error occured while removing the game."
 msgstr "Var vänlig försök igen. Ett fel uppstod när spelet skulle tas bort."
 
-#: ../src/gf_games.c:907
+#: ../src/gf_games.c:891
 msgid "Please try again. Make sure you select a game to remove."
 msgstr "Var vänlig försök igen. Se till att du har valt ett spel att ta bort."
 
-#: ../src/gf_games.c:1042
+#: ../src/gf_games.c:1026
 msgid "Incompatible games configuration"
 msgstr "Okompatibel spelkonfiguration"
 
-#: ../src/gf_games.c:1043
+#: ../src/gf_games.c:1027
 msgid ""
 "Your current games configuration is incompatible with this version of Gfire. "
 "Please remove it and try again."
@@ -335,23 +314,23 @@ msgstr ""
 msgid "You have signed on from another location."
 msgstr "Du har loggat in från någon annanstans."
 
-#: ../src/gf_purple.c:125 ../src/gfire.c:953
+#: ../src/gf_purple.c:125 ../src/gfire.c:1002
 msgid "Game"
 msgstr "Spel"
 
-#: ../src/gf_purple.c:131 ../src/gf_purple.c:901 ../src/gfire.c:959
+#: ../src/gf_purple.c:131 ../src/gf_purple.c:909 ../src/gfire.c:1008
 msgid "Server"
 msgstr "Server"
 
-#: ../src/gf_purple.c:159 ../src/gfire.c:978
+#: ../src/gf_purple.c:159 ../src/gfire.c:1027
 msgid "unknown"
 msgstr "okänd"
 
-#: ../src/gf_purple.c:174 ../src/gfire.c:942 ../src/gfire.c:945
+#: ../src/gf_purple.c:174 ../src/gfire.c:991 ../src/gfire.c:994
 msgid "Status"
 msgstr "Status"
 
-#: ../src/gf_purple.c:184 ../src/gfire.c:991
+#: ../src/gf_purple.c:184 ../src/gfire.c:1040
 msgid "Common Friends"
 msgstr "Gemensamma vänner"
 
@@ -384,289 +363,306 @@ msgstr ""
 "Kontoinställningarna är inställda så att du inte kan ta bort kontakter\n"
 "Kontakten kommer att återställas vid nästa inloggning"
 
-#: ../src/gf_purple.c:439
+#: ../src/gf_purple.c:438
 msgid "Add as friend"
 msgstr "Lägg till som vän"
 
-#: ../src/gf_purple.c:454
+#: ../src/gf_purple.c:453
 msgid "Join Game ..."
 msgstr "Delta i spelet..."
 
-#: ../src/gf_purple.c:470
+#: ../src/gf_purple.c:469
 msgid "Join VoIP ..."
 msgstr "Delta i VoIP..."
 
-#: ../src/gf_purple.c:480
+#: ../src/gf_purple.c:479
 msgid "Xfire Profile"
 msgstr "Xfire-profil"
 
-#: ../src/gf_purple.c:507
+#: ../src/gf_purple.c:506
 msgid "Change Nickname"
 msgstr "Ändra smeknamn"
 
-#: ../src/gf_purple.c:510
+#: ../src/gf_purple.c:509
 msgid "My Profile Page"
 msgstr "Min profilsida"
 
-#: ../src/gf_purple.c:514
+#: ../src/gf_purple.c:513
 msgid "Reload Game Config"
 msgstr "Ladda om spelkonfiguration"
 
-#: ../src/gf_purple.c:517
+#: ../src/gf_purple.c:516
 msgid "Reload Game ID List"
 msgstr "Ladda om listan för spel-ID"
 
-#: ../src/gf_purple.c:520
+#: ../src/gf_purple.c:519
 msgid "Get Game ID List"
 msgstr "Hämta listan för spel-ID"
 
-#: ../src/gf_purple.c:523
+#: ../src/gf_purple.c:522
 msgid "Friend Search"
 msgstr "Vänsökning"
 
-#: ../src/gf_purple.c:540
+#: ../src/gf_purple.c:539
 msgid "About"
 msgstr "Om"
 
-#: ../src/gf_purple.c:705
+#: ../src/gf_purple.c:704
 msgid "Xfire Groupchat"
 msgstr "Xfire-gruppchatt"
 
-#: ../src/gf_purple.c:705
+#: ../src/gf_purple.c:704
 msgid "MotD change failed"
 msgstr "Ändring av dagens meddelande misslyckades."
 
-#: ../src/gf_purple.c:705
+#: ../src/gf_purple.c:704
 msgid "The MotD contains more than 200 characters."
 msgstr "Ditt dagsmeddelande innehåller mer än 200 tecken."
 
-#: ../src/gf_purple.c:904
+#: ../src/gf_purple.c:912
 msgid "Port"
 msgstr "Port"
 
-#: ../src/gf_purple.c:907
+#: ../src/gf_purple.c:915
 msgid "Version"
 msgstr "Version"
 
-#: ../src/gf_purple.c:910
+#: ../src/gf_purple.c:918
 msgid "Don't delete buddies from server"
 msgstr "Ta inte bort kontakter från servern"
 
-#: ../src/gf_purple.c:913
+#: ../src/gf_purple.c:921
 msgid "Buddies can see if I'm typing"
 msgstr "Kontakter kan se om jag skriver"
 
-#: ../src/gf_purple.c:916
+#: ../src/gf_purple.c:924
 msgid "Auto detect for ingame status"
 msgstr "Automatisk igenkänning för spelstatus"
 
-#: ../src/gf_purple.c:919
+#: ../src/gf_purple.c:927
 msgid "Notify me when my status is ingame"
 msgstr "Notifiera mig när min spelstatus ändras"
 
-#: ../src/gf_purple.c:922
+#: ../src/gf_purple.c:930
 msgid "Use server detection"
 msgstr "Använd serverigenkänning"
 
-#: ../src/gf_purple.c:925
+#: ../src/gf_purple.c:933
 msgid "Use Xfires P2P features"
 msgstr ""
 
-#: ../src/gf_purple.c:928
+#: ../src/gf_purple.c:936
+msgid "P2P Port Range min. (1024-65535)"
+msgstr ""
+
+#: ../src/gf_purple.c:939
+msgid "P2P Port Range max. (1024-65535)"
+msgstr ""
+
+#: ../src/gf_purple.c:942
+#, fuzzy
+msgid "Friends of Friends Group Name"
+msgstr "Xfire - Vänner till vänner som spelar"
+
+#: ../src/gf_purple.c:945
 msgid "Xfire"
 msgstr "Xfire"
 
-#: ../src/gf_purple.c:929 ../src/gf_purple.c:930
+#: ../src/gf_purple.c:946 ../src/gf_purple.c:947
 msgid "Xfire Protocol Plugin"
 msgstr "Xfire-insticksmodul"
 
-#: ../src/gfire.c:187
+#: ../src/gfire.c:204
+msgid "Couldn't get the latest game config."
+msgstr ""
+
+#: ../src/gfire.c:234
 msgid "Connecting"
 msgstr "Ansluter"
 
-#: ../src/gfire.c:193
+#: ../src/gfire.c:240
 msgid "Couldn't create socket."
 msgstr "Kunde skapa anslutning."
 
-#: ../src/gfire.c:328
+#: ../src/gfire.c:377
 msgid "Login sent"
 msgstr "Inloggningsinformation skickad"
 
 #. TRANSLATORS: Keep "(AFK)" as is!
 #. Suggestion: Use Xfires original AFK message here
-#: ../src/gfire.c:352
+#: ../src/gfire.c:401
 msgid "(AFK) Away From Keyboard"
 msgstr "(AFK) Borta från tangenbordet"
 
 #. TRANSLATORS: Keep "(Busy)" as is!
-#: ../src/gfire.c:359
+#: ../src/gfire.c:408
 msgid "(Busy) I'm busy!"
 msgstr "(Busy) Jag är upptagen!"
 
-#: ../src/gfire.c:571 ../src/gfire.c:580 ../src/gfire.c:750 ../src/gfire.c:759
+#: ../src/gfire.c:620 ../src/gfire.c:629 ../src/gfire.c:799 ../src/gfire.c:808
 msgid "Error"
 msgstr "Fel"
 
-#: ../src/gfire.c:571
+#: ../src/gfire.c:620
 msgid "Retrieving gamerig data failed!"
 msgstr "Hämtning av data om speldator misslyckades!"
 
-#: ../src/gfire.c:580
+#: ../src/gfire.c:629
 msgid "Invalid gamerig data received!"
 msgstr "Felaktig data om speldator mottogs!"
 
-#: ../src/gfire.c:595
+#: ../src/gfire.c:644
 #, c-format
 msgid "%ss Gaming Rig:"
 msgstr "%ss speldator:"
 
-#: ../src/gfire.c:605
+#: ../src/gfire.c:654
 msgid "Manufacturer"
 msgstr "Tillverkare"
 
-#: ../src/gfire.c:614
+#: ../src/gfire.c:663
 msgid "Processor"
 msgstr "Processor"
 
-#: ../src/gfire.c:623
+#: ../src/gfire.c:672
 msgid "Memory"
 msgstr "Minne"
 
-#: ../src/gfire.c:632
+#: ../src/gfire.c:681
 msgid "Video Card"
 msgstr "Grafikkort"
 
-#: ../src/gfire.c:641
+#: ../src/gfire.c:690
 msgid "Sound Card"
 msgstr "Ljudkort"
 
-#: ../src/gfire.c:650
+#: ../src/gfire.c:699
 msgid "Mainboard"
 msgstr "Moderkort"
 
-#: ../src/gfire.c:659
+#: ../src/gfire.c:708
 msgid "Hard Drive"
 msgstr "Hårddisk"
 
-#: ../src/gfire.c:668
+#: ../src/gfire.c:717
 msgid "Monitor"
 msgstr "Skärm"
 
-#: ../src/gfire.c:677
+#: ../src/gfire.c:726
 msgid "Keyboard"
 msgstr "Tangentbord"
 
-#: ../src/gfire.c:686
+#: ../src/gfire.c:735
 msgid "Mouse"
 msgstr "Mus"
 
-#: ../src/gfire.c:695
+#: ../src/gfire.c:744
 msgid "Mouse Surface"
 msgstr "Musmatta"
 
-#: ../src/gfire.c:704
+#: ../src/gfire.c:753
 msgid "Speakers"
 msgstr "Högtalare"
 
-#: ../src/gfire.c:713
+#: ../src/gfire.c:762
 msgid "Computer Case"
 msgstr "Datorchassi"
 
-#: ../src/gfire.c:722
+#: ../src/gfire.c:771
 msgid "Operating System"
 msgstr "Operativsystem"
 
-#: ../src/gfire.c:750
+#: ../src/gfire.c:799
 msgid "Retrieving profile data failed!"
 msgstr "Hämtning av profildata misslyckades!"
 
-#: ../src/gfire.c:759
+#: ../src/gfire.c:808
 msgid "Invalid profile data received!"
 msgstr "Felaktig profildata mottogs!"
 
-#: ../src/gfire.c:764
+#: ../src/gfire.c:813
 msgid "Profile"
 msgstr "Profil"
 
-#: ../src/gfire.c:774
+#: ../src/gfire.c:823
 #, c-format
 msgid "%ss Profile:"
 msgstr "%ss profil:"
 
-#: ../src/gfire.c:784
+#: ../src/gfire.c:833
 msgid "Real Name"
 msgstr "Riktigt namn"
 
-#: ../src/gfire.c:793
+#: ../src/gfire.c:842
 msgid "Age"
 msgstr "Ålder"
 
-#: ../src/gfire.c:802
+#: ../src/gfire.c:851
 msgid "Gender"
 msgstr "Kön"
 
-#: ../src/gfire.c:802
+#: ../src/gfire.c:851
 msgid "Male"
 msgstr "Man"
 
-#: ../src/gfire.c:802
+#: ../src/gfire.c:851
 msgid "Female"
 msgstr "Kvinna"
 
-#: ../src/gfire.c:811
+#: ../src/gfire.c:860
 msgid "Occupation"
 msgstr "Sysselsättning"
 
-#: ../src/gfire.c:820
+#: ../src/gfire.c:869
 msgid "Country"
 msgstr "Land"
 
-#: ../src/gfire.c:829
+#: ../src/gfire.c:878
 msgid "Location"
 msgstr "Område"
 
-#: ../src/gfire.c:838
+#: ../src/gfire.c:887
 msgid "Gaming Style"
 msgstr "Spelstil"
 
-#: ../src/gfire.c:847
+#: ../src/gfire.c:896
 msgid "Interests"
 msgstr "Intressen"
 
-#: ../src/gfire.c:856
+#: ../src/gfire.c:905
 msgid "Friends"
 msgstr "Vänner"
 
-#: ../src/gfire.c:865
+#: ../src/gfire.c:914
 msgid "Join Date"
 msgstr "Registreringsdatum"
 
-#: ../src/gfire.c:927
+#: ../src/gfire.c:976
 msgid "Nickname"
 msgstr "Smeknamn"
 
-#: ../src/gfire.c:945
+#: ../src/gfire.c:994
 msgid "Offline"
 msgstr "Frånkopplad"
 
-#: ../src/gfire.c:1001
+#: ../src/gfire.c:1050
 msgid "Additional game info:"
 msgstr ""
 
-#: ../src/gfire.c:1017
+#: ../src/gfire.c:1066
 #, c-format
 msgid "%ss Clans:"
 msgstr "%ss klaner:"
 
-#: ../src/gfire.c:1101
+#: ../src/gfire.c:1150
 msgid "Connection timed out"
 msgstr "Anslutningstidsfrist har gått ut"
 
-#: ../src/gfire.c:1318 ../src/gfire.c:1353
+#: ../src/gfire.c:1367 ../src/gfire.c:1402
 msgid "Ingame status"
 msgstr "Spelstatus"
 
-#: ../src/gfire.c:1319 ../src/gfire.c:1354
+#: ../src/gfire.c:1368 ../src/gfire.c:1403
 msgid "Your status has been changed."
 msgstr "Din status har ändrats."
 
@@ -755,11 +751,26 @@ msgstr "Hemsida"
 msgid "Wiki"
 msgstr "Wiki"
 
-#: ../src/gf_p2p_dl_handler.c:434
+#: ../src/gf_p2p_dl_handler.c:516
 #, fuzzy, c-format
 msgid "File Description: %s"
 msgstr "Gfire-version: %s"
 
-#: ../src/gf_p2p_dl_handler.c:434
+#: ../src/gf_p2p_dl_handler.c:516
 msgid "No description entered"
 msgstr ""
+
+#~ msgid "Gfire Game List Download"
+#~ msgstr "Ladda ner Gfire-spellista"
+
+#~ msgid "Download failed"
+#~ msgstr "Nedladdning misslyckades"
+
+#~ msgid "New Game List Version: %s"
+#~ msgstr "Ny version av spellista: %s"
+
+#~ msgid "Download successful"
+#~ msgstr "Nedladdning lyckades"
+
+#~ msgid "Unable to write gfire_games.xml"
+#~ msgstr "Kunde inte skriva till gfire-games.xml"

@@ -4325,7 +4325,7 @@ cat >>confdefs.h <<_ACEOF
 #define GETTEXT_PACKAGE "$GETTEXT_PACKAGE"
 _ACEOF
 
-ALL_LINGUAS="de es sk sv"
+ALL_LINGUAS="cz de es sk sv"
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-08-28 04:06+0200\n"
+"POT-Creation-Date: 2009-09-27 00:06+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -56,7 +56,7 @@ msgstr ""
 msgid "Launch prefix:"
 msgstr ""
 
-#: ../data/games.glade.h:11 ../src/gf_purple.c:530
+#: ../data/games.glade.h:11 ../src/gf_purple.c:529
 msgid "Manage Games"
 msgstr ""
 
@@ -76,7 +76,7 @@ msgstr ""
 msgid "Players"
 msgstr ""
 
-#: ../data/servers.glade.h:3 ../src/gf_purple.c:533
+#: ../data/servers.glade.h:3 ../src/gf_purple.c:532
 msgid "Server Browser"
 msgstr ""
 
@@ -96,16 +96,26 @@ msgstr ""
 msgid "Xfire - Friends of Friends playing games"
 msgstr ""
 
-#: ../src/gf_buddies.c:389
+#: ../src/gf_buddies.c:416
 #, c-format
 msgid ""
 "%s may have not received this message:\n"
 "%s"
 msgstr ""
 
-#: ../src/gf_buddies.c:837
+#: ../src/gf_buddies.c:881
 #, c-format
 msgid "Playing %s"
+msgstr ""
+
+#: ../src/gf_buddies.c:1269
+msgid "P2P Connection not possible"
+msgstr ""
+
+#: ../src/gf_buddies.c:1269
+msgid ""
+"We're not able to establish a connection to your buddy. File transfer and "
+"P2P messaging will not be possible."
 msgstr ""
 
 #: ../src/gf_chat.c:209
@@ -170,165 +180,144 @@ msgstr ""
 msgid "Search results"
 msgstr ""
 
-#: ../src/gf_games.c:38 ../src/gf_games.c:51 ../src/gf_games.c:57
-msgid "Gfire Game List Download"
-msgstr ""
-
-#: ../src/gf_games.c:38 ../src/gf_games.c:57
-msgid "Download failed"
-msgstr ""
-
-#: ../src/gf_games.c:47
-#, c-format
-msgid "New Game List Version: %s"
-msgstr ""
-
-#: ../src/gf_games.c:51
-msgid "Download successful"
-msgstr ""
-
-#: ../src/gf_games.c:57
-msgid "Unable to write gfire_games.xml"
-msgstr ""
-
-#: ../src/gf_games.c:725 ../src/gf_games.c:829
+#: ../src/gf_games.c:709 ../src/gf_games.c:813
 msgid "Manage Games: warning"
 msgstr ""
 
-#: ../src/gf_games.c:725
+#: ../src/gf_games.c:709
 msgid "Game already added"
 msgstr ""
 
-#: ../src/gf_games.c:726
+#: ../src/gf_games.c:710
 msgid "This game is already added, you can configure it if you want."
 msgstr ""
 
-#: ../src/gf_games.c:747 ../src/gf_games.c:760 ../src/gf_games.c:843
-#: ../src/gf_games.c:855 ../src/gf_games.c:897 ../src/gf_games.c:906
-#: ../src/gf_games.c:1042
+#: ../src/gf_games.c:731 ../src/gf_games.c:744 ../src/gf_games.c:827
+#: ../src/gf_games.c:839 ../src/gf_games.c:881 ../src/gf_games.c:890
+#: ../src/gf_games.c:1026
 msgid "Manage Games: error"
 msgstr ""
 
-#: ../src/gf_games.c:747 ../src/gf_games.c:761 ../src/gf_games.c:843
+#: ../src/gf_games.c:731 ../src/gf_games.c:745 ../src/gf_games.c:827
 msgid "Couldn't add game"
 msgstr ""
 
-#: ../src/gf_games.c:748
+#: ../src/gf_games.c:732
 msgid "Please try again. An error occured while adding the game."
 msgstr ""
 
-#: ../src/gf_games.c:753
+#: ../src/gf_games.c:737
 msgid "Manage Games: game added"
 msgstr ""
 
-#: ../src/gf_games.c:754
+#: ../src/gf_games.c:738
 msgid "The game has been successfully added."
 msgstr ""
 
-#: ../src/gf_games.c:761 ../src/gf_games.c:856
+#: ../src/gf_games.c:745 ../src/gf_games.c:840
 msgid "Please try again. Make sure you fill in all fields."
 msgstr ""
 
-#: ../src/gf_games.c:829
+#: ../src/gf_games.c:813
 msgid "Game launch data not found"
 msgstr ""
 
-#: ../src/gf_games.c:830
+#: ../src/gf_games.c:814
 msgid "This game is not yet added as it seems, please add it first!"
 msgstr ""
 
-#: ../src/gf_games.c:844
+#: ../src/gf_games.c:828
 msgid "Please try again. An error occured while editing the game."
 msgstr ""
 
-#: ../src/gf_games.c:849
+#: ../src/gf_games.c:833
 msgid "Manage Games: game edited"
 msgstr ""
 
-#: ../src/gf_games.c:850
+#: ../src/gf_games.c:834
 msgid "Game edited"
 msgstr ""
 
-#: ../src/gf_games.c:850
+#: ../src/gf_games.c:834
 msgid "The game has been successfully edited."
 msgstr ""
 
-#: ../src/gf_games.c:856
+#: ../src/gf_games.c:840
 msgid "Couldn't edit game"
 msgstr ""
 
-#: ../src/gf_games.c:892
+#: ../src/gf_games.c:876
 msgid "Manage Games: game removed"
 msgstr ""
 
-#: ../src/gf_games.c:893
+#: ../src/gf_games.c:877
 msgid "Game removed"
 msgstr ""
 
-#: ../src/gf_games.c:893
+#: ../src/gf_games.c:877
 msgid "The game has been successfully removed."
 msgstr ""
 
-#: ../src/gf_games.c:898 ../src/gf_games.c:907
+#: ../src/gf_games.c:882 ../src/gf_games.c:891
 msgid "Couldn't remove game"
 msgstr ""
 
-#: ../src/gf_games.c:898
+#: ../src/gf_games.c:882
 msgid "Please try again. An error occured while removing the game."
 msgstr ""
 
-#: ../src/gf_games.c:907
+#: ../src/gf_games.c:891
 msgid "Please try again. Make sure you select a game to remove."
 msgstr ""
 
-#: ../src/gf_games.c:1042
+#: ../src/gf_games.c:1026
 msgid "Incompatible games configuration"
 msgstr ""
 
-#: ../src/gf_games.c:1043
+#: ../src/gf_games.c:1027
 msgid ""
 "Your current games configuration is incompatible with this version of Gfire. "
 "Please remove it and try again."
 msgstr ""
 
-#: ../src/gf_network.c:120 ../src/gf_network.c:154
+#: ../src/gf_network.c:131 ../src/gf_network.c:165
 msgid "Connection closed by peer."
 msgstr ""
 
-#: ../src/gf_network.c:129 ../src/gf_network.c:163
+#: ../src/gf_network.c:140 ../src/gf_network.c:174
 msgid "Socket read failure."
 msgstr ""
 
-#: ../src/gf_network.c:205
+#: ../src/gf_network.c:216
 msgid "Password or Username Incorrect."
 msgstr ""
 
-#: ../src/gf_network.c:248
+#: ../src/gf_network.c:259
 #, c-format
 msgid "Protocol version mismatch, needs to be %d. Auto set to new value."
 msgstr ""
 
-#: ../src/gf_network.c:290
+#: ../src/gf_network.c:301
 msgid "You have signed on from another location."
 msgstr ""
 
-#: ../src/gf_purple.c:125 ../src/gfire.c:961
+#: ../src/gf_purple.c:125 ../src/gfire.c:1002
 msgid "Game"
 msgstr ""
 
-#: ../src/gf_purple.c:131 ../src/gf_purple.c:836 ../src/gfire.c:967
+#: ../src/gf_purple.c:131 ../src/gf_purple.c:909 ../src/gfire.c:1008
 msgid "Server"
 msgstr ""
 
-#: ../src/gf_purple.c:159 ../src/gfire.c:986
+#: ../src/gf_purple.c:159 ../src/gfire.c:1027
 msgid "unknown"
 msgstr ""
 
-#: ../src/gf_purple.c:174 ../src/gfire.c:950 ../src/gfire.c:953
+#: ../src/gf_purple.c:174 ../src/gfire.c:991 ../src/gfire.c:994
 msgid "Status"
 msgstr ""
 
-#: ../src/gf_purple.c:184 ../src/gfire.c:999
+#: ../src/gf_purple.c:184 ../src/gfire.c:1040
 msgid "Common Friends"
 msgstr ""
 
@@ -359,297 +348,317 @@ msgid ""
 "The buddy will be restored on your next login"
 msgstr ""
 
-#: ../src/gf_purple.c:439
+#: ../src/gf_purple.c:438
 msgid "Add as friend"
 msgstr ""
 
-#: ../src/gf_purple.c:454
+#: ../src/gf_purple.c:453
 msgid "Join Game ..."
 msgstr ""
 
-#: ../src/gf_purple.c:470
+#: ../src/gf_purple.c:469
 msgid "Join VoIP ..."
 msgstr ""
 
-#: ../src/gf_purple.c:480
+#: ../src/gf_purple.c:479
 msgid "Xfire Profile"
 msgstr ""
 
-#: ../src/gf_purple.c:507
+#: ../src/gf_purple.c:506
 msgid "Change Nickname"
 msgstr ""
 
-#: ../src/gf_purple.c:510
+#: ../src/gf_purple.c:509
 msgid "My Profile Page"
 msgstr ""
 
-#: ../src/gf_purple.c:514
+#: ../src/gf_purple.c:513
 msgid "Reload Game Config"
 msgstr ""
 
-#: ../src/gf_purple.c:517
+#: ../src/gf_purple.c:516
 msgid "Reload Game ID List"
 msgstr ""
 
-#: ../src/gf_purple.c:520
+#: ../src/gf_purple.c:519
 msgid "Get Game ID List"
 msgstr ""
 
-#: ../src/gf_purple.c:523
+#: ../src/gf_purple.c:522
 msgid "Friend Search"
 msgstr ""
 
-#: ../src/gf_purple.c:540
+#: ../src/gf_purple.c:539
 msgid "About"
 msgstr ""
 
-#: ../src/gf_purple.c:705
+#: ../src/gf_purple.c:704
 msgid "Xfire Groupchat"
 msgstr ""
 
-#: ../src/gf_purple.c:705
+#: ../src/gf_purple.c:704
 msgid "MotD change failed"
 msgstr ""
 
-#: ../src/gf_purple.c:705
+#: ../src/gf_purple.c:704
 msgid "The MotD contains more than 200 characters."
 msgstr ""
 
-#: ../src/gf_purple.c:839
+#: ../src/gf_purple.c:912
 msgid "Port"
 msgstr ""
 
-#: ../src/gf_purple.c:842
+#: ../src/gf_purple.c:915
 msgid "Version"
 msgstr ""
 
-#: ../src/gf_purple.c:845
+#: ../src/gf_purple.c:918
 msgid "Don't delete buddies from server"
 msgstr ""
 
-#: ../src/gf_purple.c:848
+#: ../src/gf_purple.c:921
 msgid "Buddies can see if I'm typing"
 msgstr ""
 
-#: ../src/gf_purple.c:851
+#: ../src/gf_purple.c:924
 msgid "Auto detect for ingame status"
 msgstr ""
 
-#: ../src/gf_purple.c:854
+#: ../src/gf_purple.c:927
 msgid "Notify me when my status is ingame"
 msgstr ""
 
-#: ../src/gf_purple.c:857
+#: ../src/gf_purple.c:930
 msgid "Use server detection"
 msgstr ""
 
-#: ../src/gf_purple.c:860
+#: ../src/gf_purple.c:933
+msgid "Use Xfires P2P features"
+msgstr ""
+
+#: ../src/gf_purple.c:936
+msgid "P2P Port Range min. (1024-65535)"
+msgstr ""
+
+#: ../src/gf_purple.c:939
+msgid "P2P Port Range max. (1024-65535)"
+msgstr ""
+
+#: ../src/gf_purple.c:942
+msgid "Friends of Friends Group Name"
+msgstr ""
+
+#: ../src/gf_purple.c:945
 msgid "Xfire"
 msgstr ""
 
-#: ../src/gf_purple.c:861 ../src/gf_purple.c:862
+#: ../src/gf_purple.c:946 ../src/gf_purple.c:947
 msgid "Xfire Protocol Plugin"
 msgstr ""
 
-#: ../src/gfire.c:169
+#: ../src/gfire.c:204
+msgid "Couldn't get the latest game config."
+msgstr ""
+
+#: ../src/gfire.c:234
 msgid "Connecting"
 msgstr ""
 
-#: ../src/gfire.c:175
+#: ../src/gfire.c:240
 msgid "Couldn't create socket."
 msgstr ""
 
-#: ../src/gfire.c:336
+#: ../src/gfire.c:377
 msgid "Login sent"
 msgstr ""
 
 #. TRANSLATORS: Keep "(AFK)" as is!
 #. Suggestion: Use Xfires original AFK message here
-#: ../src/gfire.c:360
+#: ../src/gfire.c:401
 msgid "(AFK) Away From Keyboard"
 msgstr ""
 
 #. TRANSLATORS: Keep "(Busy)" as is!
-#: ../src/gfire.c:367
+#: ../src/gfire.c:408
 msgid "(Busy) I'm busy!"
 msgstr ""
 
-#: ../src/gfire.c:579 ../src/gfire.c:588 ../src/gfire.c:758 ../src/gfire.c:767
+#: ../src/gfire.c:620 ../src/gfire.c:629 ../src/gfire.c:799 ../src/gfire.c:808
 msgid "Error"
 msgstr ""
 
-#: ../src/gfire.c:579
+#: ../src/gfire.c:620
 msgid "Retrieving gamerig data failed!"
 msgstr ""
 
-#: ../src/gfire.c:588
+#: ../src/gfire.c:629
 msgid "Invalid gamerig data received!"
 msgstr ""
 
-#: ../src/gfire.c:603
+#: ../src/gfire.c:644
 #, c-format
 msgid "%ss Gaming Rig:"
 msgstr ""
 
-#: ../src/gfire.c:613
+#: ../src/gfire.c:654
 msgid "Manufacturer"
 msgstr ""
 
-#: ../src/gfire.c:622
+#: ../src/gfire.c:663
 msgid "Processor"
 msgstr ""
 
-#: ../src/gfire.c:631
+#: ../src/gfire.c:672
 msgid "Memory"
 msgstr ""
 
-#: ../src/gfire.c:640
+#: ../src/gfire.c:681
 msgid "Video Card"
 msgstr ""
 
-#: ../src/gfire.c:649
+#: ../src/gfire.c:690
 msgid "Sound Card"
 msgstr ""
 
-#: ../src/gfire.c:658
+#: ../src/gfire.c:699
 msgid "Mainboard"
 msgstr ""
 
-#: ../src/gfire.c:667
+#: ../src/gfire.c:708
 msgid "Hard Drive"
 msgstr ""
 
-#: ../src/gfire.c:676
+#: ../src/gfire.c:717
 msgid "Monitor"
 msgstr ""
 
-#: ../src/gfire.c:685
+#: ../src/gfire.c:726
 msgid "Keyboard"
 msgstr ""
 
-#: ../src/gfire.c:694
+#: ../src/gfire.c:735
 msgid "Mouse"
 msgstr ""
 
-#: ../src/gfire.c:703
+#: ../src/gfire.c:744
 msgid "Mouse Surface"
 msgstr ""
 
-#: ../src/gfire.c:712
+#: ../src/gfire.c:753
 msgid "Speakers"
 msgstr ""
 
-#: ../src/gfire.c:721
+#: ../src/gfire.c:762
 msgid "Computer Case"
 msgstr ""
 
-#: ../src/gfire.c:730
+#: ../src/gfire.c:771
 msgid "Operating System"
 msgstr ""
 
-#: ../src/gfire.c:758
+#: ../src/gfire.c:799
 msgid "Retrieving profile data failed!"
 msgstr ""
 
-#: ../src/gfire.c:767
+#: ../src/gfire.c:808
 msgid "Invalid profile data received!"
 msgstr ""
 
-#: ../src/gfire.c:772
+#: ../src/gfire.c:813
 msgid "Profile"
 msgstr ""
 
-#: ../src/gfire.c:782
+#: ../src/gfire.c:823
 #, c-format
 msgid "%ss Profile:"
 msgstr ""
 
-#: ../src/gfire.c:792
+#: ../src/gfire.c:833
 msgid "Real Name"
 msgstr ""
 
-#: ../src/gfire.c:801
+#: ../src/gfire.c:842
 msgid "Age"
 msgstr ""
 
-#: ../src/gfire.c:810
+#: ../src/gfire.c:851
 msgid "Gender"
 msgstr ""
 
-#: ../src/gfire.c:810
+#: ../src/gfire.c:851
 msgid "Male"
 msgstr ""
 
-#: ../src/gfire.c:810
+#: ../src/gfire.c:851
 msgid "Female"
 msgstr ""
 
-#: ../src/gfire.c:819
+#: ../src/gfire.c:860
 msgid "Occupation"
 msgstr ""
 
-#: ../src/gfire.c:828
+#: ../src/gfire.c:869
 msgid "Country"
 msgstr ""
 
-#: ../src/gfire.c:837
+#: ../src/gfire.c:878
 msgid "Location"
 msgstr ""
 
-#: ../src/gfire.c:846
+#: ../src/gfire.c:887
 msgid "Gaming Style"
 msgstr ""
 
-#: ../src/gfire.c:855
+#: ../src/gfire.c:896
 msgid "Interests"
 msgstr ""
 
-#: ../src/gfire.c:864
+#: ../src/gfire.c:905
 msgid "Friends"
 msgstr ""
 
-#: ../src/gfire.c:873
+#: ../src/gfire.c:914
 msgid "Join Date"
 msgstr ""
 
-#: ../src/gfire.c:935
+#: ../src/gfire.c:976
 msgid "Nickname"
 msgstr ""
 
-#: ../src/gfire.c:953
+#: ../src/gfire.c:994
 msgid "Offline"
 msgstr ""
 
-#: ../src/gfire.c:1009
+#: ../src/gfire.c:1050
 msgid "Additional game info:"
 msgstr ""
 
-#: ../src/gfire.c:1025
+#: ../src/gfire.c:1066
 #, c-format
 msgid "%ss Clans:"
 msgstr ""
 
-#: ../src/gfire.c:1109
+#: ../src/gfire.c:1150
 msgid "Connection timed out"
 msgstr ""
 
-#: ../src/gfire.c:1312 ../src/gfire.c:1347
+#: ../src/gfire.c:1367 ../src/gfire.c:1402
 msgid "Ingame status"
 msgstr ""
 
-#: ../src/gfire.c:1313 ../src/gfire.c:1348
+#: ../src/gfire.c:1368 ../src/gfire.c:1403
 msgid "Your status has been changed."
 msgstr ""
 
-#: ../src/gfire_proto.c:387
+#: ../src/gfire_proto.c:415
 msgid "Received invalid login salt!"
 msgstr ""
 
-#: ../src/gfire_proto.c:656
+#: ../src/gfire_proto.c:684
 msgid "Xfire System Broadcast"
 msgstr ""
 
-#: ../src/gfire_proto.c:656
+#: ../src/gfire_proto.c:684
 msgid "Xfire System Broadcast Message:"
 msgstr ""
 
@@ -720,4 +729,13 @@ msgstr ""
 
 #: ../src/gf_menus.c:158
 msgid "Wiki"
+msgstr ""
+
+#: ../src/gf_p2p_dl_handler.c:516
+#, c-format
+msgid "File Description: %s"
+msgstr ""
+
+#: ../src/gf_p2p_dl_handler.c:516
+msgid "No description entered"
 msgstr ""
