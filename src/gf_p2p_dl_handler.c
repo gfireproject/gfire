@@ -429,7 +429,7 @@ gfire_filetransfer *gfire_filetransfer_init(gfire_p2p_session *p_session, Purple
 		gfire_transfer_count++;
 		ret->fileid = 0x80000000 + gfire_transfer_count;
 
-		ret->chunk_size = XFIRE_P2P_FT_UNKNOWN_CHUNK_SIZE;
+		ret->chunk_size = XFIRE_P2P_FT_DEFAULT_CHUNK_SIZE;
 
 		gfire_filetransfer_send_request(ret);
 
@@ -588,9 +588,6 @@ static void gfire_p2p_dl_handler_previous_status(gfire_p2p_session *p_session, c
 	purple_debug_misc("gfire", "P2P: Received info on previous file status\n");
 
 	ft->bytes_transferred = foffset;
-	ft->chunk_size = size;
-
-	gfire_filetransfer_generate_chunks(ft);
 
 	purple_xfer_set_bytes_sent(ft->xfer, ft->bytes_transferred);
 	purple_xfer_update_progress(ft->xfer);
@@ -625,7 +622,7 @@ static void gfire_p2p_dl_handler_chunk_request(gfire_p2p_session *p_session, con
 
 	if(!cur)
 	{
-		purple_debug_warning("gfire", "Request for unexpected chunk!\n");
+		purple_debug_warning("gfire", "P2P: Request for unexpected chunk!\n");
 		return;
 	}
 

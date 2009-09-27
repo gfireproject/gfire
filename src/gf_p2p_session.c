@@ -417,7 +417,7 @@ void gfire_p2p_session_handle_data(gfire_p2p_session *p_session, guint32 p_type,
 		return;
 
 	// Check for duplicate messages
-	if(p_type == 0 || p_type == 0x300)
+	if(p_type == 0x00 || p_type == 0x300)
 	{
 		if(gfire_bitlist_get(p_session->rec_msgids, p_msgid))
 		{
@@ -524,7 +524,7 @@ void gfire_p2p_session_handle_data(gfire_p2p_session *p_session, guint32 p_type,
 	}
 
 	// Add this packet to the received ones if it wasn't a ack-packet (which uses the ID of our own packets)
-	if(p_type != 0x40)
+	if(p_type == 0x00 || p_type == 0x300)
 		gfire_bitlist_set(p_session->rec_msgids, p_msgid, TRUE);
 }
 
