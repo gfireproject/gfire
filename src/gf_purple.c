@@ -83,7 +83,7 @@ static gchar *gfire_purple_status_text(PurpleBuddy *p_buddy)
 
 	if(purple_presence_is_online(p))
 	{
-		gchar *status = gfire_buddy_get_status_text(gf_buddy);
+		gchar *status = gfire_buddy_get_status_text(gf_buddy, FALSE);
 		if(!status)
 			return NULL;
 
@@ -162,8 +162,8 @@ static void gfire_purple_blist_tooltip_text(PurpleBuddy *p_buddy, PurpleNotifyUs
 		}
 
 		// Status
-		gchar *status_msg = gfire_buddy_get_status_text(gf_buddy);
-		if(status_msg && !gfire_buddy_is_playing(gf_buddy))
+		gchar *status_msg = gfire_buddy_get_status_text(gf_buddy, TRUE);
+		if(status_msg)
 		{
 			gchar *tmp = gfire_escape_html(status_msg);
 			g_free(status_msg);

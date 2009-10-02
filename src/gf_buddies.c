@@ -554,7 +554,7 @@ static void gfire_buddy_update_status(gfire_buddy *p_buddy)
 		return;
 
 	if(gfire_buddy_is_online(p_buddy))
-		purple_prpl_got_user_status(purple_buddy_get_account(p_buddy->prpl_buddy), gfire_buddy_get_name(p_buddy), purple_primitive_get_id_from_type(p_buddy->status), "message", gfire_buddy_get_status_text(p_buddy), NULL);
+		purple_prpl_got_user_status(purple_buddy_get_account(p_buddy->prpl_buddy), gfire_buddy_get_name(p_buddy), purple_primitive_get_id_from_type(p_buddy->status), "message", gfire_buddy_get_status_text(p_buddy, FALSE), NULL);
 	else
 		purple_prpl_got_user_status(purple_buddy_get_account(p_buddy->prpl_buddy), gfire_buddy_get_name(p_buddy), "offline", NULL);
 }
@@ -870,12 +870,12 @@ void gfire_buddy_set_status(gfire_buddy *p_buddy, const gchar *p_status_msg)
 	gfire_buddy_update_status(p_buddy);
 }
 
-gchar *gfire_buddy_get_status_text(const gfire_buddy *p_buddy)
+gchar *gfire_buddy_get_status_text(const gfire_buddy *p_buddy, gboolean p_nogame)
 {
 	if(!p_buddy)
 		return NULL;
 
-	if(gfire_buddy_is_playing(p_buddy))
+	if(gfire_buddy_is_playing(p_buddy) && !p_nogame)
 	{
 		gchar *tmp = purple_unescape_html(gfire_game_name(p_buddy->game_data.id));
 		gchar *ret = g_strdup_printf(_("Playing %s"), tmp);

@@ -360,7 +360,9 @@ void gfire_authenticate(gfire_data *p_gfire, const gchar *p_salt)
 	PurpleAccount *account = purple_connection_get_account(gfire_get_connection(p_gfire));
 
 	// Generate password hash
-	gchar *tmp_str = g_strdup_printf("%s%sUltimateArena", purple_account_get_username(account), purple_account_get_password(account));
+	gchar *username = g_utf8_strdown(purple_account_get_username(account), -1);
+	gchar *tmp_str = g_strdup_printf("%s%sUltimateArena", username, purple_account_get_password(account));
+	g_free(username);
 
 	gchar pw_hash[41];
 	hashSha1(tmp_str, pw_hash);
@@ -979,8 +981,8 @@ static gboolean gfire_show_buddy_info_cb(gfire_buddy_info_args *p_args)
 	// Status
 	if (purple_presence_is_online(p) == TRUE)
 	{
-		gchar *status_msg = gfire_buddy_get_status_text(gf_buddy);
-		if(status_msg && !gfire_buddy_is_playing(gf_buddy))
+		gchar *status_msg = gfire_buddy_get_status_text(gf_buddy, TRUE);
+		if(status_msg)
 		{
 			tmp = gfire_escape_html(status_msg);
 			g_free(status_msg);

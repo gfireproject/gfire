@@ -180,7 +180,7 @@ const GList *gfire_buddy_get_game_client_data(const gfire_buddy *p_buddy);
 // Status handling
 void gfire_buddy_set_session_id(gfire_buddy *p_buddy, const guint8 *p_sessionid);
 void gfire_buddy_set_status(gfire_buddy *p_buddy, const gchar *p_status_msg);
-gchar *gfire_buddy_get_status_text(const gfire_buddy *p_buddy);
+gchar *gfire_buddy_get_status_text(const gfire_buddy *p_buddy, gboolean p_nogame);
 const gchar *gfire_buddy_get_status_name(const gfire_buddy *p_buddy);
 gboolean gfire_buddy_is_available(const gfire_buddy *p_buddy);
 gboolean gfire_buddy_is_away(const gfire_buddy *p_buddy);
