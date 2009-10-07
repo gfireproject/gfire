@@ -42,7 +42,7 @@ gfire_process_list *gfire_process_list_new();
 void gfire_process_list_free(gfire_process_list *p_list);
 void gfire_process_list_clear(gfire_process_list *p_list);
 gboolean gfire_process_list_contains(const gfire_process_list *p_list, const gchar *p_name, const gchar *p_args);
-	// For internal use only
+// For internal use only
 process_info *gfire_process_info_new(const gchar *p_name, const gchar *p_args);
 
 // OS dependent (gf_game_detection_X.c)

@@ -1395,7 +1395,7 @@ static void gfire_handle_game_detection(gfire_data *p_gfire, guint32 p_gameid, g
 		{
 			g_thread_create((GThreadFunc )gfire_server_detection_detect, p_gfire, TRUE, NULL);
 		}
-		
+
 		if (!gfire_is_playing(p_gfire))
 		{
 			gboolean norm = purple_account_get_bool(purple_connection_get_account(p_gfire->gc), "ingamenotificationnorm", FALSE);
@@ -1502,7 +1502,6 @@ gboolean gfire_detect_running_processes_cb(gfire_data *p_gfire)
 		gboolean process_running = gfire_process_list_contains(p_gfire->process_list, game_executable_name, game_executable_argument);
 		if(game_executable_name) g_free(game_executable_name);
 
-
 		gfire_handle_game_detection(p_gfire, game_id_int, process_running, game_executable);
 
 		if(game_executable) g_free(game_executable);
@@ -1528,7 +1527,7 @@ void gfire_join_game(gfire_data *p_gfire, const gfire_game_data *p_game_data)
 		purple_debug_error("gfire: gfire_join_game()", "Couldn't access gfire data.\n");
 		return;
 	}
-	
+
 	gfire_game_config_info *game_config_info = NULL;
 	gchar *game_launch_command;
 
@@ -1539,7 +1538,7 @@ void gfire_join_game(gfire_data *p_gfire, const gfire_game_data *p_game_data)
  		return;
  	}
 
-	
+
 	game_launch_command = gfire_game_config_info_get_command(game_config_info, p_game_data);
 	if(!game_launch_command)
 	{
