@@ -39,7 +39,7 @@ installer-gui: install VERSION
 	#${MAKENSIS} ${GFIRE_DIR}/nsis/gfire-installer.nsi
 
 installer-zip: install VERSION
-	cd ${WIN32_INSTALL_DIR} && /usr/bin/zip -ru ../pidgin-gfire-$(GFIRE_VERSION_STRING).zip *
+	cd ${WIN32_INSTALL_DIR} && /usr/bin/zip -ru ../pidgin-gfire-`cat ../VERSION`.zip *
 
 gfire_config.h: gfire_config.h.in
 	sed -e 's/^#undef HAVE_GTK/#define HAVE_GTK 1/g' \
