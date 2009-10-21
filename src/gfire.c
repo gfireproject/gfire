@@ -211,13 +211,8 @@ gboolean gfire_game_config_update(gfire_data *p_gfire)
 	if (!p_gfire)
 		return FALSE;
 
-	PurpleConnection *gc;
-	gc = gfire_get_connection(p_gfire);
-
-	if (!gc)
-		return;
-
-	purple_util_fetch_url(GFIRE_GAMES_XML_URL, TRUE, "purple-xfire", TRUE, gfire_xml_download_cb, (void *)gc);
+	purple_util_fetch_url(GFIRE_GAMES_XML_URL, TRUE, "purple-xfire", TRUE, gfire_xml_download_cb, gfire_get_connection(p_gfire));
+	return TRUE;
 }
 
 void gfire_login(gfire_data *p_gfire)

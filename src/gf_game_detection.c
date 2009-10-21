@@ -92,15 +92,13 @@ gboolean gfire_process_list_contains(const gfire_process_list *p_list, const gch
 		if(!info)
 			continue;
 
+#ifndef _WIN32
 		// The ps command only shows the 15 first characters of a process, remove the extra characters
-		guint name_length = 0;
-		gchar *name_short;
-
-		name_length = strlen(p_name);
-		if(name_length > 15) name_short = g_strndup(p_name, 15);
-		else name_short = p_name;
-
-		if(g_strcmp0(info->name, name_short) == 0)
+		// Dirty hack which needs to be removed!!
+		if(strncmp(info->name, p_name, 15) == 0)
+#else
+		if(g_strcmp0(info->name, p_name) == 0)
+#endif // !_WIN32
 		{
 			if(p_args && (strlen(p_args) > 0))
 			{

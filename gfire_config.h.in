@@ -1,4 +1,4 @@
-/* pre_config.h.in.  Generated from configure.ac by autoheader.  */
+/* gfire_config.h.in.  Generated from configure.ac by autoheader.  */
 
 
 #ifndef _GFIRE_CONFIG_H
@@ -14,8 +14,23 @@
 /* Define the gettext package to be used */
 #undef GETTEXT_PACKAGE
 
-/* Gfire version */
+/* Comparable Gfire version */
 #undef GFIRE_VERSION
+
+/* Gfire version suffix available */
+#undef GFIRE_VERSION_HAS_SUFFIX
+
+/* Gfire major version */
+#undef GFIRE_VERSION_MAJOR
+
+/* Gfire minor version */
+#undef GFIRE_VERSION_MINOR
+
+/* Gfire patch version */
+#undef GFIRE_VERSION_PATCH
+
+/* Gfire version string */
+#undef GFIRE_VERSION_STRING
 
 /* Define to 1 if you have the `bind_textdomain_codeset' function. */
 #undef HAVE_BIND_TEXTDOMAIN_CODESET

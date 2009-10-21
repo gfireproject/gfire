@@ -63,7 +63,11 @@ static _NtQueryInformationProcess NtQueryInformationProcess = NULL;
 static PVOID get_peb_address(HANDLE p_process_handle)
 {
 	if(!NtQueryInformationProcess)
+	{
 		NtQueryInformationProcess = (_NtQueryInformationProcess)GetProcAddress(GetModuleHandleA("ntdll.dll"), "NtQueryInformationProcess");
+		if(!NtQueryInformationProcess)
+			return NULL;
+	}
 
 	PROCESS_BASIC_INFORMATION pbi;
 
@@ -93,6 +97,8 @@ static gchar *get_process_cmdline(gint p_pid)
 	}
 
 	peb = get_peb_address(process);
+	if(!peb)
+		return NULL;
 
 	if(!ReadProcessMemory(process, (PCHAR)peb + 0x10, &rtlUserProcParamsAddress, sizeof(PVOID), NULL))
 	{
@@ -156,7 +162,7 @@ void gfire_process_list_update(gfire_process_list *p_list)
 	pe.dwSize = sizeof(pe);
 
 	HANDLE hProcSnapShot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-	if(hProcSnapShot == NULL)
+	if(!hProcSnapShot)
 		return;
 
 	if(!Process32First(hProcSnapShot, &pe))

@@ -143,13 +143,13 @@ void gfire_menu_action_about_cb(PurplePluginAction *p_action)
 
 	if(version_str && g_strcmp0(version_str, "100") != 0)
 	{
-		msg = g_strdup_printf(_("Gfire Version:\t\t%s\nGame List Version:\t%s"), GFIRE_VERSION, version_str);
+		msg = g_strdup_printf(_("Gfire Version:\t\t%s\nGame List Version:\t%s"), GFIRE_VERSION_STRING, version_str);
 		g_free(version_str);
 	}
 	else
 	{
 		if(version_str) g_free(version_str);
-		msg = g_strdup_printf(_("Gfire Version: %s"), GFIRE_VERSION);
+		msg = g_strdup_printf(_("Gfire Version: %s"), GFIRE_VERSION_STRING);
 	}
 
 	purple_request_action(gc, _("About Gfire"), _("Xfire Plugin for Pidgin"), msg, PURPLE_DEFAULT_ACTION_NONE,
