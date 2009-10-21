@@ -35,7 +35,10 @@ AM_GLIB_GNU_GETTEXT
 #
 AH_TOP([
 #ifndef _GFIRE_CONFIG_H
-	#define _GFIRE_CONFIG_H
+#define _GFIRE_CONFIG_H
+
+/* Compareable Gfire version */
+#define GFIRE_VERSION ((GFIRE_VERSION_MAJOR << 16) & (GFIRE_VERSION_MINOR << 8) & GFIRE_VERSION_PATCH)
 ])
 AH_BOTTOM([#endif])
 
@@ -47,7 +50,6 @@ if test "gfire_version_suffix" = ""; then
 else
 	AC_DEFINE([GFIRE_VERSION_HAS_SUFFIX], [1], [Gfire version suffix available])
 fi
-AC_DEFINE([GFIRE_VERSION], [((GFIRE_VERSION_MAJOR << 16) & (GFIRE_VERSION_MINOR << 8) & GFIRE_VERSION_PATCH)], [Comparable Gfire version])
 AC_DEFINE_UNQUOTED([GFIRE_VERSION_STRING], ["gfire_version"], [Gfire version string])
 
 #

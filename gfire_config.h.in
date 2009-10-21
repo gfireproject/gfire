@@ -2,7 +2,10 @@
 
 
 #ifndef _GFIRE_CONFIG_H
-	#define _GFIRE_CONFIG_H
+#define _GFIRE_CONFIG_H
+
+/* Compareable Gfire version */
+#define GFIRE_VERSION ((GFIRE_VERSION_MAJOR << 16) & (GFIRE_VERSION_MINOR << 8) & GFIRE_VERSION_PATCH)
 
 
 /* Define if debugging is enabled. */
@@ -13,9 +16,6 @@
 
 /* Define the gettext package to be used */
 #undef GETTEXT_PACKAGE
-
-/* Comparable Gfire version */
-#undef GFIRE_VERSION
 
 /* Gfire version suffix available */
 #undef GFIRE_VERSION_HAS_SUFFIX
