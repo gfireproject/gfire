@@ -61,7 +61,7 @@ void gfire_game_data_ip_from_str(gfire_game_data *p_game, const gchar *p_ipstr)
 		return;
 
 	guint8 i = 0;
-	for(i = 4; i >= 0; i--)
+	for(i = 4; i > 0; i--)
 	{
 		if(!ip_octet_strs[4 - i])
 		{
@@ -70,7 +70,7 @@ void gfire_game_data_ip_from_str(gfire_game_data *p_game, const gchar *p_ipstr)
 			return;
 		}
 
-		p_game->ip.octets[i] = atoi(ip_octet_strs[4 - i]);
+		p_game->ip.octets[i - 1] = atoi(ip_octet_strs[4 - i]);
 	}
 
 	g_strfreev(ip_octet_strs);
