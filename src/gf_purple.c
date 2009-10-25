@@ -526,12 +526,11 @@ static GList *gfire_purple_actions(PurplePlugin *p_plugin, gpointer p_context)
 #ifdef HAVE_GTK
 	if(strcmp(purple_core_get_ui(), "gnt-purple") != 0)
 	{
-		act = purple_plugin_action_new(_("Manage Games"),
-									   gfire_game_manager_show);
+		act = purple_plugin_action_new(_("Manage Games"), gfire_game_manager_show);
 		m = g_list_append(m, act);
-		act = purple_plugin_action_new(_("Server Browser"),
-									   gfire_server_browser_show);
-		m = g_list_append(m, act);
+		/* FIXME: Not fully implemented yet, set as unavailable
+		act = purple_plugin_action_new(_("Server Browser"), gfire_server_browser_show);
+		m = g_list_append(m, act); */
 	}
 #endif // HAVE_GTK
 
