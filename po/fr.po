@@ -1,0 +1,749 @@
+# Gfire French Translation
+# Copyright (C) 2009 Gfire Team
+# This file is distributed under the same license as the Gfire package.
+# Warren Dumortier <nwarrenfl@gmail.com>, 2009.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Gfire 0.9.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2009-10-26 23:28+0100\n"
+"PO-Revision-Date: 2009-10-26 22:50+0100\n"
+"Last-Translator: Warren Dumortier <nwarrenfl@gmail.com>\n"
+"Language-Team: None\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../data/games.glade.h:1
+msgid "<b>Advanced settings</b>"
+msgstr "<b>Options avancées</b>"
+
+#: ../data/games.glade.h:2
+msgid "<b>Basic settings</b>"
+msgstr "<b>Options basiques</b>"
+
+#: ../data/games.glade.h:3
+msgid "Add a game"
+msgstr "Ajouter un jeu"
+
+#: ../data/games.glade.h:4
+msgid "Connect option:"
+msgstr "Option de connexion:"
+
+#: ../data/games.glade.h:5
+msgid "Detection Executable:"
+msgstr "Exécutable (détection):"
+
+#: ../data/games.glade.h:6
+msgid "Edit or remove a game"
+msgstr "Ajouter ou enlever un jeu"
+
+#: ../data/games.glade.h:7
+msgid "Game:"
+msgstr "Jeu:"
+
+#: ../data/games.glade.h:8
+msgid "Launch Executable:"
+msgstr "Exécutable (lancement):"
+
+#: ../data/games.glade.h:9
+msgid "Launch arguments:"
+msgstr "Arguments de lancement:"
+
+#: ../data/games.glade.h:10
+msgid "Launch prefix:"
+msgstr "Préfixe de lancement:"
+
+#: ../data/games.glade.h:11 ../src/gf_purple.c:523
+msgid "Manage Games"
+msgstr "Gérer les jeux"
+
+#: ../data/games.glade.h:12
+msgid "Required argument:"
+msgstr "Arguments réquis:"
+
+#: ../data/games.glade.h:13
+msgid "Use detection"
+msgstr "Identique"
+
+#: ../data/servers.glade.h:1
+msgid "Ping"
+msgstr ""
+
+#: ../data/servers.glade.h:2
+msgid "Players"
+msgstr ""
+
+#: ../data/servers.glade.h:3
+msgid "Server Browser"
+msgstr ""
+
+#: ../data/servers.glade.h:4
+msgid "Server IP"
+msgstr ""
+
+#: ../data/servers.glade.h:5
+msgid "Server name"
+msgstr ""
+
+#: ../data/servers.glade.h:6
+msgid "bookmark-new"
+msgstr ""
+
+#: ../src/gf_base.h:106
+msgid "Xfire - Friends of Friends playing games"
+msgstr ""
+
+#: ../src/gf_buddies.c:416
+#, c-format
+msgid ""
+"%s may have not received this message:\n"
+"%s"
+msgstr ""
+
+#: ../src/gf_buddies.c:881
+#, c-format
+msgid "Playing %s"
+msgstr ""
+
+#: ../src/gf_buddies.c:1269
+msgid "P2P Connection not possible"
+msgstr ""
+
+#: ../src/gf_buddies.c:1269
+msgid ""
+"We're not able to establish a connection to your buddy. File transfer and "
+"P2P messaging will not be possible."
+msgstr ""
+
+#: ../src/gf_chat.c:209
+#, c-format
+msgid ""
+"Today's message changed to:\n"
+"%s"
+msgstr ""
+
+#. Create conversation
+#: ../src/gf_chat.c:263
+#, c-format
+msgid "%s [Xfire Chat]"
+msgstr ""
+
+#. Join message
+#: ../src/gf_chat.c:271
+#, c-format
+msgid "You are now chatting in %s."
+msgstr ""
+
+#: ../src/gf_chat.c:278
+#, c-format
+msgid ""
+"Today's message:\n"
+"%s."
+msgstr ""
+
+#: ../src/gf_friend_search.c:64 ../src/gf_friend_search.c:106
+msgid "Xfire Friend Search"
+msgstr ""
+
+#: ../src/gf_friend_search.c:64
+msgid "Please enter a Xfire username, name or e-Mail address here:"
+msgstr ""
+
+#: ../src/gf_friend_search.c:65
+msgid "For example: gill123, Gill Bates or gill@bates.net"
+msgstr ""
+
+#: ../src/gf_friend_search.c:66
+msgid "Search"
+msgstr ""
+
+#: ../src/gf_friend_search.c:66 ../src/gf_menus.c:108
+msgid "Cancel"
+msgstr "Annuler"
+
+#: ../src/gf_friend_search.c:81
+msgid "Username"
+msgstr ""
+
+#: ../src/gf_friend_search.c:82
+msgid "First Name"
+msgstr ""
+
+#: ../src/gf_friend_search.c:83
+msgid "Last Name"
+msgstr ""
+
+#: ../src/gf_friend_search.c:106
+msgid "Search results"
+msgstr ""
+
+#. FIXME: implement a way to disable this notification
+#: ../src/gf_games.c:51
+msgid "New Gfire version"
+msgstr ""
+
+#: ../src/gf_games.c:51
+msgid "New Gfire version available"
+msgstr ""
+
+#: ../src/gf_games.c:52
+msgid ""
+"A newer Gfire version is available. Visit the Gfire website for more "
+"information."
+msgstr ""
+
+#: ../src/gf_games.c:90
+msgid "Games list has been updated"
+msgstr ""
+
+#: ../src/gf_games.c:91
+msgid ""
+"The games list has been successfully updated to the latest version available."
+msgstr ""
+
+#: ../src/gf_games.c:762 ../src/gf_games.c:866
+msgid "Manage Games: warning"
+msgstr ""
+
+#: ../src/gf_games.c:762
+msgid "Game already added"
+msgstr ""
+
+#: ../src/gf_games.c:763
+msgid "This game is already added, you can configure it if you want."
+msgstr ""
+
+#: ../src/gf_games.c:784 ../src/gf_games.c:797 ../src/gf_games.c:880
+#: ../src/gf_games.c:892 ../src/gf_games.c:934 ../src/gf_games.c:943
+#: ../src/gf_games.c:1079
+msgid "Manage Games: error"
+msgstr ""
+
+#: ../src/gf_games.c:784 ../src/gf_games.c:798 ../src/gf_games.c:880
+msgid "Couldn't add game"
+msgstr ""
+
+#: ../src/gf_games.c:785
+msgid "Please try again. An error occured while adding the game."
+msgstr ""
+
+#: ../src/gf_games.c:790
+msgid "Manage Games: game added"
+msgstr ""
+
+#: ../src/gf_games.c:791
+msgid "The game has been successfully added."
+msgstr ""
+
+#: ../src/gf_games.c:798 ../src/gf_games.c:893
+msgid "Please try again. Make sure you fill in all fields."
+msgstr ""
+
+#: ../src/gf_games.c:866
+msgid "Game launch data not found"
+msgstr ""
+
+#: ../src/gf_games.c:867
+msgid "This game is not yet added as it seems, please add it first!"
+msgstr ""
+
+#: ../src/gf_games.c:881
+msgid "Please try again. An error occured while editing the game."
+msgstr ""
+
+#: ../src/gf_games.c:886
+msgid "Manage Games: game edited"
+msgstr ""
+
+#: ../src/gf_games.c:887
+msgid "Game edited"
+msgstr ""
+
+#: ../src/gf_games.c:887
+msgid "The game has been successfully edited."
+msgstr ""
+
+#: ../src/gf_games.c:893
+msgid "Couldn't edit game"
+msgstr ""
+
+#: ../src/gf_games.c:929
+msgid "Manage Games: game removed"
+msgstr ""
+
+#: ../src/gf_games.c:930
+msgid "Game removed"
+msgstr ""
+
+#: ../src/gf_games.c:930
+msgid "The game has been successfully removed."
+msgstr ""
+
+#: ../src/gf_games.c:935 ../src/gf_games.c:944
+msgid "Couldn't remove game"
+msgstr ""
+
+#: ../src/gf_games.c:935
+msgid "Please try again. An error occured while removing the game."
+msgstr ""
+
+#: ../src/gf_games.c:944
+msgid "Please try again. Make sure you select a game to remove."
+msgstr ""
+
+#: ../src/gf_games.c:1079
+msgid "Incompatible games configuration"
+msgstr ""
+
+#: ../src/gf_games.c:1080
+msgid ""
+"Your current games configuration is incompatible with this version of Gfire. "
+"Please remove it and try again."
+msgstr ""
+
+#: ../src/gf_network.c:131 ../src/gf_network.c:165
+msgid "Connection closed by peer."
+msgstr ""
+
+#: ../src/gf_network.c:140 ../src/gf_network.c:174
+msgid "Socket read failure."
+msgstr ""
+
+#: ../src/gf_network.c:216
+msgid "Password or Username Incorrect."
+msgstr ""
+
+#: ../src/gf_network.c:259
+#, c-format
+msgid "Protocol version mismatch, needs to be %d. Auto set to new value."
+msgstr ""
+
+#: ../src/gf_network.c:301
+msgid "You have signed on from another location."
+msgstr ""
+
+#: ../src/gf_purple.c:125 ../src/gfire.c:996
+msgid "Game"
+msgstr ""
+
+#: ../src/gf_purple.c:131 ../src/gf_purple.c:902 ../src/gfire.c:1002
+msgid "Server"
+msgstr ""
+
+#: ../src/gf_purple.c:159 ../src/gfire.c:1021
+msgid "unknown"
+msgstr ""
+
+#: ../src/gf_purple.c:174 ../src/gfire.c:985 ../src/gfire.c:988
+msgid "Status"
+msgstr ""
+
+#: ../src/gf_purple.c:184 ../src/gfire.c:1034
+msgid "Common Friends"
+msgstr ""
+
+#: ../src/gf_purple.c:234
+msgid "Protocol initialization failed."
+msgstr ""
+
+#: ../src/gf_purple.c:267
+msgid "Message could not be sent. Buddy not in contact list"
+msgstr ""
+
+#: ../src/gf_purple.c:280
+msgid "Message could not be sent. Buddy offline"
+msgstr ""
+
+#: ../src/gf_purple.c:378
+#, c-format
+msgid "Not Removing %s"
+msgstr ""
+
+#: ../src/gf_purple.c:380
+msgid "Xfire Buddy Removal Denied"
+msgstr ""
+
+#: ../src/gf_purple.c:380
+msgid ""
+"Account settings are set to not remove buddies\n"
+"The buddy will be restored on your next login"
+msgstr ""
+
+#: ../src/gf_purple.c:438
+msgid "Add as friend"
+msgstr ""
+
+#: ../src/gf_purple.c:453
+msgid "Join Game ..."
+msgstr ""
+
+#: ../src/gf_purple.c:469
+msgid "Join VoIP ..."
+msgstr ""
+
+#: ../src/gf_purple.c:479
+msgid "Xfire Profile"
+msgstr ""
+
+#: ../src/gf_purple.c:506
+msgid "Change Nickname"
+msgstr "Changer le pseudo Xfire"
+
+#: ../src/gf_purple.c:509
+msgid "My Profile Page"
+msgstr "Consulter mon profil"
+
+#: ../src/gf_purple.c:513
+msgid "Reload Game Config"
+msgstr "Actualiser la configuration des jeux"
+
+#: ../src/gf_purple.c:516
+msgid "Friend Search"
+msgstr "Chercher des amis"
+
+#: ../src/gf_purple.c:532
+msgid "About"
+msgstr "À propos de"
+
+#: ../src/gf_purple.c:697
+msgid "Xfire Groupchat"
+msgstr ""
+
+#: ../src/gf_purple.c:697
+msgid "MotD change failed"
+msgstr ""
+
+#: ../src/gf_purple.c:697
+msgid "The MotD contains more than 200 characters."
+msgstr ""
+
+#: ../src/gf_purple.c:905
+msgid "Port"
+msgstr ""
+
+#: ../src/gf_purple.c:908
+msgid "Version"
+msgstr ""
+
+#: ../src/gf_purple.c:911
+msgid "Don't delete buddies from server"
+msgstr ""
+
+#: ../src/gf_purple.c:914
+msgid "Buddies can see if I'm typing"
+msgstr ""
+
+#: ../src/gf_purple.c:917
+msgid "Auto detect for ingame status"
+msgstr ""
+
+#: ../src/gf_purple.c:920
+msgid "Notify me when my status is ingame"
+msgstr ""
+
+#: ../src/gf_purple.c:923
+msgid "Use server detection"
+msgstr ""
+
+#: ../src/gf_purple.c:926
+msgid "Use Xfires P2P features"
+msgstr ""
+
+#: ../src/gf_purple.c:929
+msgid "P2P Port Range min. (1024-65535)"
+msgstr ""
+
+#: ../src/gf_purple.c:932
+msgid "P2P Port Range max. (1024-65535)"
+msgstr ""
+
+#: ../src/gf_purple.c:935
+msgid "Friends of Friends Group Name"
+msgstr ""
+
+#: ../src/gf_purple.c:938
+msgid "Xfire"
+msgstr ""
+
+#: ../src/gf_purple.c:939 ../src/gf_purple.c:940
+msgid "Xfire Protocol Plugin"
+msgstr ""
+
+#: ../src/gfire.c:226
+msgid "Connecting"
+msgstr ""
+
+#: ../src/gfire.c:232
+msgid "Couldn't create socket."
+msgstr ""
+
+#: ../src/gfire.c:371
+msgid "Login sent"
+msgstr ""
+
+#. TRANSLATORS: Keep "(AFK)" as is!
+#. Suggestion: Use Xfires original AFK message here
+#: ../src/gfire.c:395
+msgid "(AFK) Away From Keyboard"
+msgstr ""
+
+#. TRANSLATORS: Keep "(Busy)" as is!
+#: ../src/gfire.c:402
+msgid "(Busy) I'm busy!"
+msgstr ""
+
+#: ../src/gfire.c:614 ../src/gfire.c:623 ../src/gfire.c:793 ../src/gfire.c:802
+msgid "Error"
+msgstr ""
+
+#: ../src/gfire.c:614
+msgid "Retrieving gamerig data failed!"
+msgstr ""
+
+#: ../src/gfire.c:623
+msgid "Invalid gamerig data received!"
+msgstr ""
+
+#: ../src/gfire.c:638
+#, c-format
+msgid "%ss Gaming Rig:"
+msgstr ""
+
+#: ../src/gfire.c:648
+msgid "Manufacturer"
+msgstr ""
+
+#: ../src/gfire.c:657
+msgid "Processor"
+msgstr ""
+
+#: ../src/gfire.c:666
+msgid "Memory"
+msgstr ""
+
+#: ../src/gfire.c:675
+msgid "Video Card"
+msgstr ""
+
+#: ../src/gfire.c:684
+msgid "Sound Card"
+msgstr ""
+
+#: ../src/gfire.c:693
+msgid "Mainboard"
+msgstr ""
+
+#: ../src/gfire.c:702
+msgid "Hard Drive"
+msgstr ""
+
+#: ../src/gfire.c:711
+msgid "Monitor"
+msgstr ""
+
+#: ../src/gfire.c:720
+msgid "Keyboard"
+msgstr ""
+
+#: ../src/gfire.c:729
+msgid "Mouse"
+msgstr ""
+
+#: ../src/gfire.c:738
+msgid "Mouse Surface"
+msgstr ""
+
+#: ../src/gfire.c:747
+msgid "Speakers"
+msgstr ""
+
+#: ../src/gfire.c:756
+msgid "Computer Case"
+msgstr ""
+
+#: ../src/gfire.c:765
+msgid "Operating System"
+msgstr ""
+
+#: ../src/gfire.c:793
+msgid "Retrieving profile data failed!"
+msgstr ""
+
+#: ../src/gfire.c:802
+msgid "Invalid profile data received!"
+msgstr ""
+
+#: ../src/gfire.c:807
+msgid "Profile"
+msgstr ""
+
+#: ../src/gfire.c:817
+#, c-format
+msgid "%ss Profile:"
+msgstr ""
+
+#: ../src/gfire.c:827
+msgid "Real Name"
+msgstr ""
+
+#: ../src/gfire.c:836
+msgid "Age"
+msgstr ""
+
+#: ../src/gfire.c:845
+msgid "Gender"
+msgstr ""
+
+#: ../src/gfire.c:845
+msgid "Male"
+msgstr ""
+
+#: ../src/gfire.c:845
+msgid "Female"
+msgstr ""
+
+#: ../src/gfire.c:854
+msgid "Occupation"
+msgstr ""
+
+#: ../src/gfire.c:863
+msgid "Country"
+msgstr ""
+
+#: ../src/gfire.c:872
+msgid "Location"
+msgstr ""
+
+#: ../src/gfire.c:881
+msgid "Gaming Style"
+msgstr ""
+
+#: ../src/gfire.c:890
+msgid "Interests"
+msgstr ""
+
+#: ../src/gfire.c:899
+msgid "Friends"
+msgstr ""
+
+#: ../src/gfire.c:908
+msgid "Join Date"
+msgstr ""
+
+#: ../src/gfire.c:970
+msgid "Nickname"
+msgstr ""
+
+#: ../src/gfire.c:988
+msgid "Offline"
+msgstr ""
+
+#: ../src/gfire.c:1044
+msgid "Additional game info:"
+msgstr ""
+
+#: ../src/gfire.c:1060
+#, c-format
+msgid "%ss Clans:"
+msgstr ""
+
+#: ../src/gfire.c:1144
+msgid "Connection timed out"
+msgstr ""
+
+#: ../src/gfire.c:1361 ../src/gfire.c:1396
+msgid "Ingame status"
+msgstr ""
+
+#: ../src/gfire.c:1362 ../src/gfire.c:1397
+msgid "Your status has been changed."
+msgstr ""
+
+#: ../src/gfire_proto.c:415
+msgid "Received invalid login salt!"
+msgstr ""
+
+#: ../src/gfire_proto.c:684
+msgid "Xfire System Broadcast"
+msgstr ""
+
+#: ../src/gfire_proto.c:684
+msgid "Xfire System Broadcast Message:"
+msgstr ""
+
+#: ../src/gf_server_browser_proto.c:99
+msgid "N/A"
+msgstr ""
+
+#: ../src/gf_menus.c:107
+msgid "Change Xfire nickname"
+msgstr "Changer le pseudo Xfire"
+
+#: ../src/gf_menus.c:107
+msgid "Leaving empty will clear your current nickname."
+msgstr "Laisser vide effacera votre pseudo actuel"
+
+#: ../src/gf_menus.c:108
+msgid "OK"
+msgstr "OK"
+
+#: ../src/gf_menus.c:114 ../src/gf_menus.c:116
+msgid "Gfire XML Reload"
+msgstr ""
+
+#: ../src/gf_menus.c:114 ../src/gf_menus.c:116
+msgid "Reloading gfire_game_config.xml"
+msgstr ""
+
+#: ../src/gf_menus.c:114
+msgid "Operation failed. File not found or content was incorrect."
+msgstr ""
+
+#: ../src/gf_menus.c:116
+msgid "Reloading was successful."
+msgstr ""
+
+#: ../src/gf_menus.c:138
+#, c-format
+msgid ""
+"Gfire Version:\t\t%s\n"
+"Game List Version:\t%s"
+msgstr ""
+"Version de Gfire:\t\t%s\n"
+"Version de la liste des jeux:\t%s"
+
+#: ../src/gf_menus.c:144
+#, c-format
+msgid "Gfire Version: %s"
+msgstr "Version de Gfire: %s"
+
+#: ../src/gf_menus.c:147
+msgid "About Gfire"
+msgstr "À propos de Gfire"
+
+#: ../src/gf_menus.c:147
+msgid "Xfire Plugin for Pidgin"
+msgstr "Plugin Xfire pour Pidgin"
+
+#: ../src/gf_menus.c:148
+msgid "Close"
+msgstr "Fermer"
+
+#: ../src/gf_menus.c:149
+msgid "Website"
+msgstr "Site web"
+
+#: ../src/gf_menus.c:150
+msgid "Wiki"
+msgstr "Wiki"
+
+#: ../src/gf_p2p_dl_handler.c:516
+#, c-format
+msgid "File Description: %s"
+msgstr ""
+
+#: ../src/gf_p2p_dl_handler.c:516
+msgid "No description entered"
+msgstr ""
