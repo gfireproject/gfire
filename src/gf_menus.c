@@ -108,6 +108,14 @@ void gfire_menu_action_nick_change_cb(PurplePluginAction *p_action)
 		FALSE, FALSE, NULL, _("OK"), G_CALLBACK(gfire_purple_nick_change_cb), _("Cancel"), NULL, account, NULL, NULL, gc);
 }
 
+void gfire_menu_action_reload_lconfig_cb(PurplePluginAction *p_action)
+{
+	if(!gfire_game_load_config_xml())
+		purple_notify_message(p_action->context, PURPLE_NOTIFY_MSG_ERROR, _("Gfire XML Reload"), _("Reloading gfire_game_config.xml"), _("Operation failed. File not found or content was incorrect."), NULL, NULL);
+	else
+		purple_notify_message(p_action->context, PURPLE_NOTIFY_MSG_INFO, _("Gfire XML Reload"), _("Reloading gfire_game_config.xml"), _("Reloading was successful."), NULL, NULL);
+}
+
 static void gfire_menu_action_website_cb(PurpleConnection *p_gc)
 {
 	purple_notify_uri((void *)p_gc, GFIRE_WEBSITE);
