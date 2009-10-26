@@ -160,14 +160,6 @@ void gfire_menu_action_about_cb(PurplePluginAction *p_action)
 	if(msg) g_free(msg);
 }
 
-void gfire_menu_action_get_gconfig_cb(PurplePluginAction *p_action)
-{
-	PurpleConnection *gc = (PurpleConnection *)p_action->context;
-	if (!gc) return;
-
-	purple_util_fetch_url(GFIRE_GAMES_XML_URL, TRUE, "Purple-xfire", TRUE, gfire_xml_download_cb, (void *)gc);
-}
-
 void gfire_menu_action_profile_page_cb(PurplePluginAction *p_action)
 {
 	PurpleConnection *gc = (PurpleConnection *)p_action->context;

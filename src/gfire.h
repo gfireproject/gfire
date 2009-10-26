@@ -71,7 +71,7 @@ struct _gfire_data
 	guint8 *buff_in;
 	guint16 bytes_read;
 	gulong last_packet;			/* time (in seconds) of our last packet */
-	gulong last_response;		// time (in seconds) of the last packet from server
+    gulong last_response;		/* time (in seconds) of the last packet from server */
 	PurpleConnection *gc;
 
 	// Xfire session
@@ -90,7 +90,6 @@ struct _gfire_data
 	gchar *email;
 
 	GList *chats;				/* glist of _gfire_chat structs */
-
 
 	// Detected programs
 	gfire_process_list *process_list;
@@ -137,6 +136,7 @@ void gfire_login(gfire_data *p_gfire);
 void gfire_close(gfire_data *p_gfire);
 void gfire_authenticate(gfire_data *p_gfire, const gchar *p_salt);
 void gfire_keep_alive(gfire_data *p_gfire);
+gboolean gfire_update(gfire_data *p_gfire);
 
 // Session
 void gfire_set_userid(gfire_data *p_gfire, guint32 p_userid);
@@ -186,6 +186,5 @@ gfire_p2p_connection *gfire_get_p2p(const gfire_data *p_gfire);
 
 // Detection
 gboolean gfire_detect_running_processes_cb(gfire_data *p_gfire);
-gboolean gfire_game_config_update(gfire_data *p_gfire);
 
 #endif // _GFIRE_H

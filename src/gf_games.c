@@ -28,17 +28,72 @@
 static xmlnode *gfire_games_xml = NULL;
 static xmlnode *gfire_game_config_xml = NULL;
 
-void gfire_xml_download_cb(PurpleUtilFetchUrlData *p_url_data, gpointer p_data, const gchar *p_buf, gsize p_len, const gchar *p_error_message)
+void gfire_update_version_cb(PurpleUtilFetchUrlData *p_url_data, gpointer p_data, const gchar *p_buf, gsize p_len, const gchar *p_error_message)
 {
 	PurpleConnection *gc = (PurpleConnection *)p_data;
 
-	if (!p_data || !p_buf || !p_len)
-		return;
+    if (!p_data || !p_buf || !p_len)
+        purple_debug_error("gfire", "Unable to query latest Gfire and games list version. Website down?\n");
+    else
+    {
+        xmlnode *version_node = xmlnode_from_str(p_buf, p_len);
+        if (!version_node)
+            purple_connection_error_reason(gc, PURPLE_CONNECTION_ERROR_NETWORK_ERROR, _("Couldn't update the games list."));
+        else
+        {
+            // Get current Gfire and games list version
+            gint gfire_latest_version = atoi(xmlnode_get_attrib(version_node, "version"));
+            gint games_list_version = atoi(xmlnode_get_attrib(version_node, "games_list_version"));
 
-	if(purple_util_write_data_to_file("gfire_games.xml", p_buf, p_len))
-	{
-		gfire_game_load_games_xml();
-	}
+            // Notify user if Gfire can be updated
+            if (GFIRE_VERSION < gfire_latest_version)
+                // FIXME: implement a way to disable this notification
+                purple_notify_message(NULL, PURPLE_NOTIFY_MSG_WARNING, _("New Gfire version"), _("New Gfire version available"),
+                                      _("A newer Gfire version is available. Visit the Gfire website for more information."), NULL, NULL);
+
+            // Update games list if needed
+            gboolean update_games_list = FALSE;
+
+            if(!gfire_game_load_games_xml())
+                update_games_list = TRUE;
+            else if(!gfire_games_xml && !gfire_game_load_games_xml())
+                purple_debug_error("gfire", "Unable to query latest Gfire and games list version. Website down?\n");
+            else
+            {
+                const gchar *local_games_list_version_tmp = xmlnode_get_attrib(gfire_games_xml, "version");
+                if (local_games_list_version_tmp[0] == 0)
+                    update_games_list = TRUE;
+                else
+                {
+                    gint local_games_list_version = atoi(local_games_list_version_tmp);
+                    if (local_games_list_version < games_list_version)
+                        update_games_list = TRUE;
+                }
+            }
+
+            if (update_games_list)
+            {
+                purple_debug_info("gfire", "Updating games list to version %d\n", games_list_version);
+                purple_util_fetch_url(GFIRE_GAMES_XML_URL, TRUE, "purple-xfire", TRUE, gfire_update_games_list_cb, p_data);
+            }
+        }
+
+        xmlnode_free(version_node);
+    }
+}
+
+void gfire_update_games_list_cb(PurpleUtilFetchUrlData *p_url_data, gpointer p_data, const gchar *p_buf, gsize p_len, const gchar *p_error_message)
+{
+    if (!p_data || !p_buf || !p_len)
+        purple_debug_error("gfire", "An error occured while updating the games list. Website down?\n");
+    else if(purple_util_write_data_to_file("gfire_games.xml", p_buf, p_len))
+    {
+        gfire_game_load_games_xml();
+        purple_notify_message(NULL, PURPLE_NOTIFY_MSG_INFO, _("Games list has been updated"), _("Games list has been updated"),
+                              _("The games list has been successfully updated to the latest version available."), NULL, NULL);
+    }
+    else
+        purple_debug_error("gfire", "An error occured while updating the games list. Website down?\n");
 }
 
 void gfire_game_data_reset(gfire_game_data *p_game)
@@ -235,7 +290,7 @@ gboolean gfire_game_load_config_xml()
 		g_free(filename);
 	}
 
-	node = purple_util_read_xml_from_file("gfire_game_config.xml", "Gfire Game Launch List");
+    node = purple_util_read_xml_from_file("gfire_game_config.xml", "Gfire Game Config List");
 	if(!node)
 	{
 		purple_debug(PURPLE_DEBUG_ERROR, "gfire", "gfire_game_load_config_xml: Couldn't load game config.\n");

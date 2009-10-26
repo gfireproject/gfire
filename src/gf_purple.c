@@ -513,12 +513,6 @@ static GList *gfire_purple_actions(PurplePlugin *p_plugin, gpointer p_context)
 	act = purple_plugin_action_new(_("Reload Game Config"),
 			gfire_menu_action_reload_lconfig_cb);
 	m = g_list_append(m, act);
-	act = purple_plugin_action_new(_("Reload Game ID List"),
-			gfire_menu_action_reload_gconfig_cb);
-	m = g_list_append(m, act);
-	act = purple_plugin_action_new(_("Get Game ID List"),
-			gfire_menu_action_get_gconfig_cb);
-	m = g_list_append(m, act);
 	act = purple_plugin_action_new(_("Friend Search"),
 			gfire_show_friend_search_cb);
 	m = g_list_append(m, act);

@@ -198,20 +198,17 @@ static void gfire_login_cb(gpointer p_data, gint p_source, const gchar *p_error_
 		gfire->p2p = gfire_p2p_connection_create(min_port, max_port);
 	}
 
-	// Get the latest game config
-	if (!gfire_game_config_update(gfire))
-	{
-			purple_connection_error_reason(gfire_get_connection(gfire), PURPLE_CONNECTION_ERROR_NETWORK_ERROR, _("Couldn't get the latest game config."));
-			return;
-	}
+    // Update Gfire if needed
+    if (!gfire_update(gfire))
+        purple_debug_error("gfire", "Unable to query latest Gfire and games list version. Website down?\n");
 }
 
-gboolean gfire_game_config_update(gfire_data *p_gfire)
+gboolean gfire_update(gfire_data *p_gfire)
 {
 	if (!p_gfire)
 		return FALSE;
 
-	purple_util_fetch_url(GFIRE_GAMES_XML_URL, TRUE, "purple-xfire", TRUE, gfire_xml_download_cb, gfire_get_connection(p_gfire));
+    purple_util_fetch_url(GFIRE_CURRENT_VERSION_XML_URL, TRUE, "purple-xfire", TRUE, gfire_update_version_cb, gfire_get_connection(p_gfire));
 	return TRUE;
 }
 

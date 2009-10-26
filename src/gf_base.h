@@ -107,6 +107,7 @@
 #define GFIRE_CLAN_GROUP_NAME "Clan"
 #define GFIRE_CLAN_GROUP_FORMATTING "%s [%s]" // long name, short name
 #define GFIRE_GAMES_XML_URL "http://gfireproject.org/files/gfire_games.xml"
+#define GFIRE_CURRENT_VERSION_XML_URL "http://gfireproject.org/files/gfire_version.xml"
 #define XFIRE_HEADER_LEN 5
 #define XFIRE_USERID_LEN 4
 #define XFIRE_CLANID_LEN 4

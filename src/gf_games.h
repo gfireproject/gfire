@@ -94,7 +94,8 @@ guint32 gfire_game_id(const gchar *p_name);
 gchar *gfire_game_name(guint32 p_gameid);
 xmlnode *gfire_game_node_first();
 xmlnode *gfire_game_node_next(xmlnode *p_node);
-void gfire_xml_download_cb(PurpleUtilFetchUrlData *p_url_data, gpointer p_data, const gchar *p_buf, gsize p_len, const gchar *p_error_message);
+void gfire_update_version_cb(PurpleUtilFetchUrlData *p_url_data, gpointer p_data, const gchar *p_buf, gsize p_len, const gchar *p_error_message);
+void gfire_update_games_list_cb(PurpleUtilFetchUrlData *p_url_data, gpointer p_data, const gchar *p_buf, gsize p_len, const gchar *p_error_message);
 
 // GFIRE GAME CONFIG XML ////////////////////////////////////////////
 gboolean gfire_game_load_config_xml();

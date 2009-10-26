@@ -224,7 +224,7 @@ void gfire_parse_packet(gfire_data *p_gfire, guint16 p_packet_len, guint16 p_pac
 			gfire_proto_session_info(p_gfire, p_packet_len);
 
 			// Send collective statistics
-			ob_len = gfire_proto_create_collective_statistics(getenv("LANG") ? getenv("LANG") : "en_GB", "Gfire", GFIRE_VERSION, "");
+            ob_len = gfire_proto_create_collective_statistics(getenv("LANG") ? getenv("LANG") : "en_GB", "Gfire", GFIRE_VERSION_STRING, "");
 			if(ob_len > 0) gfire_send(gfire_get_connection(p_gfire), ob_len);
 
 			// Update current status
