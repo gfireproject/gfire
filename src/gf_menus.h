@@ -33,8 +33,6 @@
 // GFIRE ACCOUNT MENU ///////////////////////////////////////////////
 void gfire_menu_action_nick_change_cb(PurplePluginAction *p_action);
 void gfire_menu_action_reload_lconfig_cb(PurplePluginAction *p_action);
-void gfire_menu_action_reload_gconfig_cb(PurplePluginAction *p_action);
-void gfire_menu_action_get_gconfig_cb(PurplePluginAction *p_action);
 void gfire_menu_action_about_cb(PurplePluginAction *p_action);
 void gfire_menu_action_profile_page_cb(PurplePluginAction *p_action);
 

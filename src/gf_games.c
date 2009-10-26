@@ -30,7 +30,7 @@ static xmlnode *gfire_game_config_xml = NULL;
 
 void gfire_update_version_cb(PurpleUtilFetchUrlData *p_url_data, gpointer p_data, const gchar *p_buf, gsize p_len, const gchar *p_error_message)
 {
-	PurpleConnection *gc = (PurpleConnection *)p_data;
+    PurpleConnection *gc = (PurpleConnection *)p_data;
 
     if (!p_data || !p_buf || !p_len)
         purple_debug_error("gfire", "Unable to query latest Gfire and games list version. Website down?\n");
@@ -38,12 +38,12 @@ void gfire_update_version_cb(PurpleUtilFetchUrlData *p_url_data, gpointer p_data
     {
         xmlnode *version_node = xmlnode_from_str(p_buf, p_len);
         if (!version_node)
-            purple_connection_error_reason(gc, PURPLE_CONNECTION_ERROR_NETWORK_ERROR, _("Couldn't update the games list."));
-        else
+			purple_debug_error("gfire", "Unable to query latest Gfire and games list version. Website down?\n");
+		else
         {
             // Get current Gfire and games list version
-            gint gfire_latest_version = atoi(xmlnode_get_attrib(version_node, "version"));
-            gint games_list_version = atoi(xmlnode_get_attrib(version_node, "games_list_version"));
+            guint32 gfire_latest_version = atoi(xmlnode_get_attrib(version_node, "version"));
+            guint32 games_list_version = atoi(xmlnode_get_attrib(version_node, "games_list_version"));
 
             // Notify user if Gfire can be updated
             if (GFIRE_VERSION < gfire_latest_version)
@@ -56,8 +56,6 @@ void gfire_update_version_cb(PurpleUtilFetchUrlData *p_url_data, gpointer p_data
 
             if(!gfire_game_load_games_xml())
                 update_games_list = TRUE;
-            else if(!gfire_games_xml && !gfire_game_load_games_xml())
-                purple_debug_error("gfire", "Unable to query latest Gfire and games list version. Website down?\n");
             else
             {
                 const gchar *local_games_list_version_tmp = xmlnode_get_attrib(gfire_games_xml, "version");
@@ -65,7 +63,7 @@ void gfire_update_version_cb(PurpleUtilFetchUrlData *p_url_data, gpointer p_data
                     update_games_list = TRUE;
                 else
                 {
-                    gint local_games_list_version = atoi(local_games_list_version_tmp);
+                    guint32 local_games_list_version = atoi(local_games_list_version_tmp);
                     if (local_games_list_version < games_list_version)
                         update_games_list = TRUE;
                 }
