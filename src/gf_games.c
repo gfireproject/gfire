@@ -59,7 +59,7 @@ void gfire_update_version_cb(PurpleUtilFetchUrlData *p_url_data, gpointer p_data
             else
             {
                 const gchar *local_games_list_version_tmp = xmlnode_get_attrib(gfire_games_xml, "version");
-                if (local_games_list_version_tmp[0] == 0)
+				if (!local_games_list_version_tmp || local_games_list_version_tmp[0] == 0)
                     update_games_list = TRUE;
                 else
                 {
