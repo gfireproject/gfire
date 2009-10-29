@@ -267,7 +267,7 @@ void gfire_chat_show(gfire_chat *p_chat)
 	g_free(wnd_title);
 
 	// Set topic
-	purple_conv_chat_set_topic(PURPLE_CONV_CHAT(p_chat->c), NULL, p_chat->topic);
+	purple_conv_chat_set_topic(PURPLE_CONV_CHAT(p_chat->c), NULL, p_chat->motd);
 
 	// Join message
 	gchar *tmpmsg = g_strdup_printf(_("You are now chatting in %s."), p_chat->topic);
