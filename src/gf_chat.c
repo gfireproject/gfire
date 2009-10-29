@@ -72,34 +72,48 @@ void gfire_chat_add_user(gfire_chat *p_chat, gfire_buddy *p_buddy, guint32 p_per
 	if(!p_chat || !p_buddy)
 		return;
 
+	gchar permissionName[50];
 	PurpleConvChatBuddyFlags f;
 	switch(p_perm)
 	{
 	case 01:
+		strcpy(permissionName, _("Permissionless (muted)"));
 		f = PURPLE_CBFLAGS_NONE;
 		break;
 
 	case 02:
+		strcpy(permissionName, _("Normal"));
 		f = PURPLE_CBFLAGS_NONE;
 		break;
 
 	case 03:
+		strcpy(permissionName, _("Power-User"));
 		f = PURPLE_CBFLAGS_VOICE;
 		break;
 
 	case 04:
+		strcpy(permissionName, _("Moderator"));
 		f = PURPLE_CBFLAGS_HALFOP;
 		break;
 
 	case 05:
+		strcpy(permissionName, _("Admin"));
 		f = PURPLE_CBFLAGS_OP;
 		break;
 
 	default:
+		strcpy(permissionName, _("Unknown"));
 		f = PURPLE_CBFLAGS_NONE;
 	}
 
 	purple_conv_chat_add_user(PURPLE_CONV_CHAT(p_chat->c), gfire_buddy_get_name(p_buddy), NULL, f, p_joined);
+
+	if(gfire_is_self((gfire_data*)p_chat->gc->proto_data, p_buddy->userid))
+	{
+		gchar *tmpmsg = g_strdup_printf(_("You currently have the permission \"%s\"."), permissionName);
+		purple_conv_chat_write(PURPLE_CONV_CHAT(p_chat->c), "", tmpmsg, PURPLE_MESSAGE_SYSTEM, time(NULL));
+		g_free(tmpmsg);
+	}
 
 	p_buddy->chatperm = p_perm;
 	p_chat->members = g_list_append(p_chat->members, p_buddy);
@@ -225,31 +239,51 @@ void gfire_chat_buddy_permission_changed(gfire_chat *p_chat, guint32 p_userid, g
 		return;
 	}
 
+	gchar permissionName[50];
 	PurpleConvChatBuddyFlags f;
 	switch(p_perm)
 	{
 	case 01:
+		strcpy(permissionName, _("Permissionless (muted)"));
 		f = PURPLE_CBFLAGS_NONE;
 		break;
 
 	case 02:
+		strcpy(permissionName, _("Normal"));
 		f = PURPLE_CBFLAGS_NONE;
 		break;
 
 	case 03:
+		strcpy(permissionName, _("Power-User"));
 		f = PURPLE_CBFLAGS_VOICE;
 		break;
 
 	case 04:
+		strcpy(permissionName, _("Moderator"));
 		f = PURPLE_CBFLAGS_HALFOP;
 		break;
 
 	case 05:
+		strcpy(permissionName, _("Admin"));
 		f = PURPLE_CBFLAGS_OP;
 		break;
 
 	default:
+		strcpy(permissionName, _("Unknown"));
 		f = PURPLE_CBFLAGS_NONE;
+	}
+
+	if(gfire_is_self((gfire_data*)p_chat->gc->proto_data, gf_buddy->userid))
+	{
+		gchar *tmpmsg = g_strdup_printf(_("Your permission has been changed to \"%s\"."), permissionName);
+		purple_conv_chat_write(PURPLE_CONV_CHAT(p_chat->c), "", tmpmsg, PURPLE_MESSAGE_SYSTEM, time(NULL));
+		g_free(tmpmsg);
+	}
+	else
+	{
+		gchar *tmpmsg = g_strdup_printf(_("%ss permission has been changed to \"%s\"."), gfire_buddy_get_alias(gf_buddy), permissionName);
+		purple_conv_chat_write(PURPLE_CONV_CHAT(p_chat->c), "", tmpmsg, PURPLE_MESSAGE_SYSTEM, time(NULL));
+		g_free(tmpmsg);
 	}
 
 	purple_conv_chat_user_set_flags(PURPLE_CONV_CHAT(p_chat->c), gfire_buddy_get_name(gf_buddy), f);

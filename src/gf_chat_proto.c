@@ -292,10 +292,6 @@ void gfire_chat_proto_info(gfire_data *p_gfire, guint16 p_packet_len)
 	gfire_add_chat(p_gfire, chat);
 	gfire_chat_show(chat);
 
-	// Add ourselves to the chat
-	m = gfire_buddy_create(p_gfire->userid, purple_account_get_username(purple_connection_get_account(gfire_get_connection(p_gfire))), p_gfire->alias, GFBT_GROUPCHAT);
-	gfire_chat_add_user(chat, m, defaultPerm, FALSE);
-
 	n = names; p = perms; a = nicks; u = userids;
 
 	while(u)
@@ -393,7 +389,6 @@ void gfire_chat_proto_user_join(gfire_data *p_gfire, guint16 p_packet_len)
 	guint8 *chat_id = NULL;
 	gfire_chat *chat = NULL;
 	guint32 userid = 0;
-	guint8 *usersid = NULL;
 	gchar *name = NULL;
 	gchar *nick = NULL;
 	guint32 perm = 0;
@@ -417,24 +412,15 @@ void gfire_chat_proto_user_join(gfire_data *p_gfire, guint16 p_packet_len)
 	if(offset == -1)
 		return;
 
-	if(gfire_is_self(p_gfire, userid))
-		return;
-
-	offset = gfire_proto_read_attr_sid_bs(p_gfire->buff_in, &usersid, 0x11, offset);
-	if(offset == -1 || !usersid)
-		return;
-
 	offset = gfire_proto_read_attr_string_bs(p_gfire->buff_in, &name, 0x02, offset);
 	if(offset == -1 || !name)
 	{
-		g_free(usersid);
 		return;
 	}
 
 	offset = gfire_proto_read_attr_string_bs(p_gfire->buff_in, &nick, 0x0D, offset);
 	if(offset == -1 || !nick)
 	{
-		g_free(usersid);
 		g_free(name);
 		return;
 	}
@@ -448,6 +434,9 @@ void gfire_chat_proto_user_join(gfire_data *p_gfire, guint16 p_packet_len)
 
 	purple_debug(PURPLE_DEBUG_MISC, "gfire", "groupchat join, userid: %u, username: %s, alias: %s\n",
 				 userid, NN(name), NN(nick));
+
+	g_free(name);
+	g_free(nick);
 }
 
 

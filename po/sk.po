@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Gfire 0.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-10-29 19:14+0100\n"
+"POT-Creation-Date: 2009-10-29 22:46+0100\n"
 "PO-Revision-Date: 2009-08-28 16:31+0100\n"
 "Last-Translator: Marek Niklíček <mareknik@gmail.com>\n"
 "Language-Team: none\n"
@@ -119,7 +119,38 @@ msgid ""
 "P2P messaging will not be possible."
 msgstr ""
 
-#: ../src/gf_chat.c:211
+#: ../src/gf_chat.c:80 ../src/gf_chat.c:247
+msgid "Permissionless (muted)"
+msgstr ""
+
+#: ../src/gf_chat.c:85 ../src/gf_chat.c:252
+msgid "Normal"
+msgstr ""
+
+#: ../src/gf_chat.c:90 ../src/gf_chat.c:257
+msgid "Power-User"
+msgstr ""
+
+#: ../src/gf_chat.c:95 ../src/gf_chat.c:262
+#, fuzzy
+msgid "Moderator"
+msgstr "Monitor"
+
+#: ../src/gf_chat.c:100 ../src/gf_chat.c:267
+msgid "Admin"
+msgstr ""
+
+#: ../src/gf_chat.c:105 ../src/gf_chat.c:272
+#, fuzzy
+msgid "Unknown"
+msgstr "neznámy"
+
+#: ../src/gf_chat.c:113
+#, c-format
+msgid "You currently have the permission \"%s\"."
+msgstr ""
+
+#: ../src/gf_chat.c:225
 #, c-format
 msgid ""
 "Today's message changed to:\n"
@@ -128,19 +159,29 @@ msgstr ""
 "Dnešná správa sa zmenila na:\n"
 "%s"
 
+#: ../src/gf_chat.c:278
+#, fuzzy, c-format
+msgid "Your permission has been changed to \"%s\"."
+msgstr "Váš stav sa zmenil."
+
+#: ../src/gf_chat.c:284
+#, fuzzy, c-format
+msgid "%ss permission has been changed to \"%s\"."
+msgstr "Váš stav sa zmenil."
+
 #. Create conversation
-#: ../src/gf_chat.c:265
+#: ../src/gf_chat.c:299
 #, c-format
 msgid "%s [Xfire Chat]"
 msgstr "%s [Xfire Chat]"
 
 #. Join message
-#: ../src/gf_chat.c:273
+#: ../src/gf_chat.c:307
 #, c-format
 msgid "You are now chatting in %s."
 msgstr "Práve chatujete v %s."
 
-#: ../src/gf_chat.c:280
+#: ../src/gf_chat.c:314
 #, fuzzy, c-format
 msgid ""
 "Today's message:\n"

@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Gfire 0.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-10-29 19:14+0100\n"
-"PO-Revision-Date: 2009-10-29 19:16+0100\n"
+"POT-Creation-Date: 2009-10-29 22:46+0100\n"
+"PO-Revision-Date: 2009-10-29 22:49+0100\n"
 "Last-Translator: Oliver Ney <oliver@dryder.de>\n"
 "Language-Team: German <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -57,7 +57,8 @@ msgstr "Startargumente:"
 msgid "Launch prefix:"
 msgstr "Startprefix:"
 
-#: ../data/games.glade.h:11 ../src/gf_purple.c:523
+#: ../data/games.glade.h:11
+#: ../src/gf_purple.c:523
 msgid "Manage Games"
 msgstr "Spiele verwalten"
 
@@ -116,14 +117,45 @@ msgid "P2P Connection not possible"
 msgstr "P2P Verbindung nicht möglich"
 
 #: ../src/gf_buddies.c:1269
-msgid ""
-"We're not able to establish a connection to your buddy. File transfer and "
-"P2P messaging will not be possible."
-msgstr ""
-"Wir sind nicht in der Lage eine Verbindung zum Buddy herzustellen. "
-"Dateitransfer und P2P Chatten wird nicht möglich sein."
+msgid "We're not able to establish a connection to your buddy. File transfer and P2P messaging will not be possible."
+msgstr "Wir sind nicht in der Lage eine Verbindung zum Buddy herzustellen. Dateitransfer und P2P Chatten wird nicht möglich sein."
 
-#: ../src/gf_chat.c:211
+#: ../src/gf_chat.c:80
+#: ../src/gf_chat.c:247
+msgid "Permissionless (muted)"
+msgstr "Rechtlos (stumm)"
+
+#: ../src/gf_chat.c:85
+#: ../src/gf_chat.c:252
+msgid "Normal"
+msgstr "Normal"
+
+#: ../src/gf_chat.c:90
+#: ../src/gf_chat.c:257
+msgid "Power-User"
+msgstr "Power-User"
+
+#: ../src/gf_chat.c:95
+#: ../src/gf_chat.c:262
+msgid "Moderator"
+msgstr "Moderator"
+
+#: ../src/gf_chat.c:100
+#: ../src/gf_chat.c:267
+msgid "Admin"
+msgstr "Admin"
+
+#: ../src/gf_chat.c:105
+#: ../src/gf_chat.c:272
+msgid "Unknown"
+msgstr "Unbekannt"
+
+#: ../src/gf_chat.c:113
+#, c-format
+msgid "You currently have the permission \"%s\"."
+msgstr "Du hast momentan das Recht \"%s\"."
+
+#: ../src/gf_chat.c:225
 #, c-format
 msgid ""
 "Today's message changed to:\n"
@@ -132,19 +164,29 @@ msgstr ""
 "Heutige Nachricht geändert in:\n"
 "%s"
 
+#: ../src/gf_chat.c:278
+#, c-format
+msgid "Your permission has been changed to \"%s\"."
+msgstr "Deine Rechte wurden auf \"%s\" geändert."
+
+#: ../src/gf_chat.c:284
+#, c-format
+msgid "%ss permission has been changed to \"%s\"."
+msgstr "%ss Recht wurden auf \"%s\" geändert."
+
 #. Create conversation
-#: ../src/gf_chat.c:265
+#: ../src/gf_chat.c:299
 #, c-format
 msgid "%s [Xfire Chat]"
 msgstr "%s [Xfire Chat]"
 
 #. Join message
-#: ../src/gf_chat.c:273
+#: ../src/gf_chat.c:307
 #, c-format
 msgid "You are now chatting in %s."
 msgstr "Du chattest nun in %s."
 
-#: ../src/gf_chat.c:280
+#: ../src/gf_chat.c:314
 #, c-format
 msgid ""
 "Today's message:\n"
@@ -153,14 +195,14 @@ msgstr ""
 "Heutige Nachricht:\n"
 "%s"
 
-#: ../src/gf_friend_search.c:64 ../src/gf_friend_search.c:106
+#: ../src/gf_friend_search.c:64
+#: ../src/gf_friend_search.c:106
 msgid "Xfire Friend Search"
 msgstr "Xfire Freundessuche"
 
 #: ../src/gf_friend_search.c:64
 msgid "Please enter a Xfire username, name or e-Mail address here:"
-msgstr ""
-"Bitte gib hier einen Xfire Nutzernamen, Namen oder eine e-Mail Adresse ein:"
+msgstr "Bitte gib hier einen Xfire Nutzernamen, Namen oder eine e-Mail Adresse ein:"
 
 #: ../src/gf_friend_search.c:65
 msgid "For example: gill123, Gill Bates or gill@bates.net"
@@ -170,7 +212,8 @@ msgstr "Zum Beispiel: gill123, Gill Bates oder gill@bates.net"
 msgid "Search"
 msgstr "Suche"
 
-#: ../src/gf_friend_search.c:66 ../src/gf_menus.c:108
+#: ../src/gf_friend_search.c:66
+#: ../src/gf_menus.c:108
 msgid "Cancel"
 msgstr "Abbrechen"
 
@@ -200,23 +243,19 @@ msgid "New Gfire version available"
 msgstr "Neue Gfire Version verfügbar"
 
 #: ../src/gf_games.c:52
-msgid ""
-"A newer Gfire version is available. Visit the Gfire website for more "
-"information."
-msgstr ""
-"Eine neuere Gfire Version ist verfügbar. Besuche die Gfire Website für "
-"weitere Infos."
+msgid "A newer Gfire version is available. Visit the Gfire website for more information."
+msgstr "Eine neuere Gfire Version ist verfügbar. Besuche die Gfire Website für weitere Infos."
 
 #: ../src/gf_games.c:90
 msgid "Games list has been updated"
 msgstr "Game List wurde aktualisiert"
 
 #: ../src/gf_games.c:91
-msgid ""
-"The games list has been successfully updated to the latest version available."
+msgid "The games list has been successfully updated to the latest version available."
 msgstr "Die Game List wurde erfolgreich auf die neuste Version aktualisiert."
 
-#: ../src/gf_games.c:762 ../src/gf_games.c:866
+#: ../src/gf_games.c:762
+#: ../src/gf_games.c:866
 msgid "Manage Games: warning"
 msgstr "Spiele verwalten: Warnung"
 
@@ -226,24 +265,27 @@ msgstr "Spiel bereits hinzugefügt"
 
 #: ../src/gf_games.c:763
 msgid "This game is already added, you can configure it if you want."
-msgstr ""
-"Dieses Spiel ist bereits hinzugefügt, du kannst es konfigurieren, wenn du "
-"willst."
+msgstr "Dieses Spiel ist bereits hinzugefügt, du kannst es konfigurieren, wenn du willst."
 
-#: ../src/gf_games.c:784 ../src/gf_games.c:797 ../src/gf_games.c:880
-#: ../src/gf_games.c:892 ../src/gf_games.c:934 ../src/gf_games.c:943
+#: ../src/gf_games.c:784
+#: ../src/gf_games.c:797
+#: ../src/gf_games.c:880
+#: ../src/gf_games.c:892
+#: ../src/gf_games.c:934
+#: ../src/gf_games.c:943
 #: ../src/gf_games.c:1079
 msgid "Manage Games: error"
 msgstr "Spiele verwalten: Fehler"
 
-#: ../src/gf_games.c:784 ../src/gf_games.c:798 ../src/gf_games.c:880
+#: ../src/gf_games.c:784
+#: ../src/gf_games.c:798
+#: ../src/gf_games.c:880
 msgid "Couldn't add game"
 msgstr "Konnte das Spiel nicht hinzufügen"
 
 #: ../src/gf_games.c:785
 msgid "Please try again. An error occured while adding the game."
-msgstr ""
-"Bitte versuche es noch einmal. Ein Fehler ist beim Hinzufügen aufgetreten."
+msgstr "Bitte versuche es noch einmal. Ein Fehler ist beim Hinzufügen aufgetreten."
 
 #: ../src/gf_games.c:790
 msgid "Manage Games: game added"
@@ -253,7 +295,8 @@ msgstr "Spiele verwalten: Spiel hinzugefügt"
 msgid "The game has been successfully added."
 msgstr "Das Spiel wurde erfolgreich hinzugefügt."
 
-#: ../src/gf_games.c:798 ../src/gf_games.c:893
+#: ../src/gf_games.c:798
+#: ../src/gf_games.c:893
 msgid "Please try again. Make sure you fill in all fields."
 msgstr "Bitte versuche es nochmal. Achte darauf, alle Felder auszufüllen."
 
@@ -263,9 +306,7 @@ msgstr "Spielkonfiguration nicht gefunden"
 
 #: ../src/gf_games.c:867
 msgid "This game is not yet added as it seems, please add it first!"
-msgstr ""
-"Wie es scheint, wurde dieses Spiel noch nicht hinzugefügt. Bitte füge es "
-"erst hinzu!"
+msgstr "Wie es scheint, wurde dieses Spiel noch nicht hinzugefügt. Bitte füge es erst hinzu!"
 
 #: ../src/gf_games.c:881
 msgid "Please try again. An error occured while editing the game."
@@ -299,38 +340,34 @@ msgstr "Spiel entfernt"
 msgid "The game has been successfully removed."
 msgstr "Das Spiel wurde erfolgreich entfernt."
 
-#: ../src/gf_games.c:935 ../src/gf_games.c:944
+#: ../src/gf_games.c:935
+#: ../src/gf_games.c:944
 msgid "Couldn't remove game"
 msgstr "Konnte das Spiel nicht entfernen"
 
 #: ../src/gf_games.c:935
 msgid "Please try again. An error occured while removing the game."
-msgstr ""
-"Bitte versuche es noch einmal. Ein Fehler trat beim Entfernen des Spiels auf."
+msgstr "Bitte versuche es noch einmal. Ein Fehler trat beim Entfernen des Spiels auf."
 
 #: ../src/gf_games.c:944
 msgid "Please try again. Make sure you select a game to remove."
-msgstr ""
-"Bitte versuche es noch einmal. Achte darauf ein zu löschendes Spiel "
-"auszuwählen."
+msgstr "Bitte versuche es noch einmal. Achte darauf ein zu löschendes Spiel auszuwählen."
 
 #: ../src/gf_games.c:1079
 msgid "Incompatible games configuration"
 msgstr "Inkompatible Spielkonfiguration"
 
 #: ../src/gf_games.c:1080
-msgid ""
-"Your current games configuration is incompatible with this version of Gfire. "
-"Please remove it and try again."
-msgstr ""
-"Deine aktuelle Spielkonfiguration ist inkompatibel mit dieser Version von "
-"Gfire. Bitte entferne sie und versuche es noch einmal."
+msgid "Your current games configuration is incompatible with this version of Gfire. Please remove it and try again."
+msgstr "Deine aktuelle Spielkonfiguration ist inkompatibel mit dieser Version von Gfire. Bitte entferne sie und versuche es noch einmal."
 
-#: ../src/gf_network.c:131 ../src/gf_network.c:165
+#: ../src/gf_network.c:131
+#: ../src/gf_network.c:165
 msgid "Connection closed by peer."
 msgstr "Verbindung von Xfire geschlossen."
 
-#: ../src/gf_network.c:140 ../src/gf_network.c:174
+#: ../src/gf_network.c:140
+#: ../src/gf_network.c:174
 msgid "Socket read failure."
 msgstr "Fehler beim Lesen des Sockets."
 
@@ -341,31 +378,36 @@ msgstr "Passwort oder Nutzername falsch."
 #: ../src/gf_network.c:259
 #, c-format
 msgid "Protocol version mismatch, needs to be %d. Auto set to new value."
-msgstr ""
-"Falsche Protokollversion, benötigt wird %d. Automatisch auf neuen Wert "
-"gesetzt."
+msgstr "Falsche Protokollversion, benötigt wird %d. Automatisch auf neuen Wert gesetzt."
 
 #: ../src/gf_network.c:301
 msgid "You have signed on from another location."
 msgstr "Du hast dich woanders angemeldet."
 
-#: ../src/gf_purple.c:125 ../src/gfire.c:996
+#: ../src/gf_purple.c:125
+#: ../src/gfire.c:996
 msgid "Game"
 msgstr "Spiel"
 
-#: ../src/gf_purple.c:131 ../src/gf_purple.c:901 ../src/gfire.c:1002
+#: ../src/gf_purple.c:131
+#: ../src/gf_purple.c:901
+#: ../src/gfire.c:1002
 msgid "Server"
 msgstr "Server"
 
-#: ../src/gf_purple.c:159 ../src/gfire.c:1021
+#: ../src/gf_purple.c:159
+#: ../src/gfire.c:1021
 msgid "unknown"
 msgstr "unbekannt"
 
-#: ../src/gf_purple.c:174 ../src/gfire.c:985 ../src/gfire.c:988
+#: ../src/gf_purple.c:174
+#: ../src/gfire.c:985
+#: ../src/gfire.c:988
 msgid "Status"
 msgstr "Status"
 
-#: ../src/gf_purple.c:184 ../src/gfire.c:1034
+#: ../src/gf_purple.c:184
+#: ../src/gfire.c:1034
 msgid "Common Friends"
 msgstr "Gemeinsame Freunde"
 
@@ -375,8 +417,7 @@ msgstr "Protokollinitialisierung fehlgeschlagen"
 
 #: ../src/gf_purple.c:267
 msgid "Message could not be sent. Buddy not in contact list"
-msgstr ""
-"Nachricht konnte nicht gesendet werden. Buddy nicht in der Kontaktliste"
+msgstr "Nachricht konnte nicht gesendet werden. Buddy nicht in der Kontaktliste"
 
 #: ../src/gf_purple.c:280
 msgid "Message could not be sent. Buddy offline"
@@ -495,7 +536,8 @@ msgstr "Freunde von Freunde-Gruppenname"
 msgid "Xfire"
 msgstr "Xfire"
 
-#: ../src/gf_purple.c:938 ../src/gf_purple.c:939
+#: ../src/gf_purple.c:938
+#: ../src/gf_purple.c:939
 msgid "Xfire Protocol Plugin"
 msgstr "Xfire Protokoll Plugin"
 
@@ -522,7 +564,10 @@ msgstr "(AFK) Away From Keyboard (Nicht am Computer)"
 msgid "(Busy) I'm busy!"
 msgstr "(Busy) Ich bin beschäftigt!"
 
-#: ../src/gfire.c:614 ../src/gfire.c:623 ../src/gfire.c:793 ../src/gfire.c:802
+#: ../src/gfire.c:614
+#: ../src/gfire.c:623
+#: ../src/gfire.c:793
+#: ../src/gfire.c:802
 msgid "Error"
 msgstr "Fehler"
 
@@ -681,11 +726,13 @@ msgstr "%ss Clans:"
 msgid "Connection timed out"
 msgstr "Zeitüberschreitung der Verbindung"
 
-#: ../src/gfire.c:1361 ../src/gfire.c:1396
+#: ../src/gfire.c:1361
+#: ../src/gfire.c:1396
 msgid "Ingame status"
 msgstr "Ingame Status"
 
-#: ../src/gfire.c:1362 ../src/gfire.c:1397
+#: ../src/gfire.c:1362
+#: ../src/gfire.c:1397
 msgid "Your status has been changed."
 msgstr "Dein Status wurde geändert."
 
@@ -717,18 +764,19 @@ msgstr "Lass das Feld leer, um deinen aktuellen Nicknamen zu löschen."
 msgid "OK"
 msgstr "OK"
 
-#: ../src/gf_menus.c:114 ../src/gf_menus.c:116
+#: ../src/gf_menus.c:114
+#: ../src/gf_menus.c:116
 msgid "Gfire XML Reload"
 msgstr "Neu Laden einer Gfire XML Datei"
 
-#: ../src/gf_menus.c:114 ../src/gf_menus.c:116
+#: ../src/gf_menus.c:114
+#: ../src/gf_menus.c:116
 msgid "Reloading gfire_game_config.xml"
 msgstr "Lade gfire_game_config.xml neu"
 
 #: ../src/gf_menus.c:114
 msgid "Operation failed. File not found or content was incorrect."
-msgstr ""
-"Operation fehlgeschlagen. Datei nicht gefunden oder Inhalt war fehlerhaft."
+msgstr "Operation fehlgeschlagen. Datei nicht gefunden oder Inhalt war fehlerhaft."
 
 #: ../src/gf_menus.c:116
 msgid "Reloading was successful."
@@ -779,27 +827,20 @@ msgstr "Keine Beschreibung eingegeben"
 
 #~ msgid "Reload Game ID List"
 #~ msgstr "Game List neu laden"
-
 #~ msgid "Get Game ID List"
 #~ msgstr "Game List aktualisieren"
-
 #~ msgid "Couldn't get the latest game config."
 #~ msgstr "Konnte die neuste Game List nicht empfangen."
-
 #~ msgid "Reloading gfire_games.xml"
 #~ msgstr "Lade gfire_games.xml neu"
-
 #~ msgid "Gfire Game List Download"
 #~ msgstr "Gfire Game List Download"
-
 #~ msgid "Download failed"
 #~ msgstr "Download fehlgeschlagen"
-
 #~ msgid "New Game List Version: %s"
 #~ msgstr "Neue Game List Version: %s"
-
 #~ msgid "Download successful"
 #~ msgstr "Download erfolgreich"
-
 #~ msgid "Unable to write gfire_games.xml"
 #~ msgstr "Konnte gfire_games.xml nicht schreiben"
+
