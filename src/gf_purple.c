@@ -553,9 +553,8 @@ static void gfire_purple_join_chat(PurpleConnection *p_gc, GHashTable *p_table)
 
 	gfire_chat_join(xid, room, pass, p_gc);
 
-	g_free(xid);
-	g_free(room);
-	g_free(pass);
+	if(!g_hash_table_lookup(p_table, "chat_id"))
+		g_free(xid);
 }
 
 static void gfire_purple_chat_leave(PurpleConnection *p_gc, int p_prpl_id)
@@ -598,10 +597,10 @@ static GHashTable *gfire_purple_chat_info_defaults(PurpleConnection *p_gc, const
 {
 	GHashTable *defaults;
 
-	defaults = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, g_free);
+	defaults = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
 
 	if (p_chat_name != NULL)
-		g_hash_table_insert(defaults, "room", g_strdup(p_chat_name));
+		g_hash_table_insert(defaults, g_strdup("room"), g_strdup(p_chat_name));
 
 	return defaults;
 }

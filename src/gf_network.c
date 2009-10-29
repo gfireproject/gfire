@@ -368,7 +368,7 @@ void gfire_parse_packet(gfire_data *p_gfire, guint16 p_packet_len, guint16 p_pac
 
 		case 351:
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received group chat info\n");
-			//gfire_chat_proto_info(p_gfire, p_packet_len);
+			gfire_chat_proto_info(p_gfire, p_packet_len);
 		break;
 
 		case 353:

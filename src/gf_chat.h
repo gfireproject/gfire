@@ -47,8 +47,8 @@ gfire_chat *gfire_chat_create(const guint8 *p_id, const gchar *p_topic, const gc
 void gfire_chat_free(gfire_chat *p_chat);
 
 // Member handling
-gfire_buddy *gfire_chat_find_member(gfire_chat *p_chat, guint32 p_userid);
-void gfire_chat_add_member(gfire_chat *p_chat, gfire_buddy *p_buddy, guint32 p_perm, gboolean p_joined);
+gfire_buddy *gfire_chat_find_user(gfire_chat *p_chat, guint32 p_userid);
+void gfire_chat_add_user(gfire_chat *p_chat, gfire_buddy *p_buddy, guint32 p_perm, gboolean p_joined);
 void gfire_chat_user_left(gfire_chat *p_chat, guint32 p_userid);
 void gfire_chat_buddy_permission_changed(gfire_chat *p_chat, guint32 p_userid, guint32 p_perm);
 

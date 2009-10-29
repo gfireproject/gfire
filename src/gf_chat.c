@@ -38,6 +38,8 @@ gfire_chat *gfire_chat_create(const guint8 *p_id, const gchar *p_topic, const gc
 		return NULL;
 	}
 
+	if(p_id)
+		memcpy(ret->chat_id, p_id, XFIRE_CHATID_LEN);
 	if(p_topic)
 		ret->topic = g_strdup(p_topic);
 	if(p_motd)
@@ -65,7 +67,7 @@ void gfire_chat_free(gfire_chat *p_chat)
 	if(p_chat->members) g_list_free(p_chat->members);
 }
 
-void gfire_chat_add_member(gfire_chat *p_chat, gfire_buddy *p_buddy, guint32 p_perm, gboolean p_joined)
+void gfire_chat_add_user(gfire_chat *p_chat, gfire_buddy *p_buddy, guint32 p_perm, gboolean p_joined)
 {
 	if(!p_chat || !p_buddy)
 		return;
@@ -103,7 +105,7 @@ void gfire_chat_add_member(gfire_chat *p_chat, gfire_buddy *p_buddy, guint32 p_p
 	p_chat->members = g_list_append(p_chat->members, p_buddy);
 }
 
-gfire_buddy *gfire_chat_find_member(gfire_chat *p_chat, guint32 p_userid)
+gfire_buddy *gfire_chat_find_user(gfire_chat *p_chat, guint32 p_userid)
 {
 	if(!p_chat)
 		return NULL;
@@ -125,7 +127,7 @@ void gfire_chat_got_msg(gfire_chat *p_chat, guint32 p_userid, const gchar *p_msg
 	if(!p_chat || !p_msg)
 		return;
 
-	gfire_buddy *m = gfire_chat_find_member(p_chat, p_userid);
+	gfire_buddy *m = gfire_chat_find_user(p_chat, p_userid);
 	if(!m)
 		return;
 
@@ -140,7 +142,7 @@ void gfire_chat_user_left(gfire_chat *p_chat, guint32 p_userid)
 	if(!p_chat)
 		return;
 
-	gfire_buddy *m = gfire_chat_find_member(p_chat, p_userid);
+	gfire_buddy *m = gfire_chat_find_user(p_chat, p_userid);
 	if(!m)
 		return;
 
@@ -150,8 +152,8 @@ void gfire_chat_user_left(gfire_chat *p_chat, guint32 p_userid)
 	if(!cur)
 		return;
 
-	gfire_buddy_free(m);
 	p_chat->members = g_list_delete_link(p_chat->members, cur);
+	gfire_buddy_free(m);
 }
 
 void gfire_chat_join(const guint8 *p_chat_id, const gchar *p_room, const gchar *p_pass, PurpleConnection *p_gc)
@@ -216,7 +218,7 @@ void gfire_chat_buddy_permission_changed(gfire_chat *p_chat, guint32 p_userid, g
 	if(!p_chat)
 		return;
 
-	gfire_buddy *gf_buddy = gfire_chat_find_member(p_chat, p_userid);
+	gfire_buddy *gf_buddy = gfire_chat_find_user(p_chat, p_userid);
 	if(!gf_buddy)
 	{
 		purple_debug(PURPLE_DEBUG_ERROR, "gfire", "gfire_chat_buddy_permission_changed: Unknown buddy!\n");
@@ -273,9 +275,9 @@ void gfire_chat_show(gfire_chat *p_chat)
 	g_free(tmpmsg);
 
 	// MotD
-	if(p_chat->motd)
+	if(p_chat->motd && strlen(p_chat->motd))
 	{
-		gchar *tmpmsg = g_strdup_printf(_("Today's message:\n%s."), p_chat->motd);
+		gchar *tmpmsg = g_strdup_printf(_("Today's message:\n%s"), p_chat->motd);
 		purple_conv_chat_write(PURPLE_CONV_CHAT(p_chat->c), "", tmpmsg, PURPLE_MESSAGE_SYSTEM, time(NULL));
 		g_free(tmpmsg);
 	}

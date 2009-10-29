@@ -35,18 +35,18 @@ guint16 gfire_chat_proto_create_join(const guint8 *p_id, const gchar *p_room, co
 	{
 
 		purple_debug(PURPLE_DEBUG_ERROR, "gfire",
-					"gfire_chat_proto_create_join_chat: invalid parameter to _create_join_chat room=%s\n", NN(p_room));
+					"gfire_chat_proto_create_join_chat: invalid parameter to gfire_chat_proto_create_join room=%s\n", NN(p_room));
 		return 0;
 	}
 
-	guint32 climsg = 0xF44C0000;
+	guint32 climsg = GUINT32_TO_LE(0x4CF4);
 	offset = gfire_proto_write_attr_ss("climsg", 0x02, &climsg, sizeof(climsg), offset);
 
 	offset = gfire_proto_write_attr_ss("msg", 0x09, NULL, 6, offset);
 
 	offset = gfire_proto_write_attr_bs(0x04, 0x06, p_id, XFIRE_CHATID_LEN, offset);
 
-	guint32 requestIndex = 0;
+	guint32 requestIndex = GUINT32_TO_LE(1);
 	offset = gfire_proto_write_attr_bs(0x0B, 0x02, &requestIndex, sizeof(requestIndex), offset);
 
 	guint32 chatRoomType = GUINT32_TO_LE(1);
@@ -70,7 +70,7 @@ guint16 gfire_chat_proto_create_leave(const guint8 *p_cid)
 
 	if (!p_cid) return 0;
 
-	guint32 climsg = 0xF54C0000;
+	guint32 climsg = GUINT32_TO_LE(0x4CF5);
 	offset = gfire_proto_write_attr_ss("climsg", 0x02, &climsg, sizeof(climsg), offset);
 
 	offset = gfire_proto_write_attr_ss("msg", 0x09, NULL, 1, offset);
@@ -88,19 +88,14 @@ guint16 gfire_chat_proto_create_message(const guint8 *p_cid, const gchar *p_mess
 
 	if (!p_message || !p_cid || (strlen(p_message) == 0)) return 0;
 
-	guint32 climsg = 0xF64C0000;
+	guint32 climsg = GUINT32_TO_LE(0x4CF6);
 	offset = gfire_proto_write_attr_ss("climsg", 0x02, &climsg, sizeof(climsg), offset);
 
 	offset = gfire_proto_write_attr_ss("msg", 0x09, NULL, 2, offset);
 
 	offset = gfire_proto_write_attr_bs(0x04, 0x06, p_cid, XFIRE_CHATID_LEN, offset);
 
-	offset = gfire_proto_write_attr_bs(0x10, 0x09, NULL, 2, offset);
-
-	guint32 unknown = 0;
-	offset = gfire_proto_write_attr_bs(0x0E, 0x02, &unknown, sizeof(unknown), offset);
-
-	offset = gfire_proto_write_attr_bs(0x0F, 0x01, p_message, strlen(p_message), offset);
+	offset = gfire_proto_write_attr_bs(0x2E, 0x01, p_message, strlen(p_message), offset);
 
 	gfire_proto_write_header(offset, 0x19, 2, 0);
 
@@ -113,7 +108,7 @@ guint16 gfire_chat_proto_create_invite(const guint8 *p_cid, guint32 p_userid)
 
 	if (!p_cid) return 0;
 
-	guint32 climsg = 0xFC4C0000;
+	guint32 climsg = GUINT32_TO_LE(0x4CFC);
 	offset = gfire_proto_write_attr_ss("climsg", 0x02, &climsg, sizeof(climsg), offset);
 
 	offset = gfire_proto_write_attr_ss("msg", 0x09, NULL, 2, offset);
@@ -135,7 +130,7 @@ guint16 gfire_chat_proto_create_change_motd(const guint8 *p_cid, const gchar* p_
 
 	if(!p_cid || !p_motd || (strlen(p_motd) == 0)) return 0;
 
-	guint32 climsg = 0x0C4D0000;
+	guint32 climsg = GUINT32_TO_LE(0x4D0C);
 	offset = gfire_proto_write_attr_ss("climsg", 0x02, &climsg, sizeof(climsg), offset);
 
 	offset = gfire_proto_write_attr_ss("msg", 0x09, NULL, 2, offset);
@@ -155,7 +150,7 @@ guint16 gfire_chat_proto_create_reject(const guint8 *p_cid)
 
 	if(!p_cid) return 0;
 
-	guint32 climsg = 0xFF4C0000;
+	guint32 climsg = GUINT32_TO_LE(0x4CFF);
 	offset = gfire_proto_write_attr_ss("climsg", 0x02, &climsg, sizeof(climsg), offset);
 
 	offset = gfire_proto_write_attr_ss("msg", 0x09, NULL, 1, offset);
@@ -297,6 +292,10 @@ void gfire_chat_proto_info(gfire_data *p_gfire, guint16 p_packet_len)
 	gfire_add_chat(p_gfire, chat);
 	gfire_chat_show(chat);
 
+	// Add ourselves to the chat
+	m = gfire_buddy_create(p_gfire->userid, purple_account_get_username(purple_connection_get_account(gfire_get_connection(p_gfire))), p_gfire->alias, GFBT_GROUPCHAT);
+	gfire_chat_add_user(chat, m, defaultPerm, FALSE);
+
 	n = names; p = perms; a = nicks; u = userids;
 
 	while(u)
@@ -304,7 +303,7 @@ void gfire_chat_proto_info(gfire_data *p_gfire, guint16 p_packet_len)
 		if(!gfire_is_self(p_gfire, *(guint32*)u->data))
 		{
 			m = gfire_buddy_create(*(guint32*)u->data, (gchar*)n->data, (gchar*)a->data, GFBT_GROUPCHAT);
-			gfire_chat_add_member(chat, m, *(guint32*)p->data, FALSE);
+			gfire_chat_add_user(chat, m, *(guint32*)p->data, FALSE);
 		}
 
 		g_free(u->data); g_free(n->data);
@@ -345,13 +344,7 @@ void gfire_chat_proto_msg(gfire_data *p_gfire, guint16 p_packet_len)
 
 	offset = gfire_proto_read_attr_int32_bs(p_gfire->buff_in, &userid, 0x01, offset);
 
-	guint8 attr_len = 0;
-	offset = gfire_proto_read_attr_children_count_bs(p_gfire->buff_in, &attr_len, 0x10, offset);
-
-	guint32 unknown = 0;
-	offset = gfire_proto_read_attr_int32_bs(p_gfire->buff_in, &unknown, 0x0E, offset);
-
-	offset = gfire_proto_read_attr_string_bs(p_gfire->buff_in, &msg, 0x0F, offset);
+	offset = gfire_proto_read_attr_string_bs(p_gfire->buff_in, &msg, 0x2E, offset);
 
 	gfire_chat_got_msg(chat, userid, msg);
 
@@ -451,7 +444,7 @@ void gfire_chat_proto_user_join(gfire_data *p_gfire, guint16 p_packet_len)
 		return;
 
 	gf_buddy = gfire_buddy_create(userid, name, nick, GFBT_GROUPCHAT);
-	gfire_chat_add_member(chat, gf_buddy, perm, TRUE);
+	gfire_chat_add_user(chat, gf_buddy, perm, TRUE);
 
 	purple_debug(PURPLE_DEBUG_MISC, "gfire", "groupchat join, userid: %u, username: %s, alias: %s\n",
 				 userid, NN(name), NN(nick));
