@@ -659,25 +659,6 @@ static int gfire_purple_chat_send(PurpleConnection *p_gc, int p_id, const gchar 
 	return 0;
 }
 
-static void gfire_purple_chat_joined(PurpleConnection *p_gc, GList *p_members, guint8 *p_chat_id, gchar *p_topic, gchar *p_motd)
-{
-	gfire_chat *chat = NULL;
-	gfire_data *gfire = NULL;
-
-	if (!p_gc || !(gfire = (gfire_data *)p_gc->proto_data) || !p_chat_id) return;
-
-	chat = gfire_find_chat(gfire, p_chat_id, GFFC_CID);
-	if(chat)
-		return;
-
-	chat = gfire_chat_create(p_chat_id, p_topic, p_motd);
-	if(!chat)
-		return;
-
-	gfire_add_chat(gfire, chat);
-	gfire_chat_show(chat);
-}
-
 static void gfire_purple_chat_change_motd(PurpleConnection *p_gc, int p_id, const gchar *p_motd)
 {
 	gfire_data *gfire = NULL;

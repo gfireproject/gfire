@@ -54,7 +54,7 @@ guint16 gfire_chat_proto_create_join(const guint8 *p_id, const gchar *p_room, co
 
 	offset = gfire_proto_write_attr_bs(0x05, 0x01, p_room, strlen(p_room), offset);
 
-	offset = gfire_proto_write_attr_bs(0x5F, 0x01, p_pass, strlen(p_pass), offset);
+	offset = gfire_proto_write_attr_bs(0x5F, 0x01, p_pass, p_pass ? strlen(p_pass) : 0, offset);
 
 	guint8 autoName = 0;
 	offset = gfire_proto_write_attr_bs(0xA7, 0x08, &autoName, sizeof(autoName), offset);
