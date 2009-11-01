@@ -30,6 +30,7 @@ typedef struct _process_info
 {
 	gchar *name;
 	gchar **args;
+	guint32 pid;
 } process_info;
 
 typedef struct _gfire_process_list
@@ -43,7 +44,7 @@ void gfire_process_list_free(gfire_process_list *p_list);
 void gfire_process_list_clear(gfire_process_list *p_list);
 gboolean gfire_process_list_contains(const gfire_process_list *p_list, const gchar *p_name, const gchar *p_args);
 // For internal use only
-process_info *gfire_process_info_new(const gchar *p_name, const gchar *p_args);
+process_info *gfire_process_info_new(const gchar *p_name, const gchar *p_args, const guint32 p_id);
 
 // OS dependent (gf_game_detection_X.c)
 void gfire_process_list_update(gfire_process_list *p_list);

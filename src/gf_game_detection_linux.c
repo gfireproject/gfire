@@ -28,38 +28,75 @@ void gfire_process_list_update(gfire_process_list *p_list)
 {
 #define BUF_SIZE 1024
 
-	if(!p_list)
+	if (!p_list)
 		return;
 
 	gfire_process_list_clear(p_list);
 
-	FILE *ps = popen("ps --width 1024 -Ao comm:30,cmd --no-heading", "r");
-	if(!ps)
+	FILE *ps = popen("ps --width 1024 -Ao comm:15,pid:8,cmd --no-heading", "r");
+	if (!ps)
 		return;
 
 	gchar *buffer = g_malloc0(BUF_SIZE);
 	while(!feof(ps))
 	{
 		fgets(buffer, BUF_SIZE, ps);
-
-		gchar **parts = g_strsplit(buffer, "     ", 2);
-		if(!parts)
+		if (strlen(buffer) < 24)
 			continue;
 
-		process_info *info = NULL;
-		if(g_strv_length(parts) > 1)
+		// Extract short process name and command line
+		gchar *process_name_short, *command_line;
+
+		process_name_short = g_strndup(buffer, 15);
+		if (!process_name_short)
+			continue;
+
+		process_name_short = g_strchomp(process_name_short);
+
+		command_line = g_strrstr_len(buffer + 24, -1, process_name_short);
+		if (!command_line)
 		{
-			gchar **cmd_parts = g_strsplit(parts[1], " ", 2);
-			info = gfire_process_info_new(parts[0], cmd_parts ? cmd_parts[1] : NULL);
-			g_strfreev(cmd_parts);
+			g_free(process_name_short);
+			continue;
 		}
+
+		// Extract process id
+		guint32 pid;
+
+		gchar *process_id = g_strndup(buffer + 16, 8);
+		if (!process_id)
+		{
+			g_free(process_name_short);
+			continue;
+		}
+
+		process_id = g_strstrip(process_id);
+		pid = (guint32 )atoi(process_id);
+
+		g_free(process_id);
+
+		// Get full process name if needed
+		gchar *process_name, *spacing_pos;
+
+		spacing_pos = strchr(command_line + strlen(process_name_short), ' ');
+		if (!spacing_pos)
+			process_name = process_name_short;
 		else
-			info = gfire_process_info_new(parts[0], NULL);
+		{
+			process_name = g_strndup(command_line, spacing_pos - command_line);
+			g_free(process_name_short);
+		}
 
-		g_strfreev(parts);
+		// Get process arguments and add process to list
+		gchar *arguments = g_strstrip(command_line + strlen(process_name));
+		process_info *info = NULL;
 
+		info = gfire_process_info_new(process_name, (arguments[0] != 0) ? arguments : NULL, pid);
 		p_list->processes = g_list_append(p_list->processes, info);
+
+		g_free(process_name);
 	}
 
+	g_free(buffer);
 	pclose(ps);
 }

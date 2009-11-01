@@ -183,7 +183,7 @@ void gfire_process_list_update(gfire_process_list *p_list)
 			process_info *info = NULL;
 			if(cmdline)
 			{
-				info = gfire_process_info_new(executable_name, cmdline + strlen(pe.szExeFile));
+				info = gfire_process_info_new(executable_name, cmdline + strlen(pe.szExeFile), pe.th32ProcessID);
 				g_free(cmdline);
 			}
 			else

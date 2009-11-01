@@ -43,7 +43,7 @@ void gfire_process_list_free(gfire_process_list *p_list)
 	g_free(p_list);
 }
 
-process_info *gfire_process_info_new(const gchar *p_name, const gchar *p_args)
+process_info *gfire_process_info_new(const gchar *p_name, const gchar *p_args, const guint32 p_id)
 {
 	if(!p_name)
 		return NULL;
@@ -53,6 +53,9 @@ process_info *gfire_process_info_new(const gchar *p_name, const gchar *p_args)
 
 	if(p_args)
 		ret->args = g_strsplit(p_args, " ", 0);
+
+	if (p_id)
+		ret->pid = p_id;
 
 	return ret;
 }
@@ -92,13 +95,7 @@ gboolean gfire_process_list_contains(const gfire_process_list *p_list, const gch
 		if(!info)
 			continue;
 
-#ifndef _WIN32
-		// The ps command only shows the 15 first characters of a process, remove the extra characters
-		// Dirty hack which needs to be removed!!
-		if(strncmp(info->name, p_name, 15) == 0)
-#else
 		if(g_strcmp0(info->name, p_name) == 0)
-#endif // !_WIN32
 		{
 			if(p_args && (strlen(p_args) > 0))
 			{
