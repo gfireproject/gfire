@@ -80,12 +80,12 @@ void gfire_process_list_update(gfire_process_list *p_list)
 
 		spacing_pos = strchr(command_line + strlen(process_name_short), ' ');
 		if (!spacing_pos)
-			process_name = process_name_short;
+			process_name = g_strdup(command_line);
 		else
-		{
 			process_name = g_strndup(command_line, spacing_pos - command_line);
-			g_free(process_name_short);
-		}
+
+		g_free(process_name_short);
+		process_name = g_strstrip(process_name);
 
 		// Get process arguments and add process to list
 		gchar *arguments = g_strstrip(command_line + strlen(process_name));
