@@ -1459,8 +1459,7 @@ gboolean gfire_detect_running_processes_cb(gfire_data *p_gfire)
 	gfire_process_list_update(p_gfire->process_list);
 
 	xmlnode *gfire_game = gfire_game_config_node_first();
-	for (; gfire_game != NULL;
-		 gfire_game = gfire_game_config_node_next(gfire_game))
+	for (; gfire_game != NULL; gfire_game = gfire_game_config_node_next(gfire_game))
 	{
 		xmlnode *command_node = NULL;
 		xmlnode *detect_node = NULL;
@@ -1470,33 +1469,48 @@ gboolean gfire_detect_running_processes_cb(gfire_data *p_gfire)
 			continue;
 
 		detect_node = xmlnode_get_child(command_node, "detect");
-
-		// Detection is not possible without this node
 		if(!detect_node)
 			continue;
 
 		gchar *game_executable = NULL;
-		const gchar *game_executable_argument = NULL;
 		const gchar *game_id = NULL;
 		int game_id_int = 0;
 
 		game_executable = xmlnode_get_data(detect_node);
-		// Detection is not possible without this data
 		if(!game_executable)
 			continue;
-		game_executable_argument = xmlnode_get_attrib(detect_node, "argument");
 
 		game_id = xmlnode_get_attrib(gfire_game, "id");
 		if(game_id)
 			game_id_int = atoi(game_id);
 
 		char *game_executable_name = g_path_get_basename(game_executable);
-		gboolean process_running = gfire_process_list_contains(p_gfire->process_list, game_executable_name, game_executable_argument);
-		if(game_executable_name) g_free(game_executable_name);
 
+		// Arguments are optional
+		gchar *game_exec_required_args = NULL;
+		gchar *game_exec_invalid_args = NULL;
+
+		xmlnode *game_exec_args_node = xmlnode_get_child(command_node, "arguments");
+		if (game_exec_args_node)
+		{
+			game_exec_required_args = xmlnode_get_attrib(game_exec_args_node, "required");
+			game_exec_invalid_args = xmlnode_get_attrib(game_exec_args_node, "invalid");
+		}
+
+		gboolean process_running = gfire_process_list_contains(p_gfire->process_list, game_executable_name, game_exec_required_args, game_exec_invalid_args);
 		gfire_handle_game_detection(p_gfire, game_id_int, process_running, game_executable);
 
-		if(game_executable) g_free(game_executable);
+		if (game_executable_name)
+			g_free(game_executable_name);
+
+		if (game_executable)
+			g_free(game_executable);
+
+		if (game_exec_required_args)
+			g_free(game_exec_required_args);
+
+		if (game_exec_invalid_args)
+			g_free(game_exec_invalid_args);
 	}
 
 	return TRUE;

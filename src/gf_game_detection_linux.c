@@ -88,7 +88,7 @@ void gfire_process_list_update(gfire_process_list *p_list)
 		process_name = g_strstrip(process_name);
 
 		// Get process arguments and add process to list
-		gchar *arguments = g_strstrip(command_line + strlen(process_name));
+		gchar *arguments = command_line + strlen(process_name);
 		process_info *info = NULL;
 
 		info = gfire_process_info_new(process_name, (arguments[0] != 0) ? arguments : NULL, pid);

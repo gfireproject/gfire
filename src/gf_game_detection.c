@@ -83,7 +83,7 @@ void gfire_process_list_clear(gfire_process_list *p_list)
 	}
 }
 
-gboolean gfire_process_list_contains(const gfire_process_list *p_list, const gchar *p_name, const gchar *p_args)
+gboolean gfire_process_list_contains(const gfire_process_list *p_list, const gchar *p_name, const gchar *p_required_args, const gchar *p_invalid_args)
 {
 	if(!p_list || !p_list->processes || !p_name)
 		return FALSE;
@@ -97,41 +97,65 @@ gboolean gfire_process_list_contains(const gfire_process_list *p_list, const gch
 
 		if(g_strcmp0(info->name, p_name) == 0)
 		{
-			if(p_args && (strlen(p_args) > 0))
+			if (!info->args)
+				return FALSE;
+
+			// First check wrong arguments
+			gboolean process_invalid_args = FALSE;
+
+			if(p_invalid_args && strlen(p_invalid_args) > 0)
 			{
-				if(!info->args)
-					return FALSE;
-
-				gchar **arg_pieces = g_strsplit(p_args, " ", 0);
-				if(!arg_pieces)
-					return FALSE;
-
-				int i;
-				for(i = 0; i < g_strv_length(arg_pieces); i++)
+				gchar **p_invalid_args_parts = g_strsplit(p_invalid_args, ";", -1);
+				if (p_invalid_args_parts)
 				{
-					purple_debug_error("gfire", "arg_pieces: %s\n", arg_pieces[i]);
-					int j;
-					gboolean found = FALSE;
-					for(j = 1; j < g_strv_length(info->args); j++)
+					int i;
+					for(i = 0; i < g_strv_length(p_invalid_args_parts); i++)
 					{
-						if(g_strcmp0(arg_pieces[i], info->args[j]) == 0)
+						int j;
+						for(j = 0; j < g_strv_length(info->args); j++)
 						{
-							found = TRUE;
-							break;
+							if(g_strcmp0(p_invalid_args_parts[i], info->args[j]) == 0)
+							{
+								process_invalid_args = TRUE;
+								break;
+							}
 						}
 					}
 
-					if(!found)
+					g_strfreev(p_invalid_args_parts);
+				}
+			}
+
+			// Then check required args
+			gboolean process_required_args = TRUE;
+
+			if (process_invalid_args != TRUE)
+			{
+				if(p_required_args && strlen(p_required_args) > 0)
+				{
+					gchar **p_required_args_parts = g_strsplit(p_required_args, ";", -1);
+					if (p_required_args_parts)
 					{
-						g_strfreev(arg_pieces);
-						return FALSE;
+						int i;
+						for(i = 0; i < g_strv_length(p_required_args_parts); i++)
+						{
+							int j;
+							for(j = 0; j < g_strv_length(info->args); j++)
+							{
+								if(!g_strcmp0(p_required_args_parts[i], info->args[j]) == 0)
+									if (process_required_args == TRUE)
+										process_required_args = FALSE;
+								break;
+							}
+						}
+
+						g_strfreev(p_required_args_parts);
 					}
 				}
-
-				g_strfreev(arg_pieces);
-				return TRUE;
 			}
-			else
+
+			// Finally return as found if valid
+			if (process_invalid_args == FALSE && process_required_args == TRUE)
 				return TRUE;
 		}
 
@@ -139,4 +163,5 @@ gboolean gfire_process_list_contains(const gfire_process_list *p_list, const gch
 	}
 
 	return FALSE;
+
 }
