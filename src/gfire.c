@@ -1472,8 +1472,8 @@ gboolean gfire_detect_running_processes_cb(gfire_data *p_gfire)
 		if(!detect_node)
 			continue;
 
-		gchar *game_executable = NULL;
-		const gchar *game_id = NULL;
+		gchar *game_executable;
+		gchar *game_id;
 		int game_id_int = 0;
 
 		game_executable = xmlnode_get_data(detect_node);
@@ -1484,11 +1484,11 @@ gboolean gfire_detect_running_processes_cb(gfire_data *p_gfire)
 		if(game_id)
 			game_id_int = atoi(game_id);
 
-		char *game_executable_name = g_path_get_basename(game_executable);
+		gchar *game_executable_name = g_path_get_basename(game_executable);
 
 		// Arguments are optional
-		gchar *game_exec_required_args = NULL;
-		gchar *game_exec_invalid_args = NULL;
+		const gchar *game_exec_required_args = NULL;
+		const gchar *game_exec_invalid_args = NULL;
 
 		xmlnode *game_exec_args_node = xmlnode_get_child(command_node, "arguments");
 		if (game_exec_args_node)
@@ -1502,15 +1502,6 @@ gboolean gfire_detect_running_processes_cb(gfire_data *p_gfire)
 
 		if (game_executable_name)
 			g_free(game_executable_name);
-
-		if (game_executable)
-			g_free(game_executable);
-
-		if (game_exec_required_args)
-			g_free(game_exec_required_args);
-
-		if (game_exec_invalid_args)
-			g_free(game_exec_invalid_args);
 	}
 
 	return TRUE;

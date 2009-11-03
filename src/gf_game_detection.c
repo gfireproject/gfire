@@ -142,7 +142,7 @@ gboolean gfire_process_list_contains(const gfire_process_list *p_list, const gch
 							int j;
 							for(j = 0; j < g_strv_length(info->args); j++)
 							{
-								if(!g_strcmp0(p_required_args_parts[i], info->args[j]) == 0)
+								if(g_strcmp0(p_required_args_parts[i], info->args[j]) == 0)
 									if (process_required_args == TRUE)
 										process_required_args = FALSE;
 								break;
