@@ -29,7 +29,7 @@
 typedef struct _process_info
 {
 	gchar *name;
-	gchar **args;
+	gchar *args;
 	guint32 pid;
 } process_info;
 

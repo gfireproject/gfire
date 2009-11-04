@@ -1500,6 +1500,9 @@ gboolean gfire_detect_running_processes_cb(gfire_data *p_gfire)
 		gboolean process_running = gfire_process_list_contains(p_gfire->process_list, game_executable_name, game_exec_required_args, game_exec_invalid_args);
 		gfire_handle_game_detection(p_gfire, game_id_int, process_running, game_executable);
 
+		if (game_executable)
+			g_free(game_executable);
+
 		if (game_executable_name)
 			g_free(game_executable_name);
 	}

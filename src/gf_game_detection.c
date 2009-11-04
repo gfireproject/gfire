@@ -52,7 +52,7 @@ process_info *gfire_process_info_new(const gchar *p_name, const gchar *p_args, c
 	ret->name = g_strdup(p_name);
 
 	if(p_args)
-		ret->args = g_strsplit(p_args, " ", 0);
+		ret->args = g_strdup(p_args);
 
 	if (p_id)
 		ret->pid = p_id;
@@ -66,7 +66,7 @@ static void gfire_process_info_free(process_info *p_info)
 		return;
 
 	if(p_info->name) g_free(p_info->name);
-	if(p_info->args) g_strfreev(p_info->args);
+	if(p_info->args) g_free(p_info->args);
 
 	g_free(p_info);
 }
@@ -100,7 +100,7 @@ gboolean gfire_process_list_contains(const gfire_process_list *p_list, const gch
 			if (!info->args)
 				return FALSE;
 
-			// First check wrong arguments
+			// First check invalid arguments
 			gboolean process_invalid_args = FALSE;
 
 			if(p_invalid_args && strlen(p_invalid_args) > 0)
@@ -111,14 +111,10 @@ gboolean gfire_process_list_contains(const gfire_process_list *p_list, const gch
 					int i;
 					for(i = 0; i < g_strv_length(p_invalid_args_parts); i++)
 					{
-						int j;
-						for(j = 0; j < g_strv_length(info->args); j++)
+						if (g_strrstr(info->args, p_invalid_args_parts[i]) != NULL)
 						{
-							if(g_strcmp0(p_invalid_args_parts[i], info->args[j]) == 0)
-							{
-								process_invalid_args = TRUE;
-								break;
-							}
+							process_invalid_args = TRUE;
+							break;
 						}
 					}
 
@@ -139,12 +135,9 @@ gboolean gfire_process_list_contains(const gfire_process_list *p_list, const gch
 						int i;
 						for(i = 0; i < g_strv_length(p_required_args_parts); i++)
 						{
-							int j;
-							for(j = 0; j < g_strv_length(info->args); j++)
+							if (g_strrstr(info->args, p_required_args_parts[i]) == NULL)
 							{
-								if(g_strcmp0(p_required_args_parts[i], info->args[j]) == 0)
-									if (process_required_args == TRUE)
-										process_required_args = FALSE;
+								process_required_args = FALSE;
 								break;
 							}
 						}
@@ -163,5 +156,4 @@ gboolean gfire_process_list_contains(const gfire_process_list *p_list, const gch
 	}
 
 	return FALSE;
-
 }
