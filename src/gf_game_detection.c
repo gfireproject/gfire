@@ -97,9 +97,6 @@ gboolean gfire_process_list_contains(const gfire_process_list *p_list, const gch
 
 		if(g_strcmp0(info->name, p_name) == 0)
 		{
-			if (!info->args)
-				return FALSE;
-
 			// First check invalid arguments
 			gboolean process_invalid_args = FALSE;
 
