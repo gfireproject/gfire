@@ -1488,14 +1488,13 @@ gboolean gfire_detect_running_processes_cb(gfire_data *p_gfire)
 		gchar *game_executable_name = g_path_get_basename(game_executable);
 
 		// Arguments are optional
-		const gchar *game_exec_required_args;
-		const gchar *game_exec_invalid_args;
-		const gchar *game_name;
+		const gchar *game_exec_required_args = NULL;
+		const gchar *game_exec_invalid_args = NULL;
 
 		if (game_id_int)
 		{
 			const xmlnode *game_config_node = gfire_game_node_by_id(game_id_int);
-			xmlnode *game_exec_args_node;
+			xmlnode *game_exec_args_node = NULL;
 
 			if (game_config_node)
 				game_exec_args_node = xmlnode_get_child(game_config_node, "arguments");
