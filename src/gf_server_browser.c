@@ -22,7 +22,6 @@
  * along with Gfire.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "gf_query.h"
 #include "gf_server_browser.h"
 
 #ifdef HAVE_GTK

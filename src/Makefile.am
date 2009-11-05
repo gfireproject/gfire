@@ -1,4 +1,4 @@
-EXTRA_DIST = \
+# EXTRA_DIST = \
 	gfire.h \
 	gfire_proto.h \
 	debug.h \
@@ -8,7 +8,6 @@ EXTRA_DIST = \
 	gf_chat_proto.h \
 	gf_friend_search.h \
 	gf_friend_search_proto.h \
-	gf_query.h \
 	gf_protocol.h \
 	gf_purple.h \
 	gf_menus.h \
@@ -54,7 +53,6 @@ libxfire_la_SOURCES = \
 	gf_network.c \
 	gf_protocol.c \
 	gf_purple.c \
-	gf_query.c \
 	gfire.c \
 	gfire_proto.c \
 	gf_server_browser.c \
