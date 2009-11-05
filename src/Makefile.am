@@ -1,4 +1,4 @@
-# EXTRA_DIST = \
+EXTRA_DIST = \
 	gfire.h \
 	gfire_proto.h \
 	debug.h \
