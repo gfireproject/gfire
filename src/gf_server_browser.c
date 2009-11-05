@@ -108,13 +108,14 @@ void *gfire_server_browser_update_server_list_thread(GtkListStore *p_server_list
 	GtkTreeIter iter;
 	gboolean valid_iter;
 
-	ipdata_t server_data;
+	// ipdata_t server_data;
 	gchar **server_tok;
 	int query_result;
 
 	for (valid_iter = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(p_server_list_store), &iter); valid_iter == TRUE;
 		 valid_iter = gtk_tree_model_iter_next(GTK_TREE_MODEL(p_server_list_store), &iter))
 	{
+		/*
 		gchar *server_ip;
 
 		gtk_tree_model_get(GTK_TREE_MODEL(p_server_list_store), &iter, 0, &server_ip, -1);
@@ -153,24 +154,19 @@ void *gfire_server_browser_update_server_list_thread(GtkListStore *p_server_list
 
 		ipdata_free(&server_data);
 		g_strfreev(server_tok);
+		*/
 	}
 
 	return NULL;
 }
 
-/**
- * shows the server browser window.
- *
- * @param action: the menu action, passed by the signal connection function
- *
-**/
 void gfire_server_browser_show(PurplePluginAction *p_action)
 {
 	PurpleConnection *gc = (PurpleConnection *)p_action->context;
 	gfire_data *gfire = NULL;
 
-	if (gc == NULL || (gfire = (gfire_data *)gc->proto_data) == NULL) {
-		purple_debug(PURPLE_DEBUG_ERROR, "gfire", "gfire_server_browser_show: GC not set and/or couldn't access gfire data.\n");
+	if (!gc || !(gfire = (gfire_data *)gc->proto_data)) {
+		purple_debug(PURPLE_DEBUG_ERROR, "gfire", "GC not set and/or couldn't access gfire data.\n");
 		return;
 	}
 
