@@ -163,7 +163,7 @@ gchar *gfire_game_data_addr_str(const gfire_game_data *p_game)
 	return g_strdup_printf("%u.%u.%u.%u:%u", p_game->ip.octets[3], p_game->ip.octets[2], p_game->ip.octets[1], p_game->ip.octets[0], p_game->port);
 }
 
-static xmlnode *gfire_game_node_by_id(guint32 p_gameid)
+xmlnode *gfire_game_node_by_id(guint32 p_gameid)
 {
 	if(!gfire_games_xml)
 		if(!gfire_game_load_games_xml())

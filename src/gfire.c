@@ -24,6 +24,7 @@
 
 #include "gfire_proto.h"
 #include "gf_network.h"
+#include "gf_games.h"
 #include "gf_server_detection.h"
 #include "gf_ipc_server.h"
 #include "gfire.h"
@@ -1473,7 +1474,7 @@ gboolean gfire_detect_running_processes_cb(gfire_data *p_gfire)
 			continue;
 
 		gchar *game_executable;
-		gchar *game_id;
+		const gchar *game_id;
 		int game_id_int = 0;
 
 		game_executable = xmlnode_get_data(detect_node);
@@ -1487,15 +1488,26 @@ gboolean gfire_detect_running_processes_cb(gfire_data *p_gfire)
 		gchar *game_executable_name = g_path_get_basename(game_executable);
 
 		// Arguments are optional
-		const gchar *game_exec_required_args = NULL;
-		const gchar *game_exec_invalid_args = NULL;
+		const gchar *game_exec_required_args;
+		const gchar *game_exec_invalid_args;
+		const gchar *game_name;
 
-		xmlnode *game_exec_args_node = xmlnode_get_child(command_node, "arguments");
-		if (game_exec_args_node)
+		if (game_id_int)
 		{
-			game_exec_required_args = xmlnode_get_attrib(game_exec_args_node, "required");
-			game_exec_invalid_args = xmlnode_get_attrib(game_exec_args_node, "invalid");
+			const xmlnode *game_config_node = gfire_game_node_by_id(game_id_int);
+			xmlnode *game_exec_args_node;
+
+			if (game_config_node)
+				game_exec_args_node = xmlnode_get_child(game_config_node, "arguments");
+
+			if (game_exec_args_node)
+			{
+				game_exec_required_args = xmlnode_get_attrib(game_exec_args_node, "required");
+				game_exec_invalid_args = xmlnode_get_attrib(game_exec_args_node, "invalid");
+			}
 		}
+		else
+			purple_debug_error("gfire", "Couldn't get game id to obtain game arguments.\n");
 
 		gboolean process_running = gfire_process_list_contains(p_gfire->process_list, game_executable_name, game_exec_required_args, game_exec_invalid_args);
 		gfire_handle_game_detection(p_gfire, game_id_int, process_running, game_executable);
