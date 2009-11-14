@@ -44,7 +44,6 @@ GFIRE_SOURCES = \
 	${GFIRE_SRC_DIR}/gf_util.c \
 	${GFIRE_SRC_DIR}/gfire_proto.c \
 	${GFIRE_SRC_DIR}/gf_network.c \
-	${GFIRE_SRC_DIR}/gf_query.c \
 	${GFIRE_SRC_DIR}/gf_game_detection.c \
 	${GFIRE_SRC_DIR}/gf_game_detection_win.c \
 	${GFIRE_SRC_DIR}/gf_ipc_server.c \
