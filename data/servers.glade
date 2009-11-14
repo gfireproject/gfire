@@ -78,7 +78,7 @@
               <object class="GtkToolButton" id="favorites_button">
                 <property name="visible">True</property>
                 <property name="use_underline">True</property>
-                <property name="icon_name">address-book-new</property>
+                <property name="stock_id">gtk-index</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -90,7 +90,7 @@
                 <property name="visible">True</property>
                 <property name="label" translatable="yes">bookmark-new</property>
                 <property name="use_underline">True</property>
-                <property name="icon_name">bookmark-new</property>
+                <property name="stock_id">gtk-add</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -155,13 +155,16 @@
                 <property name="can_focus">True</property>
                 <property name="model">servers_list_store</property>
                 <property name="headers_clickable">False</property>
+                <property name="reorderable">True</property>
                 <property name="search_column">0</property>
                 <child>
                   <object class="GtkTreeViewColumn" id="name_column">
                     <property name="resizable">True</property>
+                    <property name="sizing">autosize</property>
                     <property name="max_width">256</property>
-                    <property name="title" translatable="yes">Server name</property>
+                    <property name="title">Server name</property>
                     <property name="expand">True</property>
+                    <property name="clickable">True</property>
                     <child>
                       <object class="GtkCellRendererText" id="name_cell_renderer"/>
                       <attributes>
@@ -173,7 +176,9 @@
                 <child>
                   <object class="GtkTreeViewColumn" id="ip_column">
                     <property name="resizable">True</property>
-                    <property name="title" translatable="yes">Server IP</property>
+                    <property name="sizing">autosize</property>
+                    <property name="title">Server IP</property>
+                    <property name="expand">True</property>
                     <child>
                       <object class="GtkCellRendererText" id="adress_cell_renderer"/>
                       <attributes>
@@ -185,7 +190,8 @@
                 <child>
                   <object class="GtkTreeViewColumn" id="ping_column">
                     <property name="resizable">True</property>
-                    <property name="title" translatable="yes">Ping</property>
+                    <property name="sizing">autosize</property>
+                    <property name="title">Ping</property>
                     <child>
                       <object class="GtkCellRendererText" id="ping_cell_renderer"/>
                       <attributes>
@@ -197,7 +203,9 @@
                 <child>
                   <object class="GtkTreeViewColumn" id="players_column">
                     <property name="resizable">True</property>
-                    <property name="title" translatable="yes">Players</property>
+                    <property name="sizing">autosize</property>
+                    <property name="title">Players</property>
+                    <property name="clickable">True</property>
                     <child>
                       <object class="GtkCellRendererText" id="players_cell_renderer"/>
                       <attributes>
