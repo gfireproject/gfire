@@ -22,22 +22,13 @@
  * along with Gfire.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "gf_server_browser_proto.h"
+
 #ifndef _GF_SERVER_BROWSER_H
 #define _GF_SERVER_BROWSER_H
 
-#include "gf_base.h"
-#include "gfire.h"
-#include "gf_server_browser_proto.h"
-
-#ifdef HAVE_GTK
-typedef struct _server_browser_callback_args
-{
-	gfire_data *gfire;
-	GtkBuilder *builder;
-} server_browser_callback_args;
-
 void gfire_server_browser_show(PurplePluginAction *p_action);
-void *gfire_server_browser_update_server_list_thread(GtkListStore *p_server_list_store);
-#endif // HAVE_GTK
+static void gfire_server_browser_request_list_cb(server_browser_callback_args *p_args, GtkWidget *p_button);
+static void gfire_server_browser_connect_cb(server_browser_callback_args *p_args, GtkWidget *p_sender);
 
 #endif // _GF_SERVER_BROWSER_H

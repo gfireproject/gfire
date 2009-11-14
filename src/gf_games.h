@@ -97,6 +97,7 @@ xmlnode *gfire_game_node_next(xmlnode *p_node);
 void gfire_update_version_cb(PurpleUtilFetchUrlData *p_url_data, gpointer p_data, const gchar *p_buf, gsize p_len, const gchar *p_error_message);
 void gfire_update_games_list_cb(PurpleUtilFetchUrlData *p_url_data, gpointer p_data, const gchar *p_buf, gsize p_len, const gchar *p_error_message);
 xmlnode *gfire_game_node_by_id(guint32 p_gameid);
+gchar *gfire_game_server_query_type(guint32 p_gameid);
 
 // GFIRE GAME CONFIG XML ////////////////////////////////////////////
 gboolean gfire_game_load_config_xml();
