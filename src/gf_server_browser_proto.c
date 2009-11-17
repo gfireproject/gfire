@@ -24,6 +24,9 @@
 
 #include "gf_server_browser_proto.h"
 
+#ifndef _GF_SERVER_BROWSER_PROTO_C
+#define _GF_SERVER_BROWSER_PROTO_C
+
 const char quake3_query[] = {0xFF, 0xFF, 0xFF, 0xFF, 0x67, 0x65, 0x74, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x0A};
 const char ut2004_query[] = {0x5C, 0x69, 0x6E, 0x66, 0x6F, 0x5C};
 const char cod4_query[] = {0xFF, 0xFF, 0xFF, 0XFF, 0x67, 0x65, 0x74, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73};
@@ -187,9 +190,9 @@ void gfire_server_browser_update_server_list_thread(gfire_server_info *server_in
 
     // Determine query type
     if (!g_strcmp0(server_info->query_type, "WOLFET"))
-    {
 	server_info_queried = gfire_server_browser_wolfet(inet_addr(server_ip_full_parts[0]), atoi(server_ip_full_parts[1]));
-    }
+    else if (!g_strcmp0(server_info->query_type, "COD4MW"))
+	server_info_queried = gfire_server_browser_wolfet(inet_addr(server_ip_full_parts[0]), atoi(server_ip_full_parts[1]));
     else
 	return;
 
@@ -341,3 +344,5 @@ guint16 gfire_server_browser_proto_create_serverlist_request(guint32 p_gameid)
 
     return offset;
 }
+
+#endif // _GF_SERVER_BROWSER_PROTO_C

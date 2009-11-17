@@ -45,6 +45,11 @@
 #include <string.h>
 #include <errno.h>
 
+// Networking libraries (required by server browser)
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+
 // Glib
 #include <glib-object.h>
 #include <glib.h>
@@ -80,7 +85,6 @@
 #include "gf_debug.h"
 
 #include "gf_util.h"
-
 
 // Internationalization /////////////////////////////////////////////
 #ifdef ENABLE_NLS
@@ -120,7 +124,7 @@
 #define XFIRE_PORT 25999
 #define XFIRE_PROTO_VERSION 112
 #define XFIRE_CONNECT_STEPS 3
-#define XFIRE_KEEPALIVE_TIME 180  // see gfire_keep_alive for more info
+#define XFIRE_KEEPALIVE_TIME 180  // See gfire_keep_alive for more info
 #define XFIRE_PROFILE_URL "http://www.xfire.com/profile/"
 #define XFIRE_XML_INFO_URL "http://www.xfire.com/xml/%s/%s/" // username, info-type
 #define XFIRE_AVATAR_URL "http://screenshot.xfire.com/avatar/%s.jpg?%u" // username, revision number

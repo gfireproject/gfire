@@ -27,28 +27,14 @@
 #include "gf_protocol.h"
 #include "gfire.h"
 
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <netinet/in.h>
+#ifndef _GF_SERVER_BROWSER_PROTO_H
+#define _GF_SERVER_BROWSER_PROTO_H
 
 #define GFIRE_SERVER_BROWSER_BUF 2048
 #define GFIRE_SERVER_BROWSER_THREADS_LIMIT 8
 
 static GThreadPool *servers_list_thread_pool;
 guint32 servers_list_queried_game_id;
-
-typedef struct _server_browser_callback_args
-{
-	gfire_data *gfire;
-	GtkBuilder *builder;
-} server_browser_callback_args;
-
-typedef struct _gfire_server_browser_thread_args
-{
-	gint server_list_pos;
-	gint first_server;
-	gint last_server;
-} gfire_server_browser_thread_args;
 
 typedef struct _gfire_server_info
 {
@@ -70,6 +56,14 @@ typedef struct _gfire_server_info
 	guint32 max_players;
 } gfire_server_info;
 
+typedef struct _server_browser_callback_args
+{
+	gfire_data *gfire;
+	GtkBuilder *builder;
+} server_browser_callback_args;
+
 void gfire_server_browser_update_server_list_thread(gfire_server_info *server_info);
 guint16 gfire_server_browser_proto_create_serverlist_request(guint32 p_gameid);
 void gfire_server_browser_proto_serverlist(gfire_data *p_gfire, guint16 p_packet_len);
+
+#endif // _GF_SERVER_BROWSER_PROTO_H
