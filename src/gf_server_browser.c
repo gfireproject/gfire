@@ -24,9 +24,6 @@
 
 #include "gf_server_browser.h"
 
-#ifndef _GF_SERVER_BROWSER_C
-#define _GF_SERVER_BROWSER_C
-
 void gfire_server_browser_close(GtkWidget *server_browser_window)
 {
     if (servers_list_thread_pool)
@@ -175,5 +172,3 @@ static void gfire_server_browser_connect_cb(server_browser_callback_args *p_args
     else
 	purple_debug_error("gfire", "Couldn't get selected server to join.\n");
 }
-
-#endif // _GF_SERVER_BROWSER_C
