@@ -86,7 +86,7 @@ void gfire_send(PurpleConnection *p_gc, guint16 p_size)
 
 	GTimeVal gtv;
 	int tmp = 0;
-	
+
 	if (gfire->fd >= 0)
 	{
 		tmp = send(gfire->fd, gfire_buffout, p_size, 0);
@@ -215,7 +215,7 @@ void gfire_parse_packet(gfire_data *p_gfire, guint16 p_packet_len, guint16 p_pac
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received: wrong passwd/username\n");
 			purple_connection_error_reason(gfire_get_connection(p_gfire), PURPLE_CONNECTION_ERROR_AUTHENTICATION_FAILED, _("Password or Username Incorrect."));
 		break;
-	
+
 		case 130:
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "Log in was successful\n");
 			purple_connection_set_state(gfire_get_connection(p_gfire), PURPLE_CONNECTED);
@@ -224,13 +224,13 @@ void gfire_parse_packet(gfire_data *p_gfire, guint16 p_packet_len, guint16 p_pac
 			gfire_proto_session_info(p_gfire, p_packet_len);
 
 			// Send collective statistics
-            ob_len = gfire_proto_create_collective_statistics(getenv("LANG") ? getenv("LANG") : "en_GB", "Gfire", GFIRE_VERSION_STRING, "");
+			ob_len = gfire_proto_create_collective_statistics(getenv("LANG") ? getenv("LANG") : "en_GB", "Gfire", GFIRE_VERSION_STRING, "");
 			if(ob_len > 0) gfire_send(gfire_get_connection(p_gfire), ob_len);
 
 			// Update current status
 			gfire_set_current_status(p_gfire);
 
-			// load game xml from user dir; these don't need to work unless we are connected
+			// Load game xml from user dir; these don't need to work unless we are connected
 			gfire_game_load_games_xml();
 			gfire_game_load_config_xml();
 			p_gfire->det_source = g_timeout_add_seconds(5, (GSourceFunc)gfire_detect_running_processes_cb, p_gfire);
@@ -246,12 +246,12 @@ void gfire_parse_packet(gfire_data *p_gfire, guint16 p_packet_len, guint16 p_pac
 			gfire_buddy_proto_on_off(p_gfire, p_packet_len);
 		break;
 
-		case 133:		
+		case 133:
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "got IM (or ack Packet)\n");
 			gfire_buddy_proto_im(p_gfire, p_packet_len);
 		break;
-	
-		case 134:	
+
+		case 134:
 			/* out of date version .. */
 			/* autoset NEW VERSION :) */
 			memcpy(&newver, p_gfire->buff_in + 17, sizeof(newver));
@@ -275,12 +275,12 @@ void gfire_parse_packet(gfire_data *p_gfire, guint16 p_packet_len, guint16 p_pac
 
 		case 137:
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "invitation result\n");
-		break;	
+		break;
 
 		case 138:
-			purple_debug(PURPLE_DEBUG_MISC, "gfire", "got buddy invitation\n");		
+			purple_debug(PURPLE_DEBUG_MISC, "gfire", "got buddy invitation\n");
 			gfire_proto_invitation(p_gfire, p_packet_len);
-		break;	
+		break;
 
 		case 139:
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "Remove buddy received\n");
@@ -296,8 +296,8 @@ void gfire_parse_packet(gfire_data *p_gfire, guint16 p_packet_len, guint16 p_pac
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received keep alive response (PONG)\n");
 		break;
 
-		case 145:	
-			purple_debug(PURPLE_DEBUG_MISC, "gfire", "ERROR: You have signed on from another location.\n");	
+		case 145:
+			purple_debug(PURPLE_DEBUG_MISC, "gfire", "ERROR: You have signed on from another location.\n");
 			purple_connection_error_reason(gfire_get_connection(p_gfire), PURPLE_CONNECTION_ERROR_NAME_IN_USE, _("You have signed on from another location."));
 		break;
 
@@ -305,7 +305,7 @@ void gfire_parse_packet(gfire_data *p_gfire, guint16 p_packet_len, guint16 p_pac
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "got buddylist: voip software that a buddy is using\n");
 			gfire_buddy_proto_voip_status(p_gfire, p_packet_len);
 		break;
-		
+
 		case 150:
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received serverlist\n");
 			gfire_server_browser_proto_serverlist(p_gfire, p_packet_len);
@@ -325,7 +325,7 @@ void gfire_parse_packet(gfire_data *p_gfire, guint16 p_packet_len, guint16 p_pac
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received clan list\n");
 			gfire_proto_clan_list(p_gfire, p_packet_len);
 		break;
-		
+
 		case 159:
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received clan buddy list\n");
 			gfire_proto_clan_blist(p_gfire, p_packet_len);
@@ -390,7 +390,7 @@ void gfire_parse_packet(gfire_data *p_gfire, guint16 p_packet_len, guint16 p_pac
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received group chat invite\n");
 			gfire_chat_proto_invite(p_gfire, p_packet_len);
 		break;
-		
+
 		case 357:
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "groupchat buddy permission changed\n");
 			gfire_chat_proto_buddy_permission_change(p_gfire, p_packet_len);
@@ -399,13 +399,13 @@ void gfire_parse_packet(gfire_data *p_gfire, guint16 p_packet_len, guint16 p_pac
 		case 368:
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received group chat channel info, member list\n");
 			gfire_chat_proto_info(p_gfire, p_packet_len);
-		break;		
-			
+		break;
+
 		case 374:
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "groupchat motd changed\n");
 			gfire_chat_proto_motd_change(p_gfire, p_packet_len);
 		break;
-		
+
 		case 387:
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received chat reject confirmation\n");
 		break;

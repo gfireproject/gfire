@@ -47,16 +47,19 @@ static gboolean check_process_argument(const int process_id, const gchar *proces
 	memset(buf, 0, sizeof(buf));
 	FILE *cmd = popen(command, "r");
 
-	while(((c = getc(cmd)) != EOF) && (count < (sizeof(buf) - 1))) {
-		if(c == '\n') break;
+	while(((c = getc(cmd)) != EOF) && (count < (sizeof(buf) - 1)))
+	{
+		if (c == '\n') break;
 		buf[count++] = c;
 	}
 
 	pclose(cmd);
 
 	char *argument_match = strstr(buf, process_argument);
-	if (argument_match == NULL) return FALSE;
-	else return TRUE;
+	if (argument_match == NULL)
+		return FALSE;
+	else
+		return TRUE;
 }
 
 
@@ -70,9 +73,6 @@ static gboolean check_process_argument(const int process_id, const gchar *proces
 **/
 gboolean check_process(const gchar *process, const gchar *process_argument)
 {
-	#ifdef IS_WINDOWS
-	return FALSE;
-	#else
 	gchar *command = NULL;
 
 	if(!process)
@@ -131,7 +131,6 @@ gboolean check_process(const gchar *process, const gchar *process_argument)
 		g_free(command);
 		return FALSE;
 	}
-	#endif
 }
 
 void gfire_detect_teamspeak_server(guint8 **voip_ip, guint32 *voip_port)
@@ -280,7 +279,8 @@ void gfire_detect_mumble_server(const gchar *executable, guint8 **voip_ip, guint
 
 void gfire_server_detection_detect(gfire_data *p_gfire)
 {
-	if (!p_gfire) return;
+	if (!p_gfire)
+		return;
 
 	/* Get the local and remote ip, needed to be able to filter them out */
 	char *local_ip = NULL, *remote_ip = NULL;
@@ -362,7 +362,8 @@ void gfire_server_detection_detect(gfire_data *p_gfire)
 				while (g_match_info_matches(regex_matches) == TRUE)
 				{
 					gchar *server_ip_tmp = g_match_info_fetch(regex_matches, 0);
-					if (server_ip_tmp != NULL) server_ip = server_ip_tmp;
+					if (server_ip_tmp != NULL)
+						server_ip = server_ip_tmp;
 
 					g_match_info_next(regex_matches, NULL);
 				}
@@ -378,21 +379,27 @@ void gfire_server_detection_detect(gfire_data *p_gfire)
 				/* Check if port is allowed */
 				if (detection_info->exclude_ports)
 				{
-					for (; detection_info->exclude_ports[i] != NULL; i++) {
-						if (server_port == atoi(detection_info->exclude_ports[i])) server_ip = NULL;
+					for (; detection_info->exclude_ports[i] != NULL; i++)
+					{
+						if (server_port == atoi(detection_info->exclude_ports[i]))
+							server_ip = NULL;
 					}
 				}
 
 			}
-			else server_ip = NULL;
+			else
+				server_ip = NULL;
 
-			/* Detect if game uses udp */
+			/* Detect if game uses UDP */
 			GRegex *regex_udp;
 
 			regex_udp = g_regex_new("udp", G_REGEX_OPTIMIZE, 0, NULL);
 			regex_match = g_regex_match(regex_udp, current_line, 0, NULL);
-			if (regex_match == TRUE) server_detect_udp = TRUE;
-			else server_detect_udp = FALSE;
+
+			if (regex_match)
+				server_detect_udp = TRUE;
+			else
+				server_detect_udp = FALSE;
 
 			pclose(command_pipe);
 		}

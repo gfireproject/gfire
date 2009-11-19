@@ -201,7 +201,7 @@ static void gfire_login_cb(gpointer p_data, gint p_source, const gchar *p_error_
 
     // Update Gfire if needed
     if (!gfire_update(gfire))
-        purple_debug_error("gfire", "Unable to query latest Gfire and games list version. Website down?\n");
+	purple_debug_error("gfire", "Unable to query latest Gfire and games list version. Website down?\n");
 }
 
 gboolean gfire_update(gfire_data *p_gfire)
@@ -1375,49 +1375,49 @@ static void gfire_handle_game_detection(gfire_data *p_gfire, guint32 p_gameid, g
 {
 	if (!p_gfire)
 	{
-		purple_debug_error("gfire", "gfire_handle_game_detection: GC not set.\n");
+		purple_debug_error("gfire", "GC not set.\n");
 		return;
 	}
 
 	gchar *game_name = gfire_game_name(p_gameid);
 	guint16 len = 0;
 
-	if (p_running == TRUE)
+	if (p_running)
 	{
 		if (purple_account_get_bool(purple_connection_get_account(p_gfire->gc), "server_detection_option", FALSE) == TRUE)
-		{
 			g_thread_create((GThreadFunc )gfire_server_detection_detect, p_gfire, TRUE, NULL);
-		}
 
 		if (!gfire_is_playing(p_gfire))
 		{
 			gboolean norm = purple_account_get_bool(purple_connection_get_account(p_gfire->gc), "ingamenotificationnorm", FALSE);
 			purple_debug_info("gfire", "%s is running. Telling Xfire ingame status.\n", NN(game_name));
 
-			if (norm == TRUE) purple_notify_message(NULL, PURPLE_NOTIFY_MSG_INFO, _("Ingame status"),
-										NN(game_name), _("Your status has been changed."), NULL, NULL);
+			if (norm)
+				purple_notify_message(NULL, PURPLE_NOTIFY_MSG_INFO, _("Ingame status"),
+						      NN(game_name), _("Your status has been changed."), NULL, NULL);
 
 			p_gfire->game_data.id = p_gameid;
-
 			len = gfire_proto_create_join_game(&p_gfire->game_data);
-			if (len > 0) gfire_send(gfire_get_connection(p_gfire), len);
+
+			if (len > 0)
+				gfire_send(gfire_get_connection(p_gfire), len);
 		}
 	}
 	else
 	{
-		if(gfire_is_playing(p_gfire) && p_gfire->game_data.id == p_gameid)
+		if (gfire_is_playing(p_gfire) && p_gfire->game_data.id == p_gameid)
 		{
-			purple_debug(PURPLE_DEBUG_MISC, "gfire",
-						"gfire_handle_game_detection: Game not running anymore, sending out of game status.\n");
+			purple_debug_misc("gfire", "Game not running anymore, sending out-of-game status.\n");
 
 			gfire_game_data_reset(&p_gfire->game_data);
-
 			len = gfire_proto_create_join_game(&p_gfire->game_data);
-			if(len > 0) gfire_send(gfire_get_connection(p_gfire), len);
+
+			if(len > 0)
+				gfire_send(gfire_get_connection(p_gfire), len);
 		}
 	}
 
-	if(p_gfire->server_changed == TRUE && gfire_is_playing(p_gfire))
+	if(p_gfire->server_changed && gfire_is_playing(p_gfire))
 	{
 		if (!gfire_game_data_has_addr(&p_gfire->game_data))
 		{
@@ -1425,21 +1425,24 @@ static void gfire_handle_game_detection(gfire_data *p_gfire, guint32 p_gameid, g
 			if(len > 0) gfire_send(gfire_get_connection(p_gfire), len);
 
 			p_gfire->server_changed = FALSE;
-			purple_debug_info("gfire_handle_game_detection", "Not playing on a server anymore.\n");
+			purple_debug_info("gfire", "Not playing on a server anymore.\n");
 		}
 		else
 		{
 			len = gfire_proto_create_join_game(&p_gfire->game_data);
-			if(len > 0) gfire_send(gfire_get_connection(p_gfire), len);
+			if(len > 0)
+				gfire_send(gfire_get_connection(p_gfire), len);
 
 			p_gfire->server_changed = FALSE;
 			gchar *addr = gfire_game_data_addr_str(&p_gfire->game_data);
-			purple_debug_info("gfire_handle_game_detection", "Playing on server (%s)\n", addr);
+
+			purple_debug_info("gfire", "Playing on server (%s)\n", addr);
 			g_free(addr);
 		}
 	}
 
-	if(game_name) g_free(game_name);
+	if(game_name)
+		g_free(game_name);
 }
 
 gboolean gfire_detect_running_processes_cb(gfire_data *p_gfire)
@@ -1451,10 +1454,10 @@ gboolean gfire_detect_running_processes_cb(gfire_data *p_gfire)
 	}
 
 	gboolean norm = purple_account_get_bool(purple_connection_get_account(gfire_get_connection(p_gfire)), "ingamedetectionnorm", TRUE);
-	if(norm == FALSE)
+	if (norm == FALSE)
 		return TRUE;
 
-	if(p_gfire->external_game)
+	if (p_gfire->external_game)
 		return TRUE;
 
 	gfire_process_list_update(p_gfire->process_list);
@@ -1546,8 +1549,8 @@ void gfire_join_game(gfire_data *p_gfire, const gfire_game_data *p_game_data)
 	if (game_config_info == NULL)
 	{
 		purple_debug_error("gfire: gfire_join_game()", "Game config info struct not defined!\n");
- 		return;
- 	}
+		return;
+	}
 
 
 	game_launch_command = gfire_game_config_info_get_command(game_config_info, p_game_data);

@@ -646,23 +646,23 @@ void gfire_game_detection_info_free(gfire_game_detection_info *p_info)
 gfire_game_detection_info *gfire_game_detection_info_get(guint32 p_gameid)
 {
 	// Launch info
-	if(!gfire_game_config_xml)
+	if (!gfire_game_config_xml)
 		return NULL;
 
 	xmlnode *game_node = gfire_game_config_node_by_id(p_gameid);
-	if(!game_node)
+	if (!game_node)
 		return NULL;
 
 	xmlnode *command_node = xmlnode_get_child(game_node, "command");
-	if(!command_node)
+	if (!command_node)
 		return NULL;
 
 	xmlnode *detect_node = xmlnode_get_child(command_node, "detect");
-	if(!detect_node)
+	if (!detect_node)
 		return NULL;
 
 	gfire_game_detection_info *ret = gfire_game_detection_info_create();
-	if(!ret)
+	if (!ret)
 		return NULL;
 
 	ret->executable = xmlnode_get_data(detect_node);
@@ -670,33 +670,35 @@ gfire_game_detection_info *gfire_game_detection_info_get(guint32 p_gameid)
 	ret->id = p_gameid;
 
 	// Game info
-	if(!gfire_games_xml)
+	if (!gfire_games_xml)
 		return ret;
 
 	game_node = gfire_game_node_by_id(p_gameid);
 	if(!game_node)
 		return ret;
 
-	detect_node = xmlnode_get_child(game_node, "server_detect");
+	detect_node = xmlnode_get_child(game_node, "server_detection");
 	if(!detect_node)
 		return ret;
 
+	g_printf("I'll try!\n");
+
 	gchar *detect = xmlnode_get_data(detect_node);
-	if(g_ascii_strcasecmp(detect, "true") == 0)
+	if(g_ascii_strcasecmp(detect, "enabled") == 0)
 		ret->detect = TRUE;
 	else
 		ret->detect = FALSE;
 
 	g_free(detect);
 
-	xmlnode *exclude_ports = xmlnode_get_child(game_node, "server_exclude_ports");
+	xmlnode *exclude_ports = xmlnode_get_child(game_node, "server_excluded_ports");
 	if(!exclude_ports)
 		return ret;
 
 	gchar *exclude_ports_str = xmlnode_get_data(exclude_ports);
-	ret->exclude_ports = g_strsplit(exclude_ports_str, ",", -1);
-	g_free(exclude_ports_str);
+	ret->exclude_ports = g_strsplit(exclude_ports_str, ";", -1);
 
+	g_free(exclude_ports_str);
 	return ret;
 }
 
