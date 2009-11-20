@@ -39,7 +39,6 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 
-gboolean check_process(const gchar *process, const gchar *process_argument);
 void gfire_detect_teamspeak_server(guint8 **voip_ip, guint32 *voip_port);
 void gfire_server_detection_detect(gfire_data *p_gfire);
 

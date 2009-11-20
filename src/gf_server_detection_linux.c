@@ -3,7 +3,7 @@
  *
  * Copyright (C) 2000-2001, Beat Wolf <asraniel@fryx.ch>
  * Copyright (C) 2006,      Keith Geffert <keith@penguingurus.com>
- * Copyright (C) 2008-2009	Laurent De Marez <laurentdemarez@gmail.com>
+ * Copyright (C) 2008-2009  Laurent De Marez <laurentdemarez@gmail.com>
  * Copyright (C) 2009       Warren Dumortier <nwarrenfl@gmail.com>
  * Copyright (C) 2009	    Oliver Ney <oliver@dryder.de>
  *
@@ -24,114 +24,6 @@
 
 #include "gf_games.h"
 #include "gf_server_detection_linux.h"
-
-/**
- * Checks if an argument has been used on a running process.
- * This function was made to find game mods.
- *
- * @param process_id: the process id
- * @param process_argument: the argument to check
- *
- * @return: TRUE if the process has been launched with the given argument, FALSE if not or if an error occured.
- *
-**/
-static gboolean check_process_argument(const int process_id, const gchar *process_argument)
-{
-	char command[256];
-	sprintf(command, "cat /proc/%d/cmdline | gawk -F[[:cntrl:]] \'{ for (i = 1; i < NF + 1; i++) printf(\"%%s \", $i) }\'", process_id);
-
-	char buf[256];
-	int c;
-	int count = 0;
-
-	memset(buf, 0, sizeof(buf));
-	FILE *cmd = popen(command, "r");
-
-	while(((c = getc(cmd)) != EOF) && (count < (sizeof(buf) - 1)))
-	{
-		if (c == '\n') break;
-		buf[count++] = c;
-	}
-
-	pclose(cmd);
-
-	char *argument_match = strstr(buf, process_argument);
-	if (argument_match == NULL)
-		return FALSE;
-	else
-		return TRUE;
-}
-
-
-/**
- * Checks if a process is running.
- *
- * @param process: the process name
- *
- * @return: TRUE if the process is running, FALSE if not or if an error occured
- *
-**/
-gboolean check_process(const gchar *process, const gchar *process_argument)
-{
-	gchar *command = NULL;
-
-	if(!process)
-		return FALSE;
-
-	command = g_strdup_printf("ps -e | grep -i \"%s\" | grep -v grep", process);
-	if(!command)
-		return FALSE;
-	//sprintf(command, "lsof \"%s\"", process);
-
-	char buf[256];
-	int c;
-	int count = 0;
-
-	memset(buf, 0, sizeof(buf));
-	FILE *cmd = popen(command, "r");
-	while(((c = getc(cmd)) != EOF) && (count < (sizeof(buf) - 1))) {
-		if(c == '\n') break;
-		buf[count++] = c;
-	}
-
-	pclose(cmd);
-
-	if (g_strcmp0(buf, "") != 0)
-	{
-		if (process_argument != NULL)
-		{
-			int process_id;
-
-			g_free(command);
-			command = g_strdup_printf("pidof \"%s\"", process);
-			if(!command)
-				return FALSE;
-			memset(buf, 0, sizeof(buf));
-			FILE *cmd = popen(command, "r");
-
-			count = 0;
-			while(((c = getc(cmd)) != EOF) && (count < (sizeof(buf) - 1))) {
-				if(c == '\n') break;
-				buf[count++] = c;
-			}
-
-			pclose(cmd);
-			process_id = atoi(buf);
-			gboolean process_running_argument = check_process_argument(process_id, process_argument);
-
-			g_free(command);
-			return process_running_argument;
-		}
-		else {
-			g_free(command);
-			return TRUE;
-		}
-	}
-	else {
-		g_free(command);
-		return FALSE;
-	}
-}
 
 void gfire_detect_teamspeak_server(guint8 **voip_ip, guint32 *voip_port)
 {
