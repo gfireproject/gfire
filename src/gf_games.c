@@ -3,7 +3,7 @@
  *
  * Copyright (C) 2000-2001, Beat Wolf <asraniel@fryx.ch>
  * Copyright (C) 2006,      Keith Geffert <keith@penguingurus.com>
- * Copyright (C) 2008-2009	Laurent De Marez <laurentdemarez@gmail.com>
+ * Copyright (C) 2008-2009  Laurent De Marez <laurentdemarez@gmail.com>
  * Copyright (C) 2009       Warren Dumortier <nwarrenfl@gmail.com>
  * Copyright (C) 2009	    Oliver Ney <oliver@dryder.de>
  *
@@ -30,16 +30,14 @@ static xmlnode *gfire_game_config_xml = NULL;
 
 void gfire_update_version_cb(PurpleUtilFetchUrlData *p_url_data, gpointer p_data, const gchar *p_buf, gsize p_len, const gchar *p_error_message)
 {
-    PurpleConnection *gc = (PurpleConnection *)p_data;
-
     if (!p_data || !p_buf || !p_len)
 	purple_debug_error("gfire", "Unable to query latest Gfire and games list version. Website down?\n");
     else
     {
 	xmlnode *version_node = xmlnode_from_str(p_buf, p_len);
 	if (!version_node)
-			purple_debug_error("gfire", "Unable to query latest Gfire and games list version. Website down?\n");
-		else
+		purple_debug_error("gfire", "Unable to query latest Gfire and games list version. Website down?\n");
+	else
 	{
 	    // Get current Gfire and games list version
 	    guint32 gfire_latest_version = atoi(xmlnode_get_attrib(version_node, "version"));
@@ -322,7 +320,7 @@ gboolean gfire_game_load_config_xml()
 		g_free(filename);
 	}
 
-    node = purple_util_read_xml_from_file("gfire_game_config.xml", "Gfire Game Config List");
+	node = purple_util_read_xml_from_file("gfire_game_config.xml", "Gfire Game Config List");
 	if(!node)
 	{
 		purple_debug(PURPLE_DEBUG_ERROR, "gfire", "gfire_game_load_config_xml: Couldn't load game config.\n");
@@ -336,20 +334,14 @@ gboolean gfire_game_load_config_xml()
 	return TRUE;
 }
 
-/**
- * Determines of a game is configured, and is playable
- *
- * @param gc	Valid PurpleConnection
- * @param game	integer ID of game to check to see if its playable
- *
- * @return TRUE if game is playable, FALSE if not
-*/
 gboolean gfire_game_playable(guint32 p_gameid)
 {
 	gfire_game_config_info *foo = NULL;
 
 	foo = gfire_game_config_info_get(p_gameid);
-	if (!foo) return FALSE;
+	if (!foo)
+		return FALSE;
+
 	gfire_game_config_info_free(foo);
 	return TRUE;
 }
@@ -408,60 +400,80 @@ void gfire_game_config_info_free(gfire_game_config_info *p_config_info)
 	g_free(p_config_info);
 }
 
+// FIXME: Change function to use gfire_game_node_by_name
 gfire_game_config_info *gfire_game_config_info_get(guint32 p_gameid)
 {
-	gfire_game_config_info *l = NULL;
-	xmlnode *node = NULL;
+	gfire_game_config_info *game_info = NULL;
+
+	xmlnode *game_node = NULL;
+	xmlnode *game_config_node = NULL;
+
+	game_node = gfire_game_config_node_by_id(p_gameid);
+	if (!game_node)
+		return NULL;
+
+	game_config_node = gfire_game_node_by_id(p_gameid);
+	if (!game_config_node)
+		return NULL;
+
+	// Game was found
+	game_info = gfire_game_config_info_new();
+	if (!game_info)
+		return NULL;
+
+	game_info->game_id = p_gameid;
+	game_info->game_name = g_strdup(xmlnode_get_attrib(game_node, "name"));
+
+	// Get attribs from game config
 	xmlnode *cnode = NULL;
 	xmlnode *command = NULL;
 
-	node = gfire_game_config_node_by_id(p_gameid);
-	if(!node)
-		return NULL;
-
-	/* got the game */
-	l = gfire_game_config_info_new();
-	if (!l)
-		return NULL; /* Out of Memory */
-
-	l->game_id = p_gameid;
-	l->game_name = g_strdup(xmlnode_get_attrib(node, "name"));
-
-	for(cnode = node->child; cnode; cnode = cnode->next)
+	for(cnode = game_node->child; cnode; cnode = cnode->next)
 	{
 		if(cnode->type != XMLNODE_TYPE_TAG)
 			continue;
 
-		if(g_strcmp0(cnode->name, "command") == 0)
+		if (g_strcmp0(cnode->name, "command") == 0)
 		{
 			if ((command = xmlnode_get_child(cnode, "prefix")))
-				l->game_prefix = xmlnode_get_data(command);
+				game_info->game_prefix = xmlnode_get_data(command);
 
 			if ((command = xmlnode_get_child(cnode, "launch")))
-			{
-				l->game_launch = xmlnode_get_data(command);
-				l->game_launch_args = g_strdup(xmlnode_get_attrib(command, "argument"));
-			}
+				game_info->game_launch = xmlnode_get_data(command);
 
-			if ((command = xmlnode_get_child(cnode, "connect")))
-				l->game_connect = xmlnode_get_data(command);
 		}
 	}
 
-	return l;
+	// Get attribs from games list
+	for(cnode = game_config_node->child; cnode; cnode = cnode->next)
+	{
+		if(cnode->type != XMLNODE_TYPE_TAG)
+			continue;
+
+		if (g_strcmp0(cnode->name, "launch_network_args") == 0)
+		{
+			if ((command = xmlnode_get_data(cnode)))
+				game_info->game_connect = command;
+		}
+	}
+
+	return game_info;
 }
 
+// FIXME: Changes needed
 gchar *gfire_game_config_info_get_command(gfire_game_config_info *game_config_info, const gfire_game_data *p_game_data)
 {
 	gchar *command_prefixed, *command_launch_args, *command, *game_connect_option = NULL;
 
-	if (game_config_info == NULL) {
-		purple_debug_error("gfire_game_config_info_get_command", "Invalid game config info.\n");
+	if (!game_config_info)
+	{
+		purple_debug_error("gfire", "Invalid game config info.\n");
 		return NULL;
 	}
 
-	if(!game_config_info->game_launch) {
-		purple_debug_error("gfire_game_config_info_get_command", "Launch setting is empty, please fill it out first!\n");
+	if (!game_config_info->game_launch)
+	{
+		purple_debug_error("gfire", "Launch setting is empty, please fill it out first!\n");
 		return NULL;
 	}
 
@@ -471,29 +483,35 @@ gchar *gfire_game_config_info_get_command(gfire_game_config_info *game_config_in
 
 		server_port_tmp = gfire_game_data_port_str(p_game_data);
 		server_ip_tmp = gfire_game_data_ip_str(p_game_data);
-		tmp = purple_strreplace(game_config_info->game_connect, "[ip]", server_ip_tmp);
-		game_connect_option = purple_strreplace(tmp, "[port]", server_port_tmp);
+
+		// Replace IP and port
+		tmp = purple_strreplace(game_config_info->game_connect, "%UA_GAME_HOST_NAME%", server_ip_tmp);
+		tmp = purple_strreplace(tmp, "%UA_GAME_HOST_PORT%", server_port_tmp);
+
+		// Set password
+		game_connect_option = purple_strreplace(tmp, "%UA_LAUNCHER_PASSWORD_ARGS%", ""); // FIXME: Not implemented yet
 
 		g_free(server_port_tmp);
 		g_free(server_ip_tmp);
 		g_free(tmp);
 	}
 
-	if (game_config_info->game_prefix != NULL)
+	if (game_config_info->game_prefix)
 		command_prefixed = g_strdup_printf("%s \"%s\"", game_config_info->game_prefix, game_config_info->game_launch);
 	else
 		command_prefixed = g_strdup_printf("\"%s\"", game_config_info->game_launch);
 
-	if (game_config_info->game_launch_args != NULL)
+	if (game_config_info->game_launch_args)
 		command_launch_args = g_strdup_printf("%s %s", command_prefixed, game_config_info->game_launch_args);
 	else
 		command_launch_args = g_strdup(command_prefixed);
 
 	g_free(command_prefixed);
 
-	if(game_connect_option)
+	if (game_connect_option)
 	{
 		command = g_strdup_printf("%s %s", command_launch_args, game_connect_option);
+
 		g_free(game_connect_option);
 		g_free(command_launch_args);
 
@@ -503,8 +521,7 @@ gchar *gfire_game_config_info_get_command(gfire_game_config_info *game_config_in
 		return command_launch_args;
 }
 
-static void gfire_game_config_edit_xmlnode(xmlnode *p_node, const gchar *p_game_id, const gchar *p_game_name, const gchar *p_game_detect, const gchar *p_game_argument,
-	const gchar *p_game_prefix, const gchar *p_game_launch, const gchar *p_game_launch_args, const gchar *p_game_connect)
+static void gfire_game_config_edit_xmlnode(xmlnode *p_node, const gchar *p_game_id, const gchar *p_game_name, const gchar *p_game_detect, const gchar *p_game_prefix, const gchar *p_game_launch)
 {
 	if(!p_node)
 		return;
@@ -540,8 +557,6 @@ static void gfire_game_config_edit_xmlnode(xmlnode *p_node, const gchar *p_game_
 	detect_node = xmlnode_new_child(command_node, "detect");
 	if(p_game_detect)
 		xmlnode_insert_data(detect_node, p_game_detect, -1);
-	if(p_game_argument)
-		xmlnode_set_attrib(detect_node, "argument", p_game_argument);
 
 	// Set prefix
 	xmlnode *prefix_node = xmlnode_get_child(command_node, "prefix");
@@ -554,53 +569,26 @@ static void gfire_game_config_edit_xmlnode(xmlnode *p_node, const gchar *p_game_
 
 	// Set launch
 	xmlnode *launch_node = xmlnode_get_child(command_node, "launch");
-	if(launch_node)
+	if (launch_node)
 		xmlnode_free(launch_node);
 
 	launch_node = xmlnode_new_child(command_node, "launch");
-	if(p_game_launch)
+	if (p_game_launch)
 		xmlnode_insert_data(launch_node, p_game_launch, -1);
-	if(p_game_launch_args)
-		xmlnode_set_attrib(launch_node, "argument", p_game_launch_args);
-
-	// Set connect
-	xmlnode *connect_node = xmlnode_get_child(command_node, "connect");
-	if(connect_node)
-		xmlnode_free(connect_node);
-
-	connect_node = xmlnode_new_child(command_node, "connect");
-	if(p_game_connect)
-		xmlnode_insert_data(connect_node, p_game_connect, -1);
 }
 
-/**
- * creates a new xmlnode containing the game information, the returned node must be inserted
- * in the main launch_info node
- *
- * @param p_game_id: the game ID
- * @param p_game_name: the game name
- * @param p_game_detect: the full path to the detectable game executable
- * @param p_game_prefix: the game launch prefix (environment variables in most cases)
- * @param p_game_launch: the full path to the game executable/launcher
- * @param p_game_launch_args: the game launch options
- * @param p_game_connect: the game connection options
- *
- * @return: the new xmlnode
- *
-**/
-static xmlnode *gfire_game_config_new_xmlnode(const gchar *p_game_id, const gchar *p_game_name, const gchar *p_game_detect, const gchar *p_game_argument,
-	const gchar *p_game_prefix, const gchar *p_game_launch, const gchar *p_game_launch_args, const gchar *p_game_connect)
+static xmlnode *gfire_game_config_new_xmlnode(const gchar *p_game_id, const gchar *p_game_name, const gchar *p_game_detect,
+					      const gchar *p_game_prefix, const gchar *p_game_launch)
 {
 	xmlnode *game_node = xmlnode_new("game");
-	gfire_game_config_edit_xmlnode(game_node, p_game_id, p_game_name, p_game_detect, p_game_argument, p_game_prefix,
-								   p_game_launch, p_game_launch_args, p_game_connect);
+	gfire_game_config_edit_xmlnode(game_node, p_game_id, p_game_name, p_game_detect, p_game_prefix, p_game_launch);
 
 	return game_node;
 }
 
 static void gfire_game_config_xml_init()
 {
-	if(gfire_game_config_xml)
+	if (gfire_game_config_xml)
 		return;
 
 	gfire_game_config_xml = xmlnode_new("game_config");
@@ -705,9 +693,9 @@ gfire_game_detection_info *gfire_game_detection_info_get(guint32 p_gameid)
 #ifdef HAVE_GTK
 static void gfire_game_manager_update_executable_toggled_cb(GtkBuilder *p_builder, GtkWidget *p_executable_check_button)
 {
-	if (p_builder == NULL)
+	if (!p_builder)
 	{
-		purple_debug_error("gfire", "Couldn't access interface.");
+		purple_debug_error("gfire", "Couldn't access game manager interface.");
 		return;
 	}
 
@@ -717,15 +705,14 @@ static void gfire_game_manager_update_executable_toggled_cb(GtkBuilder *p_builde
 	GtkWidget *edit_launch_button = GTK_WIDGET(gtk_builder_get_object(p_builder, "edit_launch_button"));
 
 	gboolean check_button_state;
-
-	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(add_executable_check_button)) == TRUE)
+	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(add_executable_check_button)))
 		check_button_state = FALSE;
 	else
 		check_button_state = TRUE;
 
 	gtk_widget_set_sensitive(add_launch_button, check_button_state);
 
-	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(edit_executable_check_button)) == TRUE)
+	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(edit_executable_check_button)))
 		check_button_state = FALSE;
 	else
 		check_button_state = TRUE;
@@ -733,15 +720,11 @@ static void gfire_game_manager_update_executable_toggled_cb(GtkBuilder *p_builde
 	gtk_widget_set_sensitive(edit_launch_button, check_button_state);
 }
 
-/**
- * adds a game by getting the values from the manage games window
- *
-**/
 static void gfire_game_manager_add_cb(GtkBuilder *p_builder, GtkWidget *p_button)
 {
 	if(!p_builder)
 	{
-		purple_debug_error("gfire", "gfire_game_manager_add_cb: GC not set and/or couldn't access interface.\n");
+		purple_debug_error("gfire", "GC not set and/or couldn't access game manager interface.\n");
 		return;
 	}
 
@@ -750,24 +733,17 @@ static void gfire_game_manager_add_cb(GtkBuilder *p_builder, GtkWidget *p_button
 	GtkWidget *add_detection_button = GTK_WIDGET(gtk_builder_get_object(p_builder, "add_detection_button"));
 	GtkWidget *add_executable_check_button = GTK_WIDGET(gtk_builder_get_object(p_builder, "add_executable_check_button"));
 	GtkWidget *add_launch_button = GTK_WIDGET(gtk_builder_get_object(p_builder, "add_launch_button"));
-	GtkWidget *add_connect_entry = GTK_WIDGET(gtk_builder_get_object(p_builder, "add_connect_entry"));
 
 	GtkWidget *add_prefix_entry = GTK_WIDGET(gtk_builder_get_object(p_builder, "add_prefix_entry"));
-	GtkWidget *add_launch_args_entry = GTK_WIDGET(gtk_builder_get_object(p_builder, "add_launch_args_entry"));
-	GtkWidget *add_argument_entry = GTK_WIDGET(gtk_builder_get_object(p_builder, "add_argument_entry"));
 
 	const gchar *game_name = gtk_entry_get_text(GTK_ENTRY(add_game_entry));
 	gchar *game_detect = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(add_detection_button));
 	gboolean game_launch_use_detect = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(add_executable_check_button));
 	gchar *game_launch = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(add_launch_button));
-	const gchar *game_connect = gtk_entry_get_text(GTK_ENTRY(add_connect_entry));
 
 	const gchar *game_prefix = gtk_entry_get_text(GTK_ENTRY(add_prefix_entry));
-	const gchar *game_launch_args = gtk_entry_get_text(GTK_ENTRY(add_launch_args_entry));
-	const gchar *game_argument = gtk_entry_get_text(GTK_ENTRY(add_argument_entry));
 
-	if (game_name != NULL && game_detect != NULL && game_connect != NULL
-		&& ((game_launch_use_detect == FALSE && game_launch != NULL) || game_launch_use_detect == TRUE))
+	if (game_name && game_detect && ((!game_launch_use_detect && game_launch) || game_launch_use_detect))
 	{
 		guint32 game_id_tmp;
 		gchar *game_id;
@@ -775,31 +751,27 @@ static void gfire_game_manager_add_cb(GtkBuilder *p_builder, GtkWidget *p_button
 		game_id_tmp = gfire_game_id(game_name);
 		game_id = g_strdup_printf("%u", game_id_tmp);
 
-		xmlnode *game_node = NULL;
+		xmlnode *game_node;
 
-		if(!gfire_game_config_xml || !gfire_game_config_node_by_id(game_id_tmp))
+		if (!gfire_game_config_xml || !gfire_game_config_node_by_id(game_id_tmp))
 		{
-			if(!gfire_game_config_xml)
+			if (!gfire_game_config_xml)
 				gfire_game_config_xml_init();
 
-			if(game_launch_use_detect == TRUE)
-			{
-				game_node = gfire_game_config_new_xmlnode(game_id, game_name, game_detect, game_argument, game_prefix, game_detect,
-												  game_launch_args, game_connect);
-			}
+			if (game_launch_use_detect)
+				game_node = gfire_game_config_new_xmlnode(game_id, game_name, game_detect, game_prefix, game_detect);
 			else
-			{
-				game_node = gfire_game_config_new_xmlnode(game_id, game_name, game_detect, game_argument, game_prefix, game_launch,
-												  game_launch_args, game_connect);
-			}
+				game_node = gfire_game_config_new_xmlnode(game_id, game_name, game_detect, game_prefix, game_launch);
 		}
 		else
 		{
 			purple_notify_message(NULL, PURPLE_NOTIFY_MSG_INFO, _("Manage Games: warning"), _("Game already added"),
-								  _("This game is already added, you can configure it if you want."), NULL, NULL);
+					      _("This game is already added, you can configure it if you want."), NULL, NULL);
+
 			g_free(game_id);
 			g_free(game_launch);
 			g_free(game_detect);
+
 			return;
 		}
 
@@ -807,48 +779,41 @@ static void gfire_game_manager_add_cb(GtkBuilder *p_builder, GtkWidget *p_button
 		g_free(game_launch);
 		g_free(game_detect);
 
-		if(!game_node)
+		if (!game_node)
 		{
-			purple_debug_error("gfire: gfire_add_game_cb", "Couldn't create the new game node.\n");
+			purple_debug_error("gfire", "Couldn't create the new game node.\n");
 			return;
 		}
 		else
 		{
 			xmlnode_insert_child(gfire_game_config_xml, game_node);
-			if(!gfire_game_config_xml_save())
+			if (!gfire_game_config_xml_save())
 			{
 				purple_notify_message(NULL, PURPLE_NOTIFY_MSG_ERROR, _("Manage Games: error"), _("Couldn't add game"),
-									  _("Please try again. An error occured while adding the game."), NULL, NULL);
+						      _("Please try again. An error occured while adding the game."), NULL, NULL);
 				return;
 			}
 			else
-			{
 				purple_notify_message(NULL, PURPLE_NOTIFY_MSG_INFO, _("Manage Games: game added"),
 									  game_name, _("The game has been successfully added."), NULL, NULL);
-			}
 		}
 	}
 	else
 	{
 		purple_notify_message(NULL, PURPLE_NOTIFY_MSG_ERROR, _("Manage Games: error"),
-							  _("Couldn't add game"), _("Please try again. Make sure you fill in all fields."), NULL, NULL);
+				      _("Couldn't add game"), _("Please try again. Make sure you fill in all fields."), NULL, NULL);
 		return;
 	}
 
 	gtk_widget_destroy(manage_games_window);
 }
 
-/**
- * edits a game in gfire_launch.xml by getting the new values from
- * the manage games window
- *
-**/
 static void gfire_game_manager_edit_cb(GtkBuilder *p_builder, GtkWidget *p_button)
 {
 
-	if(!p_builder)
+	if (!p_builder)
 	{
-		purple_debug_error("gfire", "gfire_game_manager_edit_cb: Couldn't build interface.\n");
+		purple_debug_error("gfire", "Couldn't access game manager interface.\n");
 		return;
 	}
 
@@ -857,24 +822,17 @@ static void gfire_game_manager_edit_cb(GtkBuilder *p_builder, GtkWidget *p_butto
 	GtkWidget *edit_detection_button = GTK_WIDGET(gtk_builder_get_object(p_builder, "edit_detection_button"));
 	GtkWidget *edit_executable_check_button = GTK_WIDGET(gtk_builder_get_object(p_builder, "edit_executable_check_button"));
 	GtkWidget *edit_launch_button = GTK_WIDGET(gtk_builder_get_object(p_builder, "edit_launch_button"));
-	GtkWidget *edit_connect_entry = GTK_WIDGET(gtk_builder_get_object(p_builder, "edit_connect_entry"));
 
 	GtkWidget *edit_prefix_entry = GTK_WIDGET(gtk_builder_get_object(p_builder, "edit_prefix_entry"));
-	GtkWidget *edit_launch_args_entry = GTK_WIDGET(gtk_builder_get_object(p_builder, "edit_launch_args_entry"));
-	GtkWidget *edit_argument_entry = GTK_WIDGET(gtk_builder_get_object(p_builder, "edit_argument_entry"));
 
 	const gchar *game_name = gtk_combo_box_get_active_text(GTK_COMBO_BOX(edit_game_combo));
 	gchar *game_detect = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(edit_detection_button));
 	gboolean game_launch_use_detect = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(edit_executable_check_button));
 	gchar *game_launch = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(edit_launch_button));
-	const gchar *game_connect = gtk_entry_get_text(GTK_ENTRY(edit_connect_entry));
 
 	const gchar *game_prefix = gtk_entry_get_text(GTK_ENTRY(edit_prefix_entry));
-	const gchar *game_launch_args = gtk_entry_get_text(GTK_ENTRY(edit_launch_args_entry));
-	const gchar *game_argument = gtk_entry_get_text(GTK_ENTRY(edit_argument_entry));
 
-	if (game_name != NULL && game_detect != NULL && game_connect != NULL
-		&& ((game_launch_use_detect == FALSE && game_launch != NULL) || game_launch_use_detect == TRUE))
+	if (game_name && game_detect && ((!game_launch_use_detect && game_launch) || game_launch_use_detect))
 	{
 		guint32 game_id_tmp;
 		gchar *game_id;
@@ -884,18 +842,12 @@ static void gfire_game_manager_edit_cb(GtkBuilder *p_builder, GtkWidget *p_butto
 
 		xmlnode *game_node = gfire_game_config_node_by_id(game_id_tmp);
 
-		if(game_node)
+		if (game_node)
 		{
-			if(game_launch_use_detect == TRUE)
-			{
-				gfire_game_config_edit_xmlnode(game_node, game_id, game_name, game_detect, game_argument, game_prefix, game_detect,
-												  game_launch_args, game_connect);
-			}
+			if (game_launch_use_detect)
+				gfire_game_config_edit_xmlnode(game_node, game_id, game_name, game_detect, game_prefix, game_detect);
 			else
-			{
-				gfire_game_config_edit_xmlnode(game_node, game_id, game_name, game_detect, game_argument, game_prefix, game_launch,
-												  game_launch_args, game_connect);
-			}
+				gfire_game_config_edit_xmlnode(game_node, game_id, game_name, game_detect, game_prefix, game_launch);
 		}
 		else
 		{
@@ -904,6 +856,7 @@ static void gfire_game_manager_edit_cb(GtkBuilder *p_builder, GtkWidget *p_butto
 			g_free(game_id);
 			g_free(game_launch);
 			g_free(game_detect);
+
 			return;
 		}
 
@@ -911,37 +864,30 @@ static void gfire_game_manager_edit_cb(GtkBuilder *p_builder, GtkWidget *p_butto
 		g_free(game_launch);
 		g_free(game_detect);
 
-		if(!gfire_game_config_xml_save())
+		if (!gfire_game_config_xml_save())
 		{
 			purple_notify_message(NULL, PURPLE_NOTIFY_MSG_ERROR, _("Manage Games: error"), _("Couldn't add game"),
-								  _("Please try again. An error occured while editing the game."), NULL, NULL);
+					      _("Please try again. An error occured while editing the game."), NULL, NULL);
 			return;
 		}
 		else
-		{
-			purple_notify_message(NULL, PURPLE_NOTIFY_MSG_INFO, _("Manage Games: game edited"),
-								  _("Game edited"), _("The game has been successfully edited."), NULL, NULL);
-		}
+			purple_notify_message(NULL, PURPLE_NOTIFY_MSG_INFO, _("Manage Games: game edited"), _("Game edited"), _("The game has been successfully edited."), NULL, NULL);
 	}
 	else
 	{
 		purple_notify_message(NULL, PURPLE_NOTIFY_MSG_ERROR, _("Manage Games: error"),
-							  _("Couldn't edit game"), _("Please try again. Make sure you fill in all fields."), NULL, NULL);
+				      _("Couldn't edit game"), _("Please try again. Make sure you fill in all fields."), NULL, NULL);
 		return;
 	}
 
 	gtk_widget_destroy(manage_games_window);
 }
 
-/**
- * removes the selected game from gfire_launch.xml in the manage games window
- *
-**/
 static void gfire_game_manager_remove_cb(GtkBuilder *p_builder, GtkWidget *p_button)
 {
 	if (!p_builder)
 	{
-		purple_debug_error("gfire", "Couldn't build interface.\n");
+		purple_debug_error("gfire", "Couldn't build game manager interface.\n");
 		return;
 	}
 
@@ -949,9 +895,9 @@ static void gfire_game_manager_remove_cb(GtkBuilder *p_builder, GtkWidget *p_but
 	GtkWidget *edit_game_combo = GTK_WIDGET(gtk_builder_get_object(p_builder, "edit_game_combo"));
 
 	gchar *selected_game = gtk_combo_box_get_active_text(GTK_COMBO_BOX(edit_game_combo));
-	if(selected_game != NULL)
+	if (selected_game)
 	{
-		if(gfire_game_config_xml != NULL)
+		if (gfire_game_config_xml)
 		{
 			guint32 gameid = gfire_game_id(selected_game);
 
@@ -961,77 +907,60 @@ static void gfire_game_manager_remove_cb(GtkBuilder *p_builder, GtkWidget *p_but
 			xmlnode_free(game_node);
 
 			if(gfire_game_config_xml_save())
-			{
 				purple_notify_message(NULL, PURPLE_NOTIFY_MSG_INFO, _("Manage Games: game removed"),
-					_("Game removed"), _("The game has been successfully removed."), NULL, NULL);
-			}
+						      _("Game removed"), _("The game has been successfully removed."), NULL, NULL);
 			else
 			{
 				purple_notify_message(NULL, PURPLE_NOTIFY_MSG_ERROR, _("Manage Games: error"),
-					_("Couldn't remove game"), _("Please try again. An error occured while removing the game."), NULL, NULL);
+						      _("Couldn't remove game"), _("Please try again. An error occured while removing the game."), NULL, NULL);
 			}
 		}
 
 		g_free(selected_game);
 	}
 	else
-	{
 		purple_notify_message(NULL, PURPLE_NOTIFY_MSG_ERROR, _("Manage Games: error"),
-			_("Couldn't remove game"), _("Please try again. Make sure you select a game to remove."), NULL, NULL);
-	}
+				      _("Couldn't remove game"), _("Please try again. Make sure you select a game to remove."), NULL, NULL);
 
 	gtk_widget_destroy(manage_games_window);
 }
 
-/**
- * gets and shows the current values from gfire_launch.xml
- * for editing the selected game in the manage games window
- *
-**/
 static void gfire_game_manager_edit_update_fields_cb(GtkBuilder *p_builder, GtkWidget *p_edit_game_combo)
 {
-	if(!p_builder)
+	if (!p_builder)
 	{
-		purple_debug_error("gfire", "gfire_game_manager_edit_update_fields_cb: Couldn't access interface.\n");
+		purple_debug_error("gfire", "Couldn't access game manager interface.\n");
 		return;
 	}
 
-	if(!gfire_game_config_xml)
+	if (!gfire_game_config_xml)
 		return;
 
 	GtkWidget *edit_detection_button = GTK_WIDGET(gtk_builder_get_object(p_builder, "edit_detection_button"));
 	GtkWidget *edit_executable_check_button = GTK_WIDGET(gtk_builder_get_object(p_builder, "edit_executable_check_button"));
 	GtkWidget *edit_launch_button = GTK_WIDGET(gtk_builder_get_object(p_builder, "edit_launch_button"));
-	GtkWidget *edit_connect_entry = GTK_WIDGET(gtk_builder_get_object(p_builder, "edit_connect_entry"));
 
 	GtkWidget *edit_prefix_entry = GTK_WIDGET(gtk_builder_get_object(p_builder, "edit_prefix_entry"));
-	GtkWidget *edit_launch_args_entry = GTK_WIDGET(gtk_builder_get_object(p_builder, "edit_launch_args_entry"));
-	GtkWidget *edit_argument_entry = GTK_WIDGET(gtk_builder_get_object(p_builder, "edit_argument_entry"));
 	GtkWidget *edit_game_combo = GTK_WIDGET(gtk_builder_get_object(p_builder, "edit_game_combo"));
 
 	gchar *selected_game = gtk_combo_box_get_active_text(GTK_COMBO_BOX(edit_game_combo));
-	//gchar *game_executable = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(edit_executable_button));
 
 	guint32 gameid = gfire_game_id(selected_game);
 	xmlnode *game_node = gfire_game_config_node_by_id(gameid);
 
 	g_free(selected_game);
 
-	if(!game_node)
+	if (!game_node)
 		return;
 
 	xmlnode *command_node = xmlnode_get_child(game_node, "command");
 	xmlnode *detect_node = xmlnode_get_child(command_node, "detect");
 	xmlnode *prefix_node = xmlnode_get_child(command_node, "prefix");
 	xmlnode *launch_node = xmlnode_get_child(command_node, "launch");
-	xmlnode *connect_node = xmlnode_get_child(command_node, "connect");
 
 	gchar *game_detect = xmlnode_get_data(detect_node);
 	gchar *game_prefix = xmlnode_get_data(prefix_node);
 	gchar *game_launch = xmlnode_get_data(launch_node);
-	const gchar *game_launch_args = xmlnode_get_attrib(launch_node, "argument");
-	const gchar *game_argument = xmlnode_get_attrib(detect_node, "argument");
-	gchar *game_connect = xmlnode_get_data(connect_node);
 
 	if (g_strcmp0(game_detect, game_launch) == 0)
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(edit_executable_check_button), TRUE);
@@ -1041,14 +970,15 @@ static void gfire_game_manager_edit_update_fields_cb(GtkBuilder *p_builder, GtkW
 	gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(edit_detection_button), game_detect ? game_detect : "");
 	gtk_entry_set_text(GTK_ENTRY(edit_prefix_entry), game_prefix ? game_prefix : "");
 	gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(edit_launch_button), game_launch ? game_launch : "");
-	gtk_entry_set_text(GTK_ENTRY(edit_launch_args_entry), game_launch_args ? game_launch_args : "");
-	gtk_entry_set_text(GTK_ENTRY(edit_argument_entry), game_argument ? game_argument : "");
-	gtk_entry_set_text(GTK_ENTRY(edit_connect_entry), game_connect ? game_connect : "");
 
-	if(game_detect) g_free(game_detect);
-	if(game_prefix) g_free(game_prefix);
-	if(game_launch) g_free(game_launch);
-	if(game_connect) g_free(game_connect);
+	if (game_detect)
+		g_free(game_detect);
+
+	if (game_prefix)
+		g_free(game_prefix);
+
+	if (game_launch)
+		g_free(game_launch);
 }
 
 static void gfire_game_manager_update_executable_cb(GtkWidget *p_launch_button, GtkWidget *p_detect_button)
@@ -1056,12 +986,6 @@ static void gfire_game_manager_update_executable_cb(GtkWidget *p_launch_button, 
 	gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(p_launch_button), gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(p_detect_button)));
 }
 
-/**
- * shows the manage games window
- *
- * @param p_action: the menu action, passed by the signal connection function
- *
-**/
 void gfire_game_manager_show(PurplePluginAction *p_action)
 {
 	GtkBuilder *builder = gtk_builder_new();
@@ -1073,17 +997,17 @@ void gfire_game_manager_show(PurplePluginAction *p_action)
 	gtk_builder_add_from_file(builder, builder_file, NULL);
 	g_free(builder_file);
 
-	if (builder == NULL)
+	if (!builder)
 	{
-		purple_debug_error("gfire", "gfire_game_manager_show: Couldn't build interface.\n");
+		purple_debug_error("gfire", "gfire_game_manager_show: Couldn't build game manager interface.\n");
 		return;
 	}
 
 	GtkWidget *manage_games_window = GTK_WIDGET(gtk_builder_get_object(builder, "manage_games_window"));
 	GtkWidget *add_game_entry = GTK_WIDGET(gtk_builder_get_object(builder, "add_game_entry"));
 	GtkWidget *add_detection_button = GTK_WIDGET(gtk_builder_get_object(builder, "add_detection_button"));
-	GtkWidget *add_executable_check_button = GTK_WIDGET(gtk_builder_get_object(builder, "add_executable_check_button"));
 	GtkWidget *add_launch_button = GTK_WIDGET(gtk_builder_get_object(builder, "add_launch_button"));
+	GtkWidget *add_executable_check_button = GTK_WIDGET(gtk_builder_get_object(builder, "add_executable_check_button"));
 	GtkWidget *add_close_button = GTK_WIDGET(gtk_builder_get_object(builder, "add_close_button"));
 	GtkWidget *add_add_button = GTK_WIDGET(gtk_builder_get_object(builder, "add_add_button"));
 	GtkWidget *edit_game_combo = GTK_WIDGET(gtk_builder_get_object(builder, "edit_game_combo"));
@@ -1105,15 +1029,15 @@ void gfire_game_manager_show(PurplePluginAction *p_action)
 	// Reload XML before we edit it
 	gfire_game_load_config_xml();
 
-	if(!gfire_game_config_xml)
+	if (!gfire_game_config_xml)
 		gfire_game_config_xml_init();
 
 	const gchar *manager_version = xmlnode_get_attrib(gfire_game_config_xml, "version");
 
-	if(g_strcmp0(manager_version, "2") != 0)
+	if (g_strcmp0(manager_version, "2") != 0)
 	{
 		purple_notify_message(NULL, PURPLE_NOTIFY_MSG_ERROR, _("Manage Games: error"), _("Incompatible games configuration"),
-							  _("Your current games configuration is incompatible with this version of Gfire. Please remove it and try again."), NULL, NULL);
+				      _("Your current games configuration is incompatible with this version of Gfire. Please remove it and try again."), NULL, NULL);
 
 		gtk_widget_destroy(manage_games_window);
 		return;
@@ -1135,11 +1059,10 @@ void gfire_game_manager_show(PurplePluginAction *p_action)
 
 	add_game_list_store = gtk_list_store_new(1, G_TYPE_STRING);
 
-	if(gfire_games_xml)
+	if (gfire_games_xml)
 	{
 		xmlnode *node_child;
-		for(node_child = xmlnode_get_child(gfire_games_xml, "game"); node_child != NULL;
-			node_child = xmlnode_get_next_twin(node_child))
+		for(node_child = xmlnode_get_child(gfire_games_xml, "game"); node_child != NULL; node_child = xmlnode_get_next_twin(node_child))
 		{
 			const gchar *game_name = xmlnode_get_attrib(node_child, "name");
 
@@ -1154,7 +1077,7 @@ void gfire_game_manager_show(PurplePluginAction *p_action)
 	}
 	else
 	{
-		purple_debug_error("gfire", "gfire_game_manager_show: Couldn't get games list.\n");
+		purple_debug_error("gfire", "Couldn't get games list.\n");
 		gtk_widget_destroy(manage_games_window);
 		return;
 	}

@@ -1533,12 +1533,13 @@ gboolean gfire_detect_running_processes_cb(gfire_data *p_gfire)
  * @param server_port: the server port
  * @param game_id: the game ID to launch
  *
+ * FIXME: Needs a lot of improvements
 **/
 void gfire_join_game(gfire_data *p_gfire, const gfire_game_data *p_game_data)
 {
-	if(!p_gfire)
+	if (!p_gfire)
 	{
-		purple_debug_error("gfire: gfire_join_game()", "Couldn't access gfire data.\n");
+		purple_debug_error("gfire", "Couldn't access gfire data.\n");
 		return;
 	}
 
@@ -1546,20 +1547,19 @@ void gfire_join_game(gfire_data *p_gfire, const gfire_game_data *p_game_data)
 	gchar *game_launch_command;
 
 	game_config_info = gfire_game_config_info_get(p_game_data->id);
-	if (game_config_info == NULL)
+	if (!game_config_info)
 	{
-		purple_debug_error("gfire: gfire_join_game()", "Game config info struct not defined!\n");
+		purple_debug_error("gfire", "Game config info struct not defined!\n");
 		return;
 	}
-
 
 	game_launch_command = gfire_game_config_info_get_command(game_config_info, p_game_data);
-	if(!game_launch_command)
+	if (!game_launch_command)
 	{
-		purple_debug_error("gfire: gfire_join_game()", "Couldn't generate game launch command!\n");
+		purple_debug_error("gfire", "Couldn't generate game launch command!\n");
 		return;
 	}
 
-	purple_debug(PURPLE_DEBUG_MISC, "gfire", "Launching game for joining: %s\n", game_launch_command);
+	purple_debug_misc("gfire", "Launching game and joining server: %s\n", game_launch_command);
 	g_spawn_command_line_async(game_launch_command, NULL);
 }
