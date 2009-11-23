@@ -169,19 +169,44 @@ void gfire_detect_mumble_server(const gchar *executable, guint8 **voip_ip, guint
 	*voip_port = port;
 }
 
+gboolean gfire_server_detection_port_allowed(gfire_game_detection_info *p_server_detection_info, int p_port)
+{
+	gboolean ret = TRUE;
+
+	if (p_server_detection_info->exclude_ports)
+	{
+		int i;
+		for(i = 0; p_server_detection_info->exclude_ports[i]; i++)
+		{
+			if (p_port == atoi(p_server_detection_info->exclude_ports[i]))
+				ret = FALSE;
+		}
+	}
+
+	return ret;
+}
+
 void gfire_server_detection_detect(gfire_data *p_gfire)
 {
 	if (!p_gfire)
+	{
+		purple_debug_error("gfire", "Couldn't access gfire data.\n");
 		return;
+	}
 
-	/* Get the local and remote ip, needed to be able to filter them out */
-	char *local_ip = NULL, *remote_ip = NULL;
+	// Fetch local and remote IP
+	gchar *local_ip = NULL;
+	gchar *remote_ip = NULL;
 
 	struct ifaddrs *if_addresses, *if_adresses_tmp;
 	int address_family, address;
 	char address_ip[NI_MAXHOST];
 
-	if (getifaddrs(&if_addresses) == -1) return;
+	if (getifaddrs(&if_addresses) == -1)
+	{
+		purple_debug_error("gfire", "Couldn't get interface addresses.\n");
+		return;
+	}
 
 	int i = 0;
 	for (if_adresses_tmp = if_addresses; if_adresses_tmp != NULL; if_adresses_tmp = if_adresses_tmp->ifa_next)
@@ -190,29 +215,38 @@ void gfire_server_detection_detect(gfire_data *p_gfire)
 		if (address_family == AF_INET)
 		{
 			address = getnameinfo(if_adresses_tmp->ifa_addr,
-								  (address_family == AF_INET) ? sizeof(struct sockaddr_in) : sizeof(struct sockaddr_in6),
-								  address_ip, NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
+					      (address_family == AF_INET) ? sizeof(struct sockaddr_in) : sizeof(struct sockaddr_in6),
+					      address_ip, NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
 
-			if (address != 0) return;
+			if (address)
+				return;
 
-			if (i == 0) local_ip = g_strdup(address_ip);
-			else if (i == 1) remote_ip = g_strdup(address_ip);
+			if (i == 0)
+				local_ip = g_strdup(address_ip);
+			else if (i == 1)
+				remote_ip = g_strdup(address_ip);
 
 			i++;
 		}
 	}
 
 	freeifaddrs(if_addresses);
-	if (local_ip == NULL || remote_ip == NULL) return;
 
-	/* Define the regex patterns for later... */
+	if (!local_ip || !remote_ip)
+	{
+		purple_debug_error("gfire", "Couldn't get interface addresses.\n");
+		return;
+	}
+
+	// Define needed regex patterns
 	char *regex_ip_netstat = "(\\d{1,3}\\.){3}\\d{1,3}:\\d{4,5}";
 	char *regex_ip_tcpdump = "(\\d{1,3}\\.){4}\\d{4,5}";
 	char *regex_ip_sender_tcpdump = "(\\d{1,3}\\.){4}\\d{4,5} >";
 	char *regex_ip_receiver_tcpdump = "> (\\d{1,3}\\.){4}\\d{4,5}";
 
-	if(!gfire_is_playing(p_gfire))
-		return;
+	// Don't continue server detection if user isn't playing anymore
+        if (!gfire_is_playing(p_gfire))
+                return;
 
 	const gfire_game_data *game_data = gfire_get_game_data(p_gfire);
 
@@ -222,36 +256,77 @@ void gfire_server_detection_detect(gfire_data *p_gfire)
 
 	// Get all infos needed for detection
 	gfire_game_detection_info *detection_info = gfire_game_detection_info_get(game_data->id);
-	if(!detection_info)
+	if (!detection_info->detect || !detection_info->executable)
 		return;
 
-	/* Finally detect the game server */
-	if (detection_info->detect && detection_info->executable)
+	// Shorten process name to make it compatible with netstat
+	gchar *process_name_short = g_strndup(g_path_get_basename(detection_info->executable), 13);
+
+	// Server detection begins here
+	char command[128], line[2048];
+	memset(line, 0, sizeof(line));
+
+        gchar current_line[5 * 1024];
+
+	// Detect server IP using TCP with netstat
+	sprintf(command, "netstat -tuanp | grep %s", process_name_short);
+
+	FILE *command_pipe = popen(command, "r");
+	if (!command_pipe)
 	{
-		char command[128], line[2048];
-		memset(line, 0, sizeof(line));
+		purple_debug_error("gfire", "Couldn't get TCP adresses for server detection.\n");
+		pclose(command_pipe);
+		return;
+	}
+	else
+	{
+		GRegex *regex;
+		GMatchInfo *regex_matches;
 
-		/* Get possible ip using tcp */
-		sprintf(command, "netstat -tuanp | grep %s", g_path_get_basename(detection_info->executable));
-		FILE *command_pipe = popen(command, "r");
+		// Detect if UDP is used, if so get server port from first occurence
+		server_detect_udp = FALSE;
 
-		if (command_pipe != NULL)
+		char tcp_output[1024];
+		memset(tcp_output, 0, sizeof(tcp_output));
+
+		i = 0;
+		while(fgets(tcp_output, sizeof(tcp_output), command_pipe))
+		{
+                        strcat(current_line, tcp_output);
+
+			if (strstr(tcp_output, "udp"))
+			{
+				gchar *server_ip_tmp;
+
+				regex = g_regex_new(regex_ip_netstat, G_REGEX_OPTIMIZE, 0, NULL);
+				if (g_regex_match(regex, tcp_output, 0, &regex_matches))
+                                        server_ip_tmp = g_match_info_fetch(regex_matches, 0);
+				else
+					return;
+
+				server_ip_tmp = purple_strreplace(server_ip_tmp, ":", ".");
+				gchar **server_ip_split = g_strsplit(server_ip_tmp, ".", -1);
+				server_port = atoi(server_ip_split[4]);
+
+				if (gfire_server_detection_port_allowed(detection_info, server_port))
+				{
+					server_detect_udp = TRUE;
+					break;
+				}
+			}
+		}
+
+		// If TCP is used, get server IP and port
+		if (!server_detect_udp)
 		{
 			GRegex *regex;
 			GMatchInfo *regex_matches;
-			gboolean regex_match;
 
 			regex = g_regex_new(regex_ip_netstat, G_REGEX_OPTIMIZE, 0, NULL);
-
-			fgets(line, sizeof line, command_pipe);
-			gchar *current_line = g_strdup_printf("%s", line);
-
-			regex_match = g_regex_match(regex, current_line, 0, &regex_matches);
-
-			if (regex_match == TRUE)
+			if (g_regex_match(regex, current_line, 0, &regex_matches))
 			{
-				/* Try to get second ip, because first ip is our ip */
-				while (g_match_info_matches(regex_matches) == TRUE)
+				// Try to get second IP, because first IP is user IP
+				while(g_match_info_matches(regex_matches))
 				{
 					gchar *server_ip_tmp = g_match_info_fetch(regex_matches, 0);
 					if (server_ip_tmp != NULL)
@@ -261,140 +336,115 @@ void gfire_server_detection_detect(gfire_data *p_gfire)
 				}
 
 				server_ip = purple_strreplace(server_ip, ":", ".");
-
 				gchar **server_ip_split = g_strsplit(server_ip, ".", -1);
 				server_port = atoi(server_ip_split[4]);
-
-				gboolean port_accepted = TRUE;
-				i = 0;
-
-				/* Check if port is allowed */
-				if (detection_info->exclude_ports)
-				{
-					for (; detection_info->exclude_ports[i] != NULL; i++)
-					{
-						if (server_port == atoi(detection_info->exclude_ports[i]))
-							server_ip = NULL;
-					}
-				}
-
 			}
-			else
-				server_ip = NULL;
-
-			/* Detect if game uses UDP */
-			GRegex *regex_udp;
-
-			regex_udp = g_regex_new("udp", G_REGEX_OPTIMIZE, 0, NULL);
-			regex_match = g_regex_match(regex_udp, current_line, 0, NULL);
-
-			if (regex_match)
-				server_detect_udp = TRUE;
-			else
-				server_detect_udp = FALSE;
-
-			pclose(command_pipe);
 		}
+	}
 
-		/* Get ip using udp if needed */
-		if (server_detect_udp == TRUE)
+	pclose(command_pipe);
+
+	// Continue using UDP
+	if (server_detect_udp)
+	{
+            printf("I thinks this is the port: %d\n", server_port);
+		sprintf(command, "tcpdump -f -n -c 5");
+		command_pipe = popen(command, "r");
+
+		if (!command_pipe)
 		{
-			sprintf(command, "tcpdump -f -n -c 5");
-			command_pipe = popen(command, "r");
+			purple_debug_error("gfire", "Couldn't get UDP adresses for server detection.\n");
+			pclose(command_pipe);
+			return;
+		}
+		else
+		{
+			GRegex *regex;
+			GMatchInfo *regex_matches;
 
-			if (command_pipe != NULL)
+			gchar *sender_ip_full, *receiver_ip_full;
+
+			char udp_output[1024];
+			memset(udp_output, 0, sizeof(udp_output));
+
+			while(fgets(udp_output, sizeof(udp_output), command_pipe))
 			{
-				GRegex *regex;
-				GMatchInfo *regex_matches;
-				gboolean regex_match;
-
-				gchar *sender_ip_full, *receiver_ip_full;
-
-				while (fgets(line, sizeof line, command_pipe) != NULL)
+				regex = g_regex_new(regex_ip_sender_tcpdump, G_REGEX_OPTIMIZE, 0, NULL);
+				if (g_regex_match(regex, udp_output, 0, &regex_matches))
 				{
-					gchar *current_line = g_strdup_printf("%s", line);
+					sender_ip_full = g_match_info_fetch(regex_matches, 0);
+					sender_ip_full = purple_strreplace(sender_ip_full, " >", "");
 
-					regex = g_regex_new(regex_ip_sender_tcpdump, G_REGEX_OPTIMIZE, 0, NULL);
-					regex_match = g_regex_match(regex, current_line, 0, &regex_matches);
+					g_regex_unref(regex);
+					g_match_info_free(regex_matches);
 
-					if (regex_match == TRUE)
+					gchar **sender_ip_full_split = g_strsplit(sender_ip_full, ".", -1);
+					int sender_port = atoi(sender_ip_full_split[4]);
+
+					if (sender_port != server_port)
+						continue;
+
+					regex = g_regex_new(regex_ip_receiver_tcpdump, G_REGEX_OPTIMIZE, 0, NULL);
+					if (g_regex_match(regex, udp_output, 0, &regex_matches))
 					{
-						sender_ip_full = g_match_info_fetch(regex_matches, 0);
-						sender_ip_full = purple_strreplace(sender_ip_full, " >", "");
+						receiver_ip_full = g_match_info_fetch(regex_matches, 0);
+						receiver_ip_full = purple_strreplace(receiver_ip_full, "> ", "");
 
 						g_regex_unref(regex);
 						g_match_info_free(regex_matches);
 
-						gchar **sender_ip_full_split = g_strsplit(sender_ip_full, ".", -1);
-						int sender_port = atoi(sender_ip_full_split[4]);
+						gchar **receiver_ip_split = g_strsplit(receiver_ip_full, ".", -1);
+						gchar *receiver_ip_wo_port = g_strdup_printf("%s.%s.%s.%s", receiver_ip_split[0],
+											     receiver_ip_split[1], receiver_ip_split[2],
+											     receiver_ip_split[3]);
 
-						if (sender_port == server_port)
+						// Check if found IP is not remote IP
+						if ((g_strcmp0(receiver_ip_wo_port, remote_ip) != 0))
 						{
-							regex = g_regex_new(regex_ip_receiver_tcpdump, G_REGEX_OPTIMIZE, 0, NULL);
-							regex_match = g_regex_match(regex, current_line, 0, &regex_matches);
-
-							if (regex_match == TRUE)
-							{
-								receiver_ip_full = g_match_info_fetch(regex_matches, 0);
-								receiver_ip_full = purple_strreplace(receiver_ip_full, "> ", "");
-
-								g_regex_unref(regex);
-								g_match_info_free(regex_matches);
-
-								gchar **receiver_ip_split = g_strsplit(receiver_ip_full, ".", -1);
-								gchar *receiver_ip_wo_port = g_strdup_printf("%s.%s.%s.%s", receiver_ip_split[0], receiver_ip_split[1],
-																			 receiver_ip_split[2], receiver_ip_split[3]);
-
-								gboolean port_accepted = TRUE;
-								i = 0;
-
-								/* Check if port is allowed */
-								if (detection_info->exclude_ports != NULL) {
-									for (; detection_info->exclude_ports[i] != NULL; i++) {
-										if (server_port == atoi(detection_info->exclude_ports[i]))  port_accepted = FALSE;
-									}
-								}
-
-								/* Check if found ip is not remote ip */
-								if ((g_strcmp0(receiver_ip_wo_port, remote_ip) != 0) && port_accepted == TRUE) {
-									server_ip = receiver_ip_full;
-									break;
-								}
-							}
+							server_ip = receiver_ip_full;
+							break;
 						}
 					}
 				}
-
-				pclose(command_pipe);
 			}
 		}
 
-		/* Store found ip */
-		if (server_ip != NULL)
-		{
-			gchar **server_ip_split = g_strsplit(server_ip, ".", -1);
-			if (server_ip_split != NULL)
-			{
-				gchar *server_ip_str = g_strdup_printf("%s.%s.%s.%s", server_ip_split[0], server_ip_split[1],
-													  server_ip_split[2], server_ip_split[3]);
-				guint32 server_port_tmp = atoi(server_ip_split[4]);
+		pclose(command_pipe);
+	}
 
-				gfire_game_data tmp_data;
-				gfire_game_data_ip_from_str(&tmp_data, server_ip_str);
-
-				g_mutex_lock(p_gfire->server_mutex);
-				if((p_gfire->game_data.ip.value != tmp_data.ip.value) || (p_gfire->game_data.port != server_port_tmp)) p_gfire->server_changed = TRUE;
-				p_gfire->game_data.ip.value = tmp_data.ip.value;
-				p_gfire->game_data.port = server_port_tmp;
-				g_mutex_unlock(p_gfire->server_mutex);
-			}
-		}
-		else
+        // Store found IP
+	if (server_ip)
+	{
+		gchar **server_ip_split = g_strsplit(server_ip, ".", -1);
+		if (server_ip_split)
 		{
+                        gchar *server_ip_str = g_strdup_printf("%s.%s.%s.%s", server_ip_split[0], server_ip_split[1],
+                                                               server_ip_split[2], server_ip_split[3]);
+			guint32 server_port_tmp = atoi(server_ip_split[4]);
+
+			gfire_game_data tmp_data;
+			gfire_game_data_ip_from_str(&tmp_data, server_ip_str);
+
+			// Set found IP
 			g_mutex_lock(p_gfire->server_mutex);
-			if (gfire_game_data_is_valid(&p_gfire->game_data)) p_gfire->server_changed = TRUE;
-			gfire_game_data_reset(&p_gfire->game_data);
+                        if ((p_gfire->game_data.ip.value != tmp_data.ip.value) || (p_gfire->game_data.port != server_port_tmp))
+				p_gfire->server_changed = TRUE;
+
+			p_gfire->game_data.ip.value = tmp_data.ip.value;
+			p_gfire->game_data.port = server_port_tmp;
 			g_mutex_unlock(p_gfire->server_mutex);
 		}
 	}
+        // Reset IP as none has been found
+	else
+	{
+		g_mutex_lock(p_gfire->server_mutex);
+		if (gfire_game_data_is_valid(&p_gfire->game_data))
+			p_gfire->server_changed = TRUE;
+
+                p_gfire->game_data.ip.value = 0;
+                p_gfire->game_data.port = 0;
+		g_mutex_unlock(p_gfire->server_mutex);
+	}
+
 }

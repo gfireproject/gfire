@@ -1375,23 +1375,24 @@ static void gfire_handle_game_detection(gfire_data *p_gfire, guint32 p_gameid, g
 {
 	if (!p_gfire)
 	{
-		purple_debug_error("gfire", "GC not set.\n");
+                purple_debug_error("gfire", "Couldn't access gfire data.\n");
 		return;
 	}
 
 	gchar *game_name = gfire_game_name(p_gameid);
 	guint16 len = 0;
 
-	if (p_running)
+        if (p_running == TRUE)
 	{
-		if (purple_account_get_bool(purple_connection_get_account(p_gfire->gc), "server_detection_option", FALSE) == TRUE)
-			g_thread_create((GThreadFunc )gfire_server_detection_detect, p_gfire, TRUE, NULL);
+                if (purple_account_get_bool(purple_connection_get_account(p_gfire->gc), "server_detection_option", FALSE))
+                        g_thread_create((GThreadFunc )gfire_server_detection_detect, p_gfire, TRUE, NULL);
 
 		if (!gfire_is_playing(p_gfire))
 		{
 			gboolean norm = purple_account_get_bool(purple_connection_get_account(p_gfire->gc), "ingamenotificationnorm", FALSE);
-			purple_debug_info("gfire", "%s is running. Telling Xfire ingame status.\n", NN(game_name));
+                        purple_debug_info("gfire", "%s is running, sending ingame status.\n", NN(game_name));
 
+                        // FIXME: This isn't working properly
 			if (norm)
 				purple_notify_message(NULL, PURPLE_NOTIFY_MSG_INFO, _("Ingame status"),
 						      NN(game_name), _("Your status has been changed."), NULL, NULL);
@@ -1405,19 +1406,21 @@ static void gfire_handle_game_detection(gfire_data *p_gfire, guint32 p_gameid, g
 	}
 	else
 	{
+                printf("Comparing gfire game id (%d) with process id (%d)\n", p_gfire->game_data.id, p_gameid);
 		if (gfire_is_playing(p_gfire) && p_gfire->game_data.id == p_gameid)
 		{
+                        printf("It was the same, so abort man!\n");
 			purple_debug_misc("gfire", "Game not running anymore, sending out-of-game status.\n");
 
 			gfire_game_data_reset(&p_gfire->game_data);
 			len = gfire_proto_create_join_game(&p_gfire->game_data);
 
 			if(len > 0)
-				gfire_send(gfire_get_connection(p_gfire), len);
+                                gfire_send(gfire_get_connection(p_gfire), len);
 		}
 	}
 
-	if(p_gfire->server_changed && gfire_is_playing(p_gfire))
+        if (p_gfire->server_changed && gfire_is_playing(p_gfire))
 	{
 		if (!gfire_game_data_has_addr(&p_gfire->game_data))
 		{
@@ -1425,23 +1428,22 @@ static void gfire_handle_game_detection(gfire_data *p_gfire, guint32 p_gameid, g
 			if(len > 0) gfire_send(gfire_get_connection(p_gfire), len);
 
 			p_gfire->server_changed = FALSE;
-			purple_debug_info("gfire", "Not playing on a server anymore.\n");
 		}
 		else
 		{
 			len = gfire_proto_create_join_game(&p_gfire->game_data);
-			if(len > 0)
+                        if (len > 0)
 				gfire_send(gfire_get_connection(p_gfire), len);
 
 			p_gfire->server_changed = FALSE;
 			gchar *addr = gfire_game_data_addr_str(&p_gfire->game_data);
 
-			purple_debug_info("gfire", "Playing on server (%s)\n", addr);
+                        purple_debug_info("gfire", "Playing on server: %s\n", addr);
 			g_free(addr);
 		}
 	}
 
-	if(game_name)
+        if (game_name)
 		g_free(game_name);
 }
 
@@ -1449,12 +1451,12 @@ gboolean gfire_detect_running_processes_cb(gfire_data *p_gfire)
 {
 	if (!p_gfire)
 	{
-		purple_debug_error("gfire", "gfire_detect_running_processes_cb: Gfire not set.\n");
+                purple_debug_error("gfire", "Couldn't access gfire data.\n");
 		return FALSE;
 	}
 
 	gboolean norm = purple_account_get_bool(purple_connection_get_account(gfire_get_connection(p_gfire)), "ingamedetectionnorm", TRUE);
-	if (norm == FALSE)
+        if (!norm)
 		return TRUE;
 
 	if (p_gfire->external_game)
@@ -1509,7 +1511,7 @@ gboolean gfire_detect_running_processes_cb(gfire_data *p_gfire)
 			}
 		}
 		else
-			purple_debug_error("gfire", "Couldn't get game id to obtain game arguments.\n");
+                        purple_debug_error("gfire", "Couldn't get game ID to obtain game arguments.\n");
 
 		gboolean process_running = gfire_process_list_contains(p_gfire->process_list, game_executable_name, game_exec_required_args, game_exec_invalid_args);
 		gfire_handle_game_detection(p_gfire, game_id_int, process_running, game_executable);

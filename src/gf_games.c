@@ -669,8 +669,6 @@ gfire_game_detection_info *gfire_game_detection_info_get(guint32 p_gameid)
 	if(!detect_node)
 		return ret;
 
-	g_printf("I'll try!\n");
-
 	gchar *detect = xmlnode_get_data(detect_node);
 	if(g_ascii_strcasecmp(detect, "enabled") == 0)
 		ret->detect = TRUE;
