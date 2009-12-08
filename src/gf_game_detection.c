@@ -3,7 +3,7 @@
  *
  * Copyright (C) 2000-2001, Beat Wolf <asraniel@fryx.ch>
  * Copyright (C) 2006,      Keith Geffert <keith@penguingurus.com>
- * Copyright (C) 2008-2009	Laurent De Marez <laurentdemarez@gmail.com>
+ * Copyright (C) 2008-2009  Laurent De Marez <laurentdemarez@gmail.com>
  * Copyright (C) 2009       Warren Dumortier <nwarrenfl@gmail.com>
  * Copyright (C) 2009	    Oliver Ney <oliver@dryder.de>
  *
@@ -45,7 +45,7 @@ void gfire_process_list_free(gfire_process_list *p_list)
 
 process_info *gfire_process_info_new(const gchar *p_name, const gchar *p_args, const guint32 p_id)
 {
-	if(!p_name)
+	if (!p_name)
 		return NULL;
 
 	process_info *ret = g_malloc0(sizeof(process_info));
