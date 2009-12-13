@@ -2,26 +2,29 @@
 <interface>
   <!-- interface-requires gtk+ 2.12 -->
   <!-- interface-naming-policy project-wide -->
-  <object class="GtkListStore" id="servers_list_store">
-    <columns>
-      <!-- column-name server_name -->
-      <column type="gchararray"/>
-      <!-- column-name server_ip -->
-      <column type="gchararray"/>
-      <!-- column-name server_ping -->
-      <column type="gchararray"/>
-      <!-- column-name server_players -->
-      <column type="gchararray"/>
-    </columns>
-  </object>
   <object class="GtkListStore" id="game_list_store">
     <columns>
       <!-- column-name game_name -->
       <column type="gchararray"/>
     </columns>
   </object>
+  <object class="GtkListStore" id="servers_list_store">
+    <columns>
+      <!-- column-name server_name -->
+      <column type="gchararray"/>
+      <!-- column-name server_ping -->
+      <column type="gchararray"/>
+      <!-- column-name server_players -->
+      <column type="gchararray"/>
+      <!-- column-name server_map -->
+      <column type="gchararray"/>
+      <!-- column-name server_address -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
   <object class="GtkWindow" id="server_browser_window">
     <property name="title" translatable="yes">Server Browser</property>
+    <property name="window_position">center</property>
     <property name="default_width">600</property>
     <property name="default_height">350</property>
     <child>
@@ -55,7 +58,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkToolButton" id="informations_button">
+              <object class="GtkToolButton" id="information_button">
                 <property name="visible">True</property>
                 <property name="use_underline">True</property>
                 <property name="stock_id">gtk-info</property>
@@ -162,9 +165,12 @@
                     <property name="resizable">True</property>
                     <property name="sizing">autosize</property>
                     <property name="max_width">256</property>
-                    <property name="title">Server name</property>
+                    <property name="title">Name</property>
                     <property name="expand">True</property>
                     <property name="clickable">True</property>
+                    <property name="reorderable">True</property>
+                    <property name="sort_indicator">True</property>
+                    <property name="sort_column_id">0</property>
                     <child>
                       <object class="GtkCellRendererText" id="name_cell_renderer"/>
                       <attributes>
@@ -174,13 +180,16 @@
                   </object>
                 </child>
                 <child>
-                  <object class="GtkTreeViewColumn" id="ip_column">
+                  <object class="GtkTreeViewColumn" id="ping_column">
                     <property name="resizable">True</property>
-                    <property name="sizing">autosize</property>
-                    <property name="title">Server IP</property>
-                    <property name="expand">True</property>
+                    <property name="sizing">fixed</property>
+                    <property name="fixed_width">50</property>
+                    <property name="title">Ping</property>
+                    <property name="reorderable">True</property>
+                    <property name="sort_indicator">True</property>
+                    <property name="sort_column_id">1</property>
                     <child>
-                      <object class="GtkCellRendererText" id="adress_cell_renderer"/>
+                      <object class="GtkCellRendererText" id="ping_cell_renderer"/>
                       <attributes>
                         <attribute name="text">1</attribute>
                       </attributes>
@@ -188,12 +197,16 @@
                   </object>
                 </child>
                 <child>
-                  <object class="GtkTreeViewColumn" id="ping_column">
+                  <object class="GtkTreeViewColumn" id="players_column">
                     <property name="resizable">True</property>
-                    <property name="sizing">autosize</property>
-                    <property name="title">Ping</property>
+                    <property name="sizing">fixed</property>
+                    <property name="fixed_width">70</property>
+                    <property name="title">Players</property>
+                    <property name="reorderable">True</property>
+                    <property name="sort_indicator">True</property>
+                    <property name="sort_column_id">2</property>
                     <child>
-                      <object class="GtkCellRendererText" id="ping_cell_renderer"/>
+                      <object class="GtkCellRendererText" id="players_cell_renderer"/>
                       <attributes>
                         <attribute name="text">2</attribute>
                       </attributes>
@@ -201,13 +214,17 @@
                   </object>
                 </child>
                 <child>
-                  <object class="GtkTreeViewColumn" id="players_column">
+                  <object class="GtkTreeViewColumn" id="map_column">
                     <property name="resizable">True</property>
-                    <property name="sizing">autosize</property>
-                    <property name="title">Players</property>
+                    <property name="sizing">fixed</property>
+                    <property name="fixed_width">135</property>
+                    <property name="title">Map</property>
                     <property name="clickable">True</property>
+                    <property name="reorderable">True</property>
+                    <property name="sort_indicator">True</property>
+                    <property name="sort_column_id">3</property>
                     <child>
-                      <object class="GtkCellRendererText" id="players_cell_renderer"/>
+                      <object class="GtkCellRendererText" id="map_cell_renderer"/>
                       <attributes>
                         <attribute name="text">3</attribute>
                       </attributes>
@@ -225,6 +242,87 @@
           <object class="GtkStatusbar" id="status_bar">
             <property name="visible">True</property>
             <property name="spacing">2</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+  </object>
+  <object class="GtkTextBuffer" id="textbuffer1"/>
+  <object class="GtkWindow" id="server_browser_information">
+    <property name="title" translatable="yes">Server information</property>
+    <property name="window_position">center</property>
+    <property name="default_width">400</property>
+    <property name="default_height">400</property>
+    <child>
+      <object class="GtkVBox" id="sbi_vbox">
+        <property name="visible">True</property>
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="GtkAlignment" id="sbi_alignment">
+            <property name="visible">True</property>
+            <property name="top_padding">5</property>
+            <property name="bottom_padding">5</property>
+            <property name="left_padding">5</property>
+            <property name="right_padding">5</property>
+            <child>
+              <object class="GtkViewport" id="sbi_viewport">
+                <property name="visible">True</property>
+                <property name="resize_mode">queue</property>
+                <child>
+                  <object class="GtkTextView" id="sbi_text_view">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="editable">False</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkHSeparator" id="sbi_hseparator">
+            <property name="visible">True</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkHBox" id="sbi_hbox">
+            <property name="visible">True</property>
+            <child>
+              <object class="GtkButton" id="sbi_connect_button">
+                <property name="label">gtk-connect</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="has_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_stock">True</property>
+              </object>
+              <packing>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="sbi_close_button">
+                <property name="label">gtk-close</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_stock">True</property>
+              </object>
+              <packing>
+                <property name="position">1</property>
+              </packing>
+            </child>
           </object>
           <packing>
             <property name="expand">False</property>
