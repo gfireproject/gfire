@@ -63,7 +63,7 @@ gfire_data *gfire_create(PurpleConnection *p_gc)
 
 	return ret;
 
-error:
+	error:
 	purple_debug(PURPLE_DEBUG_ERROR, "gfire", "gfire_create: Out of memory!\n");
 	gfire_free(ret);
 	return NULL;
@@ -254,6 +254,12 @@ void gfire_close(gfire_data *p_gfire)
 	{
 		purple_debug(PURPLE_DEBUG_MISC, "gfire", "CONN: removing game detection callback\n");
 		g_source_remove(p_gfire->det_source);
+	}
+
+	if(p_gfire->server_browser_pool > 0)
+	{
+		purple_debug_misc("gfire", "CONN: removing server browser pool callback\n");
+		g_source_remove(p_gfire->server_browser_pool);
 	}
 
 	if(p_gfire->fd >= 0)
@@ -1342,7 +1348,8 @@ void gfire_check_for_left_clan_members(PurpleConnection *gc, guint32 clanid)
 
 		contact_buddy_node = purple_blist_node_get_sibling_next(contact_buddy_node);
 	}
-}*/
+}
+*/
 
 void gfire_playing_external_game(gfire_data *p_gfire, guint32 p_gameid)
 {

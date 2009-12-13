@@ -29,6 +29,7 @@
 
 void gfire_server_browser_show(PurplePluginAction *p_action);
 static void gfire_server_browser_request_list_cb(server_browser_callback_args *p_args, GtkWidget *p_button);
+static void gfire_server_browser_server_information_cb(server_browser_callback_args *p_args, GtkWidget *p_sender);
 static void gfire_server_browser_connect_cb(server_browser_callback_args *p_args, GtkWidget *p_sender);
 
 #endif // _GF_SERVER_BROWSER_H

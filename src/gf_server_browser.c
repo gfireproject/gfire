@@ -24,151 +24,197 @@
 
 #include "gf_server_browser.h"
 
-void gfire_server_browser_close(GtkWidget *server_browser_window)
+// #ifdef HAVE_GTK
+void gfire_server_browser_close(server_browser_callback_args *p_args, GtkWidget *p_button)
 {
-    if (servers_list_thread_pool)
-	g_thread_pool_free(servers_list_thread_pool, TRUE, FALSE);
+	if (!p_args)
+		return;
 
-    // FIXME: Can we remove the timeout here? Didn't find any method atm!
-    gtk_widget_destroy(server_browser_window);
+	gfire_data *gfire = p_args->gfire;
+	GtkBuilder *builder = p_args->builder;
+
+	if (!gfire || !builder)
+	{
+		purple_debug_error("gfire", "Purple connection not set and/or couldn't get server browser interface.\n");
+		return;
+	}
+
+	if (servers_list_thread_pool)
+		g_thread_pool_free(servers_list_thread_pool, TRUE, FALSE);
+
+	if (gfire->server_browser_pool > 0)
+		g_source_remove(gfire->server_browser_pool);
+
+	GtkWidget *server_browser_window = GTK_WIDGET(gtk_builder_get_object(builder, "server_browser_window"));
+	gtk_widget_destroy(server_browser_window);
 }
 
 void gfire_server_browser_show(PurplePluginAction *p_action)
 {
-    PurpleConnection *gc = (PurpleConnection *)p_action->context;
-    gfire_data *gfire = NULL;
+	PurpleConnection *gc = (PurpleConnection *)p_action->context;
+	gfire_data *gfire = NULL;
 
-    if (!gc || !(gfire = (gfire_data *)gc->proto_data))
-    {
-	purple_debug_error("gfire", "Purple connection not set and/or couldn't access gfire data.\n");
-	return;
-    }
+	if (!gc || !(gfire = (gfire_data *)gc->proto_data))
+	{
+		purple_debug_error("gfire", "Purple connection not set and/or couldn't access gfire data.\n");
+		return;
+	}
 
-    GtkBuilder *builder = gtk_builder_new();
-    gchar *builder_file;
+	GtkBuilder *builder = gtk_builder_new();
+	gchar *builder_file;
 
-    gtk_builder_set_translation_domain(builder, GETTEXT_PACKAGE);
+	gtk_builder_set_translation_domain(builder, GETTEXT_PACKAGE);
 
-    builder_file = g_build_filename(DATADIR, "purple", "gfire", "servers.glade", NULL);
-    gtk_builder_add_from_file(builder, builder_file, NULL);
-    g_free(builder_file);
+	builder_file = g_build_filename(DATADIR, "purple", "gfire", "servers.glade", NULL);
+	gtk_builder_add_from_file(builder, builder_file, NULL);
+	g_free(builder_file);
 
-    if (!builder)
-    {
-	purple_debug_error("gfire", "Couldn't build server browser interface, file missing?\n");
-	return;
-    }
+	if (!builder)
+	{
+		purple_debug_error("gfire", "Couldn't build server browser interface, file missing?\n");
+		return;
+	}
 
-    GtkWidget *server_browser_window = GTK_WIDGET(gtk_builder_get_object(builder, "server_browser_window"));
-    GtkWidget *refresh_button = GTK_WIDGET(gtk_builder_get_object(builder, "refresh_button"));
-    GtkWidget *connect_button = GTK_WIDGET(gtk_builder_get_object(builder, "connect_button"));
-    GtkWidget *quit_button = GTK_WIDGET(gtk_builder_get_object(builder, "quit_button"));
-    GtkWidget *game_combo = GTK_WIDGET(gtk_builder_get_object(builder, "game_combo"));
+	GtkWidget *server_browser_window = GTK_WIDGET(gtk_builder_get_object(builder, "server_browser_window"));
+	GtkWidget *servers_tree_view = GTK_WIDGET(gtk_builder_get_object(builder, "servers_tree_view"));
+	GtkWidget *refresh_button = GTK_WIDGET(gtk_builder_get_object(builder, "refresh_button"));
+	GtkWidget *connect_button = GTK_WIDGET(gtk_builder_get_object(builder, "connect_button"));
+	GtkWidget *information_button = GTK_WIDGET(gtk_builder_get_object(builder, "information_button"));
+	GtkWidget *quit_button = GTK_WIDGET(gtk_builder_get_object(builder, "quit_button"));
+	GtkWidget *game_combo = GTK_WIDGET(gtk_builder_get_object(builder, "game_combo"));
 
-    server_browser_callback_args *args;
+	server_browser_callback_args *args;
 
-    args = g_malloc0(sizeof(server_browser_callback_args));
-    args->gfire = gfire;
-    args->builder = builder;
+	args = g_malloc0(sizeof(server_browser_callback_args));
+	args->gfire = gfire;
+	args->builder = builder;
 
-    g_signal_connect_swapped(quit_button, "destroyed", G_CALLBACK(gfire_server_browser_close), server_browser_window);
-    g_signal_connect_swapped(quit_button, "clicked", G_CALLBACK(gfire_server_browser_close), server_browser_window);
+	g_signal_connect_swapped(server_browser_window, "destroyed", G_CALLBACK(gfire_server_browser_close), args);
+	g_signal_connect_swapped(quit_button, "clicked", G_CALLBACK(gfire_server_browser_close), args);
 
-    g_signal_connect_swapped(refresh_button, "clicked", G_CALLBACK(gfire_server_browser_request_list_cb), args);
-    g_signal_connect_swapped(connect_button, "clicked", G_CALLBACK(gfire_server_browser_connect_cb), args);
+	g_signal_connect_swapped(refresh_button, "clicked", G_CALLBACK(gfire_server_browser_request_list_cb), args);
+	g_signal_connect_swapped(connect_button, "clicked", G_CALLBACK(gfire_server_browser_connect_cb), args);
+	g_signal_connect_swapped(information_button, "clicked", G_CALLBACK(gfire_server_browser_server_information_cb), args);
 
-    xmlnode *node_child = gfire_game_config_node_first();
-    for(; node_child; node_child = gfire_game_config_node_next(node_child))
-    {
-	const gchar *game_name = xmlnode_get_attrib(node_child, "name");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(game_combo), game_name);
-    }
+	// Connect too when user double clicks on a server
+	g_signal_connect_swapped(servers_tree_view, "row-activated", G_CALLBACK(gfire_server_browser_connect_cb), args);
 
-    xmlnode_free(node_child);
-    gtk_widget_show_all(server_browser_window);
+	xmlnode *node_child = gfire_game_config_node_first();
+	for(; node_child; node_child = gfire_game_config_node_next(node_child))
+	{
+		const gchar *game_name = xmlnode_get_attrib(node_child, "name");
+		gtk_combo_box_append_text(GTK_COMBO_BOX(game_combo), game_name);
+	}
+
+	xmlnode_free(node_child);
+	gtk_widget_show_all(server_browser_window);
 }
 
 static void gfire_server_browser_request_list_cb(server_browser_callback_args *p_args, GtkWidget *p_button)
 {
-    if (!p_args)
-	return;
+	if (!p_args)
+		return;
 
-    gfire_data *gfire = p_args->gfire;
-    GtkBuilder *builder = p_args->builder;
+	gfire_data *gfire = p_args->gfire;
+	GtkBuilder *builder = p_args->builder;
 
-    if (!gfire || !builder)
-    {
-	purple_debug_error("gfire", "Purple connection not set and/or couldn't get server browser interface.\n");
-	return;
-    }
+	if (!gfire || !builder)
+	{
+		purple_debug_error("gfire", "Purple connection not set and/or couldn't get server browser interface.\n");
+		return;
+	}
 
-    GtkWidget *game_combo = GTK_WIDGET(gtk_builder_get_object(builder, "game_combo"));
+	GtkWidget *game_combo = GTK_WIDGET(gtk_builder_get_object(builder, "game_combo"));
+	GtkWidget *servers_list_store = GTK_WIDGET(gtk_builder_get_object(builder, "servers_list_store"));
 
-    gchar *game_name;
-    guint32 game_id;
+	gtk_list_store_clear(GTK_LIST_STORE(servers_list_store));
 
-    game_name = gtk_combo_box_get_active_text(GTK_COMBO_BOX(game_combo));
-    game_id = gfire_game_id(game_name);
-    g_free(game_name);
+	gchar *game_name;
+	guint32 game_id;
 
-    if (game_id != 0)
-    {
-	// Define game id, to be able to determine query types later
-	servers_list_queried_game_id = game_id;
+	game_name = gtk_combo_box_get_active_text(GTK_COMBO_BOX(game_combo));
+	game_id = gfire_game_id(game_name);
+	g_free(game_name);
 
-	guint16 packet_len = 0;
-	gfire->server_browser = builder;
+	if (game_id != 0)
+	{
+		// Define game id, to be able to determine query types later
+		servers_list_queried_game_id = game_id;
 
-	packet_len = gfire_server_browser_proto_create_serverlist_request(game_id);
-	if(packet_len > 0)
-	    gfire_send(gfire_get_connection(gfire), packet_len);
-    }
+		guint16 packet_len = 0;
+		gfire->server_browser = builder;
+
+		packet_len = gfire_server_browser_proto_create_serverlist_request(game_id);
+		if(packet_len > 0)
+			gfire_send(gfire_get_connection(gfire), packet_len);
+	}
+}
+
+static void gfire_server_browser_server_information_cb(server_browser_callback_args *p_args, GtkWidget *p_sender)
+{
+	gfire_data *gfire = p_args->gfire;
+	GtkBuilder *builder = p_args->builder;
+
+	if (!gfire || !builder)
+	{
+		purple_debug_error("gfire", "Purple connection not set and/or couldn't get server browser interface.\n");
+		return;
+	}
+
+	GtkWidget *server_browser_information_window = GTK_WIDGET(gtk_builder_get_object(builder, "server_browser_information"));
+	GtkWidget *close_button = GTK_WIDGET(gtk_builder_get_object(builder, "sbi_close_button"));
+
+	g_signal_connect_swapped(server_browser_information_window, "destroyed", G_CALLBACK(gtk_widget_destroy), server_browser_information_window);
+	g_signal_connect_swapped(close_button, "clicked", G_CALLBACK(gtk_widget_destroy), server_browser_information_window);
+
+	gtk_widget_show_all(server_browser_information_window);
 }
 
 // FIXME: Must be revised!
 static void gfire_server_browser_connect_cb(server_browser_callback_args *p_args, GtkWidget *p_sender)
 {
-    gfire_data *gfire = p_args->gfire;
-    GtkBuilder *builder = p_args->builder;
+	gfire_data *gfire = p_args->gfire;
+	GtkBuilder *builder = p_args->builder;
 
-    if (!gfire || !builder)
-    {
-	purple_debug_error("gfire", "Purple connection not set and/or couldn't get server browser interface.\n");
-	return;
-    }
+	if (!gfire || !builder)
+	{
+		purple_debug_error("gfire", "Purple connection not set and/or couldn't get server browser interface.\n");
+		return;
+	}
 
-    GtkWidget *game_combo = GTK_WIDGET(gtk_builder_get_object(builder, "game_combo"));
-    GtkWidget *servers_tree_view = GTK_WIDGET(gtk_builder_get_object(builder, "servers_tree_view"));
+	GtkWidget *game_combo = GTK_WIDGET(gtk_builder_get_object(builder, "game_combo"));
+	GtkWidget *servers_tree_view = GTK_WIDGET(gtk_builder_get_object(builder, "servers_tree_view"));
 
-    GtkTreeSelection *selection;
-    GtkTreeModel *model;
-    GtkTreeIter iter;
+	GtkTreeSelection *selection;
+	GtkTreeModel *model;
+	GtkTreeIter iter;
 
-    gchar *game_name = gtk_combo_box_get_active_text(GTK_COMBO_BOX(game_combo));
-    selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(servers_tree_view));
-    model = gtk_tree_view_get_model(GTK_TREE_VIEW(servers_tree_view));
+	gchar *game_name = gtk_combo_box_get_active_text(GTK_COMBO_BOX(game_combo));
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(servers_tree_view));
+	model = gtk_tree_view_get_model(GTK_TREE_VIEW(servers_tree_view));
 
-    if (gtk_tree_selection_get_selected(selection, &model, &iter))
-    {
-	gfire_game_data game;
-	gchar *server;
-	gchar **server_tok;
+	if (gtk_tree_selection_get_selected(selection, &model, &iter))
+	{
+		gfire_game_data game;
+		gchar *server;
+		gchar **server_tok;
 
-	gtk_tree_model_get(model, &iter, 1, &server, -1);
-	server_tok = g_strsplit(server, ":", -1);
-	g_free(server);
+		gtk_tree_model_get(model, &iter, 4, &server, -1);
+		server_tok = g_strsplit(server, ":", -1);
+		g_free(server);
 
-	if(!server_tok)
-	    return;
+		if(!server_tok)
+			return;
 
-	game.id = gfire_game_id(game_name);
-	gfire_game_data_ip_from_str(&game, server_tok[0]);
-	game.port = atoi(server_tok[1]);
+		game.id = gfire_game_id(game_name);
+		gfire_game_data_ip_from_str(&game, server_tok[0]);
+		game.port = atoi(server_tok[1]);
 
-	g_strfreev(server_tok);
+		g_strfreev(server_tok);
 
-	gfire_join_game(gfire, &game);
-    }
-    else
-	purple_debug_error("gfire", "Couldn't get selected server to join.\n");
+		gfire_join_game(gfire, &game);
+	}
+	else
+		purple_debug_error("gfire", "Couldn't get selected server to join.\n");
 }
+//#endif // HAVE_GTK

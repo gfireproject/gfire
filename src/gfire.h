@@ -70,14 +70,14 @@ struct _gfire_data
 	int fd;
 	guint8 *buff_in;
 	guint16 bytes_read;
-	gulong last_packet;			/* time (in seconds) of our last packet */
-    gulong last_response;		/* time (in seconds) of the last packet from server */
+	gulong last_packet;	/* time (in seconds) of our last packet */
+	gulong last_response;	/* time (in seconds) of the last packet from server */
 	PurpleConnection *gc;
 
 	// Xfire session
-	guint32 userid;				/* our userid on the xfire network */
-	guint8 *sid;				/* our session id for this connection */
-	gchar *alias;				/* our current server alias */
+	guint32 userid;		/* our userid on the xfire network */
+	guint8 *sid;		/* our session id for this connection */
+	gchar *alias;		/* our current server alias */
 
 	// P2P Connection
 	gfire_p2p_connection *p2p;
@@ -100,6 +100,7 @@ struct _gfire_data
 	// Timer callbacks
 	guint xqf_source;			/* g_timeout_add source number for xqf callback */
 	guint det_source;			/* g_timeout_add source number for game detection callback */
+	guint server_browser_pool;
 
 #ifdef HAVE_GTK
 	// Server Browser
@@ -108,7 +109,7 @@ struct _gfire_data
 
 	// Server Detection
 	GList *server_list;
-	gboolean server_changed;	
+	gboolean server_changed;
 	GMutex *server_mutex;		/* mutex for writing found server */
 };
 
