@@ -24,12 +24,13 @@
 
 #include "gf_server_browser_proto.h"
 
-const char quake3_query[] = {0xFF, 0xFF, 0xFF, 0xFF, 0x67, 0x65, 0x74, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x0A};
-const char ut2004_query[] = {0x5C, 0x69, 0x6E, 0x66, 0x6F, 0x5C};
-const char cod4_query[] = {0xFF, 0xFF, 0xFF, 0XFF, 0x67, 0x65, 0x74, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73};
-
 static GMutex *mutex;
 static GQueue servers_list_queue = G_QUEUE_INIT;
+
+// Protocol queries
+const char cod4_query[] = {0xFF, 0xFF, 0xFF, 0XFF, 0x67, 0x65, 0x74, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73};
+const char quake3_query[] = {0xFF, 0xFF, 0xFF, 0xFF, 0x67, 0x65, 0x74, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x0A};
+const char ut2004_query[] = {0x5C, 0x69, 0x6E, 0x66, 0x6F, 0x5C};
 
 gfire_server_info *gfire_server_info_new()
 {
@@ -37,11 +38,6 @@ gfire_server_info *gfire_server_info_new()
 	server_info = (gfire_server_info *)g_malloc0(sizeof(gfire_server_info));
 
 	return server_info;
-}
-
-guint32 gfire_server_browser_ping(guint32 server_ip)
-{
-	return -1;
 }
 
 gchar *gfire_server_browser_send_packet(const guint32 server_ip, const gint server_port, const gchar server_query[])
@@ -86,8 +82,7 @@ gchar *gfire_server_browser_send_packet(const guint32 server_ip, const gint serv
 		close(query_socket);
 
 		// Return response
-		gchar *query_response;
-		query_response = g_strdup_printf("%s", response);
+		gchar *query_response = g_strdup_printf("%s", response);
 
 		return query_response;
 	}
@@ -97,19 +92,30 @@ gchar *gfire_server_browser_send_packet(const guint32 server_ip, const gint serv
 
 gfire_server_info *gfire_server_browser_quake3(const guint32 server_ip, const gint server_port)
 {
-	gchar *server_response = gfire_server_browser_send_packet(server_ip, server_port, quake3_query);
 	gfire_server_info *server_info = gfire_server_info_new();
+	gchar *server_response = gfire_server_browser_send_packet(server_ip, server_port, quake3_query);
 
+	if (!server_response)
+		return server_info;
 
-	char *popo;
+	// Fill raw info
+	g_strchomp(server_response);
+	server_info->raw_info = g_strdup(server_response);
 
+	// Construct full IP
 	struct sockaddr_in antelope;
 	antelope.sin_addr.s_addr = server_ip;
-	popo = inet_ntoa(antelope.sin_addr); // Return the IP
 
-	server_info->ip_full = g_strdup_printf("%s:%u", popo, server_port);
-	gchar **server_response_split = g_strsplit(server_response, "\\", 0);
+	server_info->ip_full = g_strdup_printf("%s:%u", inet_ntoa(antelope.sin_addr), server_port);
 
+	// Split response in 3 parts (message, server information, players)
+	gchar **server_response_parts = g_strsplit(server_response, "\n", 0);
+	g_free(server_response);
+
+	if (g_strv_length(server_response_parts) < 3)
+		return server_info;
+
+	gchar **server_response_split = g_strsplit(server_response_parts[1], "\\", 0);
 	if (server_response_split)
 	{
 		int i;
@@ -119,29 +125,13 @@ gfire_server_info *gfire_server_browser_quake3(const guint32 server_ip, const gi
 			server_info->ip = server_ip;
 			server_info->port = server_port;
 
-			// Ping
-			server_info->ping = gfire_server_browser_ping(server_ip);
-
 			// Server name
 			if (!g_strcmp0("sv_hostname", server_response_split[i]))
 				server_info->name = server_response_split[i+1];
 
-			// Game mod
-			if (!g_strcmp0("gamename", server_response_split[i]))
-				server_info->mod = server_response_split[i+1];
-
 			// Server map
 			if (!g_strcmp0("mapname", server_response_split[i]))
 				server_info->map = server_response_split[i+1];
-
-			// Punkbuster
-			if (!g_strcmp0("sv_punkbuster", server_response_split[i]))
-			{
-				if (!g_strcmp0(server_response_split[i+1], "1"))
-					server_info->punkbuster = TRUE;
-				else
-					server_info->punkbuster = FALSE;
-			}
 
 			// Max. players
 			if (!g_strcmp0("sv_maxclients", server_response_split[i]))
@@ -149,13 +139,11 @@ gfire_server_info *gfire_server_browser_quake3(const guint32 server_ip, const gi
 		}
 
 		// Count players
-		guint32 players;
-
-		gchar *baba = g_strdup_printf("%s", server_response_split[g_strv_length(server_response_split) - 1]);
-		gchar **players_parts = g_strsplit(baba, "\n", 0);
-
-		players = g_strv_length(players_parts) - 2;
+		guint32 players = g_strv_length(server_response_parts) - 2;
 		server_info->players = players;
+
+		// g_strfreev(server_response_parts);
+		// g_strfreev(server_response_split);
 	}
 
 	return server_info;
@@ -185,15 +173,32 @@ void gfire_server_browser_update_server_list_thread(gfire_server_info *server_in
 
 	gfire_server_info *server_info_queried = gfire_server_info_new();
 
+	struct timeval query_time_start, query_time_end, query_time_elapsed;
+	gettimeofday(&query_time_start, NULL);
+
 	// Determine query type
 	if (!g_strcmp0(server_info->query_type, "WOLFET"))
+		server_info_queried = gfire_server_browser_wolfet(inet_addr(server_ip_full_parts[0]), atoi(server_ip_full_parts[1]));
+	else if (!g_strcmp0(server_info->query_type, "COD2"))
 		server_info_queried = gfire_server_browser_wolfet(inet_addr(server_ip_full_parts[0]), atoi(server_ip_full_parts[1]));
 	else if (!g_strcmp0(server_info->query_type, "COD4MW"))
 		server_info_queried = gfire_server_browser_wolfet(inet_addr(server_ip_full_parts[0]), atoi(server_ip_full_parts[1]));
 	else
 		return;
 
-	server_info_queried->server_list_pos = server_info->server_list_pos;
+	gettimeofday(&query_time_end, NULL);
+
+	if (query_time_start.tv_usec > query_time_end.tv_usec)
+	{
+		query_time_end.tv_usec += 1000000;
+		query_time_end.tv_sec--;
+	}
+
+	query_time_elapsed.tv_usec = query_time_end.tv_usec - query_time_start.tv_usec;
+	query_time_elapsed.tv_sec = query_time_end.tv_sec - query_time_start.tv_sec;
+
+	server_info_queried->ping = query_time_elapsed.tv_usec / 1000;
+	server_info_queried->servers_list_iter = server_info->servers_list_iter;
 
 	g_mutex_lock(mutex);
 	g_queue_push_head(&servers_list_queue, server_info_queried);
@@ -210,7 +215,6 @@ gboolean gfire_server_browser_display_servers_cb(GtkListStore *p_list_store)
 		g_mutex_lock(mutex);
 		if (g_queue_is_empty(&servers_list_queue) == TRUE)
 		{
-			// g_printf("gfire: No new servers queried, ignoring.\n");
 			g_mutex_unlock(mutex);
 			return TRUE;
 		}
@@ -219,10 +223,21 @@ gboolean gfire_server_browser_display_servers_cb(GtkListStore *p_list_store)
 		if (server)
 		{
 			GtkTreeIter iter;
-			gtk_tree_model_get_iter_from_string(GTK_TREE_MODEL(p_list_store), &iter, g_strdup_printf("%d", server->server_list_pos));
+			iter = server->servers_list_iter;
 
 			if (server->name)
-				gtk_list_store_set(p_list_store, &iter, 0, g_strstrip(gfire_escape_color_codes(server->name)), -1);
+			{
+				gchar *server_name_clean = g_strstrip(gfire_remove_quake3_color_codes(server->name));
+				gtk_list_store_set(p_list_store, &iter, 0, server_name_clean, -1);
+				g_free(server_name_clean);
+			}
+
+			if (server->ping)
+			{
+				gchar *server_ping = g_strdup_printf("%u", server->ping);
+				gtk_list_store_set(p_list_store, &iter, 1, server_ping, -1);
+				g_free(server_ping);
+			}
 
 			if (server->players && server->max_players)
 			{
@@ -234,9 +249,15 @@ gboolean gfire_server_browser_display_servers_cb(GtkListStore *p_list_store)
 			if (server->map)
 				gtk_list_store_set(p_list_store, &iter, 3, server->map, -1);
 
+			if (server->raw_info)
+			{
+				gchar *server_raw_info = g_strdup(server->raw_info);
+				gtk_list_store_set(p_list_store, &iter, 5, server_raw_info, -1);
+				g_free(server_raw_info);
+			}
+
 			i++;
 		}
-
 		g_mutex_unlock(mutex);
 	}
 
@@ -294,7 +315,6 @@ void gfire_server_browser_proto_serverlist(gfire_data *p_gfire, guint16 p_packet
 						     NULL, GFIRE_SERVER_BROWSER_THREADS_LIMIT + 1, FALSE, NULL);
 
 	// Add servers to list store & thread pool
-	int servers = 0;
 	for(; i; i = g_list_next(i))
 	{
 		GtkTreeIter iter;
@@ -313,9 +333,8 @@ void gfire_server_browser_proto_serverlist(gfire_data *p_gfire, guint16 p_packet
 
 		// Add server to list
 		gfire_server_info *server_info = gfire_server_info_new();
-		server_info->query_type =
-				server_info->ip_full = g_strdup(addr);
-		server_info->server_list_pos = servers;
+		server_info->query_type = server_info->ip_full = g_strdup(addr);
+		server_info->servers_list_iter = iter;
 		server_info->query_type = g_strdup(server_query_type);
 
 		g_thread_pool_push(servers_list_thread_pool, server_info, NULL);
@@ -326,9 +345,6 @@ void gfire_server_browser_proto_serverlist(gfire_data *p_gfire, guint16 p_packet
 		g_free(p->data);
 
 		p = g_list_next(p);
-
-		// Count servers
-		servers++;
 	}
 
 	// Add timeout to display queried servers

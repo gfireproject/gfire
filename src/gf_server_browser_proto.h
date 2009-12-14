@@ -38,22 +38,23 @@ guint32 servers_list_queried_game_id;
 
 typedef struct _gfire_server_info
 {
-	gint server_list_pos;
+	GtkTreeIter servers_list_iter;
 	gchar *query_type;
 
+	gchar *raw_info;
 	gchar *ip_full;
+
+	gchar *name;
+
 	guint32 ip;
 	guint16 port;
 	guint32 ping;
 
-	gchar *name;
-	gchar *mod;
-	gchar *map;
-
-	gboolean punkbuster;
-
 	guint32 players;
 	guint32 max_players;
+
+	gchar *map;
+	gchar *game_type;
 } gfire_server_info;
 
 typedef struct _server_browser_callback_args

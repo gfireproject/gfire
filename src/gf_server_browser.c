@@ -161,11 +161,32 @@ static void gfire_server_browser_server_information_cb(server_browser_callback_a
 		return;
 	}
 
+	GtkWidget *servers_tree_view = GTK_WIDGET(gtk_builder_get_object(builder, "servers_tree_view"));
 	GtkWidget *server_browser_information_window = GTK_WIDGET(gtk_builder_get_object(builder, "server_browser_information"));
 	GtkWidget *close_button = GTK_WIDGET(gtk_builder_get_object(builder, "sbi_close_button"));
+	GtkWidget *sbi_text_view = GTK_WIDGET(gtk_builder_get_object(builder, "sbi_text_view"));
 
 	g_signal_connect_swapped(server_browser_information_window, "destroyed", G_CALLBACK(gtk_widget_destroy), server_browser_information_window);
 	g_signal_connect_swapped(close_button, "clicked", G_CALLBACK(gtk_widget_destroy), server_browser_information_window);
+
+	GtkTreeSelection *selection;
+	GtkTreeModel *model;
+	GtkTreeIter iter;
+
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(servers_tree_view));
+	model = gtk_tree_view_get_model(GTK_TREE_VIEW(servers_tree_view));
+
+	if (gtk_tree_selection_get_selected(selection, &model, &iter))
+	{
+		gchar *server_raw_info;
+
+		gtk_tree_model_get(model, &iter, 5, &server_raw_info, -1);
+
+		GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(sbi_text_view));
+		gtk_text_buffer_set_text(buffer, g_strescape(server_raw_info, "\n"), -1);
+	}
+	else
+		purple_debug_error("gfire", "Couldn't get selected server to display raw info.\n");
 
 	gtk_widget_show_all(server_browser_information_window);
 }

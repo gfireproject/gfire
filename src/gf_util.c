@@ -24,42 +24,32 @@
 
 #include "gf_util.h"
 
-/**
- * Removes color codes from a string,
- * used in the server browser to display the server names properly.
-**/
-gchar *gfire_escape_color_codes(const gchar *p_string)
+gchar *gfire_remove_quake3_color_codes(const gchar *p_string)
 {
-	const gchar color_codes[] = {
-		'0', 'P', '9', 'Y', 'Z', '7', 'W',
-		'J', '1', 'Q', 'I',
-		'H', '2', 'R', 'G',
-		'M', '3', 'S', 'O', 'N',
-		'F', 'D', '4', 'T',
-		'B', '5', 'U',
-		'C', 'E', '6', 'V',
-		'K', 'L', '8', 'Y', 'A',
-		'?', '+', '@', '-', '/',
-		'&', 'X'
-	};
-
 	if(!p_string)
 		return NULL;
 
+	const gchar color_codes[] =
+	{
+		'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+		'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
+		'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
+		'U', 'V', 'W', 'X', 'Y', 'Z',
+		'?', '+', '@', '-', '_', '/', '&', '(', '>', '.'
+	};
+
 	gchar *escaped = g_strdup(p_string);
 
-	if(escaped)
+	int i;
+	gchar code[3];
+	gchar *tmp = NULL;
+
+	for (i = 0; i < sizeof(color_codes); i++)
 	{
-		int i;
-		gchar code[3];
-		gchar *tmp = NULL;
-		for (i = 0; i < sizeof(color_codes); i++)
-		{
-			g_snprintf(code, 3, "^%c", color_codes[i]);
-			tmp = purple_strcasereplace(escaped, code, "");
-			g_free(escaped);
-			escaped = tmp;
-		}
+		g_snprintf(code, 3, "^%c", color_codes[i]);
+		tmp = purple_strcasereplace(escaped, code, "");
+		g_free(escaped);
+		escaped = tmp;
 	}
 
 	return escaped;

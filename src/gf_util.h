@@ -29,7 +29,7 @@ typedef struct _gfire_bitlist gfire_bitlist;
 
 #include "gf_base.h"
 
-gchar *gfire_escape_color_codes(const gchar *p_string);
+gchar *gfire_remove_quake3_color_codes(const gchar *p_string);
 gchar *gfire_escape_html(const gchar *p_html);
 void gfire_list_clear(GList *p_list);
 gchar *gfire_strip_character_range(gchar *p_string, gchar p_start, gchar p_end);
