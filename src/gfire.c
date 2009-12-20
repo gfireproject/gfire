@@ -199,8 +199,8 @@ static void gfire_login_cb(gpointer p_data, gint p_source, const gchar *p_error_
 		gfire->p2p = gfire_p2p_connection_create(min_port, max_port);
 	}
 
-    // Update Gfire if needed
-    if (!gfire_update(gfire))
+	// Update Gfire if needed
+	if (!gfire_update(gfire))
 	purple_debug_error("gfire", "Unable to query latest Gfire and games list version. Website down?\n");
 }
 
@@ -209,7 +209,7 @@ gboolean gfire_update(gfire_data *p_gfire)
 	if (!p_gfire)
 		return FALSE;
 
-    purple_util_fetch_url(GFIRE_CURRENT_VERSION_XML_URL, TRUE, "purple-xfire", TRUE, gfire_update_version_cb, gfire_get_connection(p_gfire));
+	purple_util_fetch_url(GFIRE_CURRENT_VERSION_XML_URL, TRUE, "purple-xfire", TRUE, gfire_update_version_cb, gfire_get_connection(p_gfire));
 	return TRUE;
 }
 
@@ -383,7 +383,9 @@ void gfire_set_status(gfire_data *p_gfire, const PurpleStatus *p_status)
 	if(!p_gfire || !p_status)
 		return;
 
-	gchar *msg = purple_unescape_html(purple_status_get_attr_string(p_status, "message"));
+	gchar *nohtmltags = purple_markup_strip_html(purple_status_get_attr_string(p_status, "message"));
+	gchar *msg = purple_unescape_html(nohtmltags);
+	g_free(nohtmltags);
 	gchar *status = NULL;
 	switch(purple_status_type_get_primitive(purple_status_get_type(p_status)))
 	{
@@ -1402,7 +1404,7 @@ static void gfire_handle_game_detection(gfire_data *p_gfire, guint32 p_gameid, g
 			// FIXME: This isn't working properly
 			if (norm)
 				purple_notify_message(NULL, PURPLE_NOTIFY_MSG_INFO, _("Ingame status"),
-						      NN(game_name), _("Your status has been changed."), NULL, NULL);
+							  NN(game_name), _("Your status has been changed."), NULL, NULL);
 
 			p_gfire->game_data.id = p_gameid;
 			len = gfire_proto_create_join_game(&p_gfire->game_data);
