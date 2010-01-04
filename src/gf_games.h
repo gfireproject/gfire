@@ -77,7 +77,7 @@ typedef struct _gfire_game_detection_info
 	guint32 id;
 	gchar *executable;
 	gchar *arguments;
-	gchar **exclude_ports;
+	gchar **excluded_ports;
 	gboolean detect;
 } gfire_game_detection_info;
 

@@ -39,8 +39,33 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 
-void gfire_detect_teamspeak_server(guint8 **voip_ip, guint32 *voip_port);
+typedef struct _gfire_server_detection
+{
+	gchar ***netstat_servers;
+	gchar ***tcpdump_servers;
+	
+	gint detected_netstat_servers;
+	gint detected_tcpdump_servers;
+	
+	gboolean udp_detected;
+	gfire_game_detection_info *game_information;
+} gfire_server_detection;
+
+// Creating & freeing
+gfire_server_detection *gfire_server_detection_new();
+void gfire_server_detection_free(gfire_server_detection *p_gfire_server_detection);
+void gfire_server_detection_arrays_clear(gfire_server_detection *p_gfire_server_detection);
+
+// Server detection core
 void gfire_server_detection_detect(gfire_data *p_gfire);
+gchar *gfire_server_detection_get(guint32 p_pid, gfire_server_detection *p_gfire_server_detection);
+int gfire_server_detection_get_ips(char **p_local_ip, char **p_remote_ip);
+void gfire_server_detection_remove_invalid_ips(gfire_server_detection *p_gfire_server_detection);
+gchar *gfire_server_detection_guess_server(gfire_server_detection *p_gfire_server_detection);
+
+// Detection methods
+gchar*** gfire_server_detection_netstat(guint32 p_pid, gfire_server_detection *p_gfire_server_detection);
+gchar*** gfire_server_detection_tcpdump(gfire_server_detection *p_gfire_server_detection);
 
 #endif // _WIN32
 

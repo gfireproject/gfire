@@ -1391,6 +1391,7 @@ static void gfire_handle_game_detection(gfire_data *p_gfire, guint32 p_gameid, g
 	gchar *game_name = gfire_game_name(p_gameid);
 	guint16 len = 0;
 
+	g_mutex_lock(p_gfire->server_mutex);
 	if (p_running == TRUE)
 	{
 		if (purple_account_get_bool(purple_connection_get_account(p_gfire->gc), "server_detection_option", FALSE))
@@ -1426,6 +1427,7 @@ static void gfire_handle_game_detection(gfire_data *p_gfire, guint32 p_gameid, g
 				gfire_send(gfire_get_connection(p_gfire), len);
 		}
 	}
+	g_mutex_unlock(p_gfire->server_mutex);
 
 	if (p_gfire->server_changed && gfire_is_playing(p_gfire))
 	{
@@ -1518,7 +1520,10 @@ gboolean gfire_detect_running_processes_cb(gfire_data *p_gfire)
 		else
 			purple_debug_error("gfire", "Couldn't get game ID to obtain game arguments.\n");
 
+		g_mutex_lock(p_gfire->server_mutex);
 		gboolean process_running = gfire_process_list_contains(p_gfire->process_list, game_executable, game_exec_required_args, game_exec_invalid_args);
+		g_mutex_unlock(p_gfire->server_mutex);
+		
 		gfire_handle_game_detection(p_gfire, game_id_int, process_running, game_executable);
 
 		if (game_executable)

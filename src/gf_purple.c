@@ -899,7 +899,7 @@ static void _init_plugin(PurplePlugin *plugin)
 	option = purple_account_option_bool_new(_("Notify me when my status is ingame"), "ingamenotificationnorm", FALSE);
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options,option);
 
-	option = purple_account_option_bool_new(_("Use server detection"), "server_detection_option", FALSE);
+        option = purple_account_option_bool_new(_("Enable server detection"), "server_detection_option", FALSE);
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
 
 	option = purple_account_option_bool_new(_("Use Xfires P2P features"), "p2p_option", TRUE);

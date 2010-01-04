@@ -626,7 +626,7 @@ void gfire_game_detection_info_free(gfire_game_detection_info *p_info)
 
 	if(p_info->executable) g_free(p_info->executable);
 	if(p_info->arguments) g_free(p_info->arguments);
-	if(p_info->exclude_ports) g_free(p_info->exclude_ports);
+	if(p_info->excluded_ports) g_free(p_info->excluded_ports);
 
 	g_free(p_info);
 }
@@ -677,14 +677,15 @@ gfire_game_detection_info *gfire_game_detection_info_get(guint32 p_gameid)
 
 	g_free(detect);
 
-	xmlnode *exclude_ports = xmlnode_get_child(game_node, "server_excluded_ports");
-	if(!exclude_ports)
+	xmlnode *excluded_ports = xmlnode_get_child(game_node, "server_excluded_ports");
+	if(!excluded_ports)
 		return ret;
 
-	gchar *exclude_ports_str = xmlnode_get_data(exclude_ports);
-	ret->exclude_ports = g_strsplit(exclude_ports_str, ";", -1);
+	gchar *excluded_ports_str = xmlnode_get_data(excluded_ports);
+	ret->excluded_ports = g_strsplit(excluded_ports_str, ";", -1);
 
-	g_free(exclude_ports_str);
+	g_free(excluded_ports_str);
+
 	return ret;
 }
 

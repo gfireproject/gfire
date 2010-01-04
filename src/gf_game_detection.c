@@ -39,23 +39,22 @@ void gfire_process_list_free(gfire_process_list *p_list)
 		return;
 
 	gfire_process_list_clear(p_list);
-
 	g_free(p_list);
 }
 
-process_info *gfire_process_info_new(const gchar *p_name, const gchar *p_args, const guint32 p_id)
+process_info *gfire_process_info_new(const gchar *p_name, const gchar *p_exe, const guint32 p_pid, const gchar *p_args)
 {
-	if (!p_name)
+	if (!p_name || !p_exe || !p_pid)
 		return NULL;
 
 	process_info *ret = g_malloc0(sizeof(process_info));
+
 	ret->name = g_strdup(p_name);
+	ret->exe = g_strdup(p_exe);
+	ret->pid = p_pid;
 
 	if(p_args)
 		ret->args = g_strdup(p_args);
-
-	if (p_id)
-		ret->pid = p_id;
 
 	return ret;
 }
@@ -65,8 +64,14 @@ static void gfire_process_info_free(process_info *p_info)
 	if(!p_info)
 		return;
 
-	if(p_info->name) g_free(p_info->name);
-	if(p_info->args) g_free(p_info->args);
+	if(p_info->name)
+		g_free(p_info->name);
+
+	if(p_info->exe)
+		g_free(p_info->exe);
+
+	if(p_info->args)
+		g_free(p_info->args);
 
 	g_free(p_info);
 }
@@ -153,4 +158,48 @@ gboolean gfire_process_list_contains(const gfire_process_list *p_list, const gch
 	}
 
 	return FALSE;
+}
+
+guint32 gfire_process_list_get_pid(const gfire_process_list *p_list, const gchar *p_name)
+{
+	if (!p_list || !p_name)
+		return NULL;
+
+	GList *cur = p_list->processes;
+	while(cur)
+	{
+		process_info *info = cur->data;
+		if(!info)
+			continue;
+	
+		if(!g_strcmp0(info->name, p_name))
+			return info->pid;
+
+		cur = g_list_next(cur);
+	}
+
+	// Return nothing found
+	return NULL;
+}
+
+gchar *gfire_process_list_get_exe(const gfire_process_list *p_list, const gchar *p_name)
+{
+	if (!p_list || !p_name)
+		return NULL;
+
+	GList *cur = p_list->processes;
+	while(cur)
+	{
+		process_info *info = cur->data;
+		if(!info)
+			continue;
+
+		if(!g_strcmp0(info->name, p_name))
+			return info->exe;
+
+		cur = g_list_next(cur);
+	}
+
+	// Return error (-1) if nothing found
+	return NULL;
 }

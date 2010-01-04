@@ -253,7 +253,7 @@ void gfire_process_list_update(gfire_process_list *p_list)
 		// Add process to list
 		process_info *info = NULL;
 
-		info = gfire_process_info_new(process_name, process_args, process_id);
+		info = gfire_process_info_new(process_name, process_exe, process_id, process_args);
 		p_list->processes = g_list_append(p_list->processes, info);
 
 		g_free(process_name);
