@@ -704,8 +704,31 @@ static void gfire_game_manager_reload_ui(GtkBuilder *p_builder)
 
 	GtkWidget *manage_games_window = GTK_WIDGET(gtk_builder_get_object(p_builder, "manage_games_window"));
 	GtkWidget *add_game_entry = GTK_WIDGET(gtk_builder_get_object(p_builder, "add_game_entry"));
+	GtkWidget *add_detection_button = GTK_WIDGET(gtk_builder_get_object(p_builder, "add_detection_button"));
+	GtkWidget *add_executable_check_button = GTK_WIDGET(gtk_builder_get_object(p_builder, "add_executable_check_button"));
+	GtkWidget *add_launch_button = GTK_WIDGET(gtk_builder_get_object(p_builder, "add_launch_button"));
+	GtkWidget *add_advanced_expander = GTK_WIDGET(gtk_builder_get_object(p_builder, "add_advanced_expander"));
+	GtkWidget *add_prefix_entry = GTK_WIDGET(gtk_builder_get_object(p_builder, "add_prefix_entry"));
 	GtkWidget *edit_game_combo = GTK_WIDGET(gtk_builder_get_object(p_builder, "edit_game_combo"));
 	GtkWidget *edit_game_list_store = GTK_WIDGET(gtk_builder_get_object(p_builder, "edit_game_list_store"));
+	GtkWidget *edit_detection_button = GTK_WIDGET(gtk_builder_get_object(p_builder, "edit_detection_button"));
+	GtkWidget *edit_executable_check_button = GTK_WIDGET(gtk_builder_get_object(p_builder, "edit_executable_check_button"));
+	GtkWidget *edit_launch_button = GTK_WIDGET(gtk_builder_get_object(p_builder, "edit_launch_button"));
+	GtkWidget *edit_prefix_entry = GTK_WIDGET(gtk_builder_get_object(p_builder, "edit_prefix_entry"));
+
+	// Reset widgets on "add" tab
+	gtk_entry_set_text(GTK_ENTRY(add_game_entry), "");
+	gtk_file_chooser_unselect_all(GTK_FILE_CHOOSER(add_detection_button));
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(add_executable_check_button), TRUE);
+	gtk_file_chooser_unselect_all(GTK_FILE_CHOOSER(add_launch_button));
+	gtk_expander_set_expanded(GTK_EXPANDER(add_advanced_expander), FALSE);
+	gtk_entry_set_text(GTK_ENTRY(add_prefix_entry), "");
+
+	// Reset widgets on "edit" tab
+	gtk_file_chooser_unselect_all(GTK_FILE_CHOOSER(edit_detection_button));
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(edit_executable_check_button), TRUE);
+	gtk_file_chooser_unselect_all(GTK_FILE_CHOOSER(edit_launch_button));
+	gtk_entry_set_text(GTK_ENTRY(edit_prefix_entry), "");
 
 	// Clear games list combo box
 	gtk_list_store_clear(GTK_LIST_STORE(edit_game_list_store));
@@ -730,6 +753,7 @@ static void gfire_game_manager_reload_ui(GtkBuilder *p_builder)
 		}
 	}
 
+	// Add all possible games to entry completion
 	GtkEntryCompletion *add_game_completion;
 	GtkListStore *add_game_list_store;
 	GtkTreeIter add_game_iter;
