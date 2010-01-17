@@ -194,7 +194,7 @@ gfire_filetransfer *gfire_filetransfer_create(gfire_p2p_session *p_session, Purp
 void gfire_filetransfer_start(gfire_filetransfer *p_transfer)
 {
 	if(!p_transfer)
-		return NULL;
+		return;
 
 	// Sending
 	if(purple_xfer_get_type(p_transfer->xfer) == PURPLE_XFER_SEND)
