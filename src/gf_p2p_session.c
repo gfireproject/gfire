@@ -27,12 +27,63 @@
 #include "gf_p2p.h"
 #include "gf_p2p_im_handler.h"
 
-static void gfire_p2p_session_req_ack_remove_item(gfire_p2p_session *p_session, gfire_p2p_session_req_ack_item *p_item);
-static void gfire_p2p_session_send_ping(gfire_p2p_session *p_session);
-static void gfire_p2p_session_send_pong(gfire_p2p_session *p_session);
-static void gfire_p2p_session_send_ack(gfire_p2p_session *p_session, guint32 p_msgid, guint32 p_seqid);
-static void gfire_p2p_session_send_keep_alive(gfire_p2p_session *p_session);
-static void gfire_p2p_session_send_keep_alive_reply(gfire_p2p_session *p_session);
+static void gfire_p2p_session_send_ping(gfire_p2p_session *p_session)
+{
+	if(!p_session || !p_session->con)
+		return;
+
+	p_session->need_pong = TRUE;
+	p_session->seqid = 0;
+
+	GTimeVal gtv;
+	g_get_current_time(&gtv);
+	p_session->last_ping = gtv.tv_sec;
+
+	p_session->sessid = gfire_p2p_connection_send_ping(p_session->con, p_session->moniker_self, p_session->sessid, &(p_session->peer_addr));
+}
+
+static void gfire_p2p_session_send_pong(gfire_p2p_session *p_session)
+{
+	if(!p_session || !p_session->con)
+		return;
+
+	// Reset the sequence
+	p_session->seqid = 0;
+
+	// Send the pong
+	p_session->sessid = gfire_p2p_connection_send_pong(p_session->con, p_session->moniker_self, p_session->sessid, &(p_session->peer_addr));
+}
+
+static void gfire_p2p_session_send_keep_alive(gfire_p2p_session *p_session)
+{
+	if(!p_session || !p_session->con)
+		return;
+
+	p_session->need_keep_alive = TRUE;
+	GTimeVal gtv;
+	g_get_current_time(&gtv);
+	p_session->last_keep_alive = gtv.tv_sec;
+
+	gfire_p2p_connection_send_keep_alive(p_session->con, p_session->moniker_self, p_session->sessid, &(p_session->peer_addr));
+}
+
+void gfire_p2p_session_send_data16_packet(gfire_p2p_session *p_session, const guint8 *p_data, guint16 p_len, const gchar *p_category)
+{
+	if(!p_session || !p_session->con || !p_data || !p_len || !p_category)
+		return;
+
+	p_session->seqid++;
+	gfire_p2p_connection_send_data16(p_session->con, p_session, 0, p_session->moniker_self, p_session->seqid, p_data, p_len, p_category, &(p_session->peer_addr));
+}
+
+void gfire_p2p_session_send_data32_packet(gfire_p2p_session *p_session, const guint8 *p_data, guint32 p_len, const gchar *p_category)
+{
+	if(!p_session || !p_session->con || !p_data || !p_len || !p_category)
+		return;
+
+	p_session->seqid++;
+	gfire_p2p_connection_send_data32(p_session->con, p_session, 0, p_session->moniker_self, p_session->seqid, p_data, p_len, p_category, &(p_session->peer_addr));
+}
 
 static gboolean gfire_p2p_session_check_cb(gfire_p2p_session *p_session)
 {
@@ -43,9 +94,9 @@ static gboolean gfire_p2p_session_check_cb(gfire_p2p_session *p_session)
 	g_get_current_time(&gtv);
 
 	// Pong timeout check
-	if(p_session->need_pong && ((gtv.tv_sec - p_session->last_ping) > 10))
+	if(p_session->need_pong && ((gtv.tv_sec - p_session->last_ping) > GFIRE_P2P_PACKET_TIMEOUT))
 	{
-		if(p_session->ping_retries == 5)
+		if(p_session->ping_retries == GFIRE_P2P_MAX_RETRIES)
 		{
 			purple_debug_info("gfire", "P2P: Session timed out!\n");
 			gfire_buddy_p2p_timedout(p_session->buddy);
@@ -54,14 +105,14 @@ static gboolean gfire_p2p_session_check_cb(gfire_p2p_session *p_session)
 		}
 
 		p_session->ping_retries++;
-		purple_debug_misc("gfire", "P2P: Resending ping packet (try %d of 5)\n", p_session->ping_retries);
+		purple_debug_misc("gfire", "P2P: Resending ping packet (try %d of %u)\n", p_session->ping_retries + 1, GFIRE_P2P_MAX_RETRIES + 1);
 		gfire_p2p_session_send_ping(p_session);
 	}
 
 	// Keep-alive timeout check
-	if(p_session->need_keep_alive && ((gtv.tv_sec - p_session->last_keep_alive) > 10))
+	if(p_session->need_keep_alive && ((gtv.tv_sec - p_session->last_keep_alive) > GFIRE_P2P_PACKET_TIMEOUT))
 	{
-		if(p_session->keep_alive_retries == 5)
+		if(p_session->keep_alive_retries == GFIRE_P2P_MAX_RETRIES)
 		{
 			purple_debug_info("gfire", "P2P: Session timed out!\n");
 			gfire_buddy_p2p_timedout(p_session->buddy);
@@ -70,37 +121,12 @@ static gboolean gfire_p2p_session_check_cb(gfire_p2p_session *p_session)
 		}
 
 		p_session->keep_alive_retries++;
-		purple_debug_misc("gfire", "P2P: Resending keep-alive packet (try %d of 5)\n", p_session->keep_alive_retries);
+		purple_debug_misc("gfire", "P2P: Resending keep-alive packet (try %d of %u)\n", p_session->keep_alive_retries + 1, GFIRE_P2P_MAX_RETRIES + 1);
 		gfire_p2p_session_send_keep_alive(p_session);
 	}
 
-	// Data timeout check
-	GList *cur = p_session->req_ack_list;
-	while(cur)
-	{
-		gfire_p2p_session_req_ack_item *item = cur->data;
-		if((gtv.tv_sec - item->last_sent) > 10)
-		{
-			if(item->retries == 5)
-			{
-				purple_debug_info("gfire", "P2P: Session timed out!\n");
-				gfire_buddy_p2p_timedout(p_session->buddy);
-
-				return FALSE;
-			}
-
-			item->retries++;
-			purple_debug_misc("gfire", "P2P: Resending data packet (try %d of 5)\n", item->retries);
-
-			gfire_p2p_connection_send_packet(p_session->con, p_session, item->type, item->msgid, item->seqid, item->data, item->len, item->category, NULL);
-			item->last_sent = gtv.tv_sec;
-		}
-
-		cur = g_list_next(cur);
-	}
-
 	// Keep-alive-handling
-	if(gtv.tv_sec >= (p_session->last_keep_alive + 60))
+	if(!p_session->need_keep_alive && (gtv.tv_sec >= (p_session->last_keep_alive + 60)))
 	{
 		purple_debug_misc("gfire", "P2P: Sending keep-alive\n");
 		gfire_p2p_session_send_keep_alive(p_session);
@@ -127,9 +153,6 @@ gfire_p2p_session *gfire_p2p_session_create(gfire_buddy *p_buddy, const gchar *p
 	GTimeVal gtv;
 	g_get_current_time(&gtv);
 	ret->last_keep_alive = gtv.tv_sec;
-
-	ret->ping_retries = 1;
-	ret->keep_alive_retries = 1;
 
 	ret->rec_msgids = gfire_bitlist_new();
 
@@ -164,9 +187,6 @@ void gfire_p2p_session_free(gfire_p2p_session *p_session, gboolean p_local_reaso
 		p_session->transfers = g_list_delete_link(p_session->transfers, p_session->transfers);
 	}
 
-	while(p_session->req_ack_list)
-		gfire_p2p_session_req_ack_remove_item(p_session, p_session->req_ack_list->data);
-
 	gfire_bitlist_free(p_session->rec_msgids);
 
 	g_free(p_session->moniker_self);
@@ -175,14 +195,10 @@ void gfire_p2p_session_free(gfire_p2p_session *p_session, gboolean p_local_reaso
 	g_free(p_session);
 }
 
-void gfire_p2p_session_bind(gfire_p2p_session *p_session, gfire_p2p_connection *p_p2p, gboolean p_init)
+void gfire_p2p_session_bind(gfire_p2p_session *p_session, gfire_p2p_connection *p_p2p)
 {
-	if(!p_session || !p_p2p)
-		return;
-
-	p_session->con = p_p2p;
-
-	p_session->init = p_init;
+	if(p_session && p_p2p)
+		p_session->con = p_p2p;
 }
 
 void gfire_p2p_session_set_addr(gfire_p2p_session *p_session, guint32 p_ip, guint16 p_port)
@@ -193,19 +209,21 @@ void gfire_p2p_session_set_addr(gfire_p2p_session *p_session, guint32 p_ip, guin
 	p_session->peer_ip = p_ip;
 	p_session->peer_port = p_port;
 
+	// Build address
+	p_session->peer_addr.sin_family = AF_INET;
+	p_session->peer_addr.sin_addr.s_addr = htonl(p_ip);
+	p_session->peer_addr.sin_port = htons(p_port);
+
+	// Send handshake response if we have already received a handshake
 	if(p_session->need_pong)
 	{
-		purple_debug_misc("gfire", "P2P: Sending handshake response\n");
 		gfire_p2p_session_send_pong(p_session);
-		p_session->need_pong = FALSE;
+		purple_debug_misc("gfire", "P2P: Handshake response sent\n");
 	}
 
-	if(p_session->init)
-	{
-		// Send Ping as handshake
-		purple_debug_misc("gfire", "P2P: Sending handshake\n");
-		gfire_p2p_session_send_ping(p_session);
-	}
+	// Send our own handshake
+	gfire_p2p_session_send_ping(p_session);
+	purple_debug_misc("gfire", "P2P: Handshake sent\n");
 
 	p_session->check_timer = g_timeout_add_seconds(1, (GSourceFunc)gfire_p2p_session_check_cb, p_session);
 }
@@ -242,157 +260,20 @@ guint16 gfire_p2p_session_get_peer_port(const gfire_p2p_session *p_session)
 	return p_session->peer_port;
 }
 
+const struct sockaddr_in *gfire_p2p_session_get_peer_addr(const gfire_p2p_session *p_session)
+{
+	if(!p_session)
+		return 0;
+
+	return &(p_session->peer_addr);
+}
+
 gfire_buddy *gfire_p2p_session_get_buddy(const gfire_p2p_session *p_session)
 {
 	if(!p_session)
 		return NULL;
 
 	return p_session->buddy;
-}
-
-static void gfire_p2p_session_req_ack_add(gfire_p2p_session *p_session, guint32 p_type, guint32 p_msgid, guint32 p_seqid, guint8 *p_data, guint32 p_len, const gchar *p_category)
-{
-	if(!p_session || (p_type != 0x00 && p_type != 0x300) || !p_data || !p_len || !p_category)
-		return;
-
-	gfire_p2p_session_req_ack_item *item = g_malloc0(sizeof(gfire_p2p_session_req_ack_item));
-	if(!item)
-		return;
-
-	item->category = g_strdup(p_category);
-	item->data = g_malloc0(p_len);
-	memcpy(item->data, p_data, p_len);
-	item->len = p_len;
-
-	item->msgid = p_msgid;
-	item->seqid = p_seqid;
-	item->type = p_type;
-
-	item->retries = 1;
-
-	GTimeVal gtv;
-	g_get_current_time(&gtv);
-	item->last_sent = gtv.tv_sec;
-
-	p_session->req_ack_list = g_list_append(p_session->req_ack_list, item);
-}
-
-static void gfire_p2p_session_req_ack_remove_item(gfire_p2p_session *p_session, gfire_p2p_session_req_ack_item *p_item)
-{
-	if(!p_session || !p_session->req_ack_list || !p_item)
-		return;
-
-	GList *list_item = g_list_find(p_session->req_ack_list, p_item);
-	if(!list_item)
-		return;
-
-	if(p_item->data) g_free(p_item->data);
-	if(p_item->category) g_free(p_item->category);
-
-	g_free(p_item);
-
-	p_session->req_ack_list = g_list_delete_link(p_session->req_ack_list, list_item);
-}
-
-static void gfire_p2p_session_send_ping(gfire_p2p_session *p_session)
-{
-	if(!p_session || !p_session->con)
-		return;
-
-	p_session->need_pong = TRUE;
-	p_session->seqid = 0;
-
-	GTimeVal gtv;
-	g_get_current_time(&gtv);
-	p_session->last_ping = gtv.tv_sec;
-
-	if(p_session->ping_retries == 1)
-	{
-		p_session->ping_msgid = p_session->msgid;
-		p_session->msgid++;
-	}
-
-	gfire_p2p_connection_send_packet(p_session->con, p_session, 0x10, p_session->ping_msgid, p_session->seqid, NULL, 0, NULL, NULL);
-}
-
-static void gfire_p2p_session_send_pong(gfire_p2p_session *p_session)
-{
-	if(!p_session || !p_session->con)
-		return;
-
-	p_session->seqid = 0;
-
-	gfire_p2p_connection_send_packet(p_session->con, p_session, 0x20, p_session->msgid, p_session->seqid, NULL, 0, NULL, NULL);
-
-	p_session->msgid++;
-}
-
-static void gfire_p2p_session_send_ack(gfire_p2p_session *p_session, guint32 p_msgid, guint32 p_seqid)
-{
-	if(!p_session || !p_session->con)
-		return;
-
-	gfire_p2p_connection_send_packet(p_session->con, p_session, 0x40, p_msgid, p_seqid, NULL, 0, NULL, NULL);
-}
-
-void gfire_p2p_session_send_invalid_crc(gfire_p2p_session *p_session, guint32 p_msgid, guint32 p_seqid)
-{
-	if(!p_session || !p_session->con)
-		return;
-
-	gfire_p2p_connection_send_packet(p_session->con, p_session, 0x80, p_msgid, p_seqid, NULL, 0, NULL, NULL);
-}
-
-static void gfire_p2p_session_send_keep_alive(gfire_p2p_session *p_session)
-{
-	if(!p_session || !p_session->con)
-		return;
-
-	p_session->need_keep_alive = TRUE;
-	GTimeVal gtv;
-	g_get_current_time(&gtv);
-	p_session->last_keep_alive = gtv.tv_sec;
-	if(p_session->keep_alive_retries == 1)
-	{
-		p_session->keep_alive_msgid = p_session->msgid;
-		p_session->keep_alive_seqid = p_session->seqid;
-	}
-
-	gfire_p2p_connection_send_packet(p_session->con, p_session, 0x800, p_session->keep_alive_msgid, p_session->keep_alive_seqid, NULL, 0, NULL, NULL);
-}
-
-static void gfire_p2p_session_send_keep_alive_reply(gfire_p2p_session *p_session)
-{
-	if(!p_session || !p_session->con)
-		return;
-
-	gfire_p2p_connection_send_packet(p_session->con, p_session, 0x1000, p_session->msgid, p_session->seqid, NULL, 0, NULL, NULL);
-}
-
-void gfire_p2p_session_send_data32_packet(gfire_p2p_session *p_session, void *p_data, guint32 p_len, const gchar *p_category)
-{
-	if(!p_session || !p_session->con || !p_data || !p_len || !p_category)
-		return;
-
-	p_session->seqid++;
-
-	gfire_p2p_connection_send_packet(p_session->con, p_session, 0x00, p_session->msgid, p_session->seqid, p_data, p_len, p_category, NULL);
-	gfire_p2p_session_req_ack_add(p_session, 0x00, p_session->msgid, p_session->seqid, p_data, p_len, p_category);
-
-	p_session->msgid++;
-}
-
-void gfire_p2p_session_send_data16_packet(gfire_p2p_session *p_session, void *p_data, guint16 p_len, const gchar *p_category)
-{
-	if(!p_session || !p_session->con || !p_data || !p_len || !p_category)
-		return;
-
-	p_session->seqid++;
-
-	gfire_p2p_connection_send_packet(p_session->con, p_session, 0x300, p_session->msgid, p_session->seqid, p_data, p_len, p_category, NULL);
-	gfire_p2p_session_req_ack_add(p_session, 0x300, p_session->msgid, p_session->seqid, p_data, p_len, p_category);
-
-	p_session->msgid++;
 }
 
 gboolean gfire_p2p_session_is_by_moniker_peer(const gfire_p2p_session *p_session, const guint8 *p_moniker)
@@ -411,121 +292,109 @@ gboolean gfire_p2p_session_is_by_moniker_self(const gfire_p2p_session *p_session
 	return (memcmp(p_session->moniker_self, p_moniker, 20) == 0);
 }
 
-void gfire_p2p_session_handle_data(gfire_p2p_session *p_session, guint32 p_type, guint32 p_msgid, guint32 p_seqid, void *p_data, guint32 p_len, const gchar *p_category)
+void gfire_p2p_session_ping(gfire_p2p_session *p_session, guint32 p_msgid)
 {
-	if(!p_session || (((p_type == 0) || (p_type == 0x300)) && (!p_data || !p_category)))
+	if(!p_session)
 		return;
 
-	// Check for duplicate messages
-	if(p_type == 0x00 || p_type == 0x300)
+	if(p_session->peer_ip)
 	{
-		if(gfire_bitlist_get(p_session->rec_msgids, p_msgid))
-		{
-			purple_debug_misc("gfire", "P2P: Received duplicate message, ignoring and acking\n");
-			gfire_p2p_session_send_ack(p_session, p_msgid, p_seqid);
-			return;
-		}
+		gfire_p2p_session_send_pong(p_session);
+		gfire_bitlist_clear(p_session->rec_msgids);
 	}
-
-	// Ping
-	if(p_type == 0x10)
+	else
 	{
-		if(p_session->peer_ip)
+		p_session->need_pong = TRUE;
+		//p_session->connected = TRUE;
+	}
+}
+
+void gfire_p2p_session_pong(gfire_p2p_session *p_session, guint32 p_msgid)
+{
+	if(p_session)
+	{
+		if(!p_session->connected)
 		{
-			purple_debug_misc("gfire", "P2P: Got Ping, sending pong...\n");
-			gfire_p2p_session_send_pong(p_session);
-		}
-		else
-		{
-			purple_debug_misc("gfire", "P2P: Got Handshake\n");
-			p_session->need_pong = TRUE;
+			// Start requested file transfers as soon as we are connected
+			GList *cur = p_session->transfers;
+			while(cur)
+			{
+				gfire_filetransfer_start(cur->data);
+				cur = g_list_next(cur);
+			}
+
 			p_session->connected = TRUE;
 		}
-	}
-	// Pong
-	else if(p_type == 0x20)
-	{
-		purple_debug_misc("gfire", "P2P: Got Pong\n");
 		p_session->need_pong = FALSE;
-		p_session->ping_retries = 1;
-		p_session->connected = TRUE;
 	}
-	// Acknowledgement
-	else if(p_type == 0x40)
-	{
-		GList *cur = p_session->req_ack_list;
-		while(cur)
-		{
-			gfire_p2p_session_req_ack_item *item = cur->data;
-			if(item->msgid == p_msgid && item->seqid == p_seqid)
-			{
-				purple_debug_misc("gfire", "P2P: Got Ack\n");
-				gfire_p2p_session_req_ack_remove_item(p_session, item);
+}
 
-				break;
-			}
-			cur = g_list_next(cur);
-		}
+void gfire_p2p_session_keep_alive_request(gfire_p2p_session *p_session, guint32 p_msgid)
+{
+	if(p_session && p_session->con)
+		gfire_p2p_connection_send_keep_alive_reply(p_session->con, p_session->moniker_self, p_session->sessid, &(p_session->peer_addr));
+}
 
-		if(!cur)
-			purple_debug_warning("gfire", "P2P: Received Ack with invalid id!\n");
-	}
-	// Invalid CRC-32
-	else if(p_type == 0x80)
-	{
-		purple_debug_warning("gfire", "P2P: Received invalid CRC32 packet!\n");
-	}
-	// Keep-alive
-	else if(p_type == 0x800)
-	{
-		purple_debug_misc("gfire", "P2P: Received keep-alive; sending response\n");
-		gfire_p2p_session_send_keep_alive_reply(p_session);
-	}
-	// Keep-alive response
-	else if(p_type == 0x1000)
-	{
-		purple_debug_misc("gfire", "P2P: Received keep-alive response\n");
+void gfire_p2p_session_keep_alive_response(gfire_p2p_session *p_session, guint32 p_msgid)
+{
+	if(p_session)
 		p_session->need_keep_alive = FALSE;
-		p_session->keep_alive_retries = 1;
-	}
-	// Data 32bit size
-	else if(p_type == 0x00)
-	{
-		purple_debug_misc("gfire", "P2P: Received 32bit data packet\n");
+}
 
-		gfire_p2p_session_send_ack(p_session, p_msgid, p_seqid);
+gboolean gfire_p2p_session_handle_data(gfire_p2p_session *p_session, guint32 p_type, guint32 p_msgid, guint32 p_seqid, void *p_data, guint32 p_len, const gchar *p_category)
+{
+	if(!p_session || !p_data || !p_category)
+		return FALSE;
+
+	// Check for duplicate messages
+	if(gfire_bitlist_get(p_session->rec_msgids, p_msgid))
+	{
+		purple_debug_misc("gfire", "P2P: Received duplicate message, ignoring it\n");
+		return TRUE;
+	}
+
+	gboolean result = TRUE;
+
+	// Data 32bit size
+	if(p_type == GFIRE_P2P_TYPE_DATA32)
+	{
+#ifdef DEBUG
+		purple_debug_misc("gfire", "P2P: Received 32bit data packet\n");
+#endif // DEBUG
 
 		if(g_utf8_collate(p_category, "DL") == 0)
 		{
+#ifdef DEBUG
 			purple_debug_misc("gfire", "P2P: received DL packet\n");
-			gfire_p2p_dl_handler_handle(p_session, p_data, p_len);
+#endif // DEBUG
+			result = gfire_p2p_dl_handler_handle(p_session, p_data, p_len);
 		}
 		else
 			purple_debug_warning("gfire", "P2P: received unknown data packet (category \"%s\")\n", p_category);
 	}
 	// Data 16bit size
-	else if(p_type == 0x300)
+	else if(p_type == GFIRE_P2P_TYPE_DATA16)
 	{
+#ifdef DEBUG
 		purple_debug_misc("gfire", "P2P: Received 16bit data packet\n");
-
-		gfire_p2p_session_send_ack(p_session, p_msgid, p_seqid);
+#endif // DEBUG
 
 		if(g_utf8_collate(p_category, "IM") == 0)
 		{
+#ifdef DEBUG
 			purple_debug_misc("gfire", "P2P: received IM packet\n");
-			gfire_p2p_im_handler_handle(p_session, p_data, p_len);
+#endif // DEBUG
+			result = gfire_p2p_im_handler_handle(p_session, p_data, p_len);
 		}
 		else
 			purple_debug_warning("gfire", "P2P: received unknown data packet (category \"%s\")\n", p_category);
 	}
-	else
-	{
-		purple_debug_warning("gfire", "P2P: Received unknown packet type (%u)\n", p_type);
-	}
 
-	// Add this packet to the received ones if it wasn't a ack-packet (which uses the ID of our own packets)
-	if(p_type == 0x00 || p_type == 0x300)
+	// Add this packet to the received ones
+	if(result)
 		gfire_bitlist_set(p_session->rec_msgids, p_msgid, TRUE);
+
+	return result;
 }
 
 void gfire_p2p_session_add_file_transfer(gfire_p2p_session *p_session, PurpleXfer *p_xfer)
@@ -533,9 +402,14 @@ void gfire_p2p_session_add_file_transfer(gfire_p2p_session *p_session, PurpleXfe
 	if(!p_session || !p_xfer)
 		return;
 
-	gfire_filetransfer *ft = gfire_filetransfer_init(p_session, p_xfer);
-	if(!ft)
-		return;
+	gfire_filetransfer *ft = gfire_filetransfer_create(p_session, p_xfer, 0);
+		if(!ft)
+			return;
+
+	if(p_session->connected)
+		gfire_filetransfer_start(ft);
+	else
+		purple_xfer_conversation_write(p_xfer, _("Please wait until a connection with your buddy has been established!"), FALSE);
 
 	p_session->transfers = g_list_append(p_session->transfers, ft);
 }

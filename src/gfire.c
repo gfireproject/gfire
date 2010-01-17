@@ -169,39 +169,12 @@ static void gfire_login_cb(gpointer p_data, gint p_source, const gchar *p_error_
 	gfire_ipc_server_register(gfire);
 
 	// Setup P2P connection
-	if(purple_account_get_bool(purple_connection_get_account(gfire_get_connection(gfire)), "p2p_option", TRUE))
-	{
-		// Check for valid ports
-		gint min_port = purple_account_get_int(purple_connection_get_account(gfire_get_connection(gfire)), "p2p_min_port", 30000);
-		gint max_port = purple_account_get_int(purple_connection_get_account(gfire_get_connection(gfire)), "p2p_max_port", 40000);
-
-		if(min_port < 1024 || min_port > 65535)
-		{
-			purple_debug_warning("gfire", "Set min. P2P port is out of range. Fixing this...\n");
-			min_port = 30000;
-			purple_account_set_int(purple_connection_get_account(gfire_get_connection(gfire)), "p2p_min_port", min_port);
-		}
-
-		if(max_port < 1024 || max_port > 65535)
-		{
-			purple_debug_warning("gfire", "Set max. P2P port is out of range. Fixing this...\n");
-			max_port = 40000;
-			purple_account_set_int(purple_connection_get_account(gfire_get_connection(gfire)), "p2p_max_port", max_port);
-		}
-
-		if(min_port > max_port)
-		{
-			purple_debug_warning("gfire", "Set min. P2P port is greater then the maximum. Fixing this...\n");
-			min_port = max_port;
-			purple_account_set_int(purple_connection_get_account(gfire_get_connection(gfire)), "p2p_min_port", min_port);
-		}
-
-		gfire->p2p = gfire_p2p_connection_create(min_port, max_port);
-	}
+	if(purple_account_get_bool(purple_connection_get_account(gfire_get_connection(gfire)), "p2p_option", FALSE)) // FIXME: disabled by default for now!
+		gfire->p2p = gfire_p2p_connection_create();
 
 	// Update Gfire if needed
 	if (!gfire_update(gfire))
-	purple_debug_error("gfire", "Unable to query latest Gfire and games list version. Website down?\n");
+		purple_debug_error("gfire", "Unable to query latest Gfire and games list version. Website down?\n");
 }
 
 gboolean gfire_update(gfire_data *p_gfire)
@@ -1523,7 +1496,7 @@ gboolean gfire_detect_running_processes_cb(gfire_data *p_gfire)
 		g_mutex_lock(p_gfire->server_mutex);
 		gboolean process_running = gfire_process_list_contains(p_gfire->process_list, game_executable, game_exec_required_args, game_exec_invalid_args);
 		g_mutex_unlock(p_gfire->server_mutex);
-		
+
 		gfire_handle_game_detection(p_gfire, game_id_int, process_running, game_executable);
 
 		if (game_executable)

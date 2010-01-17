@@ -31,21 +31,7 @@ typedef struct _gfire_p2p_session gfire_p2p_session;
 #include "gf_buddies.h"
 #include "gf_p2p.h"
 #include "gf_p2p_dl_handler.h"
-
-// Structure containing information on sent data packets awaiting acknowledgement
-typedef struct _gfire_p2p_session_req_ack_item
-{
-	guint8 *data;
-	guint32 len;
-	gchar *category;
-
-	guint32 msgid;
-	guint32 seqid;
-	guint32 type;
-
-	guint8 retries;
-	glong last_sent;
-} gfire_p2p_session_req_ack_item;
+#include "gf_filetransfer.h"
 
 struct _gfire_p2p_session
 {
@@ -54,10 +40,11 @@ struct _gfire_p2p_session
 
 	guint32 peer_ip;
 	guint16 peer_port;
+	struct sockaddr_in peer_addr;
 
 	gfire_p2p_connection *con;
 
-	guint32 msgid;
+	guint32 sessid;
 	guint32 seqid;
 
 	// File Transfers
@@ -67,14 +54,9 @@ struct _gfire_p2p_session
 	//   Ping
 	gboolean need_pong;
 	guint8 ping_retries;
-	guint32 ping_msgid;
 	//   Keep-Alive
 	gboolean need_keep_alive;
 	guint8 keep_alive_retries;
-	guint32 keep_alive_msgid;
-	guint32 keep_alive_seqid;
-	//   Data
-	GList *req_ack_list;
 
 	// Received msgIDs
 	gfire_bitlist *rec_msgids;
@@ -90,10 +72,11 @@ struct _gfire_p2p_session
 	gfire_buddy *buddy;
 };
 
+// Creation and initialization
 gfire_p2p_session *gfire_p2p_session_create(gfire_buddy *p_buddy, const gchar *p_salt);
 void gfire_p2p_session_free(gfire_p2p_session *p_session, gboolean p_local_reason);
 
-void gfire_p2p_session_bind(gfire_p2p_session *p_session, gfire_p2p_connection *p_p2p, gboolean p_init);
+void gfire_p2p_session_bind(gfire_p2p_session *p_session, gfire_p2p_connection *p_p2p);
 void gfire_p2p_session_set_addr(gfire_p2p_session *p_session, guint32 p_ip, guint16 p_port);
 
 // Getting information
@@ -102,6 +85,7 @@ const guint8 *gfire_p2p_session_get_moniker_self(const gfire_p2p_session *p_sess
 
 guint32 gfire_p2p_session_get_peer_ip(const gfire_p2p_session *p_session);
 guint16 gfire_p2p_session_get_peer_port(const gfire_p2p_session *p_session);
+const struct sockaddr_in *gfire_p2p_session_get_peer_addr(const gfire_p2p_session *p_session);
 
 gfire_buddy *gfire_p2p_session_get_buddy(const gfire_p2p_session *p_session);
 
@@ -109,16 +93,19 @@ gboolean gfire_p2p_session_connected(const gfire_p2p_session *p_session);
 
 // Sending
 gboolean gfire_p2p_session_can_send(const gfire_p2p_session *p_session);
-void gfire_p2p_session_send_invalid_crc(gfire_p2p_session *p_session, guint32 p_msgid, guint32 p_seqid);
-void gfire_p2p_session_send_data32_packet(gfire_p2p_session *p_session, void *p_data, guint32 p_len, const gchar *p_category);
-void gfire_p2p_session_send_data16_packet(gfire_p2p_session *p_session, void *p_data, guint16 p_len, const gchar *p_category);
+void gfire_p2p_session_send_data16_packet(gfire_p2p_session *p_session, const guint8 *p_data, guint16 p_len, const gchar *p_category);
+void gfire_p2p_session_send_data32_packet(gfire_p2p_session *p_session, const guint8 *p_data, guint32 p_len, const gchar *p_category);
 
 // Identifying
 gboolean gfire_p2p_session_is_by_moniker_peer(const gfire_p2p_session *p_session, const guint8 *p_moniker);
 gboolean gfire_p2p_session_is_by_moniker_self(const gfire_p2p_session *p_session, const guint8 *p_moniker);
 
-// Data parsing
-void gfire_p2p_session_handle_data(gfire_p2p_session *p_session, guint32 p_type, guint32 p_msgid, guint32 p_seqid, void *p_data, guint32 p_len, const gchar *p_category);
+// Data handling
+void gfire_p2p_session_ping(gfire_p2p_session *p_session, guint32 p_msgid);
+void gfire_p2p_session_pong(gfire_p2p_session *p_session, guint32 p_msgid);
+void gfire_p2p_session_keep_alive_request(gfire_p2p_session *p_session, guint32 p_msgid);
+void gfire_p2p_session_keep_alive_response(gfire_p2p_session *p_session, guint32 p_msgid);
+gboolean gfire_p2p_session_handle_data(gfire_p2p_session *p_session, guint32 p_type, guint32 p_msgid, guint32 p_seqid, void *p_data, guint32 p_len, const gchar *p_category);
 
 // File Transfers
 void gfire_p2p_session_add_file_transfer(gfire_p2p_session *p_session, PurpleXfer *p_xfer);

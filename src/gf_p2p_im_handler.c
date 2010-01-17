@@ -26,10 +26,10 @@
 #include "gf_buddies.h"
 #include "gf_network.h"
 
-void gfire_p2p_im_handler_handle(gfire_p2p_session *p_session, guint8 *p_data, guint32 p_len)
+gboolean gfire_p2p_im_handler_handle(gfire_p2p_session *p_session, guint8 *p_data, guint32 p_len)
 {
 	if(!p_session || !p_data || !p_len)
-		return;
+		return FALSE;
 
 #ifdef DEBUG
 	purple_debug_error("gfire", "handling IM packet\n");
@@ -52,23 +52,23 @@ void gfire_p2p_im_handler_handle(gfire_p2p_session *p_session, guint8 *p_data, g
 	if(type != 0x02)
 	{
 		purple_debug_error("gfire", "P2P: invalid IM packet (wrong type %u)\n", type);
-		return;
+		return FALSE;
 	}
 
 	offset = gfire_proto_read_attr_sid_ss(p_data, &sid, "sid", offset);
 	if(!sid)
 	{
 		purple_debug_error("gfire", "P2P: invalid SID\n");
-		return;
+		return FALSE;
 	}
 
 	offset = gfire_proto_read_attr_children_count_ss(p_data, &num_attr, "peermsg", offset);
 	if(offset == -1)
-		return;
+		return FALSE;
 
 	offset = gfire_proto_read_attr_int32_ss(p_data, &msgtype, "msgtype", offset);
 	if(offset == -1)
-		return;
+		return FALSE;
 
 	switch(msgtype)
 	{
@@ -77,12 +77,12 @@ void gfire_p2p_im_handler_handle(gfire_p2p_session *p_session, guint8 *p_data, g
 			// IM index ("imindex")
 			offset = gfire_proto_read_attr_int32_ss(p_data, &imindex, "imindex", offset);
 			if(offset == -1)
-				return;
+				return FALSE;
 
 			// the IM itself ("im")
 			offset = gfire_proto_read_attr_string_ss(p_data, &im, "im", offset);
 			if(offset == -1 || !im)
-				return;
+				return FALSE;
 
 			gfire_buddy_got_im(gfire_p2p_session_get_buddy(p_session), imindex, im);
 			break;
@@ -94,7 +94,7 @@ void gfire_p2p_im_handler_handle(gfire_p2p_session *p_session, guint8 *p_data, g
 			// IM index ("imindex")
 			offset = gfire_proto_read_attr_int32_ss(p_data, &imindex, "imindex", offset);
 			if(offset == -1)
-				return;
+				return FALSE;
 
 			gfire_buddy_got_im_ack(gfire_p2p_session_get_buddy(p_session), imindex);
 		break;
@@ -103,19 +103,22 @@ void gfire_p2p_im_handler_handle(gfire_p2p_session *p_session, guint8 *p_data, g
 			// IM index ("imindex")
 			offset = gfire_proto_read_attr_int32_ss(p_data, &imindex, "imindex", offset);
 			if(offset == -1)
-				return;
+				return FALSE;
 
 			// typing ("typing")
 			offset = gfire_proto_read_attr_int32_ss(p_data, &typing, "typing", offset);
 			if(offset == -1)
-				return;
+				return FALSE;
 
 			gfire_buddy_got_typing(gfire_p2p_session_get_buddy(p_session), typing == 1);
 		break;
 		// Unknown
 		default:
 			purple_debug_warning("gfire", "P2P: unknown IM msgtype %u.\n", msgtype);
+			return FALSE;
 	}
+
+	return TRUE;
 }
 
 void gfire_p2p_im_handler_send_im(gfire_p2p_session *p_session, const guint8 *p_sid, guint32 p_imindex, const gchar *p_msg)
@@ -176,22 +179,14 @@ void gfire_p2p_im_handler_send_typing(gfire_p2p_session *p_session, const guint8
 
 	guint32 offset = XFIRE_HEADER_LEN;
 
-	// "sid"
-	offset = gfire_proto_write_attr_ss("sid", 0x03, p_sid, XFIRE_SID_LEN, offset);
-
-	// "peermsg"
-	offset = gfire_proto_write_attr_ss("peermsg", 0x05, NULL, 3, offset);
-
-	// "peermsg"->"msgtype"
 	guint32 msgtype = GUINT32_TO_LE(3);
-	offset = gfire_proto_write_attr_ss("msgtype", 0x02, &msgtype, sizeof(msgtype), offset);
-
-	// "peermsg"->"imindex"
 	p_imindex = GUINT32_TO_LE(p_imindex);
-	offset = gfire_proto_write_attr_ss("imindex", 0x02, &p_imindex, sizeof(p_imindex), offset);
-
-	// "peermsg"->"typing"
 	guint32 typing = GUINT32_TO_LE(p_typing ? 1 : 0);
+
+	offset = gfire_proto_write_attr_ss("sid", 0x03, p_sid, XFIRE_SID_LEN, offset);
+	offset = gfire_proto_write_attr_ss("peermsg", 0x05, NULL, 3, offset);
+	offset = gfire_proto_write_attr_ss("msgtype", 0x02, &msgtype, sizeof(msgtype), offset);
+	offset = gfire_proto_write_attr_ss("imindex", 0x02, &p_imindex, sizeof(p_imindex), offset);
 	offset = gfire_proto_write_attr_ss("typing", 0x02, &typing, sizeof(typing), offset);
 
 	gfire_proto_write_header(offset, 0x02, 2, 0);

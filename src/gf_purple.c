@@ -698,7 +698,7 @@ static gboolean gfire_purple_can_receive_file(PurpleConnection *p_gc, const gcha
 		return FALSE;
 	}
 
-	return (gfire_has_p2p(gfire) && gfire_buddy_has_p2p(gf_buddy));
+	return (gfire_has_p2p(gfire) && gfire_buddy_is_online(gf_buddy) && gfire_buddy_has_p2p(gf_buddy));
 }
 
 static PurpleXfer *gfire_purple_new_xfer(PurpleConnection *p_gc, const gchar *p_who)
@@ -735,6 +735,10 @@ static void gfire_purple_send_file(PurpleConnection *p_gc, const gchar *p_who, c
 {
 	if(!p_gc || !p_gc->proto_data || !p_who)
 		return;
+
+	gfire_buddy *gf_buddy = gfire_find_buddy(p_gc->proto_data, p_who, GFFB_NAME);
+	if(!gf_buddy || !gfire_buddy_is_online(gf_buddy))
+			return;
 
 	purple_debug_info("gfire", "request for a file transfer!\n");
 
@@ -871,7 +875,7 @@ static PurplePluginInfo info =
 };
 
 static void _init_plugin(PurplePlugin *plugin)
-{	
+{
 #ifdef ENABLE_NLS
 	bindtextdomain(GETTEXT_PACKAGE, LOCALEDIR);
 	bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
@@ -900,16 +904,11 @@ static void _init_plugin(PurplePlugin *plugin)
 	option = purple_account_option_bool_new(_("Notify me when my status is ingame"), "ingamenotificationnorm", FALSE);
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options,option);
 
-        option = purple_account_option_bool_new(_("Enable server detection"), "server_detection_option", FALSE);
+		option = purple_account_option_bool_new(_("Enable server detection"), "server_detection_option", FALSE);
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
 
-	option = purple_account_option_bool_new(_("Use Xfires P2P features"), "p2p_option", TRUE);
-	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
-
-	option = purple_account_option_int_new(_("P2P Port Range min. (1024-65535)"), "p2p_min_port", 30000);
-	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
-
-	option = purple_account_option_int_new(_("P2P Port Range max. (1024-65535)"), "p2p_max_port", 40000);
+	// FIXME: disabled by default for now
+	option = purple_account_option_bool_new(_("Use Xfires P2P features"), "p2p_option", FALSE);
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
 
 	option = purple_account_option_string_new(_("Friends of Friends Group Name"), "fof_group_name", GFIRE_FRIENDS_OF_FRIENDS_GROUP_NAME);

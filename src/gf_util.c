@@ -163,6 +163,29 @@ void hashSha1_bin(const guchar *p_input, int p_len, guchar *p_digest)
 	purple_cipher_context_destroy(context);
 }
 
+void hashSha1_bin_to_str(const guchar *p_input, int p_len, gchar *p_digest)
+{
+	if(!p_digest)
+		return;
+
+	PurpleCipherContext *context;
+
+	context = purple_cipher_context_new_by_name("sha1", NULL);
+	if (context == NULL)
+	{
+		purple_debug_error("gfire", "Could not find sha1 cipher\n");
+		return;
+	}
+
+	purple_cipher_context_append(context, (guchar*)p_input, p_len);
+	if(!purple_cipher_context_digest_to_str(context, 41, p_digest, NULL))
+	{
+		purple_debug_error("gfire", "Failed to get SHA-1 digest.\n");
+		return;
+	}
+	purple_cipher_context_destroy(context);
+}
+
 void hashSha1_file_to_str(FILE *p_file, gchar *p_digest)
 {
 	if(!p_file || !p_digest)
@@ -224,9 +247,9 @@ gchar *gfire_hex_bin_to_str(guint8 *p_data, guint32 p_len)
 		return NULL;
 
 	gchar *ret = g_malloc0(p_len * 2 + 1);
-	int i;
+	guint32 i;
 	for(i = 0; i < p_len; i++)
-		g_sprintf(ret, "%s%02x", ret, p_data[i]);
+		g_sprintf(ret + (i * 2), "%02x", p_data[i]);
 
 	return ret;
 }
@@ -472,4 +495,16 @@ guint32 gfire_bitlist_bits_unset(const gfire_bitlist *p_list)
 		return 0;
 
 	return ((p_list->size * 8) - p_list->bits_set);
+}
+
+void gfire_bitlist_clear(gfire_bitlist *p_list)
+{
+	if(!p_list)
+		return;
+
+	p_list->data = g_realloc(p_list->data, 10);
+	p_list->size = 0;
+	memset(p_list->data, 0, 10);
+
+	p_list->bits_set = 0;
 }

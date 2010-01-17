@@ -29,16 +29,30 @@ typedef struct _gfire_bitlist gfire_bitlist;
 
 #include "gf_base.h"
 
+// Utils for the server browser
 gchar *gfire_remove_quake3_color_codes(const gchar *p_string);
+
+// Utils for handling HTML
 gchar *gfire_escape_html(const gchar *p_html);
+
+// Utils for handling lists
 void gfire_list_clear(GList *p_list);
+
+// Utils for handling strings
 gchar *gfire_strip_character_range(gchar *p_string, gchar p_start, gchar p_end);
+
+// Utils for SHA-1 hashing
 void hashSha1(const gchar *p_input, gchar *p_digest);
 void hashSha1_to_bin(const gchar *p_input, guint8 *p_digest);
 void hashSha1_bin(const guchar *p_input, int p_len, guchar *p_digest);
+void hashSha1_bin_to_str(const guchar *p_input, int p_len, gchar *p_digest);
 void hashSha1_file_to_str(FILE *p_file, gchar *p_digest);
+
+// Utils for Hex<->String conversion
 gchar *gfire_hex_bin_to_str(guint8 *p_data, guint32 p_len);
 guint8 *gfire_hex_str_to_bin(const gchar *p_str);
+
+// Utils for checksums
 guint32 gfire_crc32(const void *p_data, guint32 p_len);
 
 // Dynamic Bitlist
@@ -55,5 +69,6 @@ gboolean gfire_bitlist_get(const gfire_bitlist *p_list, guint32 p_index);
 void gfire_bitlist_set(gfire_bitlist *p_list, guint32 p_index, gboolean p_isset);
 guint32 gfire_bitlist_bits_set(const gfire_bitlist *p_list);
 guint32 gfire_bitlist_bits_unset(const gfire_bitlist *p_list);
+void gfire_bitlist_clear(gfire_bitlist *p_list);
 
 #endif // _GF_UTIL_H

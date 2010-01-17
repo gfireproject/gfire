@@ -307,7 +307,7 @@ void gfire_buddy_send(gfire_buddy *p_buddy, const gchar *p_msg)
 		guint16 packet_len = gfire_buddy_proto_create_send_im(p_buddy->sid, p_buddy->im, unescaped);
 		if(packet_len > 0) gfire_send(p_buddy->gc, packet_len);
 
-		if(gfire_buddy_has_p2p(p_buddy) && !gfire_buddy_uses_p2p(p_buddy))
+		if(gfire_buddy_has_p2p(p_buddy))
 			gfire_buddy_request_p2p(p_buddy, FALSE);
 	}
 	g_free(unescaped);
@@ -1148,7 +1148,7 @@ gboolean gfire_buddy_has_p2p(const gfire_buddy *p_buddy)
 
 gboolean gfire_buddy_uses_p2p(const gfire_buddy *p_buddy)
 {
-	return (p_buddy && gfire_p2p_session_connected(p_buddy->p2p));
+	return (p_buddy && p_buddy->p2p && gfire_p2p_session_connected(p_buddy->p2p));
 }
 
 void gfire_buddy_request_p2p(gfire_buddy *p_buddy, gboolean p_notify)
@@ -1163,10 +1163,12 @@ void gfire_buddy_request_p2p(gfire_buddy *p_buddy, gboolean p_notify)
 
 	purple_debug_info("gfire", "Sending P2P request to buddy %s...\n", gfire_buddy_get_name(p_buddy));
 
+	// Generate random salt
 	gchar *salt = g_malloc0(41);
 	gchar *random_str = g_strdup_printf("%d", rand());
 	hashSha1(random_str, salt);
 
+	// Send P2P data request
 	guint16 len = gfire_buddy_proto_create_p2p(p_buddy->sid, gfire_p2p_connection_ip(p2p_con),
 											   gfire_p2p_connection_port(p2p_con),
 											   gfire_p2p_connection_local_ip(p2p_con),
@@ -1177,7 +1179,7 @@ void gfire_buddy_request_p2p(gfire_buddy *p_buddy, gboolean p_notify)
 		p_buddy->p2p_requested = TRUE;
 
 		p_buddy->p2p = gfire_p2p_session_create(p_buddy, salt);
-		gfire_p2p_connection_add_session(p2p_con, p_buddy->p2p, !p_buddy->p2p_requested);
+		gfire_p2p_connection_add_session(p2p_con, p_buddy->p2p);
 	}
 
 	if(p_buddy->hasP2P == GFP2P_UNKNOWN)
@@ -1201,7 +1203,7 @@ void gfire_buddy_got_p2p_data(gfire_buddy *p_buddy, guint32 p_ip, guint16 p_port
 		if(!p_buddy->p2p)
 		{
 			p_buddy->p2p = gfire_p2p_session_create(p_buddy, p_salt);
-			gfire_p2p_connection_add_session(p2p_con, p_buddy->p2p, !p_buddy->p2p_requested);
+			gfire_p2p_connection_add_session(p2p_con, p_buddy->p2p);
 		}
 
 		gfire_p2p_session_set_addr(p_buddy->p2p, p_ip, p_port);
@@ -1219,10 +1221,10 @@ void gfire_buddy_got_p2p_data(gfire_buddy *p_buddy, guint32 p_ip, guint16 p_port
 												   gfire_p2p_connection_port(p2p_con), 4, p_salt);
 			if(len > 0) gfire_send(p_buddy->gc, len);
 
-			purple_debug_misc("gfire", "Received P2P request, sent our own data; waiting for handshake...\n");
+			purple_debug_misc("gfire", "Received P2P request, sent our own data\n");
 		}
 	}
-	else if(!p_buddy->p2p_requested)
+	else
 	{
 		guint16 len = gfire_buddy_proto_create_p2p(p_buddy->sid, 0,
 												   0,
@@ -1236,10 +1238,7 @@ void gfire_buddy_got_p2p_data(gfire_buddy *p_buddy, guint32 p_ip, guint16 p_port
 
 void gfire_buddy_p2p_timedout(gfire_buddy *p_buddy)
 {
-	if(!p_buddy)
-		return;
-
-	if(p_buddy->p2p)
+	if(p_buddy && p_buddy->p2p)
 	{
 		gfire_p2p_connection_remove_session(gfire_get_p2p(p_buddy->gc->proto_data), p_buddy->p2p);
 		gfire_p2p_session_free(p_buddy->p2p, FALSE);
@@ -1277,7 +1276,11 @@ void gfire_buddy_p2p_ft_init(PurpleXfer *p_xfer)
 
 	gfire_buddy *gf_buddy = p_xfer->data;
 	if(!gf_buddy->p2p)
+	{
+		purple_xfer_cancel_local(p_xfer);
+		purple_xfer_unref(p_xfer);
 		return;
+	}
 
 	gfire_p2p_session_add_file_transfer(gf_buddy->p2p, p_xfer);
 }

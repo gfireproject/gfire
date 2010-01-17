@@ -25,6 +25,7 @@
 #ifndef _GF_P2P_H
 #define _GF_P2P_H
 
+typedef struct _gfire_p2p_packet_resend gfire_p2p_packet_resend;
 typedef struct _gfire_p2p_connection gfire_p2p_connection;
 
 #include "gf_base.h"
@@ -33,21 +34,60 @@ typedef struct _gfire_p2p_connection gfire_p2p_connection;
 
 #define GFIRE_P2P_BUFFER_LEN 131072 // 128 KB
 #define GFIRE_P2P_HEADER_LEN 7
+#define GFIRE_P2P_PACKET_TIMEOUT 5 // in sec
+#define GFIRE_P2P_MAX_RETRIES 4 // packets will be sent max. +1 time
+
+// P2P Packet Types
+#define GFIRE_P2P_TYPE_DATA32			0x0000
+#define GFIRE_P2P_TYPE_PING				0x0010
+#define GFIRE_P2P_TYPE_PONG				0x0020
+#define GFIRE_P2P_TYPE_ACK				0x0040
+#define GFIRE_P2P_TYPE_BADCRC			0x0080
+#define GFIRE_P2P_TYPE_DATA16			0x0300
+#define GFIRE_P2P_TYPE_KEEP_ALIVE_REQ	0x0800
+#define GFIRE_P2P_TYPE_KEEP_ALIVE_REP	0x1000
+
+struct _gfire_p2p_packet_resend
+{
+	guint8 encoding;
+	guint8 *moniker;
+	guint32 type;
+	guint32 msgid;
+	guint32 seqid;
+	guint32 data_len;
+	guint8 *data;
+	gchar *category;
+
+	guint8 retries;
+	glong last_try;
+
+	gfire_p2p_session *session;
+};
 
 struct _gfire_p2p_connection
 {
+	// Input callback
+	gint prpl_inpa;
+	// Resend timeout
+	guint resend_source;
+	// Socket
 	int socket;
+	// Buffers
 	guint8 *buff_out;
 	guint8 *buff_in;
 
+	// State
+	guint32 msgid;
+
+	// Packets which are waiting to be resent (no ack yet)
+	GList *packets;
+
 	// Sessions bound to this connection
 	GList *sessions;
-
-	gint prpl_inpa;
 };
 
 // Creation/Freeing
-gfire_p2p_connection *gfire_p2p_connection_create(guint16 p_minport, guint16 p_maxport);
+gfire_p2p_connection *gfire_p2p_connection_create();
 void gfire_p2p_connection_close(gfire_p2p_connection *p_p2p);
 
 // Status
@@ -57,11 +97,25 @@ guint16 gfire_p2p_connection_port(const gfire_p2p_connection *p_p2p);
 guint32 gfire_p2p_connection_ip(const gfire_p2p_connection *p_p2p);
 
 // Sessions
-void gfire_p2p_connection_add_session(gfire_p2p_connection *p_p2p, gfire_p2p_session *p_session, gboolean p_init);
+void gfire_p2p_connection_add_session(gfire_p2p_connection *p_p2p, gfire_p2p_session *p_session);
 void gfire_p2p_connection_remove_session(gfire_p2p_connection *p_p2p, gfire_p2p_session *p_session);
 
 // Sending
-guint8 *gfire_p2p_connection_send_packet(gfire_p2p_connection *p_p2p, const gfire_p2p_session *p_session, guint32 p_type, guint32 p_msgid, guint32 p_seqid, void *p_data, guint32 p_len, const gchar *p_category, guint32 *p_packet_len);
-void gfire_p2p_connection_resend_packet(gfire_p2p_connection *p_p2p, gfire_p2p_session *p_session, void *p_data, guint32 p_len);
+guint32 gfire_p2p_connection_send_ping(gfire_p2p_connection *p_p2p, const guint8 *p_moniker,
+									   guint32 p_sessid, const struct sockaddr_in *p_addr);
+guint32 gfire_p2p_connection_send_pong(gfire_p2p_connection *p_p2p, const guint8 *p_moniker,
+									   guint32 p_sessid, const struct sockaddr_in *p_addr);
+void gfire_p2p_connection_send_keep_alive(gfire_p2p_connection *p_p2p, const guint8 *p_moniker,
+										  guint32 p_sessid, const struct sockaddr_in *p_addr);
+void gfire_p2p_connection_send_keep_alive_reply(gfire_p2p_connection *p_p2p, const guint8 *p_moniker,
+												guint32 p_sessid, const struct sockaddr_in *p_addr);
+void gfire_p2p_connection_send_data16(gfire_p2p_connection *p_p2p, gfire_p2p_session *p_session,
+									  guint8 p_encoding, const guint8 *p_moniker,
+									  guint32 p_seqid, const guint8 *p_data, guint16 p_data_len,
+									  const gchar *p_category, const struct sockaddr_in *p_addr);
+void gfire_p2p_connection_send_data32(gfire_p2p_connection *p_p2p, gfire_p2p_session *p_session,
+									  guint8 p_encoding, const guint8 *p_moniker,
+									  guint32 p_seqid, const guint8 *p_data, guint32 p_data_len,
+									  const gchar *p_category, const struct sockaddr_in *p_addr);
 
 #endif // _GF_P2P_H
