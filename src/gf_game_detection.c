@@ -163,7 +163,7 @@ gboolean gfire_process_list_contains(const gfire_process_list *p_list, const gch
 guint32 gfire_process_list_get_pid(const gfire_process_list *p_list, const gchar *p_name)
 {
 	if (!p_list || !p_name)
-		return NULL;
+		return 0;
 
 	GList *cur = p_list->processes;
 	while(cur)
@@ -171,7 +171,7 @@ guint32 gfire_process_list_get_pid(const gfire_process_list *p_list, const gchar
 		process_info *info = cur->data;
 		if(!info)
 			continue;
-	
+
 		if(!g_strcmp0(info->name, p_name))
 			return info->pid;
 
@@ -179,7 +179,7 @@ guint32 gfire_process_list_get_pid(const gfire_process_list *p_list, const gchar
 	}
 
 	// Return nothing found
-	return NULL;
+	return 0;
 }
 
 gchar *gfire_process_list_get_exe(const gfire_process_list *p_list, const gchar *p_name)

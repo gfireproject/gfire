@@ -27,16 +27,18 @@
 
 // Globally required headers ////////////////////////////////////////
 #ifdef _WIN32
-	#include "internal.h"
-	#undef _
-	#include "gfire_config.h"
+#	include "internal.h"
+#	undef _
+#	include "gfire_config_win.h"
 #else
-	#ifdef HAVE_CONFIG_H
-		#include "gfire_config.h"
-	#endif // HAVE_CONFIG_H
-	#include <sys/socket.h>
-	#include <sys/types.h>
-	#include <unistd.h>
+#	ifdef HAVE_CONFIG_H
+#		include "gfire_config.h"
+#	endif // HAVE_CONFIG_H
+#	include <sys/socket.h>
+#	include <sys/types.h>
+#	include <unistd.h>
+#	include <arpa/inet.h>
+#	include <netinet/in.h>
 #endif // _WIN32
 
 // Standard libraries
@@ -44,11 +46,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-
-// Networking libraries (required by server browser)
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <netinet/in.h>
 
 // Glib
 #include <glib-object.h>
@@ -90,22 +87,21 @@
 #ifdef ENABLE_NLS
 	#include <glib/gi18n-lib.h>
 #else
-	#define _(string) (const char*)(string)
-	#define N_(string) _(string)
+#	define _(string) (const char*)(string)
+#	define N_(string) _(string)
 #endif // ENABLE_NLS
 
 #ifndef G_GNUC_NULL_TERMINATED
-	#if __GNUC__ >= 4
-		#define G_GNUC_NULL_TERMINATED __attribute__((__sentinel__))
-	#else
-		#define G_GNUC_NULL_TERMINATED
-	#endif /* __GNUC__ >= 4 */
+#	if __GNUC__ >= 4
+#		define G_GNUC_NULL_TERMINATED __attribute__((__sentinel__))
+#	else
+#		define G_GNUC_NULL_TERMINATED
+#	endif /* __GNUC__ >= 4 */
 #endif // G_GNUC_NULL_TERMINATED
 
 // Global defintions ////////////////////////////////////////////////
 #define GFIRE_WEBSITE "http://gfireproject.org"
 #define GFIRE_WIKI "http://my-trac.assembla.com/gfire/wiki"
-#define GFIRE_XQF_FILENAME "ingame.tmp"
 #define GFIRE_DEFAULT_GROUP_NAME "Xfire"
 #define GFIRE_FRIENDS_OF_FRIENDS_GROUP_NAME _("Xfire - Friends of Friends playing games")
 #define GFIRE_CLAN_GROUP_NAME "Clan"
@@ -131,5 +127,6 @@
 #define XFIRE_GALLERY_AVATAR_URL "http://media.xfire.com/xfire/xf/images/avatars/gallery/default/%03u.gif" // avatar id
 #define XFIRE_SEND_TYPING_TIMEOUT 10
 #define XFIRE_SEND_ACK_TIMEOUT 15
+#define XFIRE_SEND_ACK_P2P_TIMEOUT 2
 
 #endif // _GF_BASE_H

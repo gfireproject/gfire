@@ -199,6 +199,7 @@ gfire_buddy *gfire_buddy_create(guint32 p_userid, const gchar *p_name, const gch
 	}
 
 	ret->lost_ims_timer = g_timeout_add_seconds(XFIRE_SEND_ACK_TIMEOUT, (GSourceFunc)gfire_buddy_check_pending_ims_cb, ret);
+	ret->lost_p2p_ims_timer = g_timeout_add_seconds(XFIRE_SEND_ACK_P2P_TIMEOUT, (GSourceFunc)gfire_buddy_check_pending_p2p_ims_cb, ret);
 	ret->status = PURPLE_STATUS_AVAILABLE;
 
 	gfire_buddy_set_alias(ret, p_alias);
@@ -222,6 +223,7 @@ void gfire_buddy_free(gfire_buddy *p_buddy)
 	}
 
 	g_source_remove(p_buddy->lost_ims_timer);
+	g_source_remove(p_buddy->lost_p2p_ims_timer);
 
 	if(p_buddy->prpl_buddy && gfire_buddy_is_friend_of_friend(p_buddy))
 		purple_blist_remove_buddy(p_buddy->prpl_buddy);
@@ -239,6 +241,10 @@ void gfire_buddy_free(gfire_buddy *p_buddy)
 	for(; cur_pim_data; cur_pim_data = g_list_next(cur_pim_data))
 		gfire_im_sent_free((im_sent*)cur_pim_data->data);
 
+	cur_pim_data = p_buddy->pending_p2p_ims;
+	for(; cur_pim_data; cur_pim_data = g_list_next(cur_pim_data))
+		gfire_im_sent_free((im_sent*)cur_pim_data->data);
+
 	if(p_buddy->common_buddies)
 		gfire_list_clear(p_buddy->common_buddies);
 
@@ -250,6 +256,8 @@ void gfire_buddy_free(gfire_buddy *p_buddy)
 
 	g_list_free(p_buddy->clan_data);
 	g_list_free(p_buddy->pending_ims);
+	g_list_free(p_buddy->pending_p2p_ims);
+	gfire_list_clear(p_buddy->missing_ims);
 
 	g_free(p_buddy);
 }
@@ -301,7 +309,10 @@ void gfire_buddy_send(gfire_buddy *p_buddy, const gchar *p_msg)
 	g_free(no_html);
 	purple_debug(PURPLE_DEBUG_MISC, "gfire", "Sending IM to %s: %s\n", gfire_buddy_get_name(p_buddy), NN(unescaped));
 	if(gfire_buddy_uses_p2p(p_buddy))
+	{
 		gfire_p2p_im_handler_send_im(p_buddy->p2p, p_buddy->sid, p_buddy->im, unescaped);
+		p_buddy->pending_p2p_ims = g_list_append(p_buddy->pending_p2p_ims, gfire_im_sent_create(p_buddy->im, p_msg));
+	}
 	else
 	{
 		guint16 packet_len = gfire_buddy_proto_create_send_im(p_buddy->sid, p_buddy->im, unescaped);
@@ -313,7 +324,25 @@ void gfire_buddy_send(gfire_buddy *p_buddy, const gchar *p_msg)
 	g_free(unescaped);
 }
 
-void gfire_buddy_got_im(gfire_buddy *p_buddy, guint32 p_imindex, const gchar *p_msg)
+void gfire_buddy_send_nop2p(gfire_buddy *p_buddy, const gchar *p_msg, guint32 p_imindex)
+{
+	if(!p_buddy || !p_msg)
+		return;
+
+	/* in 2.0 the gtkimhtml stuff started escaping special chars: '&' is now "&amp";
+	   Xfire native clients don't handle it (and HTML at all). */
+	gchar *no_html = purple_markup_strip_html(p_msg);
+	gchar *unescaped = purple_unescape_html(no_html);
+	g_free(no_html);
+	purple_debug(PURPLE_DEBUG_MISC, "gfire", "Resending IM over Xfire to %s: %s\n", gfire_buddy_get_name(p_buddy), NN(unescaped));
+
+	guint16 packet_len = gfire_buddy_proto_create_send_im(p_buddy->sid, p_imindex, unescaped);
+	if(packet_len > 0) gfire_send(p_buddy->gc, packet_len);
+
+	g_free(unescaped);
+}
+
+void gfire_buddy_got_im(gfire_buddy *p_buddy, guint32 p_imindex, const gchar *p_msg, gboolean p_p2p)
 {
 	if(!p_buddy || !p_msg || !p_buddy->gc)
 		return;
@@ -321,12 +350,50 @@ void gfire_buddy_got_im(gfire_buddy *p_buddy, guint32 p_imindex, const gchar *p_
 	purple_debug(PURPLE_DEBUG_MISC, "gfire", "Received IM from %s: %s\n", gfire_buddy_get_name(p_buddy), p_msg);
 
 	// Send ACK
-	if(gfire_buddy_uses_p2p(p_buddy))
+	if(p_p2p)
 		gfire_p2p_im_handler_send_ack(p_buddy->p2p, p_buddy->sid, p_imindex);
 	else
 	{
 		guint16 len = gfire_buddy_proto_create_ack(p_buddy->sid, p_imindex);
 		if(len > 0) gfire_send(p_buddy->gc, len);
+	}
+
+	// We may have already received this message
+	if(p_buddy->highest_im > p_imindex)
+	{
+		GList *cur = p_buddy->missing_ims;
+		while(cur)
+		{
+			guint32 *imindex = (guint32*)cur->data;
+			// Missing imindex?
+			if(*imindex == p_imindex)
+			{
+				g_free(imindex);
+				p_buddy->missing_ims = g_list_delete_link(p_buddy->missing_ims, cur);
+
+				break;
+			}
+		}
+
+		// IM was already received, skip displaying
+		if(!cur)
+			return;
+	}
+	// This is the first message we receive, init highest_im to the buddy's client current value
+	else if(p_buddy->highest_im == 0)
+	{
+		p_buddy->highest_im = p_imindex;
+	}
+	// Add missing indexes
+	else
+	{
+		guint32 i = p_buddy->highest_im + 1;
+		for(; i < p_imindex; i++)
+		{
+			guint32 *imindex = g_malloc(sizeof(guint32));
+			*imindex = i;
+			p_buddy->missing_ims = g_list_append(p_buddy->missing_ims, imindex);
+		}
 	}
 
 	// Show IM
@@ -371,6 +438,7 @@ void gfire_buddy_got_im_ack(gfire_buddy *p_buddy, guint32 p_imindex)
 	if(!p_buddy)
 		return;
 
+	// Remove pending IM
 	GList *cur = p_buddy->pending_ims;
 	while(cur)
 	{
@@ -385,6 +453,28 @@ void gfire_buddy_got_im_ack(gfire_buddy *p_buddy, guint32 p_imindex)
 		{
 			gfire_im_sent_free(ims);
 			p_buddy->pending_ims = g_list_delete_link(p_buddy->pending_ims, cur);
+
+			break;
+		}
+
+		cur = g_list_next(cur);
+	}
+
+	// Remove pending P2P IM
+	cur = p_buddy->pending_p2p_ims;
+	while(cur)
+	{
+		im_sent *ims = cur->data;
+		if(!ims)
+		{
+			cur = g_list_next(cur);
+			continue;
+		}
+
+		if(ims->imindex == p_imindex)
+		{
+			gfire_im_sent_free(ims);
+			p_buddy->pending_p2p_ims = g_list_delete_link(p_buddy->pending_p2p_ims, cur);
 
 			return;
 		}
@@ -420,6 +510,38 @@ gboolean gfire_buddy_check_pending_ims_cb(gfire_buddy *p_buddy)
 			gfire_im_sent_free(ims);
 			p_buddy->pending_ims = g_list_delete_link(p_buddy->pending_ims, cur);
 			cur = p_buddy->pending_ims;
+		}
+
+		cur = g_list_next(cur);
+	}
+
+	return TRUE;
+}
+
+gboolean gfire_buddy_check_pending_p2p_ims_cb(gfire_buddy *p_buddy)
+{
+	if(!p_buddy)
+		return FALSE;
+
+	GTimeVal gtv;
+	g_get_current_time(&gtv);
+
+	GList *cur = p_buddy->pending_p2p_ims;
+	while(cur)
+	{
+		im_sent *ims = cur->data;
+		if(!ims)
+		{
+			cur = g_list_next(cur);
+			continue;
+		}
+
+		if(gtv.tv_sec - ims->time > XFIRE_SEND_ACK_P2P_TIMEOUT)
+		{
+			gfire_buddy_send_nop2p(p_buddy, ims->msg, ims->imindex);
+			gfire_im_sent_free(ims);
+			p_buddy->pending_p2p_ims = g_list_delete_link(p_buddy->pending_p2p_ims, cur);
+			cur = p_buddy->pending_p2p_ims;
 		}
 
 		cur = g_list_next(cur);
@@ -512,10 +634,10 @@ void gfire_buddy_prpl_add(gfire_buddy *p_buddy, PurpleGroup *p_group)
 		}
 		else if(gfire_buddy_is_friend_of_friend(p_buddy))
 		{
-			p_group = purple_find_group(purple_account_get_string(purple_connection_get_account(p_buddy->gc), "fof_group_name", GFIRE_FRIENDS_OF_FRIENDS_GROUP_NAME));
+			p_group = purple_find_group(GFIRE_FRIENDS_OF_FRIENDS_GROUP_NAME);
 			if(!p_group)
 			{
-				p_group = purple_group_new(purple_account_get_string(purple_connection_get_account(p_buddy->gc), "fof_group_name", GFIRE_FRIENDS_OF_FRIENDS_GROUP_NAME));
+				p_group = purple_group_new(GFIRE_FRIENDS_OF_FRIENDS_GROUP_NAME);
 				purple_blist_add_group(p_group, NULL);
 				purple_blist_node_set_bool((PurpleBlistNode*)p_group, "collapsed", TRUE);
 			}
@@ -566,7 +688,7 @@ void gfire_buddy_set_session_id(gfire_buddy *p_buddy, const guint8 *p_sessionid)
 
 	memcpy(p_buddy->sid, p_sessionid, XFIRE_SID_LEN);
 
-	// Reset Game states
+	// Reset states
 	if(!gfire_buddy_is_online(p_buddy))
 	{
 		// Remove offline FoF
@@ -576,6 +698,7 @@ void gfire_buddy_set_session_id(gfire_buddy *p_buddy, const guint8 *p_sessionid)
 			return;
 		}
 
+		// Reset games
 		gfire_game_data_reset(&p_buddy->game_data);
 		gfire_game_data_reset(&p_buddy->voip_data);
 
@@ -591,6 +714,11 @@ void gfire_buddy_set_session_id(gfire_buddy *p_buddy, const guint8 *p_sessionid)
 			p_buddy->p2p = NULL;
 			p_buddy->hasP2P = GFP2P_UNKNOWN;
 		}
+
+		// Reset IM state
+		p_buddy->highest_im = 0;
+		gfire_list_clear(p_buddy->missing_ims);
+		p_buddy->missing_ims = NULL;
 	}
 	else
 	{

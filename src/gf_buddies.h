@@ -106,8 +106,12 @@ struct _gfire_buddy
 	// Chat state
 	guint32	im;				// im index ++'d on each im reception and send
 	GList *pending_ims;		// List of im_sent structs
+	GList *pending_p2p_ims;	// List of im_sent structs for P2P messages
 	guint lost_ims_timer;	// Timer handle to check for lost IMs
+	guint lost_p2p_ims_timer; // Timer handle to check for lost P2P IMs
 	guint32 chatperm;		// group chat permissions (only used for group chat members)
+	guint32 highest_im;		// Highest received imindex
+	GList *missing_ims;		// List of missing received imindex's
 
 	// P2P
 	can_handle_p2p hasP2P;
@@ -157,11 +161,13 @@ gboolean gfire_buddy_is_by_sid(const gfire_buddy *p_buddy, const guint8 *p_sid);
 
 // IM handling
 void gfire_buddy_send(gfire_buddy *p_buddy, const gchar *p_msg);
-void gfire_buddy_got_im(gfire_buddy *p_buddy, guint32 p_imindex, const gchar *p_msg);
+void gfire_buddy_send_nop2p(gfire_buddy *p_buddy, const gchar *p_msg, guint32 p_imindex);
+void gfire_buddy_got_im(gfire_buddy *p_buddy, guint32 p_imindex, const gchar *p_msg, gboolean p_p2p);
 void gfire_buddy_send_typing(gfire_buddy *p_buddy, gboolean p_typing);
 void gfire_buddy_got_typing(const gfire_buddy *p_buddy, gboolean p_typing);
 void gfire_buddy_got_im_ack(gfire_buddy *p_buddy, guint32 p_imindex);
 gboolean gfire_buddy_check_pending_ims_cb(gfire_buddy *p_buddy);
+gboolean gfire_buddy_check_pending_p2p_ims_cb(gfire_buddy *p_buddy);
 
 // PurpleBuddy creation/deletion
 void gfire_buddy_prpl_add(gfire_buddy *p_buddy, PurpleGroup *p_group);

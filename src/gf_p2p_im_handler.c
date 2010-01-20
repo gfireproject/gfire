@@ -84,7 +84,7 @@ gboolean gfire_p2p_im_handler_handle(gfire_p2p_session *p_session, guint8 *p_dat
 			if(offset == -1 || !im)
 				return FALSE;
 
-			gfire_buddy_got_im(gfire_p2p_session_get_buddy(p_session), imindex, im);
+			gfire_buddy_got_im(gfire_p2p_session_get_buddy(p_session), imindex, im, TRUE);
 			break;
 		// ACK packet
 		case 1:

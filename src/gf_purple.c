@@ -754,11 +754,18 @@ static void gfire_purple_send_file(PurpleConnection *p_gc, const gchar *p_who, c
 
 static void gfire_purple_rename_group(PurpleConnection *p_gc, const gchar *p_old_name, PurpleGroup *p_group, GList *p_buddies)
 {
-	if(g_utf8_collate(p_old_name, purple_account_get_string(purple_connection_get_account(p_gc), "fof_group_name", GFIRE_FRIENDS_OF_FRIENDS_GROUP_NAME)) == 0)
+	if(g_utf8_collate(p_old_name, GFIRE_FRIENDS_OF_FRIENDS_GROUP_NAME) == 0)
 	{
-		purple_debug_info("gfire", "FoF group has been renamed, updating account options...\n");
-		purple_account_set_string(purple_connection_get_account(p_gc), "fof_group_name", purple_group_get_name(p_group));
+		purple_debug_info("gfire", "FoF group has been renamed, restoring the name...\n");
+		purple_blist_rename_group(p_group, GFIRE_FRIENDS_OF_FRIENDS_GROUP_NAME);
+
+		purple_notify_info(p_gc, _("Friends of friends group name restored"), _("Group name restored"), _("You have renamed Xfire's FoF group name. Unfortunately we had to restore this groups name."));
 	}
+}
+
+static gboolean gfire_purple_offline_message(const PurpleBuddy *p_buddy)
+{
+	return FALSE;
 }
 
 /**
@@ -828,7 +835,7 @@ static PurplePluginProtocolInfo prpl_info =
 	gfire_purple_can_receive_file,		/* can_receive_file */
 	gfire_purple_send_file,				/* send_file */
 	gfire_purple_new_xfer,				/* new_xfer */
-	NULL,								/* offline_message */
+	gfire_purple_offline_message,		/* offline_message */
 	NULL,								/* whiteboard_prpl_ops */
 	NULL,								/* send_raw */
 	NULL,								/* roomlist_room_serialize */
@@ -854,7 +861,7 @@ static PurplePluginInfo info =
 	PURPLE_PRIORITY_DEFAULT,	/* priority */
 	"prpl-xfire",				/* id */
 	NULL,						/* name (done for NLS in _init_plugin) */
-	GFIRE_VERSION,				/* version */
+	GFIRE_VERSION_STRING,		/* version */
 	NULL,						/* summary (done for NLS in _init_plugin) */
 	NULL,						/* description (done for NLS in _init_plugin) */
 	NULL,						/* author */
@@ -904,14 +911,10 @@ static void _init_plugin(PurplePlugin *plugin)
 	option = purple_account_option_bool_new(_("Notify me when my status is ingame"), "ingamenotificationnorm", FALSE);
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options,option);
 
-		option = purple_account_option_bool_new(_("Enable server detection"), "server_detection_option", FALSE);
+	option = purple_account_option_bool_new(_("Enable server detection"), "server_detection_option", FALSE);
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
 
-	// FIXME: disabled by default for now
-	option = purple_account_option_bool_new(_("Use Xfires P2P features"), "p2p_option", FALSE);
-	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
-
-	option = purple_account_option_string_new(_("Friends of Friends Group Name"), "fof_group_name", GFIRE_FRIENDS_OF_FRIENDS_GROUP_NAME);
+	option = purple_account_option_bool_new(_("Use Xfires P2P features"), "p2p_option", TRUE);
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
 
 	info.name = _("Xfire");

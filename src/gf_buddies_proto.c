@@ -681,7 +681,7 @@ void gfire_buddy_proto_im(gfire_data *p_gfire, guint16 p_packet_len)
 			if(offset == -1 || !im)
 				return;
 
-			gfire_buddy_got_im(gf_buddy, imindex, im);
+			gfire_buddy_got_im(gf_buddy, imindex, im, FALSE);
 		break;
 		// ACK packet
 		case 1:
