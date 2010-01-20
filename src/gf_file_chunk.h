@@ -42,8 +42,15 @@ typedef struct _gfire_file_requested_data
 	guint32 msgid;
 } gfire_file_requested_data;
 
+typedef enum
+{
+	GF_FILE_CHUNK_SEND = 0,
+	GF_FILE_CHUNK_RECV
+} gfire_file_chunk_type;
+
 struct _gfire_file_chunk
 {
+	gfire_file_chunk_type type;
 	guint64 offset;
 	guint32 size;
 	guint32 data_packet_count;
@@ -56,16 +63,20 @@ struct _gfire_file_chunk
 	gboolean finished;
 
 	guint timeout;
+	guint8 *data;
 
 	gfire_filetransfer *ft;
 };
 
 // Initialization and cleanup
-void gfire_file_chunk_init(gfire_file_chunk *p_chunk, gfire_filetransfer *p_transfer, guint64 p_offset, guint32 p_size);
+void gfire_file_chunk_init(gfire_file_chunk *p_chunk, gfire_filetransfer *p_transfer, gfire_file_chunk_type p_type,
+						   guint64 p_offset, guint32 p_size);
 void gfire_file_chunk_clear(gfire_file_chunk *p_chunk);
 
 // Setting data
+void gfire_file_chunk_make_current(gfire_file_chunk *p_chunk);
 void gfire_file_chunk_set_checksum(gfire_file_chunk *p_chunk, const gchar *p_checksum);
+void gfire_file_chunk_finalize(gfire_file_chunk *p_chunk);
 
 // Identification
 gboolean gfire_file_chunk_contains(const gfire_file_chunk *p_chunk, guint64 p_offset, guint32 p_size);

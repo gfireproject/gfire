@@ -25,13 +25,15 @@
 #include "gf_file_chunk.h"
 #include "gf_p2p_dl_proto.h"
 
-void gfire_file_chunk_init(gfire_file_chunk *p_chunk, gfire_filetransfer *p_transfer, guint64 p_offset, guint32 p_size)
+void gfire_file_chunk_init(gfire_file_chunk *p_chunk, gfire_filetransfer *p_transfer, gfire_file_chunk_type p_type,
+						   guint64 p_offset, guint32 p_size)
 {
 	if(!p_chunk)
 		return;
 
 	memset(p_chunk, 0, sizeof(gfire_file_chunk));
 
+	p_chunk->type = p_type;
 	p_chunk->offset = p_offset;
 	p_chunk->size = p_size;
 	p_chunk->data_packet_count = p_size / XFIRE_P2P_FT_DATA_PACKET_SIZE;
@@ -46,6 +48,8 @@ void gfire_file_chunk_clear(gfire_file_chunk *p_chunk)
 	if(!p_chunk)
 		return;
 
+	gfire_file_chunk_finalize(p_chunk);
+
 	if(p_chunk->timeout > 0)
 		g_source_remove(p_chunk->timeout);
 
@@ -59,6 +63,20 @@ void gfire_file_chunk_clear(gfire_file_chunk *p_chunk)
 		g_free(p_chunk->checksum);
 }
 
+void gfire_file_chunk_make_current(gfire_file_chunk *p_chunk)
+{
+	if(!p_chunk || p_chunk->data)
+		return;
+
+	p_chunk->data = g_malloc(p_chunk->size);
+
+	if(p_chunk->type == GF_FILE_CHUNK_SEND)
+	{
+		fseek(gfire_filetransfer_get_file(p_chunk->ft), p_chunk->offset, SEEK_SET);
+		p_chunk->size = fread(p_chunk->data, 1, p_chunk->size, gfire_filetransfer_get_file(p_chunk->ft));
+	}
+}
+
 void gfire_file_chunk_set_checksum(gfire_file_chunk *p_chunk, const gchar *p_checksum)
 {
 	if(!p_chunk || !p_checksum)
@@ -69,6 +87,21 @@ void gfire_file_chunk_set_checksum(gfire_file_chunk *p_chunk, const gchar *p_che
 
 	p_chunk->checksum = g_strdup(p_checksum);
 	p_chunk->informed = TRUE;
+}
+
+void gfire_file_chunk_finalize(gfire_file_chunk *p_chunk)
+{
+	if(!p_chunk || !p_chunk->data)
+		return;
+
+	if(p_chunk->type == GF_FILE_CHUNK_RECV)
+	{
+		fseek(gfire_filetransfer_get_file(p_chunk->ft), SEEK_SET, p_chunk->offset);
+		fwrite(p_chunk->data, 1, p_chunk->size, gfire_filetransfer_get_file(p_chunk->ft));
+	}
+
+	g_free(p_chunk->data);
+	p_chunk->data = NULL;
 }
 
 gboolean gfire_file_chunk_contains(const gfire_file_chunk *p_chunk, guint64 p_offset, guint32 p_size)
@@ -86,20 +119,16 @@ void gfire_file_chunk_send_info(gfire_file_chunk *p_chunk, guint32 p_msgid)
 	if(!p_chunk || p_chunk->informed)
 		return;
 
-	fseek(gfire_filetransfer_get_file(p_chunk->ft), p_chunk->offset, SEEK_SET);
-
-	guint8 *data = g_malloc(p_chunk->size);
-	guint32 r = fread(data, 1, p_chunk->size, gfire_filetransfer_get_file(p_chunk->ft));
+	if(!p_chunk->data)
+		gfire_file_chunk_make_current(p_chunk);
 
 	gchar hash[41];
-	hashSha1_bin_to_str(data, r, hash);
+	hashSha1_bin_to_str(p_chunk->data, p_chunk->size, hash);
 
 	gfire_p2p_dl_proto_send_file_chunk_info(gfire_filetransfer_get_session(p_chunk->ft),
 											gfire_filetransfer_get_fileid(p_chunk->ft),
 											p_chunk->offset, XFIRE_P2P_FT_CHUNK_SIZE, hash,
 											p_msgid);
-
-	g_free(data);
 
 	p_chunk->informed = TRUE;
 }
@@ -109,30 +138,30 @@ void gfire_file_chunk_send_data(gfire_file_chunk *p_chunk, guint64 p_offset, gui
 	if(!p_chunk || !gfire_file_chunk_contains(p_chunk, p_offset, p_size))
 		return;
 
-	fseek(gfire_filetransfer_get_file(p_chunk->ft), p_offset, SEEK_SET);
-
-	guint8 *data = g_malloc(p_size);
-	guint32 r = fread(data, 1, p_size, gfire_filetransfer_get_file(p_chunk->ft));
+	if(p_chunk->data)
+		gfire_file_chunk_make_current(p_chunk);
 
 	gfire_p2p_dl_proto_send_file_data_packet(gfire_filetransfer_get_session(p_chunk->ft),
 											 gfire_filetransfer_get_fileid(p_chunk->ft), p_offset,
-											 r, data, p_msgid);
+											 p_size, p_chunk->data + p_offset - p_chunk->offset, p_msgid);
 
-	g_free(data);
 
 	guint32 data_packet = (p_offset - p_chunk->offset) / XFIRE_P2P_FT_DATA_PACKET_SIZE;
 	if(!gfire_bitlist_get(p_chunk->data_packets, data_packet))
 	{
 		// Update the GUI
 		purple_xfer_set_bytes_sent(gfire_filetransfer_get_xfer(p_chunk->ft),
-								   purple_xfer_get_bytes_sent(gfire_filetransfer_get_xfer(p_chunk->ft)) + r);
+								   purple_xfer_get_bytes_sent(gfire_filetransfer_get_xfer(p_chunk->ft)) + p_size);
 		purple_xfer_update_progress(gfire_filetransfer_get_xfer(p_chunk->ft));
 
 		p_chunk->data_packets_processed++;
 		gfire_bitlist_set(p_chunk->data_packets, data_packet, TRUE);
 
 		if(p_chunk->data_packets_processed == p_chunk->data_packet_count)
+		{
 			p_chunk->finished = TRUE;
+			gfire_file_chunk_finalize(p_chunk);
+		}
 	}
 }
 
@@ -212,6 +241,7 @@ void gfire_file_chunk_start_transfer(gfire_file_chunk *p_chunk)
 	p_chunk->timeout = g_timeout_add_seconds(XFIRE_P2P_FT_DATA_PACKET_TIMEOUT,
 											 (GSourceFunc)gfire_file_chunk_request_timeout, p_chunk);
 
+	gfire_file_chunk_make_current(p_chunk);
 	gfire_file_chunk_new_requests(p_chunk);
 }
 
@@ -224,14 +254,11 @@ static gboolean gfire_file_chunk_check_checksum(gfire_file_chunk *p_chunk)
 	if(!p_chunk->checksum)
 		return TRUE;
 
-	fseek(gfire_filetransfer_get_file(p_chunk->ft), p_chunk->offset, SEEK_SET);
-
-	guint8 *data = g_malloc(p_chunk->size);
-	guint32 r = fread(data, 1, p_chunk->size, gfire_filetransfer_get_file(p_chunk->ft));
+	if(p_chunk->data)
+		gfire_file_chunk_make_current(p_chunk);
 
 	gchar hash[41];
-	hashSha1_bin_to_str(data, r, hash);
-	g_free(data);
+	hashSha1_bin_to_str(p_chunk->data, p_chunk->size, hash);
 
 	return (!strcmp(hash, p_chunk->checksum));
 }
@@ -241,13 +268,13 @@ void gfire_file_chunk_got_data(gfire_file_chunk *p_chunk, guint64 p_offset, guin
 	if(!p_chunk || !p_data || !gfire_file_chunk_contains(p_chunk, p_offset, p_size))
 		return;
 
-	fseek(p_chunk->ft->file, p_offset, SEEK_SET);
-
 	const GList *cur = p_data;
+	guint32 pos = 0;
 	while(cur)
 	{
-		fputc(*((guint8*)cur->data), gfire_filetransfer_get_file(p_chunk->ft));
+		memcpy(p_chunk->data + p_offset - p_chunk->offset + pos, cur->data, 1);
 		cur = g_list_next(cur);
+		pos++;
 	}
 
 	guint32 data_packet = (p_offset - p_chunk->offset) / XFIRE_P2P_FT_DATA_PACKET_SIZE;
@@ -292,6 +319,7 @@ void gfire_file_chunk_got_data(gfire_file_chunk *p_chunk, guint64 p_offset, guin
 			g_free(p_chunk->requested);
 			p_chunk->requested = 0;
 
+			gfire_file_chunk_finalize(p_chunk);
 			gfire_filetransfer_next_chunk(p_chunk->ft);
 
 			return;

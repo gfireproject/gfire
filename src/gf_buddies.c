@@ -384,6 +384,11 @@ void gfire_buddy_got_im(gfire_buddy *p_buddy, guint32 p_imindex, const gchar *p_
 	{
 		p_buddy->highest_im = p_imindex;
 	}
+	// Received the last message twice
+	else if(p_buddy->highest_im == p_imindex)
+	{
+		return;
+	}
 	// Add missing indexes
 	else
 	{
@@ -1214,7 +1219,7 @@ void gfire_buddy_make_friend(gfire_buddy *p_buddy, PurpleGroup *p_group)
 		PurpleGroup *old_group = purple_buddy_get_group(p_buddy->prpl_buddy);
 		gfire_buddy_clan_data *clan_data = gfire_buddy_get_default_clan_data(p_buddy);
 		if((clan_data && gfire_clan_is(clan_data->clan, purple_blist_node_get_int((PurpleBlistNode*)old_group, "clanid"))) ||
-		   purple_find_buddy_in_group(purple_connection_get_account(p_buddy->gc), gfire_buddy_get_name(p_buddy), purple_find_group(purple_account_get_string(purple_connection_get_account(p_buddy->gc), "fof_group_name", GFIRE_FRIENDS_OF_FRIENDS_GROUP_NAME))))
+		   purple_find_buddy_in_group(purple_connection_get_account(p_buddy->gc), gfire_buddy_get_name(p_buddy), purple_find_group(GFIRE_FRIENDS_OF_FRIENDS_GROUP_NAME)))
 		{
 			if(!p_group)
 			{

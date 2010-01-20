@@ -40,9 +40,11 @@ static void gfire_filetransfer_create_chunks(gfire_filetransfer *p_transfer, gui
 	for(; i < p_transfer->chunk_count; i++)
 	{
 		if((p_transfer->size - p_offset) < p_transfer->chunk_size)
-			gfire_file_chunk_init(p_transfer->chunks + i, p_transfer, p_offset, p_transfer->size % p_transfer->chunk_size);
+			gfire_file_chunk_init(p_transfer->chunks + i, p_transfer, GF_FILE_CHUNK_RECV, p_offset,
+								  p_transfer->size % p_transfer->chunk_size);
 		else
-			gfire_file_chunk_init(p_transfer->chunks + i, p_transfer, p_offset, p_transfer->chunk_size);
+			gfire_file_chunk_init(p_transfer->chunks + i, p_transfer, GF_FILE_CHUNK_RECV, p_offset,
+								  p_transfer->chunk_size);
 		p_offset += p_transfer->chunk_size;
 	}
 
@@ -280,7 +282,7 @@ void gfire_filetransfer_transfer_info(gfire_filetransfer *p_transfer, guint64 p_
 
 	// Set new current chunk
 	gfire_file_chunk_clear(p_transfer->current_chunk);
-	gfire_file_chunk_init(p_transfer->current_chunk, p_transfer, p_offset, p_chunk_size);
+	gfire_file_chunk_init(p_transfer->current_chunk, p_transfer, GF_FILE_CHUNK_SEND, p_offset, p_chunk_size);
 	gfire_file_chunk_send_info(p_transfer->current_chunk, p_msgid);
 }
 
