@@ -26,19 +26,21 @@
 #define _GF_BUDDIES_H
 
 typedef struct _gfire_buddy gfire_buddy;
+typedef struct _gfire_clan gfire_clan;
 
 #include "gf_base.h"
 #include "gf_games.h"
 #include "gf_p2p_session.h"
+#include "gf_groups.h"
 
 // Stores information about all clans this gfire session has to handle with
-typedef struct _gfire_clan
+struct _gfire_clan
 {
 	guint32 id;					// Clan ID
 	gchar *long_name;			// Long Clan Name, e.g. "Gfire - Linux and Co Users"
 	gchar *short_name;			// Short Clan Name, e.g. "gfire"
 	PurpleGroup *prpl_group;	// Purple Buddy List Group
-} gfire_clan;
+};
 
 // Enum with all possible buddy types
 typedef enum _gfire_buddy_type
@@ -170,8 +172,9 @@ gboolean gfire_buddy_check_pending_ims_cb(gfire_buddy *p_buddy);
 gboolean gfire_buddy_check_pending_p2p_ims_cb(gfire_buddy *p_buddy);
 
 // PurpleBuddy creation/deletion
-void gfire_buddy_prpl_add(gfire_buddy *p_buddy, PurpleGroup *p_group);
+void gfire_buddy_prpl_add(gfire_buddy *p_buddy, gfire_group *p_group);
 void gfire_buddy_prpl_remove(gfire_buddy *p_buddy);
+void gfire_buddy_prpl_move(gfire_buddy *p_buddy, PurpleGroup *p_group);
 
 // Game/VoIP status
 void gfire_buddy_set_game_status(gfire_buddy *p_buddy, guint32 p_id, guint32 p_port, guint32 p_ip);
@@ -204,7 +207,7 @@ void gfire_buddy_remove_clan(gfire_buddy *p_buddy, guint32 p_clanid, guint32 p_n
 void gfire_buddy_set_clan_alias(gfire_buddy *p_buddy, guint32 p_clanid, const gchar *p_alias);
 guint32 gfire_buddy_get_default_clan(gfire_buddy *p_buddy);
 GList *gfire_buddy_get_clans_info(const gfire_buddy *p_buddy);
-void gfire_buddy_make_friend(gfire_buddy *p_buddy, PurpleGroup *p_group);
+void gfire_buddy_make_friend(gfire_buddy *p_buddy, gfire_group *p_group);
 
 // FoF handling
 void gfire_buddy_set_common_buddies(gfire_buddy *p_buddy, GList *p_buddies);

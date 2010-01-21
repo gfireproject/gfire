@@ -33,7 +33,9 @@ EXTRA_DIST = \
 	gf_p2p_dl_handler.h \
 	gf_p2p_dl_proto.h \
 	gf_filetransfer.h \
-	gf_file_chunk.h
+	gf_file_chunk.h \
+	gf_groups.h \
+	gf_groups_proto.h
 
 INCLUDES = \
 	-I$(top_srcdir) \
@@ -73,7 +75,9 @@ libxfire_la_SOURCES = \
 	gf_p2p_dl_handler.c \
 	gf_p2p_dl_proto.c \
 	gf_filetransfer.c \
-	gf_file_chunk.c
+	gf_file_chunk.c \
+	gf_groups.c \
+	gf_groups_proto.c
 
 libxfire_la_LIBADD = \
 	$(GLIB_LIBS) $(GTK_LIBS) $(SSL_LIBS)

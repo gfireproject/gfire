@@ -319,11 +319,17 @@ void gfire_proto_buddy_list(gfire_data *p_gfire, guint16 p_packet_len)
 		{
 			gf_buddy = gfire_buddy_create(*(guint32*)u->data, (gchar*)f->data, (gchar*)n->data, GFBT_FRIEND);
 			if(gf_buddy)
-				gfire_add_buddy(p_gfire, gf_buddy, NULL);
+			{
+				// Find group for buddy
+				gfire_group *group = gfire_find_group(p_gfire, u->data, GFFG_BUDDY);
+				gfire_add_buddy(p_gfire, gf_buddy, group);
+			}
 		}
 		else if(!gfire_buddy_is_friend(gf_buddy))
 		{
-			gfire_buddy_make_friend(gf_buddy, NULL);
+			// Find group for buddy
+			gfire_group *group = gfire_find_group(p_gfire, u->data, GFFG_BUDDY);
+			gfire_buddy_make_friend(gf_buddy, group);
 			gfire_buddy_set_alias(gf_buddy, (gchar*)n->data);
 		}
 

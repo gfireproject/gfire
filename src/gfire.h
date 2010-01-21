@@ -35,11 +35,7 @@ typedef struct _gfire_data gfire_data;
 #include "gf_games.h"
 #include "gf_game_detection.h"
 #include "gf_p2p.h"
-
-/* we only include this on win32 builds */
-/*#  ifdef _WIN32
-#    include "internal.h"
-#  endif */ /* _WIN32 */
+#include "gf_groups.h"
 
 // gfire_find_buddy modes
 typedef enum _gfire_find_buddy_mode
@@ -55,6 +51,14 @@ typedef enum _gfire_find_chat_mode
 	GFFC_CID = 0,	// by chat ID
 	GFFC_PURPLEID	// by purple ID
 } gfire_find_chat_mode;
+
+typedef enum _gfire_find_group_mode
+{
+	GFFG_GID = 0,	// by group ID
+	GFFG_PURPLE,	// by PurpleGroup
+	GFFG_NAME,		// by group name
+	GFFG_BUDDY		// by buddy
+} gfire_find_group_mode;
 
 typedef struct _gfire_chat_msg
 {
@@ -85,6 +89,7 @@ struct _gfire_data
 	// Buddies
 	GList *buddies;
 	GList *clans;
+	GList *groups;
 
 	guint32 chat;
 	gchar *email;
@@ -145,7 +150,7 @@ void gfire_set_sid(gfire_data *p_gfire, guint8 *p_sid);
 
 // Buddy handling
 gfire_buddy *gfire_find_buddy(gfire_data *p_gfire, const void *p_data, gfire_find_buddy_mode p_mode);
-void gfire_add_buddy(gfire_data *p_gfire, gfire_buddy *p_buddy, PurpleGroup *p_group);
+void gfire_add_buddy(gfire_data *p_gfire, gfire_buddy *p_buddy, gfire_group *p_group);
 void gfire_remove_buddy(gfire_data *p_gfire, gfire_buddy *p_buddy, gboolean p_fromServer, gboolean p_force);
 void gfire_got_invitation(gfire_data *p_gfire, const gchar *p_name, const gchar *p_alias, const gchar *p_msg);
 void gfire_show_buddy_info(gfire_data *p_gfire, const gchar *p_name);
@@ -156,6 +161,11 @@ void gfire_add_clan(gfire_data *p_gfire, gfire_clan *p_clan);
 void gfire_remove_clan(gfire_data *p_gfire, gfire_clan *p_clan);
 void gfire_leave_clan(gfire_data *p_gfire, guint32 p_clanid);
 void gfire_remove_buddy_from_clan(gfire_data *p_gfire, gfire_buddy *p_buddy, guint32 p_clanid);
+
+// Group handling
+gfire_group *gfire_find_group(gfire_data *p_gfire, const void *p_data, gfire_find_group_mode p_mode);
+void gfire_add_group(gfire_data *p_gfire, gfire_group *p_group);
+void gfire_remove_group(gfire_data *p_gfire, gfire_group *p_group, gboolean p_remove);
 
 // Chat handling
 gfire_chat *gfire_find_chat(gfire_data *p_gfire, const void *p_data, gfire_find_chat_mode p_mode);

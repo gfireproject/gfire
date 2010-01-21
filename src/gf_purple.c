@@ -338,6 +338,18 @@ static void gfire_purple_add_buddy(PurpleConnection *p_gc, PurpleBuddy *p_buddy,
 	if(!p_gc || !(gfire = (gfire_data *)p_gc->proto_data) || !p_buddy || !purple_buddy_get_name(p_buddy))
 		return;
 
+	gfire_group *group = NULL;
+	if(p_group && p_group != purple_find_group(GFIRE_DEFAULT_GROUP_NAME) &&
+	   p_group != purple_find_group(GFIRE_FRIENDS_OF_FRIENDS_GROUP_NAME))
+	{
+		group = gfire_find_group(gfire, p_group, GFFG_PURPLE);
+		if(!group)
+		{
+			group = gfire_group_create(gfire, purple_group_get_name(p_group), 0);
+			gfire_add_group(gfire, group);
+		}
+	}
+
 	gfire_buddy *gf_buddy = gfire_find_buddy(gfire, purple_buddy_get_name(p_buddy), GFFB_NAME);
 	if(!gf_buddy)
 	{
@@ -346,9 +358,9 @@ static void gfire_purple_add_buddy(PurpleConnection *p_gc, PurpleBuddy *p_buddy,
 			return;
 	}
 	else
-		gfire_buddy_make_friend(gf_buddy, p_group);
+		gfire_buddy_make_friend(gf_buddy, group);
 
-	gfire_add_buddy(gfire, gf_buddy, p_group);
+	gfire_add_buddy(gfire, gf_buddy, group);
 
 	packet_len = gfire_proto_create_invitation(p_buddy->name, "");
 	if(packet_len > 0) gfire_send(p_gc, packet_len);
@@ -754,12 +766,92 @@ static void gfire_purple_send_file(PurpleConnection *p_gc, const gchar *p_who, c
 
 static void gfire_purple_rename_group(PurpleConnection *p_gc, const gchar *p_old_name, PurpleGroup *p_group, GList *p_buddies)
 {
+	// Handle FoF group renamings
 	if(g_utf8_collate(p_old_name, GFIRE_FRIENDS_OF_FRIENDS_GROUP_NAME) == 0)
 	{
 		purple_debug_info("gfire", "FoF group has been renamed, restoring the name...\n");
 		purple_blist_rename_group(p_group, GFIRE_FRIENDS_OF_FRIENDS_GROUP_NAME);
 
 		purple_notify_info(p_gc, _("Friends of friends group name restored"), _("Group name restored"), _("You have renamed Xfire's FoF group name. Unfortunately we had to restore this groups name."));
+
+		return;
+	}
+	// Handle Clan group renamings
+	else if(purple_blist_node_get_int(PURPLE_BLIST_NODE(p_group), "clanid") != 0)
+	{
+		gfire_clan *clan = gfire_find_clan(p_gc->proto_data, purple_blist_node_get_int(PURPLE_BLIST_NODE(p_group), "clanid"));
+		if(!clan)
+			return;
+
+		// Was the name really changed?
+		if(g_utf8_collate(purple_group_get_name(p_group), gfire_clan_get_name(clan)) == 0)
+			return;
+
+		purple_debug_info("gfire", "Clan group has been renamed, restoring the name...\n");
+		purple_blist_rename_group(p_group, gfire_clan_get_name(clan));
+
+		purple_notify_info(p_gc, _("Clan's group name restored"), _("Group name restored"), _("You have renamed the group name of a Xfire clan. Unfortunately we had to restore this groups name."));
+		return;
+	}
+
+	// Rename custom groups
+	gfire_group *group = gfire_find_group(p_gc->proto_data, p_old_name, GFFB_NAME);
+	if(!group)
+		return;
+
+	gfire_group_rename(group, purple_group_get_name(p_group));
+}
+
+static void gfire_purple_remove_group(PurpleConnection *p_gc, PurpleGroup *p_group)
+{
+	if(!p_gc || !p_group)
+		return;
+
+	gfire_group *group = gfire_find_group(p_gc->proto_data, p_group, GFFG_PURPLE);
+	if(group)
+	{
+		gfire_remove_group(p_gc->proto_data, group, TRUE);
+	}
+}
+
+static void gfire_purple_group_buddy(PurpleConnection *p_gc, const char *p_who,
+									 const char *p_old_group, const char *p_new_group)
+{
+	if(!p_gc || !p_who || !p_new_group)
+		return;
+
+	gfire_data *gfire = p_gc->proto_data;
+
+	gfire_buddy *buddy = gfire_find_buddy(gfire, p_who, GFFB_NAME);
+	if(!buddy)
+		return;
+
+	if(!gfire_buddy_is_friend(buddy))
+	{
+		// TODO: Ask if the user wants to add this buddy
+		return;
+	}
+
+	if(p_old_group)
+	{
+		gfire_group *old_group = gfire_find_group(gfire, p_old_group, GFFG_NAME);
+		if(old_group)
+		{
+			gfire_group_remove_buddy(old_group, buddy->userid);
+		}
+	}
+
+	if(strcmp(p_new_group, GFIRE_DEFAULT_GROUP_NAME) &&
+	   strcmp(p_new_group, GFIRE_FRIENDS_OF_FRIENDS_GROUP_NAME))
+	{
+		gfire_group *new_group = gfire_find_group(gfire, p_new_group, GFFG_NAME);
+		if(!new_group)
+		{
+			new_group = gfire_group_create(gfire, p_new_group, 0);
+			gfire_add_group(gfire, new_group);
+		}
+
+		gfire_group_add_buddy(new_group, buddy->userid, TRUE);
 	}
 }
 
@@ -819,13 +911,13 @@ static PurplePluginProtocolInfo prpl_info =
 	NULL,								/* get_cb_info */
 	NULL,								/* get_cb_away */
 	NULL,								/* alias_buddy */
-	NULL,								/* group_buddy */
+	gfire_purple_group_buddy,			/* group_buddy */
 	gfire_purple_rename_group,			/* rename_group */
 	NULL,								/* buddy_free */
 	NULL,								/* convo_closed */
 	purple_normalize_nocase,			/* normalize */
 	NULL,								/* set_buddy_icon */
-	NULL,								/* remove_group */
+	gfire_purple_remove_group,			/* remove_group */
 	NULL,								/* get_cb_real_name */
 	gfire_purple_chat_change_motd,		/* set_chat_topic */
 	NULL,								/* find_blist_chat */

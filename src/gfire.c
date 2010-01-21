@@ -92,6 +92,13 @@ void gfire_free(gfire_data *p_gfire)
 		p_gfire->clans = g_list_delete_link(p_gfire->clans, p_gfire->clans);
 	}
 
+	// Free all groups
+	while(p_gfire->groups)
+	{
+		gfire_group_free((gfire_group*)p_gfire->groups->data, FALSE);
+		p_gfire->groups = g_list_delete_link(p_gfire->groups, p_gfire->groups);
+	}
+
 	// Free all chats
 	while(p_gfire->chats)
 	{
@@ -289,7 +296,7 @@ gfire_buddy *gfire_find_buddy(gfire_data *p_gfire, const void *p_data, gfire_fin
 	return NULL;
 }
 
-void gfire_add_buddy(gfire_data *p_gfire, gfire_buddy *p_buddy, PurpleGroup *p_group)
+void gfire_add_buddy(gfire_data *p_gfire, gfire_buddy *p_buddy, gfire_group *p_group)
 {
 	if(!p_gfire || !p_buddy)
 		return;
@@ -446,6 +453,65 @@ gfire_clan *gfire_find_clan(gfire_data *p_gfire, guint32 p_clanid)
 			return (gfire_clan*)cur->data;
 
 	return NULL;
+}
+
+gfire_group *gfire_find_group(gfire_data *p_gfire, const void *p_data, gfire_find_group_mode p_mode)
+{
+	if(!p_gfire)
+		return NULL;
+
+	GList *cur = p_gfire->groups;
+	while(cur)
+	{
+		switch(p_mode)
+		{
+		case GFFG_GID:
+			if(gfire_group_is_by_id((gfire_group*)cur->data, *((const guint32*)p_data)))
+				return (gfire_group*)cur->data;
+			break;
+		case GFFG_PURPLE:
+			if(gfire_group_is_by_purple_group((gfire_group*)cur->data, (const PurpleGroup*)p_data))
+				return (gfire_group*)cur->data;
+			break;
+		case GFFG_NAME:
+			if(gfire_group_is_by_name((gfire_group*)cur->data, (const gchar*)p_data))
+				return (gfire_group*)cur->data;
+			break;
+		case GFFG_BUDDY:
+			if(gfire_group_has_buddy((gfire_group*)cur->data, *((const guint32*)p_data)))
+				return (gfire_group*)cur->data;
+			break;
+		}
+
+		cur = g_list_next(cur);
+	}
+
+	return NULL;
+}
+
+void gfire_add_group(gfire_data *p_gfire, gfire_group *p_group)
+{
+	if(!p_gfire || !p_group)
+		return;
+
+	p_gfire->groups = g_list_append(p_gfire->groups, p_group);
+
+	purple_debug_info("gfire", "Added Group: Name=%s / ID=%u\n",
+					  purple_group_get_name(gfire_group_get_group(p_group)),
+					  p_group->groupid);
+}
+
+void gfire_remove_group(gfire_data *p_gfire, gfire_group *p_group, gboolean p_remove)
+{
+	if(!p_gfire || !p_group)
+		return;
+
+	GList *node = g_list_find(p_gfire->groups, p_group);
+	if(node)
+	{
+		gfire_group_free(p_group, p_remove);
+		p_gfire->groups = g_list_delete_link(p_gfire->groups, node);
+	}
 }
 
 static void gfire_buddy_invitation_authorize_cb(void *data)

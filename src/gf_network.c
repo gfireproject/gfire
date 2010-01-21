@@ -28,6 +28,7 @@
 #include "gf_chat_proto.h"
 #include "gf_friend_search_proto.h"
 #include "gf_server_browser_proto.h"
+#include "gf_groups_proto.h"
 #include "gf_games.h"
 
 static guint8 *gfire_buffout = NULL;
@@ -309,6 +310,21 @@ void gfire_parse_packet(gfire_data *p_gfire, guint16 p_packet_len, guint16 p_pac
 		case 150:
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received serverlist\n");
 			gfire_server_browser_proto_serverlist(p_gfire, p_packet_len);
+		break;
+
+		case 151:
+			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received groups\n");
+			gfire_group_proto_groups(p_gfire, p_packet_len);
+		break;
+
+		case 152:
+			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received buddies in groups\n");
+			gfire_group_proto_buddies_in_groups(p_gfire, p_packet_len);
+		break;
+
+		case 153:
+			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received group-add confirmation\n");
+			gfire_group_proto_group_added(p_gfire, p_packet_len);
 		break;
 
 		case 154:

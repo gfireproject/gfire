@@ -24,7 +24,11 @@
 
 #include "gf_server_browser.h"
 
-// #ifdef HAVE_GTK
+#ifdef HAVE_GTK
+static void gfire_server_browser_request_list_cb(server_browser_callback_args *p_args, GtkWidget *p_button);
+static void gfire_server_browser_server_information_cb(server_browser_callback_args *p_args, GtkWidget *p_sender);
+static void gfire_server_browser_connect_cb(server_browser_callback_args *p_args, GtkWidget *p_sender);
+
 void gfire_server_browser_close(server_browser_callback_args *p_args, GtkWidget *p_button)
 {
 	if (!p_args)
@@ -238,4 +242,4 @@ static void gfire_server_browser_connect_cb(server_browser_callback_args *p_args
 	else
 		purple_debug_error("gfire", "Couldn't get selected server to join.\n");
 }
-//#endif // HAVE_GTK
+#endif // HAVE_GTK

@@ -601,10 +601,12 @@ GList *gfire_buddy_get_clans_info(const gfire_buddy *p_buddy)
 	return ret;
 }
 
-void gfire_buddy_prpl_add(gfire_buddy *p_buddy, PurpleGroup *p_group)
+void gfire_buddy_prpl_add(gfire_buddy *p_buddy, gfire_group *p_group)
 {
 	if(!p_buddy || !p_buddy->gc || p_buddy->prpl_buddy)
 		return;
+
+	PurpleGroup *group = NULL;
 
 	PurpleBuddy *prpl_buddy = purple_find_buddy(purple_connection_get_account(p_buddy->gc), gfire_buddy_get_name(p_buddy));
 	if(!prpl_buddy)
@@ -620,35 +622,37 @@ void gfire_buddy_prpl_add(gfire_buddy *p_buddy, PurpleGroup *p_group)
 		{
 			if(!p_group)
 			{
-				p_group = purple_find_group(GFIRE_DEFAULT_GROUP_NAME);
-				if(!p_group)
+				group = purple_find_group(GFIRE_DEFAULT_GROUP_NAME);
+				if(!group)
 				{
-					p_group = purple_group_new(GFIRE_DEFAULT_GROUP_NAME);
-					purple_blist_add_group(p_group, NULL);
+					group = purple_group_new(GFIRE_DEFAULT_GROUP_NAME);
+					purple_blist_add_group(group, NULL);
 				}
 			}
+			else
+				group = gfire_group_get_group(p_group);
 		}
 		else if(gfire_buddy_is_clan_member(p_buddy))
 		{
 			if(!p_buddy->clan_data)
 				return;
 
-			p_group = gfire_clan_get_prpl_group(gfire_buddy_get_default_clan_data(p_buddy)->clan);
-			if(!p_group)
+			group = gfire_clan_get_prpl_group(gfire_buddy_get_default_clan_data(p_buddy)->clan);
+			if(!group)
 				return;
 		}
 		else if(gfire_buddy_is_friend_of_friend(p_buddy))
 		{
-			p_group = purple_find_group(GFIRE_FRIENDS_OF_FRIENDS_GROUP_NAME);
-			if(!p_group)
+			group = purple_find_group(GFIRE_FRIENDS_OF_FRIENDS_GROUP_NAME);
+			if(!group)
 			{
-				p_group = purple_group_new(GFIRE_FRIENDS_OF_FRIENDS_GROUP_NAME);
-				purple_blist_add_group(p_group, NULL);
-				purple_blist_node_set_bool((PurpleBlistNode*)p_group, "collapsed", TRUE);
+				group = purple_group_new(GFIRE_FRIENDS_OF_FRIENDS_GROUP_NAME);
+				purple_blist_add_group(group, NULL);
+				purple_blist_node_set_bool((PurpleBlistNode*)group, "collapsed", TRUE);
 			}
 		}
 
-		purple_blist_add_buddy(prpl_buddy, NULL, p_group, NULL);
+		purple_blist_add_buddy(prpl_buddy, NULL, group, NULL);
 
 		if(gfire_buddy_is_friend_of_friend(p_buddy))
 			purple_blist_node_set_flags((PurpleBlistNode*)prpl_buddy, PURPLE_BLIST_NODE_FLAG_NO_SAVE);
@@ -657,6 +661,27 @@ void gfire_buddy_prpl_add(gfire_buddy *p_buddy, PurpleGroup *p_group)
 	}
 	else
 	{
+		// Move the buddy to the correct group
+		if(p_group)
+		{
+			if(purple_buddy_get_group(prpl_buddy) != gfire_group_get_group(p_group))
+				purple_blist_add_buddy(prpl_buddy, NULL, gfire_group_get_group(p_group), NULL);
+		}
+		else if(gfire_buddy_is_friend(p_buddy))
+		{
+			PurpleGroup *def = purple_find_group(GFIRE_DEFAULT_GROUP_NAME);
+			if(purple_buddy_get_group(prpl_buddy) != def)
+			{
+				if(!def)
+				{
+					def = purple_group_new(GFIRE_DEFAULT_GROUP_NAME);
+					purple_blist_add_group(def, NULL);
+				}
+
+				purple_blist_add_buddy(prpl_buddy, NULL, def, NULL);
+			}
+		}
+
 		p_buddy->avatarnumber = purple_blist_node_get_int((PurpleBlistNode*)prpl_buddy, "avatarnumber");
 		p_buddy->avatartype = purple_blist_node_get_int((PurpleBlistNode*)prpl_buddy, "avatartype");
 	}
@@ -673,6 +698,14 @@ void gfire_buddy_prpl_remove(gfire_buddy *p_buddy)
 
 	purple_blist_remove_buddy(p_buddy->prpl_buddy);
 	p_buddy->prpl_buddy = NULL;
+}
+
+void gfire_buddy_prpl_move(gfire_buddy *p_buddy, PurpleGroup *p_group)
+{
+	if(!p_buddy || !p_buddy->prpl_buddy || !p_group)
+		return;
+
+	purple_blist_add_buddy(p_buddy->prpl_buddy, NULL, p_group, NULL);
 }
 
 static void gfire_buddy_update_status(gfire_buddy *p_buddy)
@@ -1207,7 +1240,7 @@ void gfire_buddy_remove_clan(gfire_buddy *p_buddy, guint32 p_clanid, guint32 p_n
 	}
 }
 
-void gfire_buddy_make_friend(gfire_buddy *p_buddy, PurpleGroup *p_group)
+void gfire_buddy_make_friend(gfire_buddy *p_buddy, gfire_group *p_group)
 {
 	if(!p_buddy || gfire_buddy_is_friend(p_buddy))
 		return;
@@ -1221,16 +1254,20 @@ void gfire_buddy_make_friend(gfire_buddy *p_buddy, PurpleGroup *p_group)
 		if((clan_data && gfire_clan_is(clan_data->clan, purple_blist_node_get_int((PurpleBlistNode*)old_group, "clanid"))) ||
 		   purple_find_buddy_in_group(purple_connection_get_account(p_buddy->gc), gfire_buddy_get_name(p_buddy), purple_find_group(GFIRE_FRIENDS_OF_FRIENDS_GROUP_NAME)))
 		{
+			PurpleGroup *group = NULL;
 			if(!p_group)
 			{
-				p_group = purple_find_group(GFIRE_DEFAULT_GROUP_NAME);
-				if(!p_group)
+				group = purple_find_group(GFIRE_DEFAULT_GROUP_NAME);
+				if(!group)
 				{
-					p_group = purple_group_new(GFIRE_DEFAULT_GROUP_NAME);
-					purple_blist_add_group(p_group, NULL);
+					group = purple_group_new(GFIRE_DEFAULT_GROUP_NAME);
+					purple_blist_add_group(group, NULL);
 				}
 			}
-			purple_blist_add_buddy(p_buddy->prpl_buddy, NULL, p_group, NULL);
+			else
+				group = gfire_group_get_group(p_group);
+
+			purple_blist_add_buddy(p_buddy->prpl_buddy, NULL, group, NULL);
 			purple_blist_node_remove_setting((PurpleBlistNode*)p_buddy->prpl_buddy, "clanmember");
 			purple_blist_node_set_flags((PurpleBlistNode*)p_buddy->prpl_buddy, 0);
 		}

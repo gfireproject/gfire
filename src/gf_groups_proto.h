@@ -3,7 +3,7 @@
  *
  * Copyright (C) 2000-2001, Beat Wolf <asraniel@fryx.ch>
  * Copyright (C) 2006,      Keith Geffert <keith@penguingurus.com>
- * Copyright (C) 2008-2009  Laurent De Marez <laurentdemarez@gmail.com>
+ * Copyright (C) 2008-2009	Laurent De Marez <laurentdemarez@gmail.com>
  * Copyright (C) 2009       Warren Dumortier <nwarrenfl@gmail.com>
  * Copyright (C) 2009	    Oliver Ney <oliver@dryder.de>
  *
@@ -22,13 +22,22 @@
  * along with Gfire.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "gf_server_browser_proto.h"
+#ifndef _GF_GROUPS_PROTO_H
+#define _GF_GROUPS_PROTO_H
 
-#ifndef _GF_SERVER_BROWSER_H
-#define _GF_SERVER_BROWSER_H
+#include "gf_base.h"
+#include "gfire.h"
 
-#ifdef HAVE_GTK
-void gfire_server_browser_show(PurplePluginAction *p_action);
-#endif // HAVE_GTK
+// Packet creation
+guint16 gfire_group_proto_create_create_group(const gchar *p_name);
+guint16 gfire_group_proto_create_remove_group(guint32 p_groupid);
+guint16 gfire_group_proto_create_rename_group(guint32 p_groupid, const gchar *p_name);
+guint16 gfire_group_proto_create_add_buddy_to_group(guint32 p_groupid, guint32 p_userid);
+guint16 gfire_group_proto_create_remove_buddy_from_group(guint32 p_groupid, guint32 p_userid);
 
-#endif // _GF_SERVER_BROWSER_H
+// Packet parsing
+void gfire_group_proto_groups(gfire_data *p_gfire, guint16 p_packet_len);
+void gfire_group_proto_buddies_in_groups(gfire_data *p_gfire, guint16 p_packet_len);
+void gfire_group_proto_group_added(gfire_data *p_gfire, guint16 p_packet_len);
+
+#endif // _GF_GROUPS_PROTO_H
