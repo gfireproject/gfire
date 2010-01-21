@@ -704,4 +704,6 @@ void gfire_proto_external_game(gfire_data *p_gfire, guint16 p_packet_len)
 	offset = gfire_proto_read_attr_int32_bs(p_gfire->buff_in, &gameid, 0x21, offset);
 	if(offset == -1)
 		return;
+
+	gfire_playing_external_game(p_gfire, gameid);
 }

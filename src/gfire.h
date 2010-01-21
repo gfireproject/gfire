@@ -103,7 +103,6 @@ struct _gfire_data
 	gfire_game_data voip_data;
 
 	// Timer callbacks
-	guint xqf_source;			/* g_timeout_add source number for xqf callback */
 	guint det_source;			/* g_timeout_add source number for game detection callback */
 	guint server_browser_pool;
 
@@ -197,5 +196,6 @@ gfire_p2p_connection *gfire_get_p2p(const gfire_data *p_gfire);
 
 // Detection
 gboolean gfire_detect_running_processes_cb(gfire_data *p_gfire);
+void gfire_playing_external_game(gfire_data *p_gfire, guint32 p_gameid);
 
 #endif // _GFIRE_H
