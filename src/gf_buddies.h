@@ -145,6 +145,10 @@ struct _gfire_buddy
 
 	// Purple Buddy
 	PurpleBuddy *prpl_buddy;
+
+#ifdef USE_NOTIFICATIONS
+	gboolean first_game_status;
+#endif // USE_NOTIFICATIONS
 };
 
 // GFIRE BUDDIES ////////////////////////////////////////////////////

@@ -80,7 +80,7 @@ libxfire_la_SOURCES = \
 	gf_groups_proto.c
 
 libxfire_la_LIBADD = \
-	$(GLIB_LIBS) $(GTK_LIBS) $(SSL_LIBS)
+	$(GLIB_LIBS) $(GTK_LIBS) $(LIBNOTIFY_LIBS) $(SSL_LIBS)
 endif
 
 AM_CPPFLAGS = \
@@ -88,6 +88,7 @@ AM_CPPFLAGS = \
 	-DDATADIR=\"$(datadir)\" \
 	$(GLIB_CFLAGS) \
 	$(GTK_CFLAGS) \
+	$(LIBNOTIFY_CFLAGS) \
 	$(PIDGIN_CFLAGS) \
 	$(SSL_CFLAGS) \
 	$(DEBUG_CFLAGS)

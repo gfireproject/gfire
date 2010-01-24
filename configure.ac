@@ -85,17 +85,29 @@ AC_SUBST(PIDGIN_LIBS)
 # Check for GTK+ and other dependencies
 #
 AC_ARG_ENABLE(gtk, [  --disable-gtk           Don't compile with GTK+ support. (no server browser, no game manager)],, enable_gtk=yes)
+AC_ARG_ENABLE(libnotify, [  --enable-libnotify      Compile with libnotify support. (depends on GTK flag)],, enable_libnotify=no)
+
 if test $enable_gtk = "yes"; then
 	PKG_CHECK_MODULES(GTK, gtk+-2.0, AC_DEFINE(HAVE_GTK, 1, [Define if we've support for GTK+]), AC_MSG_ERROR([
-*** GTK+ 2.0 is required to build gfire; please make sure you have
+*** GTK+ 2.0 is required to build Gfire; please make sure you have
 *** the GLib development headers installed. The latest version of GLib is
 *** always available at http://www.gtk.org]))
 	AC_SUBST(GTK_CFLAGS)
 	AC_SUBST(GTK_LIBS)
+
+	if test $enable_libnotify = "yes"; then
+		PKG_CHECK_MODULES(LIBNOTIFY, libnotify >= 0.3.2, AC_DEFINE(HAVE_LIBNOTIFY, 1, [Define if we've support for libnotify]), AC_MSG_ERROR([
+*** You have requested to build Gfire with libnotify support. You do not have it;
+*** please make sure you have the libnotify development headers installed.
+*** The latest version of libnotify is always available at http://galago-project.org]))
+		AC_SUBST(LIBNOTIFY_CFLAGS)
+		AC_SUBST(LIBNOTIFY_LIBS)
+	fi
 fi
 
+
 AM_PATH_GLIB_2_0(2.16.0,, AC_MSG_ERROR([
-*** GLib 2.0 is required to build gfire; please make sure you have
+*** GLib 2.0 is required to build Gfire; please make sure you have
 *** the GLib development headers installed. The latest version of GLib is
 *** always available at http://www.gtk.org]), gthread)
 AC_SUBST(GLIB_CFLAGS)

@@ -48,8 +48,10 @@ typedef enum _gfire_find_buddy_mode
 
 typedef enum _gfire_find_chat_mode
 {
-	GFFC_CID = 0,	// by chat ID
-	GFFC_PURPLEID	// by purple ID
+	GFFC_CID = 0,		// by chat ID
+	GFFC_TOPIC,			// by topic
+	GFFC_PURPLEID,		// by purple ID
+	GFFC_PURPLECHAT,	// by PurpleChat
 } gfire_find_chat_mode;
 
 typedef enum _gfire_find_group_mode
@@ -141,7 +143,6 @@ void gfire_login(gfire_data *p_gfire);
 void gfire_close(gfire_data *p_gfire);
 void gfire_authenticate(gfire_data *p_gfire, const gchar *p_salt);
 void gfire_keep_alive(gfire_data *p_gfire);
-gboolean gfire_update(gfire_data *p_gfire);
 
 // Session
 void gfire_set_userid(gfire_data *p_gfire, guint32 p_userid);

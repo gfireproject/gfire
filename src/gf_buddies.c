@@ -785,6 +785,29 @@ void gfire_buddy_set_game_status(gfire_buddy *p_buddy, guint32 p_gameid, guint32
 		}
 	}
 
+#ifdef USE_NOTIFICATIONS
+	if(p_buddy->prpl_buddy && p_buddy->first_game_status && gfire_buddy_is_friend(p_buddy) &&
+	   purple_account_get_bool(purple_buddy_get_account(p_buddy->prpl_buddy), "use_notify", TRUE))
+	{
+		if(gfire_buddy_is_playing(p_buddy))
+		{
+			gchar *game_name = gfire_game_name(p_buddy->game_data.id);
+			gchar *msg = g_strdup_printf(_("Playing <b>%s</b> now!"), game_name);
+			gfire_notify_buddy(p_buddy->prpl_buddy, gfire_buddy_get_alias(p_buddy), msg);
+			g_free(game_name);
+			g_free(msg);
+		}
+		else
+		{
+			gchar *msg = g_strdup(_("Stopped playing!"));
+			gfire_notify_buddy(p_buddy->prpl_buddy, gfire_buddy_get_alias(p_buddy), msg);
+			g_free(msg);
+		}
+	}
+
+	p_buddy->first_game_status = TRUE;
+#endif // USE_NOTIFICATIONS
+
 	gfire_buddy_update_status(p_buddy);
 
 	purple_debug(PURPLE_DEBUG_INFO, "gfire", "%s is playing %d on %d.%d.%d.%d:%d\n",

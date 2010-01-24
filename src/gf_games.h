@@ -90,6 +90,9 @@ gfire_game_detection_info *gfire_game_detection_info_get(guint32 p_gameid);
 
 // GFIRE GAMES XML //////////////////////////////////////////////////
 gboolean gfire_game_load_games_xml();
+gboolean gfire_game_have_list();
+guint32 gfire_game_get_version();
+gchar *gfire_game_get_version_str();
 guint32 gfire_game_id(const gchar *p_name);
 gchar *gfire_game_name(guint32 p_gameid);
 xmlnode *gfire_game_node_first();

@@ -30,6 +30,85 @@
 #include "gf_games.h"
 #include "gf_friend_search.h"
 #include "gf_purple.h"
+#include "gf_chat_proto.h"
+
+static PurplePlugin *_gfire_plugin = NULL;
+
+static void gfire_purple_blist_node_added_signal(PurpleBlistNode *p_node)
+{
+	if(!p_node)
+		return;
+
+	if(PURPLE_BLIST_NODE_IS_CHAT(p_node))
+	{
+		PurpleChat *chat = PURPLE_CHAT(p_node);
+		PurpleAccount *account = purple_chat_get_account(chat);
+		PurpleConnection *connection = purple_account_get_connection(account);
+
+		// Only for our plugin
+		if(!g_ascii_strcasecmp("prpl-xfire", purple_account_get_protocol_id(account)))
+		{
+			if(connection && PURPLE_CONNECTION_IS_CONNECTED(connection))
+			{
+				gfire_chat *gchat = gfire_find_chat(connection->proto_data,
+													g_hash_table_lookup(purple_chat_get_components(chat), "room"),
+													GFFC_TOPIC);
+
+				if(!gchat)
+					return;
+
+				gfire_chat_set_purple_chat(gchat, chat);
+				gfire_chat_set_saved(gchat, TRUE);
+
+				purple_debug_misc("gfire", "chat room added\n");
+			}
+		}
+	}
+}
+
+static void gfire_purple_blist_node_removed_signal(PurpleBlistNode *p_node)
+{
+	if(!p_node)
+		return;
+
+	if(PURPLE_BLIST_NODE_IS_CHAT(p_node))
+	{
+		PurpleChat *chat = PURPLE_CHAT(p_node);
+		PurpleAccount *account = purple_chat_get_account(chat);
+		PurpleConnection *connection = purple_account_get_connection(account);
+
+		// Only for our plugin
+		if(!g_ascii_strcasecmp("prpl-xfire", purple_account_get_protocol_id(account)))
+		{
+			if(connection && PURPLE_CONNECTION_IS_CONNECTED(connection))
+			{
+				GHashTable *comp = purple_chat_get_components(chat);
+				gfire_chat *gchat = gfire_find_chat(connection->proto_data,
+													g_hash_table_lookup(comp, "room"),
+													GFFC_TOPIC);
+
+				// Remove the room directly
+				if(!gchat && g_hash_table_lookup(comp, "chat_id"))
+				{
+					guint8 *chat_id = purple_base64_decode(g_hash_table_lookup(comp, "chat_id"), NULL);
+					guint16 len = gfire_chat_proto_create_save_chat_room(chat_id, FALSE);
+					if(len > 0) gfire_send(connection, len);
+					g_free(chat_id);
+
+					purple_debug_misc("gfire", "chat room removed by ID\n");
+
+					return;
+				}
+				// Insufficient data for a remove available
+				else
+					return;
+
+				gfire_chat_set_saved(gchat, FALSE);
+				purple_debug_misc("gfire", "chat room removed by topic\n");
+			}
+		}
+	}
+}
 
 static const gchar *gfire_purple_blist_icon(PurpleAccount *p_a, PurpleBuddy *p_b)
 {
@@ -221,6 +300,17 @@ static GList *gfire_purple_status_types(PurpleAccount *p_account)
 
 static void gfire_purple_login(PurpleAccount *p_account)
 {
+	static gboolean signals_registered = FALSE;
+	if(!signals_registered)
+	{
+		purple_signal_connect(purple_blist_get_handle(), "blist-node-added", _gfire_plugin,
+										   PURPLE_CALLBACK(gfire_purple_blist_node_added_signal), NULL);
+		purple_signal_connect(purple_blist_get_handle(), "blist-node-removed", _gfire_plugin,
+										   PURPLE_CALLBACK(gfire_purple_blist_node_removed_signal), NULL);
+
+		signals_registered = TRUE;
+	}
+
 	gfire_data *gfire;
 
 	PurpleConnection *gc = purple_account_get_connection(p_account);
@@ -553,20 +643,24 @@ static void gfire_purple_join_chat(PurpleConnection *p_gc, GHashTable *p_table)
 	if (!p_gc || !(gfire = (gfire_data *)p_gc->proto_data) || !p_table)
 		return;
 
-	guint8 *xid = NULL;
+	gchar *cid_base64 = NULL;
+	guint8 *cid = NULL;
 	gchar *room = (gchar*)g_hash_table_lookup(p_table, "room");
 	gchar *pass = (gchar*)g_hash_table_lookup(p_table, "password");
-	if(!(xid = g_hash_table_lookup(p_table, "chat_id")))
+	if(!(cid_base64 = g_hash_table_lookup(p_table, "chat_id")))
 	{
-		// no xid, we need to create this room
+		// no cid, we need to create this room
 		purple_debug(PURPLE_DEBUG_MISC, "gfire", "Attempting to create chat room %s\n", NN(room));
-		xid = g_malloc0(XFIRE_CHATID_LEN);
+		cid = g_malloc0(XFIRE_CHATID_LEN);
+	}
+	else
+	{
+		cid = purple_base64_decode(cid_base64, NULL);
 	}
 
-	gfire_chat_join(xid, room, pass, p_gc);
+	gfire_chat_join(cid, room, pass, p_gc);
 
-	if(!g_hash_table_lookup(p_table, "chat_id"))
-		g_free(xid);
+	g_free(cid);
 }
 
 static void gfire_purple_chat_leave(PurpleConnection *p_gc, int p_prpl_id)
@@ -591,13 +685,13 @@ static GList *gfire_purple_chat_info(PurpleConnection *p_gc)
 	struct proto_chat_entry *pce;
 
 	pce = g_malloc0(sizeof(struct proto_chat_entry));
-	pce->label = "_Room:";
+	pce->label = _("_Room:");
 	pce->identifier = "room";
 	pce->required = TRUE;
 	m = g_list_append(m, pce);
 
 	pce = g_malloc0(sizeof(struct proto_chat_entry));
-	pce->label = "_Password:";
+	pce->label = _("_Password:");
 	pce->identifier = "password";
 	pce->secret = TRUE;
 	m = g_list_append(m, pce);
@@ -686,7 +780,8 @@ static void gfire_purple_chat_change_motd(PurpleConnection *p_gc, int p_id, cons
 
 	if(strlen(unescaped) > 200)
 	{
-		purple_notify_message(NULL, PURPLE_NOTIFY_MSG_WARNING, _("Xfire Groupchat"), _("MotD change failed"), _("The MotD contains more than 200 characters."), NULL, NULL);
+		purple_notify_message(NULL, PURPLE_NOTIFY_MSG_WARNING, _("Xfire Groupchat"), _("MotD change failed"),
+							  _("The MotD contains more than 200 characters."), NULL, NULL);
 		g_free(unescaped);
 		return;
 	}
@@ -865,7 +960,24 @@ static gboolean gfire_purple_offline_message(const PurpleBuddy *p_buddy)
  * Plugin initialization section
  *
 */
-static PurplePlugin *_gfire_plugin = NULL;
+
+static gboolean _load_plugin(PurplePlugin *p_plugin)
+{
+	gfire_chat_register_commands();
+	return TRUE;
+}
+
+static gboolean _unload_plugin(PurplePlugin *p_plugin)
+{
+	gfire_chat_unregister_commands();
+
+#ifdef USE_NOTIFICATIONS
+	gfire_notify_uninit();
+#endif // USE_NOTIFICATION
+
+	purple_signals_disconnect_by_handle(p_plugin);
+	return TRUE;
+}
 
 static PurplePluginProtocolInfo prpl_info =
 {
@@ -958,8 +1070,8 @@ static PurplePluginInfo info =
 	NULL,						/* description (done for NLS in _init_plugin) */
 	NULL,						/* author */
 	GFIRE_WEBSITE,				/* homepage */
-	NULL,						/* load */
-	NULL,						/* unload */
+	_load_plugin,				/* load */
+	_unload_plugin,				/* unload */
 	NULL,						/* destroy */
 	NULL,						/* ui_info */
 	&prpl_info,					/* extra_info */
@@ -973,7 +1085,7 @@ static PurplePluginInfo info =
 	NULL
 };
 
-static void _init_plugin(PurplePlugin *plugin)
+static void _init_plugin(PurplePlugin *p_plugin)
 {
 #ifdef ENABLE_NLS
 	bindtextdomain(GETTEXT_PACKAGE, LOCALEDIR);
@@ -1009,11 +1121,16 @@ static void _init_plugin(PurplePlugin *plugin)
 	option = purple_account_option_bool_new(_("Use Xfires P2P features"), "p2p_option", TRUE);
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
 
+#ifdef USE_NOTIFICATIONS
+	option = purple_account_option_bool_new(_("Display notifications for certain events"), "use_notify", TRUE);
+	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
+#endif // USE_NOTIFICATIONS
+
 	info.name = _("Xfire");
 	info.summary = _("Xfire Protocol Plugin");
 	info.description = _("Xfire Protocol Plugin");
 
-	_gfire_plugin = plugin;
+	_gfire_plugin = p_plugin;
 }
 
 PURPLE_INIT_PLUGIN(gfire, _init_plugin, info)

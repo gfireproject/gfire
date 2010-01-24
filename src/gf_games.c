@@ -23,60 +23,11 @@
 */
 
 #include "gf_games.h"
+#include <time.h>
 
 // Static XML nodes for Game handling (shared by all Gfire instances)
 static xmlnode *gfire_games_xml = NULL;
 static xmlnode *gfire_game_config_xml = NULL;
-
-void gfire_update_version_cb(PurpleUtilFetchUrlData *p_url_data, gpointer p_data, const gchar *p_buf, gsize p_len, const gchar *p_error_message)
-{
-	if (!p_data || !p_buf || !p_len)
-		purple_debug_error("gfire", "Unable to query latest Gfire and games list version. Website down?\n");
-	else
-	{
-		xmlnode *version_node = xmlnode_from_str(p_buf, p_len);
-		if (!version_node)
-			purple_debug_error("gfire", "Unable to query latest Gfire and games list version. Website down?\n");
-		else
-		{
-			// Get current Gfire and games list version
-			guint32 gfire_latest_version = atoi(xmlnode_get_attrib(version_node, "version"));
-			guint32 games_list_version = atoi(xmlnode_get_attrib(version_node, "games_list_version"));
-
-			// Notify user if Gfire can be updated
-			if (GFIRE_VERSION < gfire_latest_version)
-				// FIXME: implement a way to disable this notification
-				purple_notify_message(NULL, PURPLE_NOTIFY_MSG_WARNING, _("New Gfire version"), _("New Gfire version available"),
-						      _("A newer Gfire version is available. Visit the Gfire website for more information."), NULL, NULL);
-
-			// Update games list if needed
-			gboolean update_games_list = FALSE;
-
-			if(!gfire_game_load_games_xml())
-				update_games_list = TRUE;
-			else
-			{
-				const gchar *local_games_list_version_tmp = xmlnode_get_attrib(gfire_games_xml, "version");
-				if (!local_games_list_version_tmp || local_games_list_version_tmp[0] == 0)
-					update_games_list = TRUE;
-				else
-				{
-					guint32 local_games_list_version = atoi(local_games_list_version_tmp);
-					if (local_games_list_version < games_list_version)
-						update_games_list = TRUE;
-				}
-			}
-
-			if (update_games_list)
-			{
-				purple_debug_info("gfire", "Updating games list to version %d\n", games_list_version);
-				purple_util_fetch_url(GFIRE_GAMES_XML_URL, TRUE, "purple-xfire", TRUE, gfire_update_games_list_cb, p_data);
-			}
-		}
-
-		xmlnode_free(version_node);
-	}
-}
 
 void gfire_update_games_list_cb(PurpleUtilFetchUrlData *p_url_data, gpointer p_data, const gchar *p_buf, gsize p_len, const gchar *p_error_message)
 {
@@ -85,8 +36,18 @@ void gfire_update_games_list_cb(PurpleUtilFetchUrlData *p_url_data, gpointer p_d
 	else if(purple_util_write_data_to_file("gfire_games.xml", p_buf, p_len))
 	{
 		gfire_game_load_games_xml();
-		purple_notify_message(NULL, PURPLE_NOTIFY_MSG_INFO, _("Games list has been updated"), _("Games list has been updated"),
-				      _("The games list has been successfully updated to the latest version available."), NULL, NULL);
+
+		gchar *version = gfire_game_get_version_str();
+		gchar *msg = g_strdup_printf(_("The Games List has been updated to version: %s."), version);
+		g_free(version);
+#ifdef USE_NOTIFICATIONS
+		if(purple_account_get_bool(purple_connection_get_account(p_data), "use_notify", TRUE))
+			gfire_notify_system(_("New Gfire Game List Version"), msg);
+		else
+#endif // USE_NOTIFICATIONS
+			purple_notify_message(NULL, PURPLE_NOTIFY_MSG_INFO, _("New Gfire Game List Version"), NULL,
+								  msg, NULL, NULL);
+		g_free(msg);
 	}
 	else
 		purple_debug_error("gfire", "An error occured while updating the games list. Website down?\n");
@@ -211,6 +172,37 @@ xmlnode *gfire_game_node_next(xmlnode *p_node)
 		return NULL;
 
 	return xmlnode_get_next_twin(p_node);
+}
+
+gboolean gfire_game_have_list()
+{
+	return (gfire_games_xml != NULL);
+}
+
+guint32 gfire_game_get_version()
+{
+	if(!gfire_games_xml)
+		return 0;
+
+	if(xmlnode_get_attrib(gfire_games_xml, "version"))
+	{
+		guint32 version;
+		sscanf(xmlnode_get_attrib(gfire_games_xml, "version"), "%u", &version);
+		return version;
+	}
+
+	return 0;
+}
+
+gchar *gfire_game_get_version_str()
+{
+	time_t version = gfire_game_get_version();
+	struct tm *time_data = localtime(&version);
+
+	gchar *ret = g_malloc(100 * sizeof(gchar));
+	strftime(ret, 100, "%d %B %Y", time_data);
+
+	return ret;
 }
 
 guint32 gfire_game_id(const gchar *p_name)
@@ -582,7 +574,7 @@ static void gfire_game_config_edit_xmlnode(xmlnode *p_node, const gchar *p_game_
 }
 
 static xmlnode *gfire_game_config_new_xmlnode(const gchar *p_game_id, const gchar *p_game_name, const gchar *p_game_detect,
-					      const gchar *p_game_prefix, const gchar *p_game_launch)
+						  const gchar *p_game_prefix, const gchar *p_game_launch)
 {
 	xmlnode *game_node = xmlnode_new("game");
 	gfire_game_config_edit_xmlnode(game_node, p_game_id, p_game_name, p_game_detect, p_game_prefix, p_game_launch);
@@ -737,7 +729,7 @@ static void gfire_game_manager_reload_ui(GtkBuilder *p_builder)
 	if (g_strcmp0(manager_version, "2") != 0)
 	{
 		purple_notify_message(NULL, PURPLE_NOTIFY_MSG_ERROR, _("Manage games: error"), _("Incompatible games configuration"),
-				      _("Your current games configuration is incompatible with this version of Gfire. Please remove it and try again."), NULL, NULL);
+					  _("Your current games configuration is incompatible with this version of Gfire. Please remove it and try again."), NULL, NULL);
 
 		gtk_widget_destroy(manage_games_window);
 		return;
@@ -858,7 +850,7 @@ static void gfire_game_manager_add_cb(GtkBuilder *p_builder, GtkWidget *p_button
 		else
 		{
 			purple_notify_message(NULL, PURPLE_NOTIFY_MSG_INFO, _("Manage Games: warning"), _("Game already added"),
-					      _("This game is already added, you can configure it if you want."), NULL, NULL);
+						  _("This game is already added, you can configure it if you want."), NULL, NULL);
 
 			g_free(game_id);
 			g_free(game_launch);
@@ -882,18 +874,18 @@ static void gfire_game_manager_add_cb(GtkBuilder *p_builder, GtkWidget *p_button
 			if (!gfire_game_config_xml_save())
 			{
 				purple_notify_message(NULL, PURPLE_NOTIFY_MSG_ERROR, _("Manage Games: error"), _("Couldn't add game"),
-						      _("Please try again. An error occured while adding the game."), NULL, NULL);
+							  _("Please try again. An error occured while adding the game."), NULL, NULL);
 				return;
 			}
 			else
 				purple_notify_message(NULL, PURPLE_NOTIFY_MSG_INFO, _("Manage Games: game added"),
-						      game_name, _("The game has been successfully added."), NULL, NULL);
+							  game_name, _("The game has been successfully added."), NULL, NULL);
 		}
 	}
 	else
 	{
 		purple_notify_message(NULL, PURPLE_NOTIFY_MSG_ERROR, _("Manage Games: error"),
-				      _("Couldn't add game"), _("Please try again. Make sure you fill in all fields."), NULL, NULL);
+					  _("Couldn't add game"), _("Please try again. Make sure you fill in all fields."), NULL, NULL);
 		return;
 	}
 
@@ -942,7 +934,7 @@ static void gfire_game_manager_edit_cb(GtkBuilder *p_builder, GtkWidget *p_butto
 		else
 		{
 			purple_notify_message(NULL, PURPLE_NOTIFY_MSG_INFO, _("Manage Games: warning"), _("Game launch data not found"),
-					      _("This game is not yet added as it seems, please add it first!"), NULL, NULL);
+						  _("This game is not yet added as it seems, please add it first!"), NULL, NULL);
 			g_free(game_id);
 			g_free(game_launch);
 			g_free(game_detect);
@@ -957,7 +949,7 @@ static void gfire_game_manager_edit_cb(GtkBuilder *p_builder, GtkWidget *p_butto
 		if (!gfire_game_config_xml_save())
 		{
 			purple_notify_message(NULL, PURPLE_NOTIFY_MSG_ERROR, _("Manage Games: error"), _("Couldn't add game"),
-					      _("Please try again. An error occured while editing the game."), NULL, NULL);
+						  _("Please try again. An error occured while editing the game."), NULL, NULL);
 			return;
 		}
 		else
@@ -966,7 +958,7 @@ static void gfire_game_manager_edit_cb(GtkBuilder *p_builder, GtkWidget *p_butto
 	else
 	{
 		purple_notify_message(NULL, PURPLE_NOTIFY_MSG_ERROR, _("Manage Games: error"),
-				      _("Couldn't edit game"), _("Please try again. Make sure you fill in all fields."), NULL, NULL);
+					  _("Couldn't edit game"), _("Please try again. Make sure you fill in all fields."), NULL, NULL);
 		return;
 	}
 
@@ -997,11 +989,11 @@ static void gfire_game_manager_remove_cb(GtkBuilder *p_builder, GtkWidget *p_but
 
 			if(gfire_game_config_xml_save())
 				purple_notify_message(NULL, PURPLE_NOTIFY_MSG_INFO, _("Manage Games: game removed"),
-						      _("Game removed"), _("The game has been successfully removed."), NULL, NULL);
+							  _("Game removed"), _("The game has been successfully removed."), NULL, NULL);
 			else
 			{
 				purple_notify_message(NULL, PURPLE_NOTIFY_MSG_ERROR, _("Manage Games: error"),
-						      _("Couldn't remove game"), _("Please try again. An error occured while removing the game."), NULL, NULL);
+							  _("Couldn't remove game"), _("Please try again. An error occured while removing the game."), NULL, NULL);
 			}
 		}
 
@@ -1009,7 +1001,7 @@ static void gfire_game_manager_remove_cb(GtkBuilder *p_builder, GtkWidget *p_but
 	}
 	else
 		purple_notify_message(NULL, PURPLE_NOTIFY_MSG_ERROR, _("Manage Games: error"),
-				      _("Couldn't remove game"), _("Please try again. Make sure you select a game to remove."), NULL, NULL);
+					  _("Couldn't remove game"), _("Please try again. Make sure you select a game to remove."), NULL, NULL);
 
 	gfire_game_manager_reload_ui(p_builder);
 }

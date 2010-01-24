@@ -332,6 +332,11 @@ void gfire_parse_packet(gfire_data *p_gfire, guint16 p_packet_len, guint16 p_pac
 			gfire_buddy_proto_status_msg(p_gfire, p_packet_len);
 		break;
 
+		case 155:
+			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received group chats\n");
+			gfire_chat_proto_persistent_chats(p_gfire, p_packet_len);
+		break;
+
 		case 156:
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received game client data packet.\n");
 			gfire_buddy_proto_game_client_data(p_gfire, p_packet_len);
@@ -382,48 +387,88 @@ void gfire_parse_packet(gfire_data *p_gfire, guint16 p_packet_len, guint16 p_pac
 			gfire_proto_external_game(p_gfire, p_packet_len);
 		break;
 
+		case 350:
+			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received chat room topic change\n");
+			gfire_chat_proto_topic_change(p_gfire, p_packet_len);
+		break;
+
 		case 351:
-			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received group chat info\n");
-			gfire_chat_proto_info(p_gfire, p_packet_len);
+			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received chat room join info\n");
+			gfire_chat_proto_join_info(p_gfire, p_packet_len);
 		break;
 
 		case 353:
-			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received group chat, user join message\n");
+			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received chat room, user join message\n");
 			gfire_chat_proto_user_join(p_gfire, p_packet_len);
 		break;
 
 		case 354:
-			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received group chat, user leave message\n");
+			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received chat room, user leave message\n");
 			gfire_chat_proto_user_leave(p_gfire, p_packet_len);
 		break;
 
 		case 355:
-			purple_debug(PURPLE_DEBUG_MISC, "gfire", "got group chat message\n");
+			purple_debug(PURPLE_DEBUG_MISC, "gfire", "got chat room message\n");
 			gfire_chat_proto_msg(p_gfire, p_packet_len);
 		break;
 
 		case 356:
-			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received group chat invite\n");
+			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received chat room invite\n");
 			gfire_chat_proto_invite(p_gfire, p_packet_len);
 		break;
 
 		case 357:
-			purple_debug(PURPLE_DEBUG_MISC, "gfire", "groupchat buddy permission changed\n");
+			purple_debug(PURPLE_DEBUG_MISC, "gfire", "chat room buddy permission changed\n");
 			gfire_chat_proto_buddy_permission_change(p_gfire, p_packet_len);
 		break;
 
+		case 358:
+			purple_debug(PURPLE_DEBUG_MISC, "gfire", "persistent chat room infos received\n");
+			gfire_chat_proto_persistent_chat_infos(p_gfire, p_packet_len);
+		break;
+
+		case 359:
+			purple_debug(PURPLE_DEBUG_MISC, "gfire", "chat room buddy kicked notification received\n");
+			gfire_chat_proto_buddy_kicked(p_gfire, p_packet_len);
+		break;
+
 		case 368:
-			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received group chat channel info, member list\n");
-			gfire_chat_proto_info(p_gfire, p_packet_len);
+			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received chat room info (buddy list)\n");
+			gfire_chat_proto_room_info(p_gfire, p_packet_len);
+		break;
+
+		case 370:
+			purple_debug(PURPLE_DEBUG_MISC, "gfire", "chat room default permission change received\n");
+			gfire_chat_proto_default_permission_change(p_gfire, p_packet_len);
 		break;
 
 		case 374:
-			purple_debug(PURPLE_DEBUG_MISC, "gfire", "groupchat motd changed\n");
+			purple_debug(PURPLE_DEBUG_MISC, "gfire", "chat room motd changed\n");
 			gfire_chat_proto_motd_change(p_gfire, p_packet_len);
 		break;
 
+		case 385:
+			purple_debug(PURPLE_DEBUG_MISC, "gfire", "chat room password change received\n");
+			gfire_chat_proto_password_change(p_gfire, p_packet_len);
+		break;
+
+		case 386:
+			purple_debug(PURPLE_DEBUG_MISC, "gfire", "chat room accessibility change received\n");
+			gfire_chat_proto_accessibility_change(p_gfire, p_packet_len);
+		break;
+
 		case 387:
-			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received chat reject confirmation\n");
+			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received chat room reject confirmation\n");
+		break;
+
+		case 388:
+			purple_debug(PURPLE_DEBUG_MISC, "gfire", "chat room silenced change received\n");
+			gfire_chat_proto_silenced_change(p_gfire, p_packet_len);
+		break;
+
+		case 389:
+			purple_debug(PURPLE_DEBUG_MISC, "gfire", "chat room show join/leave messages changed received\n");
+			gfire_chat_proto_show_join_leave_change(p_gfire, p_packet_len);
 		break;
 
 		default:

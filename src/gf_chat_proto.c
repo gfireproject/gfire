@@ -26,6 +26,7 @@
 #include "gfire.h"
 #include "gf_chat.h"
 #include "gf_chat_proto.h"
+#include "gf_network.h"
 
 guint16 gfire_chat_proto_create_join(const guint8 *p_id, const gchar *p_room, const gchar *p_pass)
 {
@@ -124,6 +125,25 @@ guint16 gfire_chat_proto_create_invite(const guint8 *p_cid, guint32 p_userid)
 	return offset;
 }
 
+guint16 gfire_chat_proto_create_request_persistent_infos(GList *p_cids)
+{
+	guint32 offset = XFIRE_HEADER_LEN;
+
+	if(!p_cids)
+		return 0;
+
+	guint32 climsg = GUINT32_TO_LE(0x4CFA);
+	offset = gfire_proto_write_attr_ss("climsg", 0x02, &climsg, sizeof(climsg), offset);
+
+	offset = gfire_proto_write_attr_ss("msg", 0x09, NULL, 1, offset);
+
+	offset = gfire_proto_write_attr_list_bs(0x04, p_cids, 0x06, XFIRE_CHATID_LEN, offset);
+
+	gfire_proto_write_header(offset, 0x19, 2, 0);
+
+	return offset;
+}
+
 guint16 gfire_chat_proto_create_change_motd(const guint8 *p_cid, const gchar* p_motd)
 {
 	guint32 offset = XFIRE_HEADER_LEN;
@@ -148,7 +168,8 @@ guint16 gfire_chat_proto_create_reject(const guint8 *p_cid)
 {
 	guint32 offset = XFIRE_HEADER_LEN;
 
-	if(!p_cid) return 0;
+	if(!p_cid)
+		return 0;
 
 	guint32 climsg = GUINT32_TO_LE(0x4CFF);
 	offset = gfire_proto_write_attr_ss("climsg", 0x02, &climsg, sizeof(climsg), offset);
@@ -162,8 +183,454 @@ guint16 gfire_chat_proto_create_reject(const guint8 *p_cid)
 	return offset;
 }
 
+guint16 gfire_chat_proto_create_save_chat_room(const guint8 *p_cid, gboolean p_save)
+{
+	guint32 offset = XFIRE_HEADER_LEN;
 
-void gfire_chat_proto_info(gfire_data *p_gfire, guint16 p_packet_len)
+	if(!p_cid)
+		return 0;
+
+	guint32 climsg = GUINT32_TO_LE(0x4CFD);
+	offset = gfire_proto_write_attr_ss("climsg", 0x02, &climsg, sizeof(climsg), offset);
+
+	offset = gfire_proto_write_attr_ss("msg", 0x09, NULL, 2, offset);
+
+	offset = gfire_proto_write_attr_bs(0x04, 0x06, p_cid, XFIRE_CHATID_LEN, offset);
+
+	guint8 save = p_save ? 1 : 0;
+	offset = gfire_proto_write_attr_bs(0x2A, 0x08, &save, sizeof(save), offset);
+
+	gfire_proto_write_header(offset, 0x19, 2, 0);
+
+	return offset;
+}
+
+guint16 gfire_chat_proto_create_change_topic(const guint8 *p_cid, const gchar *p_topic)
+{
+	guint32 offset = XFIRE_HEADER_LEN;
+
+	if(!p_cid || !p_topic)
+		return 0;
+
+	guint32 climsg = GUINT32_TO_LE(0x4CF8);
+	offset = gfire_proto_write_attr_ss("climsg", 0x02, &climsg, sizeof(climsg), offset);
+
+	offset = gfire_proto_write_attr_ss("msg", 0x09, NULL, 2, offset);
+
+	offset = gfire_proto_write_attr_bs(0x04, 0x06, p_cid, XFIRE_CHATID_LEN, offset);
+
+	offset = gfire_proto_write_attr_bs(0x05, 0x01, p_topic, strlen(p_topic), offset);
+
+	gfire_proto_write_header(offset, 0x19, 2, 0);
+
+	return offset;
+}
+
+guint16 gfire_chat_proto_create_kick_buddy(const guint8 *p_cid, guint32 p_userid)
+{
+	guint32 offset = XFIRE_HEADER_LEN;
+
+	if(!p_cid)
+		return 0;
+
+	guint32 climsg = GUINT32_TO_LE(0x4CFB);
+	offset = gfire_proto_write_attr_ss("climsg", 0x02, &climsg, sizeof(climsg), offset);
+
+	offset = gfire_proto_write_attr_ss("msg", 0x09, NULL, 2, offset);
+
+	offset = gfire_proto_write_attr_bs(0x04, 0x06, p_cid, XFIRE_CHATID_LEN, offset);
+
+	p_userid = GUINT32_TO_LE(p_userid);
+	offset = gfire_proto_write_attr_bs(0x18, 0x02, &p_userid, sizeof(p_userid), offset);
+
+	gfire_proto_write_header(offset, 0x19, 2, 0);
+
+	return offset;
+}
+
+guint16 gfire_chat_proto_create_change_buddy_permissions(const guint8 *p_cid, guint32 p_userid, guint32 p_permission)
+{
+	guint32 offset = XFIRE_HEADER_LEN;
+
+	if(!p_cid)
+		return 0;
+
+	guint32 climsg = GUINT32_TO_LE(0x4CF9);
+	offset = gfire_proto_write_attr_ss("climsg", 0x02, &climsg, sizeof(climsg), offset);
+
+	offset = gfire_proto_write_attr_ss("msg", 0x09, NULL, 3, offset);
+
+	offset = gfire_proto_write_attr_bs(0x04, 0x06, p_cid, XFIRE_CHATID_LEN, offset);
+
+	p_userid = GUINT32_TO_LE(p_userid);
+	offset = gfire_proto_write_attr_bs(0x18, 0x02, &p_userid, sizeof(p_userid), offset);
+
+	p_permission = GUINT32_TO_LE(p_permission);
+	offset = gfire_proto_write_attr_bs(0x13, 0x02, &p_permission, sizeof(p_permission), offset);
+
+	gfire_proto_write_header(offset, 0x19, 2, 0);
+
+	return offset;
+}
+
+guint16 gfire_chat_proto_create_set_default_permission(const guint8 *p_cid, guint32 p_permission)
+{
+	guint32 offset = XFIRE_HEADER_LEN;
+
+	if(!p_cid)
+		return 0;
+
+	guint32 climsg = GUINT32_TO_LE(0x4D08);
+	offset = gfire_proto_write_attr_ss("climsg", 0x02, &climsg, sizeof(climsg), offset);
+
+	offset = gfire_proto_write_attr_ss("msg", 0x09, NULL, 2, offset);
+
+	offset = gfire_proto_write_attr_bs(0x04, 0x06, p_cid, XFIRE_CHATID_LEN, offset);
+
+	p_permission = GUINT32_TO_LE(p_permission);
+	offset = gfire_proto_write_attr_bs(0x13, 0x02, &p_permission, sizeof(p_permission), offset);
+
+	gfire_proto_write_header(offset, 0x19, 2, 0);
+
+	return offset;
+}
+
+guint16 gfire_chat_proto_create_change_password(const guint8 *p_cid, const gchar *p_password)
+{
+	guint32 offset = XFIRE_HEADER_LEN;
+
+	if(!p_cid || !p_password)
+		return 0;
+
+	guint32 climsg = GUINT32_TO_LE(0x4D15);
+	offset = gfire_proto_write_attr_ss("climsg", 0x02, &climsg, sizeof(climsg), offset);
+
+	offset = gfire_proto_write_attr_ss("msg", 0x09, NULL, 2, offset);
+
+	offset = gfire_proto_write_attr_bs(0x04, 0x06, p_cid, XFIRE_CHATID_LEN, offset);
+
+	offset = gfire_proto_write_attr_bs(0x5F, 0x01, p_password, strlen(p_password), offset);
+
+	gfire_proto_write_header(offset, 0x19, 2, 0);
+
+	return offset;
+}
+
+guint16 gfire_chat_proto_create_change_access(const guint8 *p_cid, guint32 p_access)
+{
+	guint32 offset = XFIRE_HEADER_LEN;
+
+	if(!p_cid)
+		return 0;
+
+	guint32 climsg = GUINT32_TO_LE(0x4D16);
+	offset = gfire_proto_write_attr_ss("climsg", 0x02, &climsg, sizeof(climsg), offset);
+
+	offset = gfire_proto_write_attr_ss("msg", 0x09, NULL, 2, offset);
+
+	offset = gfire_proto_write_attr_bs(0x04, 0x06, p_cid, XFIRE_CHATID_LEN, offset);
+
+	p_access = GUINT32_TO_LE(p_access);
+	offset = gfire_proto_write_attr_bs(0x17, 0x02, &p_access, sizeof(p_access), offset);
+
+	gfire_proto_write_header(offset, 0x19, 2, 0);
+
+	return offset;
+}
+
+guint16 gfire_chat_proto_create_change_silenced(const guint8 *p_cid, gboolean p_silenced)
+{
+	guint32 offset = XFIRE_HEADER_LEN;
+
+	if(!p_cid)
+		return 0;
+
+	guint32 climsg = GUINT32_TO_LE(0x4D17);
+	offset = gfire_proto_write_attr_ss("climsg", 0x02, &climsg, sizeof(climsg), offset);
+
+	offset = gfire_proto_write_attr_ss("msg", 0x09, NULL, 2, offset);
+
+	offset = gfire_proto_write_attr_bs(0x04, 0x06, p_cid, XFIRE_CHATID_LEN, offset);
+
+	guint8 silenced = p_silenced ? 1 : 0;
+	offset = gfire_proto_write_attr_bs(0x16, 0x08, &silenced, sizeof(silenced), offset);
+
+	gfire_proto_write_header(offset, 0x19, 2, 0);
+
+	return offset;
+}
+
+guint16 gfire_chat_proto_create_change_show_join_leave(const guint8 *p_cid, gboolean p_show)
+{
+	guint32 offset = XFIRE_HEADER_LEN;
+
+	if(!p_cid)
+		return 0;
+
+	guint32 climsg = GUINT32_TO_LE(0x4D18);
+	offset = gfire_proto_write_attr_ss("climsg", 0x02, &climsg, sizeof(climsg), offset);
+
+	offset = gfire_proto_write_attr_ss("msg", 0x09, NULL, 2, offset);
+
+	offset = gfire_proto_write_attr_bs(0x04, 0x06, p_cid, XFIRE_CHATID_LEN, offset);
+
+	guint8 show = p_show ? 1 : 0;
+	offset = gfire_proto_write_attr_bs(0x1B, 0x08, &show, sizeof(show), offset);
+
+	gfire_proto_write_header(offset, 0x19, 2, 0);
+
+	return offset;
+}
+
+void gfire_chat_proto_persistent_chats(gfire_data *p_gfire, guint16 p_packet_len)
+{
+	if(!p_gfire)
+		return;
+
+	guint32 offset = XFIRE_HEADER_LEN;
+	GList *chat_ids = NULL;
+
+	offset = gfire_proto_read_attr_list_bs(p_gfire->buff_in, &chat_ids, 0x04, offset);
+	if(offset == -1 || !chat_ids)
+		return;
+
+	// Directly request further information on the rooms
+	guint16 len = gfire_chat_proto_create_request_persistent_infos(chat_ids);
+	if(len > 0) gfire_send(gfire_get_connection(p_gfire), len);
+
+	gfire_list_clear(chat_ids);
+}
+
+void gfire_chat_proto_persistent_chat_infos(gfire_data *p_gfire, guint16 p_packet_len)
+{
+	if(!p_gfire)
+		return;
+
+	guint32 offset = XFIRE_HEADER_LEN;
+	GList *chat_ids = NULL;
+	GList *chat_types = NULL;
+	GList *chat_names = NULL;
+
+	offset = gfire_proto_read_attr_list_bs(p_gfire->buff_in, &chat_ids, 0x04, offset);
+	if(offset == -1 || !chat_ids)
+		return;
+
+	offset = gfire_proto_read_attr_list_bs(p_gfire->buff_in, &chat_types, 0xAA, offset);
+	if(offset == -1 || !chat_types)
+	{
+		gfire_list_clear(chat_ids);
+		return;
+	}
+
+	offset = gfire_proto_read_attr_list_bs(p_gfire->buff_in, &chat_names, 0x05, offset);
+	if(offset == -1 || !chat_names)
+	{
+		gfire_list_clear(chat_ids);
+		gfire_list_clear(chat_types);
+		return;
+	}
+
+	GList *chat_id = chat_ids;
+	GList *chat_type = chat_types;
+	GList *chat_name = chat_names;
+	while(chat_id && chat_type && chat_name)
+	{
+		// We only want normal chats
+		if(*((guint32*)chat_type->data) == 1)
+		{
+			gfire_chat *chat = gfire_find_chat(p_gfire, chat_id->data, GFFC_CID);
+			if(!chat)
+			{
+				gfire_chat_create(p_gfire, chat_id->data, chat_name->data, NULL, TRUE);
+				gfire_add_chat(p_gfire, chat);
+			}
+			else
+			{
+				gfire_chat_set_topic(chat, chat_name->data, FALSE);
+			}
+		}
+
+		chat_id = g_list_next(chat_id);
+		chat_type = g_list_next(chat_type);
+		chat_name = g_list_next(chat_name);
+	}
+
+	gfire_list_clear(chat_ids);
+	gfire_list_clear(chat_types);
+	gfire_list_clear(chat_names);
+}
+
+void gfire_chat_proto_join_info(gfire_data *p_gfire, guint16 p_packet_len)
+{
+	if(!p_gfire)
+		return;
+
+	guint32 offset = XFIRE_HEADER_LEN;
+	gfire_chat *chat = NULL;
+	guint8 *chat_id = NULL;
+	guint32 requestID = 0;
+	guint32 response = 0;
+	guint32 my_permission = 0;
+	guint32 access = 0;
+	guint32 type = 0;
+	gchar *topic = NULL;
+	gchar *motd = NULL;
+	gboolean new_room = FALSE;
+	gboolean secure = FALSE;
+	gboolean silenced = FALSE;
+	gboolean show_join_leave = FALSE;
+
+	if (!p_gfire || (p_packet_len == 0)) return;
+
+	// xfire chat id
+	offset = gfire_proto_read_attr_chatid_bs(p_gfire->buff_in, &chat_id, 0x04, offset);
+	if(offset == -1 || !chat_id)
+		return;
+
+	// requestID
+	offset = gfire_proto_read_attr_int32_bs(p_gfire->buff_in, &requestID, 0x0B, offset);
+	if(offset == -1)
+		return;
+
+	// response
+	offset = gfire_proto_read_attr_int32_bs(p_gfire->buff_in, &response, 0x0C, offset);
+	if(offset == -1)
+		return;
+
+	// Password required but not given
+	if(response == 4)
+	{
+		// Chat ID will be freed by the function
+		gfire_chat_request_password_rejoin(p_gfire, chat_id, FALSE);
+		return;
+	}
+	// Wrong password given
+	else if(response == 5)
+	{
+		// Chat ID will be freed by the function
+		gfire_chat_request_password_rejoin(p_gfire, chat_id, TRUE);
+		return;
+	}
+	// Other failure
+	else if(response != 0)
+	{
+		purple_notify_error(gfire_get_connection(p_gfire), _("Chat room join error"), _("Unknown error"),
+							_("Unknown join error. You might be blocked from this chat room or are already in 5 rooms."));
+		g_free(chat_id);
+		return;
+	}
+
+	// own permission
+	offset = gfire_proto_read_attr_int32_bs(p_gfire->buff_in, &my_permission, 0x12, offset);
+	if(offset == -1)
+	{
+		g_free(chat_id);
+		return;
+	}
+
+	// accessibility (public / private)
+	offset = gfire_proto_read_attr_int32_bs(p_gfire->buff_in, &access, 0x17, offset);
+	if(offset == -1)
+	{
+		g_free(chat_id);
+		return;
+	}
+
+	// chat room type (normal / live broadcast)
+	offset = gfire_proto_read_attr_int32_bs(p_gfire->buff_in, &type, 0xAA, offset);
+	if(offset == -1)
+	{
+		g_free(chat_id);
+		return;
+	}
+
+	// topic
+	offset = gfire_proto_read_attr_string_bs(p_gfire->buff_in, &topic, 0x05, offset);
+	if(offset == -1 || !topic)
+	{
+		g_free(chat_id);
+		return;
+	}
+
+	// message of the day
+	offset = gfire_proto_read_attr_string_bs(p_gfire->buff_in, &motd, 0x4D, offset);
+	if(offset == -1 || !motd)
+	{
+		g_free(chat_id);
+		g_free(topic);
+		return;
+	}
+
+	// new room
+	offset = gfire_proto_read_attr_boolean_bs(p_gfire->buff_in, &new_room, 0xA5, offset);
+	if(offset == -1)
+	{
+		g_free(chat_id);
+		g_free(topic);
+		g_free(motd);
+		return;
+	}
+
+	// password protected
+	offset = gfire_proto_read_attr_boolean_bs(p_gfire->buff_in, &secure, 0xA6, offset);
+	if(offset == -1)
+	{
+		g_free(chat_id);
+		g_free(topic);
+		g_free(motd);
+		return;
+	}
+
+	// silenced
+	offset = gfire_proto_read_attr_boolean_bs(p_gfire->buff_in, &silenced, 0x16, offset);
+	if(offset == -1)
+	{
+		g_free(chat_id);
+		g_free(topic);
+		g_free(motd);
+		return;
+	}
+
+	// show join/leave messages
+	offset = gfire_proto_read_attr_boolean_bs(p_gfire->buff_in, &show_join_leave, 0x1B, offset);
+	if(offset == -1)
+	{
+		g_free(chat_id);
+		g_free(topic);
+		g_free(motd);
+		return;
+	}
+
+	// packet has been parsed
+
+	gboolean created = FALSE;
+	chat = gfire_find_chat(p_gfire, chat_id, GFFC_CID);
+	if(!chat)
+	{
+		// Create a new chat with the correct values
+		created = TRUE;
+		chat = gfire_chat_create(p_gfire, chat_id, topic, motd, FALSE);
+	}
+	else
+	{
+		// Set current values
+		gfire_chat_set_topic(chat, topic, FALSE);
+		gfire_chat_set_motd(chat, motd, FALSE);
+	}
+	g_free(chat_id); g_free(topic); g_free(motd);
+
+	gfire_chat_set_accessibility(chat, access, FALSE);
+	gfire_chat_set_secure(chat, secure, FALSE);
+	gfire_chat_set_silenced(chat, silenced, FALSE);
+	gfire_chat_set_show_join_leave(chat, show_join_leave, FALSE);
+
+	// Add it to gfire_data and tell purple about the chat
+	if(created)
+			gfire_add_chat(p_gfire, chat);
+	gfire_chat_show(chat);
+}
+
+void gfire_chat_proto_room_info(gfire_data *p_gfire, guint16 p_packet_len)
 {
 	if(!p_gfire)
 		return;
@@ -184,7 +651,6 @@ void gfire_chat_proto_info(gfire_data *p_gfire, guint16 p_packet_len)
 
 	u = p = n = a = NULL;
 	userids = perms = names = nicks =  NULL;
-	if (!p_gfire || (p_packet_len == 0)) return;
 
 	// xfire chat id
 	offset = gfire_proto_read_attr_chatid_bs(p_gfire->buff_in, &chat_id, 0x04, offset);
@@ -208,58 +674,49 @@ void gfire_chat_proto_info(gfire_data *p_gfire, guint16 p_packet_len)
 		return;
 	}
 
-	chat = gfire_chat_create(chat_id, topic, motd);
-	g_free(chat_id); g_free(topic); g_free(motd);
+	// Get the correct chat
+	chat = gfire_find_chat(p_gfire, chat_id, GFFC_CID);
 	if(!chat)
 		return;
+
+	gfire_chat_set_topic(chat, topic, FALSE);
+	gfire_chat_set_motd(chat, motd, FALSE);
+	g_free(chat_id); g_free(topic); g_free(motd);
 
 	// voice chat allowed
 	offset = gfire_proto_read_attr_int32_bs(p_gfire->buff_in, &allowVoiceChat, 0x4E, offset);
 	if(offset == -1)
-	{
-		gfire_chat_free(chat);
 		return;
-	}
 
 	// default permission
 	offset = gfire_proto_read_attr_int32_bs(p_gfire->buff_in, &defaultPerm, 0x49, offset);
 	if(offset == -1)
-	{
-		gfire_chat_free(chat);
 		return;
-	}
+
+	gfire_chat_set_default_permission(chat, defaultPerm, FALSE);
 
 	// time stamp?
 	offset = gfire_proto_read_attr_int32_bs(p_gfire->buff_in, &timeStamp, 0x14, offset);
 	if(offset == -1)
-	{
-		gfire_chat_free(chat);
 		return;
-	}
 
 	// room type
 	offset = gfire_proto_read_attr_int32_bs(p_gfire->buff_in, &roomType, 0x17, offset);
 	if(offset == -1)
-	{
-		gfire_chat_free(chat);
 		return;
-	}
 
 	// get user id's of members in chat
 	offset = gfire_proto_read_attr_list_bs(p_gfire->buff_in, &userids, 0x33, offset);
 	if(offset == -1 || !userids)
-	{
-		gfire_chat_free(chat);
 		return;
-	}
 
 	// get user permissions of members in chat
 	offset = gfire_proto_read_attr_list_bs(p_gfire->buff_in, &perms, 0x44, offset);
 	if(offset == -1 || !perms)
 	{
 		//mem cleanup code
-		gfire_chat_free(chat);
-		if (userids) g_list_free(userids);
+		if(userids)
+			g_list_free(userids);
 		return;
 	}
 
@@ -268,9 +725,10 @@ void gfire_chat_proto_info(gfire_data *p_gfire, guint16 p_packet_len)
 	if(offset == -1 || !names)
 	{
 		//mem cleanup code
-		gfire_chat_free(chat);
-		if (userids) g_list_free(userids);
-		if (perms) g_list_free(perms);
+		if(userids)
+			g_list_free(userids);
+		if(perms)
+			g_list_free(perms);
 		return;
 	}
 
@@ -279,22 +737,20 @@ void gfire_chat_proto_info(gfire_data *p_gfire, guint16 p_packet_len)
 	if(offset == -1 || !nicks)
 	{
 		//mem cleanup code
-		gfire_chat_free(chat);
-		if (userids) g_list_free(userids);
-		if (perms) g_list_free(perms);
-		if (names) g_list_free(names);
+		if(userids)
+			g_list_free(userids);
+		if(perms)
+			g_list_free(perms);
+		if(names)
+			g_list_free(names);
 		return;
 	}
 
 	// packet has been parsed
 
-	// Add it to gfire_data and tell purple about the chat
-	gfire_add_chat(p_gfire, chat);
-	gfire_chat_show(chat);
-
 	n = names; p = perms; a = nicks; u = userids;
 
-	while(u)
+	while(u && p && a && u)
 	{
 		if(!gfire_is_self(p_gfire, *(guint32*)u->data))
 		{
@@ -375,7 +831,7 @@ void gfire_chat_proto_user_leave(gfire_data *p_gfire, guint16 p_packet_len)
 
 	offset = gfire_proto_read_attr_int32_bs(p_gfire->buff_in, &userid, 0x01, offset);
 
-	gfire_chat_user_left(chat, userid);
+	gfire_chat_user_left(chat, userid, FALSE);
 }
 
 
@@ -470,7 +926,7 @@ void gfire_chat_proto_motd_change(gfire_data *p_gfire, guint16 p_packet_len)
 	if(offset == -1 || !motd)
 		return;
 
-	gfire_chat_motd_changed(chat, motd);
+	gfire_chat_set_motd(chat, motd, TRUE);
 	g_free(motd);
 }
 
@@ -587,4 +1043,234 @@ void gfire_chat_proto_invite(gfire_data *p_gfire, guint16 p_packet_len)
 	g_hash_table_replace(components, g_strdup("members"), g_strdup_printf("%s\n", name));
 
 	serv_got_chat_invite(gfire_get_connection(p_gfire), room, nick, "", components);
+}
+
+void gfire_chat_proto_topic_change(gfire_data *p_gfire, guint16 p_packet_len)
+{
+	if(!p_gfire)
+		return;
+
+	guint32 offset = XFIRE_HEADER_LEN;
+
+	guint8 *chat_id = NULL;
+	gfire_chat *chat = NULL;
+	gchar *topic = NULL;
+
+	offset = gfire_proto_read_attr_chatid_bs(p_gfire->buff_in, &chat_id, 0x04, offset);
+	if(offset == -1 || !chat_id)
+		return;
+
+	chat = gfire_find_chat(p_gfire, chat_id, GFFC_CID);
+	if(!chat)
+	{
+		g_free(chat_id);
+		purple_debug_error("gfire", "gfire_chat_proto_topic_change: Unknown chat id!\n");
+		return;
+	}
+
+	g_free(chat_id);
+
+	offset = gfire_proto_read_attr_string_bs(p_gfire->buff_in, &topic, 0x05, offset);
+	if(offset == -1 || !topic)
+		return;
+
+	gfire_chat_set_topic(chat, topic, TRUE);
+	g_free(topic);
+}
+
+void gfire_chat_proto_buddy_kicked(gfire_data *p_gfire, guint16 p_packet_len)
+{
+	if(!p_gfire)
+		return;
+
+	guint32 offset = XFIRE_HEADER_LEN;
+
+	guint8 *chat_id = NULL;
+	gfire_chat *chat = NULL;
+	guint32 userid = 0;
+
+	offset = gfire_proto_read_attr_chatid_bs(p_gfire->buff_in, &chat_id, 0x04, offset);
+	if(offset == -1 || !chat_id)
+		return;
+
+	chat = gfire_find_chat(p_gfire, chat_id, GFFC_CID);
+	if(!chat)
+	{
+		g_free(chat_id);
+		purple_debug_error("gfire", "gfire_chat_proto_buddy_kicked: Unknown chat id!\n");
+		return;
+	}
+
+	g_free(chat_id);
+
+	offset = gfire_proto_read_attr_int32_bs(p_gfire->buff_in, &userid, 0x18, offset);
+	if(offset == -1)
+		return;
+
+	gfire_chat_user_left(chat, userid, TRUE);
+}
+
+void gfire_chat_proto_default_permission_change(gfire_data *p_gfire, guint16 p_packet_len)
+{
+	if(!p_gfire)
+		return;
+
+	guint32 offset = XFIRE_HEADER_LEN;
+
+	guint8 *chat_id = NULL;
+	gfire_chat *chat = NULL;
+	guint32 permission = 0;
+
+	offset = gfire_proto_read_attr_chatid_bs(p_gfire->buff_in, &chat_id, 0x04, offset);
+	if(offset == -1 || !chat_id)
+		return;
+
+	chat = gfire_find_chat(p_gfire, chat_id, GFFC_CID);
+	if(!chat)
+	{
+		g_free(chat_id);
+		purple_debug_error("gfire", "gfire_chat_proto_default_permission_change: Unknown chat id!\n");
+		return;
+	}
+
+	g_free(chat_id);
+
+	offset = gfire_proto_read_attr_int32_bs(p_gfire->buff_in, &permission, 0x13, offset);
+	if(offset == -1)
+		return;
+
+	gfire_chat_set_default_permission(chat, permission, TRUE);
+}
+
+void gfire_chat_proto_password_change(gfire_data *p_gfire, guint16 p_packet_len)
+{
+	if(!p_gfire)
+		return;
+
+	guint32 offset = XFIRE_HEADER_LEN;
+
+	guint8 *chat_id = NULL;
+	gfire_chat *chat = NULL;
+	gboolean secured = FALSE;
+
+	offset = gfire_proto_read_attr_chatid_bs(p_gfire->buff_in, &chat_id, 0x04, offset);
+	if(offset == -1 || !chat_id)
+		return;
+
+	chat = gfire_find_chat(p_gfire, chat_id, GFFC_CID);
+	if(!chat)
+	{
+		g_free(chat_id);
+		purple_debug_error("gfire", "gfire_chat_proto_password_change: Unknown chat id!\n");
+		return;
+	}
+
+	g_free(chat_id);
+
+	offset = gfire_proto_read_attr_boolean_bs(p_gfire->buff_in, &secured, 0x5F, offset);
+	if(offset == -1)
+		return;
+
+	gfire_chat_set_secure(chat, secured, TRUE);
+}
+
+void gfire_chat_proto_accessibility_change(gfire_data *p_gfire, guint16 p_packet_len)
+{
+	if(!p_gfire)
+		return;
+
+	guint32 offset = XFIRE_HEADER_LEN;
+
+	guint8 *chat_id = NULL;
+	gfire_chat *chat = NULL;
+	guint32 access = 0;
+
+	offset = gfire_proto_read_attr_chatid_bs(p_gfire->buff_in, &chat_id, 0x04, offset);
+	if(offset == -1 || !chat_id)
+		return;
+
+	chat = gfire_find_chat(p_gfire, chat_id, GFFC_CID);
+	if(!chat)
+	{
+		g_free(chat_id);
+		purple_debug_error("gfire", "gfire_chat_proto_accessibility_change: Unknown chat id!\n");
+		return;
+	}
+
+	g_free(chat_id);
+
+	offset = gfire_proto_read_attr_int32_bs(p_gfire->buff_in, &access, 0x17, offset);
+	if(offset == -1)
+		return;
+
+	gfire_chat_set_accessibility(chat, access, TRUE);
+}
+
+void gfire_chat_proto_silenced_change(gfire_data *p_gfire, guint16 p_packet_len)
+{
+	if(!p_gfire)
+		return;
+
+	guint32 offset = XFIRE_HEADER_LEN;
+
+	guint8 *chat_id = NULL;
+	gfire_chat *chat = NULL;
+	guint32 userid = 0;
+	gboolean silenced = FALSE;
+
+	offset = gfire_proto_read_attr_chatid_bs(p_gfire->buff_in, &chat_id, 0x04, offset);
+	if(offset == -1 || !chat_id)
+		return;
+
+	chat = gfire_find_chat(p_gfire, chat_id, GFFC_CID);
+	if(!chat)
+	{
+		g_free(chat_id);
+		purple_debug_error("gfire", "gfire_chat_proto_silenced_change: Unknown chat id!\n");
+		return;
+	}
+
+	g_free(chat_id);
+
+	offset = gfire_proto_read_attr_int32_bs(p_gfire->buff_in, &userid, 0x01, offset);
+	if(offset == -1)
+		return;
+
+	offset = gfire_proto_read_attr_boolean_bs(p_gfire->buff_in, &silenced, 0x16, offset);
+	if(offset == -1)
+		return;
+
+	gfire_chat_set_silenced(chat, silenced, TRUE);
+}
+
+void gfire_chat_proto_show_join_leave_change(gfire_data *p_gfire, guint16 p_packet_len)
+{
+	if(!p_gfire)
+		return;
+
+	guint32 offset = XFIRE_HEADER_LEN;
+
+	guint8 *chat_id = NULL;
+	gfire_chat *chat = NULL;
+	gboolean show = FALSE;
+
+	offset = gfire_proto_read_attr_chatid_bs(p_gfire->buff_in, &chat_id, 0x04, offset);
+	if(offset == -1 || !chat_id)
+		return;
+
+	chat = gfire_find_chat(p_gfire, chat_id, GFFC_CID);
+	if(!chat)
+	{
+		g_free(chat_id);
+		purple_debug_error("gfire", "gfire_chat_proto_show_join_leave_change: Unknown chat id!\n");
+		return;
+	}
+
+	g_free(chat_id);
+
+	offset = gfire_proto_read_attr_boolean_bs(p_gfire->buff_in, &show, 0x1B, offset);
+	if(offset == -1)
+		return;
+
+	gfire_chat_set_show_join_leave(chat, show, TRUE);
 }

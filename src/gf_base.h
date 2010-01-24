@@ -77,6 +77,7 @@
 #include "cipher.h"
 #include "xmlnode.h"
 #include "privacy.h"
+#include "cmds.h"
 
 // Gfire debugging macros
 #include "gf_debug.h"
@@ -100,11 +101,11 @@
 #endif // G_GNUC_NULL_TERMINATED
 
 // Global defintions ////////////////////////////////////////////////
+#define GFIRE_PRPL_ID "prpl-xfire"
 #define GFIRE_WEBSITE "http://gfireproject.org"
 #define GFIRE_WIKI "http://my-trac.assembla.com/gfire/wiki"
 #define GFIRE_DEFAULT_GROUP_NAME "Xfire"
 #define GFIRE_FRIENDS_OF_FRIENDS_GROUP_NAME _("Xfire - Friends of Friends playing games")
-#define GFIRE_CLAN_GROUP_NAME "Clan"
 #define GFIRE_CLAN_GROUP_FORMATTING "%s [%s]" // long name, short name
 #define GFIRE_GAMES_XML_URL "http://gfireproject.org/files/gfire_games.xml"
 #define GFIRE_CURRENT_VERSION_XML_URL "http://gfireproject.org/files/gfire_version.xml"

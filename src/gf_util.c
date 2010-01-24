@@ -24,6 +24,10 @@
 
 #include "gf_util.h"
 
+#ifdef USE_NOTIFICATIONS
+#include <libnotify/notify.h>
+#endif // USE_NOTIFICATIONS
+
 gchar *gfire_remove_quake3_color_codes(const gchar *p_string)
 {
 	if(!p_string)
@@ -508,3 +512,88 @@ void gfire_bitlist_clear(gfire_bitlist *p_list)
 
 	p_list->bits_set = 0;
 }
+
+#ifdef USE_NOTIFICATIONS
+// Only initialize and deinitialize if we need to (other plugins use it etc.)
+static gboolean gfire_notify_initted = FALSE;
+static gboolean gfire_notify_init()
+{
+	if(!notify_is_initted())
+	{
+		if(!notify_init("Purple"))
+			return FALSE;
+
+		gfire_notify_initted = TRUE;
+	}
+
+	return TRUE;
+}
+
+void gfire_notify_uninit()
+{
+	if(gfire_notify_initted)
+		notify_uninit();
+}
+
+static gboolean gfire_notify_closed_cb(NotifyNotification *p_notification)
+{
+	g_object_unref(G_OBJECT(p_notification));
+	return FALSE;
+}
+
+void gfire_notify_system(const gchar *p_title, const gchar *p_msg)
+{
+	if(!gfire_notify_init() || !p_title)
+		return;
+
+	NotifyNotification *notification = notify_notification_new(p_title, p_msg, NULL, NULL);
+	notify_notification_set_urgency(notification, NOTIFY_URGENCY_NORMAL);
+	notify_notification_set_timeout(notification, NOTIFY_EXPIRES_DEFAULT);
+	g_signal_connect(notification, "closed", G_CALLBACK(gfire_notify_closed_cb), NULL);
+
+	if(!notify_notification_show(notification, NULL))
+	{
+		purple_debug_error("gfire", "gfire_notify: failed to send notification\n");
+		g_object_unref(G_OBJECT(notification));
+	}
+}
+
+void gfire_notify_buddy(PurpleBuddy *p_buddy, const gchar *p_title, const gchar *p_msg)
+{
+	if(!gfire_notify_init() || !p_buddy || !p_title)
+		return;
+
+	NotifyNotification *notification = notify_notification_new(p_title, p_msg, NULL, NULL);
+
+	// Get Buddy Icon
+	PurpleBuddyIcon *icon = purple_buddy_get_icon(p_buddy);
+	if(icon)
+	{
+		GdkPixbuf *pixbuf;
+		GdkPixbufLoader *loader = gdk_pixbuf_loader_new();
+
+		size_t len = 0;
+		const guchar *data = purple_buddy_icon_get_data(icon, &len);
+		gdk_pixbuf_loader_set_size(loader, 48, 48);
+		gdk_pixbuf_loader_write(loader, data, len, NULL);
+		gdk_pixbuf_loader_close(loader, NULL);
+
+		pixbuf = gdk_pixbuf_loader_get_pixbuf(loader);
+
+		if(pixbuf)
+			notify_notification_set_icon_from_pixbuf(notification, pixbuf);
+
+		g_object_unref(G_OBJECT(loader));
+	}
+
+	notify_notification_set_urgency(notification, NOTIFY_URGENCY_NORMAL);
+	notify_notification_set_timeout(notification, NOTIFY_EXPIRES_DEFAULT);
+	g_signal_connect(notification, "closed", G_CALLBACK(gfire_notify_closed_cb), NULL);
+
+	if(!notify_notification_show(notification, NULL))
+	{
+		purple_debug_error("gfire", "gfire_notify: failed to send notification\n");
+		g_object_unref(G_OBJECT(notification));
+	}
+}
+#endif // USE_NOTIFICATIONS

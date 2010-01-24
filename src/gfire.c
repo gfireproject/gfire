@@ -135,6 +135,77 @@ const gchar *gfire_get_name(const gfire_data *p_gfire)
 	return purple_account_get_username(purple_connection_get_account(gfire_get_connection(p_gfire)));
 }
 
+static void gfire_update_cb(PurpleUtilFetchUrlData *p_url_data, gpointer p_data, const gchar *p_buf, gsize p_len, const gchar *p_error_message)
+{
+	if (!p_data || !p_buf || !p_len)
+		purple_debug_error("gfire", "Unable to query latest Gfire and games list version. Website down?\n");
+	else
+	{
+		xmlnode *version_node = xmlnode_from_str(p_buf, p_len);
+		if (!version_node)
+			purple_debug_error("gfire", "Unable to query latest Gfire and games list version. Website down?\n");
+		else
+		{
+			// Get current Gfire and games list version
+			guint32 gfire_latest_version = 0;
+			guint32 games_list_version = 0;
+			if(xmlnode_get_attrib(version_node, "version"))
+				sscanf(xmlnode_get_attrib(version_node, "version"), "%u", &gfire_latest_version);
+			if(xmlnode_get_attrib(version_node, "games_list_version"))
+				sscanf(xmlnode_get_attrib(version_node, "games_list_version"), "%u", &games_list_version);
+
+			// Notify user if Gfire can be updated
+			if (GFIRE_VERSION < gfire_latest_version)
+			{
+				gchar *msg = g_strdup_printf(_("Gfire <b>%u.%u.%u</b> is now available. Visit the Gfire website for more information!"),
+											 (gfire_latest_version & (0xFF << 16)) >> 16, (gfire_latest_version & (0xFF << 8)) >> 8,
+											 gfire_latest_version & 0xFF);
+#ifdef USE_NOTIFICATIONS
+				if(purple_account_get_bool(purple_connection_get_account(p_data), "use_notify", TRUE))
+					gfire_notify_system(_("New Gfire Version"), msg);
+				else
+#endif // USE_NOTIFICATIONS
+				// FIXME: implement a way to disable this notification
+					purple_notify_message(NULL, PURPLE_NOTIFY_MSG_WARNING, _("New Gfire Version"), NULL,
+										  msg, NULL, NULL);
+
+				g_free(msg);
+			}
+
+			// Update games list if needed
+			gboolean update_games_list = FALSE;
+
+			if(!gfire_game_load_games_xml())
+				update_games_list = TRUE;
+			else
+			{
+				guint32 local_games_list_version = gfire_game_get_version();
+				if (local_games_list_version < games_list_version)
+					update_games_list = TRUE;
+			}
+
+			if (update_games_list)
+			{
+				purple_debug_info("gfire", "Updating games list to version %u\n", games_list_version);
+				purple_util_fetch_url(GFIRE_GAMES_XML_URL, TRUE, "purple-xfire", TRUE, gfire_update_games_list_cb, p_data);
+			}
+		}
+
+		xmlnode_free(version_node);
+	}
+}
+
+static void gfire_update(gfire_data *p_gfire)
+{
+	static gboolean updated = FALSE;
+
+	if(!updated)
+	{
+		purple_util_fetch_url(GFIRE_CURRENT_VERSION_XML_URL, TRUE, "purple-xfire", TRUE, gfire_update_cb, gfire_get_connection(p_gfire));
+		updated = TRUE;
+	}
+}
+
 static void gfire_login_cb(gpointer p_data, gint p_source, const gchar *p_error_message)
 {
 	gfire_data *gfire = (gfire_data*)p_data;
@@ -176,21 +247,11 @@ static void gfire_login_cb(gpointer p_data, gint p_source, const gchar *p_error_
 	gfire_ipc_server_register(gfire);
 
 	// Setup P2P connection
-	if(purple_account_get_bool(purple_connection_get_account(gfire_get_connection(gfire)), "p2p_option", FALSE)) // FIXME: disabled by default for now!
+	if(purple_account_get_bool(purple_connection_get_account(gfire_get_connection(gfire)), "p2p_option", TRUE))
 		gfire->p2p = gfire_p2p_connection_create();
 
 	// Update Gfire if needed
-	if (!gfire_update(gfire))
-		purple_debug_error("gfire", "Unable to query latest Gfire and games list version. Website down?\n");
-}
-
-gboolean gfire_update(gfire_data *p_gfire)
-{
-	if (!p_gfire)
-		return FALSE;
-
-	purple_util_fetch_url(GFIRE_CURRENT_VERSION_XML_URL, TRUE, "purple-xfire", TRUE, gfire_update_version_cb, gfire_get_connection(p_gfire));
-	return TRUE;
+	gfire_update(gfire);
 }
 
 void gfire_login(gfire_data *p_gfire)
@@ -1214,11 +1275,19 @@ gfire_chat *gfire_find_chat(gfire_data *p_gfire, const void *p_data, gfire_find_
 		switch(p_mode)
 		{
 		case GFFC_CID:
-			if(memcmp(c->chat_id, p_data, XFIRE_CHATID_LEN) == 0)
+			if(gfire_chat_is_by_chat_id(c, p_data))
+				return c;
+			break;
+		case GFFC_TOPIC:
+			if(gfire_chat_is_by_topic(c, p_data))
 				return c;
 			break;
 		case GFFC_PURPLEID:
-			if(c->purple_id == *(int*)p_data)
+			if(gfire_chat_is_by_purple_id(c, *(int*)p_data))
+				return c;
+			break;
+		case GFFC_PURPLECHAT:
+			if(gfire_chat_is_by_purple_chat(c, p_data))
 				return c;
 			break;
 		}
@@ -1232,7 +1301,6 @@ void gfire_add_chat(gfire_data *p_gfire, gfire_chat *p_chat)
 	if(!p_gfire || !p_chat)
 		return;
 
-	p_chat->gc = gfire_get_connection(p_gfire);
 	p_chat->purple_id = p_gfire->chat;
 	p_gfire->chat++;
 	p_gfire->chats = g_list_append(p_gfire->chats, p_chat);

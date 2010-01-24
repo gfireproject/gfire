@@ -71,4 +71,14 @@ guint32 gfire_bitlist_bits_set(const gfire_bitlist *p_list);
 guint32 gfire_bitlist_bits_unset(const gfire_bitlist *p_list);
 void gfire_bitlist_clear(gfire_bitlist *p_list);
 
+// Notification system
+#if defined(HAVE_GTK) && defined(HAVE_LIBNOTIFY)
+#	define USE_NOTIFICATIONS 1
+void gfire_notify_uninit();
+void gfire_notify_system(const gchar *p_title, const gchar *p_msg);
+void gfire_notify_buddy(PurpleBuddy *p_buddy, const gchar *p_title, const gchar *p_msg);
+#else
+#undef USE_NOTIFICATIONS
+#endif // HAVE_GTK && HAVE_LIBNOTIFY
+
 #endif // _GF_UTIL_H
