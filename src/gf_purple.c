@@ -46,7 +46,7 @@ static void gfire_purple_blist_node_added_signal(PurpleBlistNode *p_node)
 		PurpleConnection *connection = purple_account_get_connection(account);
 
 		// Only for our plugin
-		if(!g_ascii_strcasecmp("prpl-xfire", purple_account_get_protocol_id(account)))
+		if(!g_ascii_strcasecmp(GFIRE_PRPL_ID, purple_account_get_protocol_id(account)))
 		{
 			if(connection && PURPLE_CONNECTION_IS_CONNECTED(connection))
 			{
@@ -78,7 +78,7 @@ static void gfire_purple_blist_node_removed_signal(PurpleBlistNode *p_node)
 		PurpleConnection *connection = purple_account_get_connection(account);
 
 		// Only for our plugin
-		if(!g_ascii_strcasecmp("prpl-xfire", purple_account_get_protocol_id(account)))
+		if(!g_ascii_strcasecmp(GFIRE_PRPL_ID, purple_account_get_protocol_id(account)))
 		{
 			if(connection && PURPLE_CONNECTION_IS_CONNECTED(connection))
 			{
@@ -1063,7 +1063,7 @@ static PurplePluginInfo info =
 	0,							/* flags */
 	NULL,						/* dependencies */
 	PURPLE_PRIORITY_DEFAULT,	/* priority */
-	"prpl-xfire",				/* id */
+	GFIRE_PRPL_ID,				/* id */
 	NULL,						/* name (done for NLS in _init_plugin) */
 	GFIRE_VERSION_STRING,		/* version */
 	NULL,						/* summary (done for NLS in _init_plugin) */

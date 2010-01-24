@@ -175,7 +175,7 @@ static void gfire_update_cb(PurpleUtilFetchUrlData *p_url_data, gpointer p_data,
 			// Update games list if needed
 			gboolean update_games_list = FALSE;
 
-			if(!gfire_game_load_games_xml())
+			if(!gfire_game_have_list())
 				update_games_list = TRUE;
 			else
 			{
@@ -201,6 +201,7 @@ static void gfire_update(gfire_data *p_gfire)
 
 	if(!updated)
 	{
+		gfire_game_load_games_xml();
 		purple_util_fetch_url(GFIRE_CURRENT_VERSION_XML_URL, TRUE, "purple-xfire", TRUE, gfire_update_cb, gfire_get_connection(p_gfire));
 		updated = TRUE;
 	}
