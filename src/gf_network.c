@@ -232,7 +232,6 @@ void gfire_parse_packet(gfire_data *p_gfire, guint16 p_packet_len, guint16 p_pac
 			gfire_set_current_status(p_gfire);
 
 			// Load game xml from user dir; these don't need to work unless we are connected
-			gfire_game_load_games_xml();
 			gfire_game_load_config_xml();
 			p_gfire->det_source = g_timeout_add_seconds(5, (GSourceFunc)gfire_detect_running_processes_cb, p_gfire);
 		break;

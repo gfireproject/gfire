@@ -204,6 +204,12 @@ gfire_buddy *gfire_buddy_create(guint32 p_userid, const gchar *p_name, const gch
 
 	gfire_buddy_set_alias(ret, p_alias);
 
+#ifdef USE_NOTIFICATIONS
+	GTimeVal cur_time;
+	g_get_current_time(&cur_time);
+	ret->creation_time = cur_time.tv_sec;
+#endif // USE_NOTIFICATIONS
+
 	return ret;
 
 error:
@@ -771,6 +777,38 @@ void gfire_buddy_set_game_status(gfire_buddy *p_buddy, guint32 p_gameid, guint32
 	if(!p_buddy)
 		return;
 
+	#ifdef USE_NOTIFICATIONS
+	// Wait for 10 seconds on buddy creation, so we are not spammed by the initial game status
+	if(!p_buddy->show_game_status)
+	{
+		GTimeVal cur_time;
+		g_get_current_time(&cur_time);
+
+		if((cur_time.tv_sec - p_buddy->creation_time) >= 10)
+			p_buddy->show_game_status = TRUE;
+	}
+
+	if(p_buddy->prpl_buddy && p_buddy->show_game_status && gfire_buddy_is_friend(p_buddy) &&
+	   purple_account_get_bool(purple_buddy_get_account(p_buddy->prpl_buddy), "use_notify", TRUE) &&
+	   (p_buddy->game_data.id != p_gameid))
+	{
+		if(p_gameid != 0)
+		{
+			gchar *game_name = gfire_game_name(p_gameid);
+			gchar *msg = g_strdup_printf(_("Playing <b>%s</b> now!"), game_name);
+			gfire_notify_buddy(p_buddy->prpl_buddy, gfire_buddy_get_alias(p_buddy), msg);
+			g_free(game_name);
+			g_free(msg);
+		}
+		else
+		{
+			gchar *msg = g_strdup(_("Stopped playing!"));
+			gfire_notify_buddy(p_buddy->prpl_buddy, gfire_buddy_get_alias(p_buddy), msg);
+			g_free(msg);
+		}
+	}
+#endif // USE_NOTIFICATIONS
+
 	p_buddy->game_data.id = p_gameid;
 	p_buddy->game_data.port = p_port;
 	p_buddy->game_data.ip.value = p_ip;
@@ -784,29 +822,6 @@ void gfire_buddy_set_game_status(gfire_buddy *p_buddy, guint32 p_gameid, guint32
 			p_buddy->game_client_data = g_list_delete_link(p_buddy->game_client_data, p_buddy->game_client_data);
 		}
 	}
-
-#ifdef USE_NOTIFICATIONS
-	if(p_buddy->prpl_buddy && p_buddy->first_game_status && gfire_buddy_is_friend(p_buddy) &&
-	   purple_account_get_bool(purple_buddy_get_account(p_buddy->prpl_buddy), "use_notify", TRUE))
-	{
-		if(gfire_buddy_is_playing(p_buddy))
-		{
-			gchar *game_name = gfire_game_name(p_buddy->game_data.id);
-			gchar *msg = g_strdup_printf(_("Playing <b>%s</b> now!"), game_name);
-			gfire_notify_buddy(p_buddy->prpl_buddy, gfire_buddy_get_alias(p_buddy), msg);
-			g_free(game_name);
-			g_free(msg);
-		}
-		else
-		{
-			gchar *msg = g_strdup(_("Stopped playing!"));
-			gfire_notify_buddy(p_buddy->prpl_buddy, gfire_buddy_get_alias(p_buddy), msg);
-			g_free(msg);
-		}
-	}
-
-	p_buddy->first_game_status = TRUE;
-#endif // USE_NOTIFICATIONS
 
 	gfire_buddy_update_status(p_buddy);
 

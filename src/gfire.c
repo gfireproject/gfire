@@ -157,17 +157,25 @@ static void gfire_update_cb(PurpleUtilFetchUrlData *p_url_data, gpointer p_data,
 			// Notify user if Gfire can be updated
 			if (GFIRE_VERSION < gfire_latest_version)
 			{
-				gchar *msg = g_strdup_printf(_("Gfire <b>%u.%u.%u</b> is now available. Visit the Gfire website for more information!"),
-											 (gfire_latest_version & (0xFF << 16)) >> 16, (gfire_latest_version & (0xFF << 8)) >> 8,
-											 gfire_latest_version & 0xFF);
+				gchar *msg = NULL;
 #ifdef USE_NOTIFICATIONS
 				if(purple_account_get_bool(purple_connection_get_account(p_data), "use_notify", TRUE))
+				{
+					msg = g_strdup_printf(_("Gfire <b>%u.%u.%u</b> is now available.\nVisit the Gfire website for more information!"),
+										  (gfire_latest_version & (0xFF << 16)) >> 16, (gfire_latest_version & (0xFF << 8)) >> 8,
+										  gfire_latest_version & 0xFF);
 					gfire_notify_system(_("New Gfire Version"), msg);
+				}
 				else
 #endif // USE_NOTIFICATIONS
+				{
 				// FIXME: implement a way to disable this notification
-					purple_notify_message(NULL, PURPLE_NOTIFY_MSG_WARNING, _("New Gfire Version"), NULL,
+					msg = g_strdup_printf(_("Gfire %u.%u.%u is now available.\nVisit the Gfire website for more information!"),
+										  (gfire_latest_version & (0xFF << 16)) >> 16, (gfire_latest_version & (0xFF << 8)) >> 8,
+										  gfire_latest_version & 0xFF);
+					purple_notify_message(p_data, PURPLE_NOTIFY_MSG_WARNING, _("New Gfire Version"), _("New Gfire Version"),
 										  msg, NULL, NULL);
+				}
 
 				g_free(msg);
 			}

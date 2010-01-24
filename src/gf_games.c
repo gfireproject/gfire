@@ -45,8 +45,8 @@ void gfire_update_games_list_cb(PurpleUtilFetchUrlData *p_url_data, gpointer p_d
 			gfire_notify_system(_("New Gfire Game List Version"), msg);
 		else
 #endif // USE_NOTIFICATIONS
-			purple_notify_message(NULL, PURPLE_NOTIFY_MSG_INFO, _("New Gfire Game List Version"), NULL,
-								  msg, NULL, NULL);
+			purple_notify_message(NULL, PURPLE_NOTIFY_MSG_INFO, _("New Gfire Game List Version"),
+								  _("New Gfire Game List Version"), msg, NULL, NULL);
 		g_free(msg);
 	}
 	else

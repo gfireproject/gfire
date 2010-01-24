@@ -147,7 +147,8 @@ struct _gfire_buddy
 	PurpleBuddy *prpl_buddy;
 
 #ifdef USE_NOTIFICATIONS
-	gboolean first_game_status;
+	glong creation_time;
+	gboolean show_game_status;
 #endif // USE_NOTIFICATIONS
 };
 
