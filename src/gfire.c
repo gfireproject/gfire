@@ -1572,6 +1572,7 @@ static void gfire_handle_game_detection(gfire_data *p_gfire, guint32 p_gameid, g
 		g_free(game_name);
 }
 
+// FIXME: xmlnode memleaks
 gboolean gfire_detect_running_processes_cb(gfire_data *p_gfire)
 {
 	if (!p_gfire)
@@ -1615,29 +1616,37 @@ gboolean gfire_detect_running_processes_cb(gfire_data *p_gfire)
 		if(game_id)
 			game_id_int = atoi(game_id);
 
-		// Arguments are optional
+		// Arguments & required libraries are optional
 		const gchar *game_exec_required_args = NULL;
 		const gchar *game_exec_invalid_args = NULL;
+		const gchar *game_required_libraries = NULL;
 
 		if (game_id_int)
 		{
 			const xmlnode *game_config_node = gfire_game_node_by_id(game_id_int);
 			xmlnode *game_exec_args_node = NULL;
+			xmlnode *game_required_libraries_node = NULL;
 
 			if (game_config_node)
+			{
 				game_exec_args_node = xmlnode_get_child(game_config_node, "arguments");
+				game_required_libraries_node = xmlnode_get_child(game_config_node, "libraries");
+			}
 
 			if (game_exec_args_node)
 			{
 				game_exec_required_args = xmlnode_get_attrib(game_exec_args_node, "required");
 				game_exec_invalid_args = xmlnode_get_attrib(game_exec_args_node, "invalid");
 			}
+
+			if (game_required_libraries_node)
+				game_required_libraries = xmlnode_get_data(game_required_libraries_node);
 		}
 		else
-			purple_debug_error("gfire", "Couldn't get game ID to obtain game arguments.\n");
+			purple_debug_error("gfire", "Couldn't get game ID to obtain game arguments and required libraries.\n");
 
 		g_mutex_lock(p_gfire->server_mutex);
-		gboolean process_running = gfire_process_list_contains(p_gfire->process_list, game_executable, game_exec_required_args, game_exec_invalid_args);
+		gboolean process_running = gfire_process_list_contains(p_gfire->process_list, game_executable, game_exec_required_args, game_exec_invalid_args, game_required_libraries);
 		g_mutex_unlock(p_gfire->server_mutex);
 
 		gfire_handle_game_detection(p_gfire, game_id_int, process_running, game_executable);

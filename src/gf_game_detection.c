@@ -88,7 +88,7 @@ void gfire_process_list_clear(gfire_process_list *p_list)
 	}
 }
 
-gboolean gfire_process_list_contains(const gfire_process_list *p_list, const gchar *p_name, const gchar *p_required_args, const gchar *p_invalid_args)
+gboolean gfire_process_list_contains(const gfire_process_list *p_list, const gchar *p_name, const gchar *p_required_args, const gchar *p_invalid_args, const gchar *p_required_libraries)
 {
 	if(!p_list || !p_list->processes || !p_name)
 		return FALSE;
@@ -149,8 +149,43 @@ gboolean gfire_process_list_contains(const gfire_process_list *p_list, const gch
 				}
 			}
 
-			// Finally return as found if valid
-			if (process_invalid_args == FALSE && process_required_args == TRUE)
+			// Finally check required libraries
+			gboolean process_required_libraries = TRUE;
+#ifndef _WIN32
+			if (p_required_libraries && strlen(p_required_libraries) > 0)
+			{
+				process_required_libraries = FALSE;
+				gchar **required_libraries_split = g_strsplit(p_required_libraries, ";", -1);
+				
+				// Get process libs
+				GList *process_libs = gfire_game_detection_get_process_libraries(info->pid);
+				while (process_libs != NULL)
+				{
+					int i;
+					for(i = 0; i < g_strv_length(required_libraries_split); i++)
+					{
+						if (!g_strcmp0(g_strchomp(process_libs->data), required_libraries_split[i]))
+						{
+							process_required_libraries = TRUE;
+							break;
+						}
+					}
+					
+					if (process_required_libraries)
+						break;
+					
+					process_libs = g_list_next(process_libs);
+				}
+				
+				g_strfreev(required_libraries_split);
+				
+				gfire_game_detection_process_libraries_clear(process_libs);
+				g_list_free(process_libs);
+			}
+#endif // _WIN32
+
+			// Return as found if valid
+			if (process_invalid_args == FALSE && process_required_args == TRUE && process_required_libraries == TRUE)
 				return TRUE;
 		}
 

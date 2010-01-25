@@ -82,7 +82,6 @@ void gfire_process_list_update(gfire_process_list *p_list)
 		gchar *process_exe = NULL;
 		gchar *process_args = NULL;
 		gchar *process_wine_prefix = NULL;
-		gchar *process_libs = NULL;
 
 		// Get directory mode
 		struct stat proc_dir_mode;
@@ -259,8 +258,52 @@ void gfire_process_list_update(gfire_process_list *p_list)
 		g_free(process_name);
 		g_free(process_exe);
 		g_free(process_args);
-		// g_free(process_libs):
 	}
 
 	closedir(proc);
+}
+
+GList *gfire_game_detection_get_process_libraries(guint32 p_pid)
+{
+	GList *process_libs = NULL;
+
+	gchar *proc_libs_path = g_strdup_printf("/proc/%u/smaps", p_pid);
+	FILE *proc_libs = fopen(proc_libs_path, "r");
+	g_free(proc_libs_path);
+
+	if (proc_libs)
+	{
+		gchar buf[1024];
+		while(!feof(proc_libs))
+		{
+			if (fgets(buf, 1024, proc_libs))
+			{
+				if (strstr(buf, ".so"))
+				{
+					// Getting file part only, using 20 spaces as delimiter
+					gchar *libs_file_part = strstr(buf, "                    ");
+					if (libs_file_part)
+					{
+						libs_file_part = g_path_get_basename(libs_file_part + 20);
+						process_libs = g_list_append(process_libs, libs_file_part);
+					}
+				}
+			}
+		}
+
+		fclose(proc_libs);
+	}
+
+	return process_libs;
+}
+
+void gfire_game_detection_process_libraries_clear(GList *p_list)
+{
+	while (p_list != NULL)
+	{
+		if (p_list->data)
+			g_free(p_list->data);
+		
+		p_list = g_list_next(p_list);
+	}
 }

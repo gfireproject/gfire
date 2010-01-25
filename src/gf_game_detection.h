@@ -43,7 +43,7 @@ typedef struct _gfire_process_list
 gfire_process_list *gfire_process_list_new();
 void gfire_process_list_free(gfire_process_list *p_list);
 void gfire_process_list_clear(gfire_process_list *p_list);
-gboolean gfire_process_list_contains(const gfire_process_list *p_list, const gchar *p_name, const gchar *p_required_args, const gchar *p_invalid_args);
+gboolean gfire_process_list_contains(const gfire_process_list *p_list, const gchar *p_name, const gchar *p_required_args, const gchar *p_invalid_args, const gchar *p_required_libraries);
 gchar *gfire_process_list_get_exe(const gfire_process_list *p_list, const gchar *p_name);
 guint32 gfire_process_list_get_pid(const gfire_process_list *p_list, const gchar *p_name);
 
