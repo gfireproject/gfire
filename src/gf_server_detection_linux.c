@@ -285,10 +285,8 @@ gchar *gfire_server_detection_get(guint32 p_pid, gfire_server_detection *p_gfire
 {
 	gchar *server_ip = NULL;
 
-	// Fetch connections
-	p_gfire_server_detection->netstat_servers = gfire_server_detection_netstat(p_pid, p_gfire_server_detection);
-
 	// Fetch connections using netstat
+	p_gfire_server_detection->netstat_servers = gfire_server_detection_netstat(p_pid, p_gfire_server_detection);
 	if (!p_gfire_server_detection->netstat_servers)
 		return NULL;
 
@@ -307,11 +305,12 @@ gchar *gfire_server_detection_get(guint32 p_pid, gfire_server_detection *p_gfire
 	return server_ip;
 }
 
-int gfire_server_detection_get_ips(char **p_local_ip, char **p_remote_ip)
+// Both passed values must be freed with g_free() when no longer used
+int gfire_server_detection_get_ips(gchar **p_local_ip, gchar **p_remote_ip)
 {
 	struct ifaddrs *if_addresses, *if_adresses_tmp;
-	int address_family, address;
-	char address_ip[NI_MAXHOST];
+	gint address_family, address;
+	gchar address_ip[NI_MAXHOST];
 
 	// Fetch IP addresses
 	if (getifaddrs(&if_addresses) == -1)
@@ -319,21 +318,20 @@ int gfire_server_detection_get_ips(char **p_local_ip, char **p_remote_ip)
 
 	// Get IP's: first IP is local IP & second IP is remote IP
 	int i = 0;
-	for (if_adresses_tmp = if_addresses; if_adresses_tmp != NULL; if_adresses_tmp = if_adresses_tmp->ifa_next)
+	for (if_adresses_tmp = if_addresses; if_adresses_tmp; if_adresses_tmp = if_adresses_tmp->ifa_next)
 	{
 		address_family = if_adresses_tmp->ifa_addr->sa_family;
 		if (address_family == AF_INET)
 		{
-			address = getnameinfo(if_adresses_tmp->ifa_addr,
-					      (address_family == AF_INET) ? sizeof(struct sockaddr_in) : sizeof(struct sockaddr_in6),
+			address = getnameinfo(if_adresses_tmp->ifa_addr, (address_family == AF_INET) ? sizeof(struct sockaddr_in) : sizeof(struct sockaddr_in6),
 					      address_ip, NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
 
 			if (address)
 				return -1;
 			if (i == 0)
-			      *p_local_ip = strdup(address_ip);
+			      *p_local_ip = g_strdup(address_ip);
 			else if (i == 1)
-			      *p_remote_ip = strdup(address_ip);
+			      *p_remote_ip = g_strdup(address_ip);
 
 			i++;
 		}
@@ -344,29 +342,39 @@ int gfire_server_detection_get_ips(char **p_local_ip, char **p_remote_ip)
 	// Return error if one or both could not be retrieved
 	if (!p_local_ip || !p_remote_ip)
 		return -1;
-
+	
 	// Return success
 	return 0;
 }
 
 void gfire_server_detection_remove_invalid_ips(gfire_server_detection *p_gfire_server_detection)
-{
+{  
 	// Get local & remote IP
 	gchar *local_ip = NULL;
 	gchar *remote_ip = NULL;
 
 	if (gfire_server_detection_get_ips(&local_ip, &remote_ip) != 0)
 		return;
-
-	if (!p_gfire_server_detection->game_information->excluded_ports)
-		printf("Fail!\n");
-
+	
 	gint i, j;
 	gboolean port_allowed = TRUE;
 
 	for (i = 0; i < p_gfire_server_detection->detected_netstat_servers; i++)
 	{
-		if (!g_strcmp0(p_gfire_server_detection->netstat_servers[i][1], local_ip) || !port_allowed)
+		// Check for invalid ports
+		if (p_gfire_server_detection->game_information->excluded_ports)
+		{
+			for (j = 0; j < g_strv_length(p_gfire_server_detection->game_information->excluded_ports); j++)
+			{
+				if (!g_strcmp0(p_gfire_server_detection->game_information->excluded_ports[j], p_gfire_server_detection->netstat_servers[i][0]))
+				{
+					port_allowed = FALSE;
+					break;
+				}
+			}
+		}
+		
+		if (!g_strcmp0(p_gfire_server_detection->netstat_servers[i][1], local_ip) || !g_strcmp0(p_gfire_server_detection->netstat_servers[i][1], remote_ip) || !port_allowed)
 		{
 			p_gfire_server_detection->netstat_servers[i][0] = NULL;
 			p_gfire_server_detection->netstat_servers[i][1] = NULL;
@@ -376,7 +384,7 @@ void gfire_server_detection_remove_invalid_ips(gfire_server_detection *p_gfire_s
 
 	for (i = 0; i < p_gfire_server_detection->detected_tcpdump_servers; i++)
 	{
-		if (!g_strcmp0(p_gfire_server_detection->tcpdump_servers[i][1], remote_ip) || !port_allowed)
+		if (!g_strcmp0(p_gfire_server_detection->tcpdump_servers[i][1], local_ip) || !g_strcmp0(p_gfire_server_detection->tcpdump_servers[i][1], remote_ip) || !port_allowed)
 		{
 			p_gfire_server_detection->tcpdump_servers[i][0] = NULL;
 			p_gfire_server_detection->tcpdump_servers[i][1] = NULL;

@@ -59,7 +59,7 @@ void gfire_server_detection_arrays_clear(gfire_server_detection *p_gfire_server_
 // Server detection core
 void gfire_server_detection_detect(gfire_data *p_gfire);
 gchar *gfire_server_detection_get(guint32 p_pid, gfire_server_detection *p_gfire_server_detection);
-int gfire_server_detection_get_ips(char **p_local_ip, char **p_remote_ip);
+int gfire_server_detection_get_ips(gchar** p_local_ip, gchar** p_remote_ip);
 void gfire_server_detection_remove_invalid_ips(gfire_server_detection *p_gfire_server_detection);
 gchar *gfire_server_detection_guess_server(gfire_server_detection *p_gfire_server_detection);
 
