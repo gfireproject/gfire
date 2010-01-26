@@ -159,12 +159,14 @@ gboolean gfire_process_list_contains(const gfire_process_list *p_list, const gch
 				
 				// Get process libs
 				GList *process_libs = gfire_game_detection_get_process_libraries(info->pid);
-				while (process_libs != NULL)
+				GList *cur = process_libs;
+				
+				for(; cur != NULL; cur = g_list_next(cur))
 				{
 					int i;
 					for(i = 0; i < g_strv_length(required_libraries_split); i++)
 					{
-						if (!g_strcmp0(g_strchomp(process_libs->data), required_libraries_split[i]))
+						if (!g_strcmp0(g_strchomp(cur->data), required_libraries_split[i]))
 						{
 							process_required_libraries = TRUE;
 							break;
@@ -173,13 +175,11 @@ gboolean gfire_process_list_contains(const gfire_process_list *p_list, const gch
 					
 					if (process_required_libraries)
 						break;
-					
-					process_libs = g_list_next(process_libs);
 				}
 				
 				g_strfreev(required_libraries_split);
 				
-				gfire_game_detection_process_libraries_clear(process_libs);
+				gfire_game_detection_process_libraries_clear(process_libs); 
 				g_list_free(process_libs);
 			}
 #endif // _WIN32
