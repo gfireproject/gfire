@@ -24,6 +24,21 @@
 
 #include "gf_menus.h"
 
+void gfire_clan_menu_site_cb(PurpleBlistNode *p_node, gpointer *p_data)
+{
+	if(!p_node || !p_node)
+		return;
+
+	gint clanid = purple_blist_node_get_int(p_node, "clanid");
+	gfire_clan *clan = gfire_find_clan((gfire_data*)p_data, clanid);
+	if(!clan)
+		return;
+
+	gchar *uri;
+	uri = g_strdup_printf(XFIRE_COMMUNITY_URL, gfire_clan_get_short_name(clan));
+	purple_notify_uri(gfire_get_connection((gfire_data*)p_data), uri);
+	g_free(uri);
+ }
 
 void gfire_buddy_menu_profile_cb(PurpleBlistNode *p_node, gpointer *p_data)
 {

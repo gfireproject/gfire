@@ -1493,6 +1493,34 @@ void gfire_buddy_p2p_ft_init(PurpleXfer *p_xfer)
 	gfire_p2p_session_add_file_transfer(gf_buddy->p2p, p_xfer);
 }
 
+static void gfire_clan_avatar_download_cb(PurpleUtilFetchUrlData *p_url_data, gpointer p_data,
+										  const char *p_buf, gsize p_len, const gchar *p_error_message)
+{
+	guchar *temp = NULL;
+
+	if (p_data == NULL || p_buf == NULL || p_len == 0)
+	{
+		purple_debug(PURPLE_DEBUG_ERROR, "gfire", "gfire_clan_avatar_download_cb: download of avatar failed (%s)\n",
+					 NN(p_error_message));
+		return;
+	}
+
+	temp = g_malloc0(p_len);
+	memcpy(temp, p_buf, p_len);
+	purple_buddy_icons_node_set_custom_icon(PURPLE_BLIST_NODE(((gfire_clan*)p_data)->prpl_group), temp, p_len);
+}
+
+static void gfire_clan_download_avatar(gfire_clan *p_clan)
+{
+	if(!p_clan || !p_clan->prpl_group || !p_clan->short_name)
+		return;
+
+	gchar *avatar_url = g_strdup_printf(XFIRE_COMMUNITY_AVATAR_URL, p_clan->short_name);
+	purple_debug(PURPLE_DEBUG_MISC, "gfire", "trying to download community avatar from: %s\n", NN(avatar_url));
+	purple_util_fetch_url(avatar_url, TRUE, "Purple-xfire", TRUE, gfire_clan_avatar_download_cb, (void*)p_clan);
+	g_free(avatar_url);
+}
+
 static void gfire_clan_create_group(gfire_clan *p_clan)
 {
 	if(!p_clan || !p_clan->long_name || p_clan->prpl_group)
@@ -1607,6 +1635,8 @@ void gfire_clan_set_names(gfire_clan *p_clan, const gchar *p_longName, const gch
 		purple_blist_rename_group(p_clan->prpl_group, escaped);
 		g_free(escaped);
 		g_free(clan_group_name);
+
+		gfire_clan_download_avatar(p_clan);
 	}
 }
 
@@ -1643,6 +1673,9 @@ void gfire_clan_set_prpl_group(gfire_clan *p_clan, PurpleGroup *p_group)
 		return;
 
 	p_clan->prpl_group = p_group;
+
+	if(p_group)
+		gfire_clan_download_avatar(p_clan);
 }
 
 PurpleGroup *gfire_clan_get_prpl_group(gfire_clan *p_clan)

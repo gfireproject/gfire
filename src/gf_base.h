@@ -123,9 +123,11 @@
 #define XFIRE_CONNECT_STEPS 3
 #define XFIRE_KEEPALIVE_TIME 180  // See gfire_keep_alive for more info
 #define XFIRE_PROFILE_URL "http://www.xfire.com/profile/"
+#define XFIRE_COMMUNITY_URL "http://www.xfire.com/communities/%s/" // community tag
 #define XFIRE_XML_INFO_URL "http://www.xfire.com/xml/%s/%s/" // username, info-type
 #define XFIRE_AVATAR_URL "http://screenshot.xfire.com/avatar/%s.jpg?%u" // username, revision number
 #define XFIRE_GALLERY_AVATAR_URL "http://media.xfire.com/xfire/xf/images/avatars/gallery/default/%03u.gif" // avatar id
+#define XFIRE_COMMUNITY_AVATAR_URL "http://screenshot.xfire.com/clan_logo/160/%s.jpg?v=10" // long community name
 #define XFIRE_SEND_TYPING_TIMEOUT 10
 #define XFIRE_SEND_ACK_TIMEOUT 15
 #define XFIRE_SEND_ACK_P2P_TIMEOUT 2

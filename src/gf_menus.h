@@ -42,4 +42,7 @@ void gfire_buddy_menu_add_as_friend_cb(PurpleBlistNode *p_node, gpointer *p_data
 void gfire_buddy_menu_joingame_cb(PurpleBlistNode *p_node, gpointer *p_data);
 void gfire_buddy_menu_joinvoip_cb(PurpleBlistNode *p_node, gpointer *p_data);
 
+// GFIRE CLAN MENU
+void gfire_clan_menu_site_cb(PurpleBlistNode *p_node, gpointer *p_data);
+
 #endif // _GF_MENUS

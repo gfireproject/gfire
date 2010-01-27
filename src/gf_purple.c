@@ -110,6 +110,57 @@ static void gfire_purple_blist_node_removed_signal(PurpleBlistNode *p_node)
 	}
 }
 
+static void gfire_purple_blist_node_ext_menu_signal(PurpleBlistNode *p_node, GList **p_menu)
+{
+	if(!p_node)
+		return;
+
+	if(PURPLE_BLIST_NODE_IS_GROUP(p_node))
+	{
+		gint clanid = purple_blist_node_get_int(p_node, "clanid");
+		// Skip non-community groups
+		if(clanid == 0)
+			return;
+
+		// Find the account/gfire data for this group
+		GSList *accounts = purple_group_get_accounts(PURPLE_GROUP(p_node));
+		PurpleAccount *account = NULL;
+		GSList *cur = accounts;
+		while(cur)
+		{
+			if(purple_account_is_connected((PurpleAccount*)cur->data) &&
+			   !g_ascii_strcasecmp(GFIRE_PRPL_ID, purple_account_get_protocol_id((PurpleAccount*)cur->data)))
+			{
+				account = (PurpleAccount*)cur->data;
+				break;
+			}
+			cur = g_slist_next(cur);
+		}
+		g_slist_free(accounts);
+
+		if(!account)
+			return;
+
+		gfire_data *gfire = purple_account_get_connection(account)->proto_data;
+		if(!gfire)
+			return;
+
+		gfire_clan *clan = gfire_find_clan(gfire, clanid);
+		// Invalid ID?
+		if(!clan)
+			return;
+
+		PurpleMenuAction *me = NULL;
+		// Community site
+		me = purple_menu_action_new(_("Xfire Community Site"),
+										PURPLE_CALLBACK(gfire_clan_menu_site_cb), gfire, NULL);
+		if(!me)
+			return;
+
+		*p_menu = g_list_append(*p_menu, me);
+	}
+}
+
 static const gchar *gfire_purple_blist_icon(PurpleAccount *p_a, PurpleBuddy *p_b)
 {
 	return "gfire";
@@ -307,6 +358,8 @@ static void gfire_purple_login(PurpleAccount *p_account)
 										   PURPLE_CALLBACK(gfire_purple_blist_node_added_signal), NULL);
 		purple_signal_connect(purple_blist_get_handle(), "blist-node-removed", _gfire_plugin,
 										   PURPLE_CALLBACK(gfire_purple_blist_node_removed_signal), NULL);
+		purple_signal_connect(purple_blist_get_handle(), "blist-node-extended-menu", _gfire_plugin,
+										   PURPLE_CALLBACK(gfire_purple_blist_node_ext_menu_signal), NULL);
 
 		signals_registered = TRUE;
 	}
@@ -524,69 +577,72 @@ static GList *gfire_purple_node_menu(PurpleBlistNode *p_node)
 	PurpleConnection *gc = NULL;
 	gfire_data *gfire = NULL;
 
-	if(!PURPLE_BLIST_NODE_IS_BUDDY(p_node))
-		return NULL;
-
-	if (!b || !b->account || !(gc = purple_account_get_connection(b->account)) ||
-		!(gfire = (gfire_data *)gc->proto_data))
-		return NULL;
-
-	gf_buddy = gfire_find_buddy(gfire, b->name, GFFB_NAME);
-	if(!gf_buddy)
-		return NULL;
-
-	if(!gfire_buddy_is_friend(gf_buddy))
+	if(PURPLE_BLIST_NODE_IS_BUDDY(p_node))
 	{
-		me = purple_menu_action_new(_("Add as friend"),
-									PURPLE_CALLBACK(gfire_buddy_menu_add_as_friend_cb),NULL, NULL);
-
-		if (!me)
+		if (!b || !b->account || !(gc = purple_account_get_connection(b->account)) ||
+			!(gfire = (gfire_data *)gc->proto_data))
 			return NULL;
 
-		ret = g_list_append(ret, me);
-	}
 
-	if(gfire_buddy_is_playing(gf_buddy) && !gfire_is_playing(gfire))
-	{
-		const gfire_game_data *game_data = gfire_buddy_get_game_data(gf_buddy);
+		gf_buddy = gfire_find_buddy(gfire, b->name, GFFB_NAME);
+		if(!gf_buddy)
+			return NULL;
 
-		if(gfire_game_playable(game_data->id))
+		if(!gfire_buddy_is_friend(gf_buddy))
 		{
-			me = purple_menu_action_new(_("Join Game ..."),
-										PURPLE_CALLBACK(gfire_buddy_menu_joingame_cb),NULL, NULL);
-
-			if(!me)
-				return NULL;
-
-			ret = g_list_append(ret, me);
-		}
-	}
-
-	if(gfire_buddy_is_talking(gf_buddy) && !gfire_is_talking(gfire))
-	{
-		const gfire_game_data *voip_data = gfire_buddy_get_voip_data(gf_buddy);
-
-		if(gfire_game_playable(voip_data->id))
-		{
-			me = purple_menu_action_new(_("Join VoIP ..."),
-										PURPLE_CALLBACK(gfire_buddy_menu_joinvoip_cb),NULL, NULL);
+			me = purple_menu_action_new(_("Add as friend"),
+										PURPLE_CALLBACK(gfire_buddy_menu_add_as_friend_cb),NULL, NULL);
 
 			if (!me)
 				return NULL;
 
 			ret = g_list_append(ret, me);
 		}
+
+		if(gfire_buddy_is_playing(gf_buddy) && !gfire_is_playing(gfire))
+		{
+			const gfire_game_data *game_data = gfire_buddy_get_game_data(gf_buddy);
+
+			if(gfire_game_playable(game_data->id))
+			{
+				me = purple_menu_action_new(_("Join Game ..."),
+											PURPLE_CALLBACK(gfire_buddy_menu_joingame_cb),NULL, NULL);
+
+				if(!me)
+					return NULL;
+
+				ret = g_list_append(ret, me);
+			}
+		}
+
+		if(gfire_buddy_is_talking(gf_buddy) && !gfire_is_talking(gfire))
+		{
+			const gfire_game_data *voip_data = gfire_buddy_get_voip_data(gf_buddy);
+
+			if(gfire_game_playable(voip_data->id))
+			{
+				me = purple_menu_action_new(_("Join VoIP ..."),
+											PURPLE_CALLBACK(gfire_buddy_menu_joinvoip_cb),NULL, NULL);
+
+				if (!me)
+					return NULL;
+
+				ret = g_list_append(ret, me);
+			}
+		}
+
+		me = purple_menu_action_new(_("Xfire Profile"),
+									PURPLE_CALLBACK(gfire_buddy_menu_profile_cb),NULL, NULL);
+
+		if (!me)
+			return NULL;
+
+		ret = g_list_append(ret, me);
+
+		return ret;
 	}
 
-	me = purple_menu_action_new(_("Xfire Profile"),
-								PURPLE_CALLBACK(gfire_buddy_menu_profile_cb),NULL, NULL);
-
-	if (!me)
-		return NULL;
-
-	ret = g_list_append(ret, me);
-
-	return ret;
+	return NULL;
  }
 
 void gfire_purple_nick_change_cb(PurpleConnection *p_gc, const gchar *p_entry)
