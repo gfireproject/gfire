@@ -46,11 +46,13 @@ void gfire_process_list_clear(gfire_process_list *p_list);
 gboolean gfire_process_list_contains(const gfire_process_list *p_list, const gchar *p_name, const gchar *p_required_args, const gchar *p_invalid_args, const gchar *p_required_libraries);
 gchar *gfire_process_list_get_exe(const gfire_process_list *p_list, const gchar *p_name);
 guint32 gfire_process_list_get_pid(const gfire_process_list *p_list, const gchar *p_name);
+GList *gfire_game_detection_get_process_libraries(const guint32 p_pid);
 
 // For internal use only
 process_info *gfire_process_info_new(const gchar *p_name, const gchar *p_exe, const guint32 p_pid, const gchar *p_args);
 
 // OS dependent (gf_game_detection_X.c)
 void gfire_process_list_update(gfire_process_list *p_list);
+void gfire_game_detection_process_libraries_clear(GList *p_list);
 
 #endif // _GF_GAME_DETECTION_H

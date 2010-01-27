@@ -263,7 +263,7 @@ void gfire_process_list_update(gfire_process_list *p_list)
 	closedir(proc);
 }
 
-GList *gfire_game_detection_get_process_libraries(guint32 p_pid)
+GList *gfire_game_detection_get_process_libraries(const guint32 p_pid)
 {
 	GList *process_libs = NULL;
 
