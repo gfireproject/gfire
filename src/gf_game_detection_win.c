@@ -25,9 +25,9 @@
 #include "gf_game_detection.h"
 
 // Required headers
-
 #include <windows.h>
 #include <tlhelp32.h>
+#include <psapi.h>
 
 // Windows Kernel Functionality
 typedef struct _PROCESS_BASIC_INFORMATION
@@ -75,7 +75,7 @@ static PVOID get_peb_address(HANDLE p_process_handle)
 	return pbi.PebBaseAddress;
 }
 
-static gchar *get_process_cmdline(gint p_pid)
+static gboolean get_process_cmdline(gint p_pid, gchar **p_exe, gchar **p_cmd_line)
 {
 	HANDLE process;
 	PVOID peb;
@@ -93,12 +93,12 @@ static gchar *get_process_cmdline(gint p_pid)
 			purple_debug_error("gfire", "get_process_cmdline: Could not open process for reading:\n(%u) %s", (guint)GetLastError(), tmpError);
 		}
 
-		return NULL;
+		return FALSE;
 	}
 
 	peb = get_peb_address(process);
 	if(!peb)
-		return NULL;
+		return FALSE;
 
 	if(!ReadProcessMemory(process, (PCHAR)peb + 0x10, &rtlUserProcParamsAddress, sizeof(PVOID), NULL))
 	{
@@ -110,7 +110,7 @@ static gchar *get_process_cmdline(gint p_pid)
 		}
 
 		CloseHandle(process);
-		return NULL;
+		return FALSE;
 	}
 
 	if(!ReadProcessMemory(process, (PCHAR)rtlUserProcParamsAddress + 0x40, &cmdline, sizeof(cmdline), NULL))
@@ -123,7 +123,7 @@ static gchar *get_process_cmdline(gint p_pid)
 		}
 
 		CloseHandle(process);
-		return NULL;
+		return FALSE;
 	}
 
 	cmdline_buff = (WCHAR*)g_malloc0(cmdline.Length);
@@ -138,15 +138,37 @@ static gchar *get_process_cmdline(gint p_pid)
 
 		g_free(cmdline_buff);
 		CloseHandle(process);
-		return NULL;
+		return FALSE;
 	}
 
-	gchar *ret = g_utf16_to_utf8((gunichar2*)cmdline_buff, cmdline.Length / 2, NULL, NULL, NULL);
+	*p_cmd_line = g_utf16_to_utf8((gunichar2*)cmdline_buff, cmdline.Length / 2, NULL, NULL, NULL);
+	g_free(cmdline_buff);
+
+	// Get process executable
+	cmdline_buff = (WCHAR*)g_malloc(2048);
+	DWORD len = GetModuleFileNameExW(process, NULL, cmdline_buff, 1024);
+	if(len == 0)
+	{
+		if(GetLastError() != ERROR_ACCESS_DENIED)
+		{
+			gchar tmpError[1024];
+			FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, GetLastError(), 0, tmpError, 1024, NULL);
+			purple_debug_error("gfire", "get_process_cmdline: Could not read the executable filename string:\n(%u) %s", (guint)GetLastError(), tmpError);
+		}
+
+		g_free(cmdline_buff);
+		g_free(*p_cmd_line);
+		*p_cmd_line = NULL;
+		CloseHandle(process);
+		return FALSE;
+	}
+
+	*p_exe = g_utf16_to_utf8((gunichar2*)cmdline_buff, len, NULL, NULL, NULL);
 	g_free(cmdline_buff);
 
 	CloseHandle(process);
 
-	return ret;
+	return TRUE;
 }
 
 void gfire_process_list_update(gfire_process_list *p_list)
@@ -180,18 +202,14 @@ void gfire_process_list_update(gfire_process_list *p_list)
 			if(!executable_name)
 				continue;
 
-			gchar *cmdline = get_process_cmdline(pe.th32ProcessID);
-			process_info *info = NULL;
-			// TODO: Get full path to executable
-			if(cmdline)
-			{
-				info = gfire_process_info_new(executable_name, "", pe.th32ProcessID, cmdline + strlen(pe.szExeFile));
-				g_free(cmdline);
-			}
-			else
-				info = gfire_process_info_new(executable_name, "", pe.th32ProcessID, NULL);
-
-			g_free(executable_name);
+			gchar *cmdline = NULL;
+			gchar *executable_file = NULL;
+			if(!get_process_cmdline(pe.th32ProcessID, &executable_file, &cmdline))
+				continue;
+			process_info *info = gfire_process_info_new(executable_name, executable_file, pe.th32ProcessID,
+														cmdline + strlen(pe.szExeFile));
+			g_free(cmdline);
+			g_free(executable_file);
 
 			p_list->processes = g_list_append(p_list->processes, info);
 		}

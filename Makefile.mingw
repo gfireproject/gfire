@@ -31,26 +31,11 @@ install: all
 		(make -C $$subdir -f Makefile.mingw install) || exit 1; \
 	done;
 
-installer: install-gui install-zip
+installer: installer-gui installer-zip
 
 installer-gui: install VERSION
-	${MAKENSIS} /V3 /DGFIRE_VERSION="$(GFIRE_VERSION_STRING)" /DGFIRE_INSTALL_DIR="${WIN32_INSTALL_DIR}" ${GFIRE_DIR}/nsis/gfire-installer.nsi
+	${MAKENSIS} -V3 -DGFIRE_VERSION="$(GFIRE_VERSION_STRING)" -DGFIRE_INSTALL_DIR="${WIN32_INSTALL_DIR}" ${GFIRE_DIR}/nsis/gfire-installer.nsi
 	#${MAKENSIS} ${GFIRE_DIR}/nsis/gfire-installer.nsi
 
 installer-zip: install VERSION
 	cd ${WIN32_INSTALL_DIR} && /usr/bin/zip -ru ../pidgin-gfire-`cat ../VERSION`.zip *
-
-gfire_config.h: gfire_config.h.in
-	sed -e 's/^#undef HAVE_GTK/#define HAVE_GTK 1/g' \
-		-e 's/^#undef ENABLE_NLS/#define ENABLE_NLS 1/g' \
-		-e 's/^#undef GETTEXT_PACKAGE/#define GETTEXT_PACKAGE "gfire"/g' \
-		-e 's/^#undef GFIRE_VERSION_STRING/#define GFIRE_VERSION_STRING "'$(GFIRE_VERSION_STRING)'"/g' \
-		-e 's/^#undef GFIRE_VERSION_PATCH/#define GFIRE_VERSION_PATCH '$(GFIRE_VERSION_PATCH)'/g' \
-		-e 's/^#undef GFIRE_VERSION_MINOR/#define GFIRE_VERSION_MINOR '$(GFIRE_VERSION_MINOR)'/g' \
-		-e 's/^#undef GFIRE_VERSION_MAJOR/#define GFIRE_VERSION_MAJOR '$(GFIRE_VERSION_MAJOR)'/g' $^ > $@.tmp
-	if [ -z $(GFIRE_VERSION_SUFFIX) ]; then \
-		sed -e 's/^#undef GFIRE_VERSION_HAS_SUFFIX/#define GFIRE_VERSION_HAS_SUFFIX 0/g' $@.tmp > $@; \
-	else \
-		sed -e 's/^#undef GFIRE_VERSION_HAS_SUFFIX/#define GFIRE_VERSION_HAS_SUFFIX 1/g' $@.tmp > $@; \
-	fi
-	rm -f $@.tmp
