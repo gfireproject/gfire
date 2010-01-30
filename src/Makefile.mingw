@@ -51,7 +51,12 @@ GFIRE_SOURCES = \
 	${GFIRE_SRC_DIR}/gf_p2p.c \
 	${GFIRE_SRC_DIR}/gf_p2p_session.c \
 	${GFIRE_SRC_DIR}/gf_p2p_dl_handler.c \
-	${GFIRE_SRC_DIR}/gf_p2p_im_handler.c
+	${GFIRE_SRC_DIR}/gf_p2p_im_handler.c \
+	${GFIRE_SRC_DIR}/gf_p2p_dl_proto.c \
+	${GFIRE_SRC_DIR}/gf_filetransfer.c \
+	${GFIRE_SRC_DIR}/gf_file_chunk.c \
+	${GFIRE_SRC_DIR}/gf_groups.c \
+	${GFIRE_SRC_DIR}/gf_groups_proto.c
 
 GFIRE_RESOURCES = \
 	${GFIRE_SRC_DIR}/gfirerc.rc

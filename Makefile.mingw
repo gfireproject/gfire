@@ -11,7 +11,7 @@ SUBDIRS = src po data pixmaps
 
 .PHONY: all clean installer
 
-all: gfire_config.h
+all: gfire_config_win.h
 	list='${SUBDIRS}'; for subdir in $$list; do \
 		(make -C $$subdir -f Makefile.mingw all) || exit 1; \
 	done;
@@ -20,7 +20,6 @@ clean:
 	list='${SUBDIRS}'; for subdir in $$list; do \
 		(make -C $$subdir -f Makefile.mingw clean) || exit 1; \
 	done;
-	rm -f gfire_config.h
 
 distclean: clean
 	rm -rf ${WIN32_INSTALL_DIR}
