@@ -1649,6 +1649,9 @@ gboolean gfire_detect_running_processes_cb(gfire_data *p_gfire)
 		gboolean process_running = gfire_process_list_contains(p_gfire->process_list, game_executable, game_exec_required_args, game_exec_invalid_args, game_required_libraries);
 		g_mutex_unlock(p_gfire->server_mutex);
 
+		if (game_required_libraries)
+			g_free(game_required_libraries);
+		
 		gfire_handle_game_detection(p_gfire, game_id_int, process_running, game_executable);
 
 		if (game_executable)
