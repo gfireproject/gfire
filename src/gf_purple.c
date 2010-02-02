@@ -31,6 +31,7 @@
 #include "gf_friend_search.h"
 #include "gf_purple.h"
 #include "gf_chat_proto.h"
+#include "gf_game_detection.h"
 
 static PurplePlugin *_gfire_plugin = NULL;
 
@@ -599,7 +600,7 @@ static GList *gfire_purple_node_menu(PurpleBlistNode *p_node)
 			ret = g_list_append(ret, me);
 		}
 
-		if(gfire_buddy_is_playing(gf_buddy) && !gfire_is_playing(gfire))
+		if(gfire_buddy_is_playing(gf_buddy) && !gfire_game_detector_is_playing())
 		{
 			const gfire_game_data *game_data = gfire_buddy_get_game_data(gf_buddy);
 
@@ -615,7 +616,7 @@ static GList *gfire_purple_node_menu(PurpleBlistNode *p_node)
 			}
 		}
 
-		if(gfire_buddy_is_talking(gf_buddy) && !gfire_is_talking(gfire))
+		if(gfire_buddy_is_talking(gf_buddy) && !gfire_game_detector_is_voiping())
 		{
 			const gfire_game_data *voip_data = gfire_buddy_get_voip_data(gf_buddy);
 

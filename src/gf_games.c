@@ -158,6 +158,44 @@ static xmlnode *gfire_game_node_by_name(const gchar *p_name)
 	return NULL;
 }
 
+guint32 gfire_game_id_by_url(const gchar *p_url)
+{
+	if(!gfire_games_xml)
+		if(!gfire_game_load_games_xml())
+			return 0;
+
+	if(!p_url)
+		return 0;
+
+	gchar *url_down = g_ascii_strdown(p_url, -1);
+
+	xmlnode *node_child = NULL;
+	for(node_child = xmlnode_get_child(gfire_games_xml, "game"); node_child;
+	node_child = xmlnode_get_next_twin(node_child))
+	{
+		xmlnode *external = xmlnode_get_child(node_child, "external");
+		if(!external)
+			continue;
+
+		const gchar *url = xmlnode_get_attrib(external, "url");
+		if(!url)
+			continue;
+
+		if(strstr(url_down, url))
+		{
+			guint32 gameid;
+			sscanf(xmlnode_get_attrib(node_child, "id"), "%u", &gameid);
+
+			g_free(url_down);
+			return gameid;
+		}
+	}
+
+	g_free(url_down);
+
+	return 0;
+}
+
 xmlnode *gfire_game_node_first()
 {
 	if(!gfire_games_xml)
@@ -238,20 +276,21 @@ gchar *gfire_game_name(guint32 p_gameid)
 	return escaped;
 }
 
-xmlnode *gfire_game__node_by_id(guint32 p_gameid)
+gchar *gfire_game_short_name(guint32 p_gameid)
 {
+	xmlnode *node = NULL;
+	const gchar *name = NULL;
 
+	node = gfire_game_node_by_id(p_gameid);
+	if(!node)
+		return g_strdup_printf("%d", p_gameid);
 
-	xmlnode *node_child = NULL;
-	for(node_child = xmlnode_get_child(gfire_games_xml, "game"); node_child;
-	node_child = xmlnode_get_next_twin(node_child))
-	{
-		const gchar *game_id_tmp = xmlnode_get_attrib(node_child, "id");
-		if(atoi(game_id_tmp) == p_gameid)
-			return node_child;
-	}
+	name = xmlnode_get_attrib(node, "shortname");
+	if(!name)
+		return g_strdup_printf("%d", p_gameid);
 
-	return NULL;
+	gchar *escaped = gfire_escape_html(name);
+	return escaped;
 }
 
 // FIXME: Full of memleaks!
@@ -683,6 +722,40 @@ gfire_game_detection_info *gfire_game_detection_info_get(guint32 p_gameid)
 	g_free(excluded_ports_str);
 
 	return ret;
+}
+
+/**
+ * Joins the game a buddy is playing.
+ * This function launches the game and tells the game to connect to the corresponding server if needed.
+ *
+ * @param p_gfire: the purple connection
+ * @param server_ip: the server ip to join (quad dotted notation)
+ * @param server_port: the server port
+ * @param game_id: the game ID to launch
+ *
+ * FIXME: Needs a lot of improvements
+**/
+void gfire_join_game(const gfire_game_data *p_game_data)
+{
+	gfire_game_config_info *game_config_info = NULL;
+	gchar *game_launch_command;
+
+	game_config_info = gfire_game_config_info_get(p_game_data->id);
+	if (!game_config_info)
+	{
+		purple_debug_error("gfire", "Game config info struct not defined!\n");
+		return;
+	}
+
+	game_launch_command = gfire_game_config_info_get_command(game_config_info, p_game_data);
+	if (!game_launch_command)
+	{
+		purple_debug_error("gfire", "Couldn't generate game launch command!\n");
+		return;
+	}
+
+	purple_debug_misc("gfire", "Launching game and joining server: %s\n", game_launch_command);
+	g_spawn_command_line_async(game_launch_command, NULL);
 }
 
 #ifdef HAVE_GTK

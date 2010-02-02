@@ -25,13 +25,6 @@
 #include "gf_p2p.h"
 #include "gf_p2p_session.h"
 
-#include "gf_ipc_server.h"
-#ifdef _WIN32
-	#include <winsock2.h>
-#else
-	#include <netinet/in.h>
-#endif // _WIN32
-
 static void gfire_p2p_connection_send(gfire_p2p_connection *p_p2p, const struct sockaddr_in *p_addr, guint32 p_len);
 
 static guint32 gfire_p2p_connection_write_header(gfire_p2p_connection *p_p2p, guint8 p_encoding, const guint8 *p_moniker,

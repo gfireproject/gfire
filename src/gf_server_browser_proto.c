@@ -23,6 +23,7 @@
 */
 
 #include "gf_server_browser_proto.h"
+#include <sys/time.h>
 
 static GMutex *mutex;
 static GQueue servers_list_queue = G_QUEUE_INIT;
@@ -312,7 +313,7 @@ void gfire_server_browser_proto_serverlist(gfire_data *p_gfire, guint16 p_packet
 		mutex = g_mutex_new();
 
 	servers_list_thread_pool = g_thread_pool_new((GFunc )gfire_server_browser_update_server_list_thread,
-						     NULL, GFIRE_SERVER_BROWSER_THREADS_LIMIT + 1, FALSE, NULL);
+							 NULL, GFIRE_SERVER_BROWSER_THREADS_LIMIT + 1, FALSE, NULL);
 
 	// Add servers to list store & thread pool
 	for(; i; i = g_list_next(i))

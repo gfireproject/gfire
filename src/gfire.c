@@ -26,6 +26,7 @@
 #include "gf_network.h"
 #include "gf_games.h"
 #include "gf_server_detection.h"
+#include "gf_game_detection.h"
 #include "gf_ipc_server.h"
 #include "gfire.h"
 
@@ -46,10 +47,6 @@ gfire_data *gfire_create(PurpleConnection *p_gc)
 
 	ret->buff_in = (guint8*)g_malloc0(GFIRE_BUFFIN_SIZE);
 	if(!ret->buff_in)
-		goto error;
-
-	ret->process_list = gfire_process_list_new();
-	if(!ret->process_list)
 		goto error;
 
 	ret->fd = -1;
@@ -109,10 +106,11 @@ void gfire_free(gfire_data *p_gfire)
 	if(p_gfire->p2p)
 		gfire_p2p_connection_close(p_gfire->p2p);
 
+	// Unregister this Gfire session with game detection
+	gfire_game_detector_unregister(p_gfire);
+
 	// Unregister this Gfire session with the IPC server
 	gfire_ipc_server_unregister(p_gfire);
-
-	gfire_process_list_free(p_gfire->process_list);
 
 	g_free(p_gfire);
 
@@ -133,6 +131,14 @@ const gchar *gfire_get_name(const gfire_data *p_gfire)
 		return NULL;
 
 	return purple_account_get_username(purple_connection_get_account(gfire_get_connection(p_gfire)));
+}
+
+const gchar *gfire_get_nick(const gfire_data *p_gfire)
+{
+	if(!p_gfire)
+		return NULL;
+
+	return p_gfire->alias;
 }
 
 static void gfire_update_cb(PurpleUtilFetchUrlData *p_url_data, gpointer p_data, const gchar *p_buf, gsize p_len, const gchar *p_error_message)
@@ -255,6 +261,9 @@ static void gfire_login_cb(gpointer p_data, gint p_source, const gchar *p_error_
 	// Register this Gfire session with the IPC server
 	gfire_ipc_server_register(gfire);
 
+	// Register this Gfire session with the game detection
+	gfire_game_detector_register(gfire);
+
 	// Setup P2P connection
 	if(purple_account_get_bool(purple_connection_get_account(gfire_get_connection(gfire)), "p2p_option", TRUE))
 		gfire->p2p = gfire_p2p_connection_create();
@@ -298,12 +307,6 @@ void gfire_close(gfire_data *p_gfire)
 	{
 		purple_debug(PURPLE_DEBUG_MISC, "gfire", "CONN: removing input handler\n");
 		purple_input_remove(gc->inpa);
-	}
-
-	if(p_gfire->det_source > 0)
-	{
-		purple_debug(PURPLE_DEBUG_MISC, "gfire", "CONN: removing game detection callback\n");
-		g_source_remove(p_gfire->det_source);
 	}
 
 	if(p_gfire->server_browser_pool > 0)
@@ -1329,22 +1332,6 @@ void gfire_leave_chat(gfire_data *p_gfire, gfire_chat *p_chat)
 	p_gfire->chats = g_list_delete_link(p_gfire->chats, cur);
 }
 
-gboolean gfire_is_playing(const gfire_data *p_gfire)
-{
-	if(!p_gfire)
-		return FALSE;
-
-	return gfire_game_data_is_valid(&p_gfire->game_data);
-}
-
-gboolean gfire_is_talking(const gfire_data *p_gfire)
-{
-	if(!p_gfire)
-		return FALSE;
-
-	return gfire_game_data_is_valid(&p_gfire->voip_data);
-}
-
 void gfire_set_nick(gfire_data *p_gfire, const gchar *p_nick)
 {
 	if(!p_gfire || !p_nick)
@@ -1353,22 +1340,6 @@ void gfire_set_nick(gfire_data *p_gfire, const gchar *p_nick)
 	purple_debug(PURPLE_DEBUG_INFO, "gfire", "Changing server nick (alias) to \"%s\"\n", p_nick);
 	guint16 packet_len = gfire_proto_create_change_alias(p_nick);
 	if(packet_len > 0) gfire_send(gfire_get_connection(p_gfire), packet_len);
-}
-
-const gfire_game_data *gfire_get_game_data(gfire_data *p_gfire)
-{
-	if(!p_gfire)
-		return NULL;
-
-	return &p_gfire->game_data;
-}
-
-const gfire_game_data *gfire_get_voip_data(gfire_data *p_gfire)
-{
-	if(!p_gfire)
-		return NULL;
-
-	return &p_gfire->voip_data;
 }
 
 gboolean gfire_has_p2p(const gfire_data *p_gfire)
@@ -1469,234 +1440,30 @@ void gfire_check_for_left_clan_members(PurpleConnection *gc, guint32 clanid)
 }
 */
 
-void gfire_playing_external_game(gfire_data *p_gfire, guint32 p_gameid)
+void gfire_set_game_status(gfire_data *p_gfire, const gfire_game_data *p_data)
 {
-	if(!p_gfire)
+	if(!p_gfire || !p_data)
 		return;
 
-	gfire_game_data_reset(&p_gfire->game_data);
-	if(p_gameid > 0)
+	gboolean notify = purple_account_get_bool(purple_connection_get_account(p_gfire->gc),
+											  "ingamenotificationnorm", FALSE);
+	if (notify)
 	{
-		p_gfire->game_data.id = p_gameid;
-		p_gfire->external_game = TRUE;
-
-		gchar *game_name = gfire_game_name(p_gameid);
-		purple_debug_info("gfire", "%s is running. Telling Xfire ingame status.\n", NN(game_name));
-
-		if(purple_account_get_bool(purple_connection_get_account(gfire_get_connection(p_gfire)), "ingamenotificationnorm", FALSE))
-			purple_notify_message(NULL, PURPLE_NOTIFY_MSG_INFO, _("Ingame status"),
-								  NN(game_name), _("Your status has been changed."), NULL, NULL);
-
-		g_free(game_name);
-	}
-	else
-		p_gfire->external_game = FALSE;
-
-	guint16 len = gfire_proto_create_join_game(&p_gfire->game_data);
-	if(len > 0) gfire_send(gfire_get_connection(p_gfire), len);
-}
-
-static void gfire_handle_game_detection(gfire_data *p_gfire, guint32 p_gameid, gboolean p_running, const gchar *p_executable)
-{
-	if (!p_gfire)
-	{
-		purple_debug_error("gfire", "Couldn't access gfire data.\n");
-		return;
-	}
-
-	gchar *game_name = gfire_game_name(p_gameid);
-	guint16 len = 0;
-
-	g_mutex_lock(p_gfire->server_mutex);
-	if (p_running == TRUE)
-	{
-		if (purple_account_get_bool(purple_connection_get_account(p_gfire->gc), "server_detection_option", FALSE))
-			g_thread_create((GThreadFunc )gfire_server_detection_detect, p_gfire, TRUE, NULL);
-
-		if (!gfire_is_playing(p_gfire))
-		{
-			gboolean norm = purple_account_get_bool(purple_connection_get_account(p_gfire->gc), "ingamenotificationnorm", FALSE);
-			purple_debug_info("gfire", "%s is running, sending ingame status.\n", NN(game_name));
-
-			// FIXME: This isn't working properly
-			if (norm)
-				purple_notify_message(NULL, PURPLE_NOTIFY_MSG_INFO, _("Ingame status"),
+		gchar *game_name = gfire_game_name(p_data->id);
+		purple_notify_message(NULL, PURPLE_NOTIFY_MSG_INFO, _("Ingame status"),
 							  NN(game_name), _("Your status has been changed."), NULL, NULL);
-
-			p_gfire->game_data.id = p_gameid;
-			len = gfire_proto_create_join_game(&p_gfire->game_data);
-
-			if (len > 0)
-				gfire_send(gfire_get_connection(p_gfire), len);
-		}
-	}
-	else
-	{
-		if (gfire_is_playing(p_gfire) && p_gfire->game_data.id == p_gameid)
-		{
-			purple_debug_misc("gfire", "Game not running anymore, sending out-of-game status.\n");
-
-			gfire_game_data_reset(&p_gfire->game_data);
-			len = gfire_proto_create_join_game(&p_gfire->game_data);
-
-			if(len > 0)
-				gfire_send(gfire_get_connection(p_gfire), len);
-		}
-	}
-	g_mutex_unlock(p_gfire->server_mutex);
-
-	if (p_gfire->server_changed && gfire_is_playing(p_gfire))
-	{
-		if (!gfire_game_data_has_addr(&p_gfire->game_data))
-		{
-			len = gfire_proto_create_join_game(&p_gfire->game_data);
-			if(len > 0) gfire_send(gfire_get_connection(p_gfire), len);
-
-			p_gfire->server_changed = FALSE;
-		}
-		else
-		{
-			len = gfire_proto_create_join_game(&p_gfire->game_data);
-			if (len > 0)
-				gfire_send(gfire_get_connection(p_gfire), len);
-
-			p_gfire->server_changed = FALSE;
-			gchar *addr = gfire_game_data_addr_str(&p_gfire->game_data);
-
-			purple_debug_info("gfire", "Playing on server: %s\n", addr);
-			g_free(addr);
-		}
-	}
-
-	if (game_name)
 		g_free(game_name);
+	}
+
+	guint16 len = gfire_proto_create_join_game(p_data);
+	if(len > 0) gfire_send(p_gfire->gc, len);
 }
 
-// FIXME: xmlnode memleaks
-gboolean gfire_detect_running_processes_cb(gfire_data *p_gfire)
+void gfire_set_voip_status(gfire_data *p_gfire, const gfire_game_data *p_data)
 {
-	if (!p_gfire)
-	{
-		purple_debug_error("gfire", "Couldn't access gfire data.\n");
-		return FALSE;
-	}
-
-	gboolean norm = purple_account_get_bool(purple_connection_get_account(gfire_get_connection(p_gfire)), "ingamedetectionnorm", TRUE);
-	if (!norm)
-		return TRUE;
-
-	if (p_gfire->external_game)
-		return TRUE;
-
-	gfire_process_list_update(p_gfire->process_list);
-
-	xmlnode *gfire_game = gfire_game_config_node_first();
-	for (; gfire_game != NULL; gfire_game = gfire_game_config_node_next(gfire_game))
-	{
-		xmlnode *command_node = NULL;
-		xmlnode *detect_node = NULL;
-
-		command_node = xmlnode_get_child(gfire_game, "command");
-		if(!command_node)
-			continue;
-
-		detect_node = xmlnode_get_child(command_node, "detect");
-		if(!detect_node)
-			continue;
-
-		gchar *game_executable;
-		const gchar *game_id;
-		int game_id_int = 0;
-
-		game_executable = xmlnode_get_data(detect_node);
-		if(!game_executable)
-			continue;
-
-		game_id = xmlnode_get_attrib(gfire_game, "id");
-		if(game_id)
-			game_id_int = atoi(game_id);
-
-		// Arguments & required libraries are optional
-		const gchar *game_exec_required_args = NULL;
-		const gchar *game_exec_invalid_args = NULL;
-		const gchar *game_required_libraries = NULL;
-
-		if (game_id_int)
-		{
-			const xmlnode *game_config_node = gfire_game_node_by_id(game_id_int);
-			xmlnode *game_exec_args_node = NULL;
-			xmlnode *game_required_libraries_node = NULL;
-
-			if (game_config_node)
-			{
-				game_exec_args_node = xmlnode_get_child(game_config_node, "arguments");
-				game_required_libraries_node = xmlnode_get_child(game_config_node, "libraries");
-			}
-
-			if (game_exec_args_node)
-			{
-				game_exec_required_args = xmlnode_get_attrib(game_exec_args_node, "required");
-				game_exec_invalid_args = xmlnode_get_attrib(game_exec_args_node, "invalid");
-			}
-
-			if (game_required_libraries_node)
-				game_required_libraries = xmlnode_get_data(game_required_libraries_node);
-		}
-		else
-			purple_debug_error("gfire", "Couldn't get game ID to obtain game arguments and required libraries.\n");
-
-		g_mutex_lock(p_gfire->server_mutex);
-		gboolean process_running = gfire_process_list_contains(p_gfire->process_list, game_executable, game_exec_required_args, game_exec_invalid_args, game_required_libraries);
-		g_mutex_unlock(p_gfire->server_mutex);
-
-		if (game_required_libraries)
-			g_free(game_required_libraries);
-		
-		gfire_handle_game_detection(p_gfire, game_id_int, process_running, game_executable);
-
-		if (game_executable)
-			g_free(game_executable);
-	}
-
-	return TRUE;
-}
-
-/**
- * Joins the game a buddy is playing.
- * This function launches the game and tells the game to connect to the corresponding server if needed.
- *
- * @param p_gfire: the purple connection
- * @param server_ip: the server ip to join (quad dotted notation)
- * @param server_port: the server port
- * @param game_id: the game ID to launch
- *
- * FIXME: Needs a lot of improvements
-**/
-void gfire_join_game(gfire_data *p_gfire, const gfire_game_data *p_game_data)
-{
-	if (!p_gfire)
-	{
-		purple_debug_error("gfire", "Couldn't access gfire data.\n");
+	if(!p_gfire || !p_data)
 		return;
-	}
 
-	gfire_game_config_info *game_config_info = NULL;
-	gchar *game_launch_command;
-
-	game_config_info = gfire_game_config_info_get(p_game_data->id);
-	if (!game_config_info)
-	{
-		purple_debug_error("gfire", "Game config info struct not defined!\n");
-		return;
-	}
-
-	game_launch_command = gfire_game_config_info_get_command(game_config_info, p_game_data);
-	if (!game_launch_command)
-	{
-		purple_debug_error("gfire", "Couldn't generate game launch command!\n");
-		return;
-	}
-
-	purple_debug_misc("gfire", "Launching game and joining server: %s\n", game_launch_command);
-	g_spawn_command_line_async(game_launch_command, NULL);
+	guint16 len = gfire_proto_create_join_voip(p_data);
+	if(len > 0) gfire_send(p_gfire->gc, len);
 }

@@ -23,6 +23,7 @@
 */
 
 #include "gfire_proto.h"
+#include "gf_game_detection.h"
 
 guint16 gfire_proto_create_auth(const gchar *p_name, const gchar *p_pw_hash)
 {
@@ -705,5 +706,5 @@ void gfire_proto_external_game(gfire_data *p_gfire, guint16 p_packet_len)
 	if(offset == -1)
 		return;
 
-	gfire_playing_external_game(p_gfire, gameid);
+	gfire_game_detector_set_external_game(gameid);
 }

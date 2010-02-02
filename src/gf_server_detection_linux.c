@@ -25,6 +25,8 @@
 #include "gf_games.h"
 #include "gf_server_detection_linux.h"
 
+/*
+
 gfire_server_detection *gfire_server_detection_new()
 {
 	gfire_server_detection *ret = g_malloc0(sizeof(gfire_server_detection));
@@ -324,14 +326,14 @@ int gfire_server_detection_get_ips(gchar **p_local_ip, gchar **p_remote_ip)
 		if (address_family == AF_INET)
 		{
 			address = getnameinfo(if_adresses_tmp->ifa_addr, (address_family == AF_INET) ? sizeof(struct sockaddr_in) : sizeof(struct sockaddr_in6),
-					      address_ip, NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
+						  address_ip, NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
 
 			if (address)
 				return -1;
 			if (i == 0)
-			      *p_local_ip = g_strdup(address_ip);
+				  *p_local_ip = g_strdup(address_ip);
 			else if (i == 1)
-			      *p_remote_ip = g_strdup(address_ip);
+				  *p_remote_ip = g_strdup(address_ip);
 
 			i++;
 		}
@@ -342,20 +344,20 @@ int gfire_server_detection_get_ips(gchar **p_local_ip, gchar **p_remote_ip)
 	// Return error if one or both could not be retrieved
 	if (!p_local_ip || !p_remote_ip)
 		return -1;
-	
+
 	// Return success
 	return 0;
 }
 
 void gfire_server_detection_remove_invalid_ips(gfire_server_detection *p_gfire_server_detection)
-{  
+{
 	// Get local & remote IP
 	gchar *local_ip = NULL;
 	gchar *remote_ip = NULL;
 
 	if (gfire_server_detection_get_ips(&local_ip, &remote_ip) != 0)
 		return;
-	
+
 	gint i, j;
 	gboolean port_allowed = TRUE;
 
@@ -373,7 +375,7 @@ void gfire_server_detection_remove_invalid_ips(gfire_server_detection *p_gfire_s
 				}
 			}
 		}
-		
+
 		if (!g_strcmp0(p_gfire_server_detection->netstat_servers[i][1], local_ip) || !g_strcmp0(p_gfire_server_detection->netstat_servers[i][1], remote_ip) || !port_allowed)
 		{
 			p_gfire_server_detection->netstat_servers[i][0] = NULL;
@@ -440,4 +442,4 @@ gchar *gfire_server_detection_guess_server(gfire_server_detection *p_gfire_serve
 
 	// Return server IP, if none found this will return NULL ofc!
 	return server_ip;
-}
+}*/

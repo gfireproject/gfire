@@ -237,7 +237,7 @@ static void gfire_server_browser_connect_cb(server_browser_callback_args *p_args
 
 		g_strfreev(server_tok);
 
-		gfire_join_game(gfire, &game);
+		gfire_join_game(&game);
 	}
 	else
 		purple_debug_error("gfire", "Couldn't get selected server to join.\n");

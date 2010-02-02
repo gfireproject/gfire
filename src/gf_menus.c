@@ -85,7 +85,7 @@ void gfire_buddy_menu_joingame_cb(PurpleBlistNode *p_node, gpointer *p_data)
 
 	const gfire_game_data *game_data = gfire_buddy_get_game_data(gf_buddy);
 	if (gfire_game_data_is_valid(game_data) && gfire_game_playable(game_data->id))
-		gfire_join_game(gfire, game_data);
+		gfire_join_game(game_data);
 }
 
 /**
@@ -111,7 +111,7 @@ void gfire_buddy_menu_joinvoip_cb(PurpleBlistNode *p_node, gpointer *p_data)
 
 	const gfire_game_data *voip_data = gfire_buddy_get_voip_data(gf_buddy);
 	if (gfire_game_data_is_valid(voip_data) && gfire_game_playable(voip_data->id))
-		gfire_join_game(gfire, voip_data);
+		gfire_join_game(voip_data);
 }
 
 void gfire_menu_action_nick_change_cb(PurplePluginAction *p_action)

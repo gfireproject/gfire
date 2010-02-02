@@ -24,13 +24,14 @@
 
 #include "gf_ipc_proto.h"
 #include "gfire_proto.h"
+#include "gf_game_detection.h"
 
 void gfire_ipc_proto_sdk(gfire_data *p_gfire, gchar *p_data, unsigned short p_len)
 {
 	if(!p_gfire || !p_data || !p_len)
 		return;
 
-	if(!gfire_is_playing(p_gfire))
+	if(!gfire_game_detector_is_playing())
 	{
 		purple_debug_misc("gfire", "Not playing; ignoring SDK data\n");
 		return;

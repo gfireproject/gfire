@@ -25,6 +25,11 @@
 #ifndef _GF_GAME_DETECTION_H
 
 #include "gf_base.h"
+#include "gfire.h"
+
+#define GFIRE_DETECTION_INTERVAL 10 // in seconds
+#define GFIRE_WEB_DETECTION_TIMEOUT 10 // in seconds
+
 
 typedef struct _process_info
 {
@@ -39,7 +44,57 @@ typedef struct _gfire_process_list
 	GList *processes;
 } gfire_process_list;
 
-// OS independent (gf_game_detection.c)
+typedef enum
+{
+	GFGT_PROCESS = 0,
+	GFGT_EXTERNAL,
+	GFGT_WEB
+} gfire_game_detection_type;
+
+typedef struct
+{
+	int socket;
+	guint input;
+} gfire_game_detection_http_connection;
+
+typedef struct _gfire_game_detector
+{
+	// Process list
+	gfire_process_list *process_list;
+
+	// Detected programs
+	gfire_game_data game_data;
+	gfire_game_data voip_data;
+	gfire_game_detection_type game_type;
+
+	// Webgame detection
+	int socket;
+	guint accept_input;
+	GList *connections;
+	guint timeout_check;
+	glong web_timeout;
+
+	// Detection timer
+	guint det_source;
+
+	// Registered Gfire instances
+	GList *instances;
+} gfire_game_detector;
+
+// OS independent (gf_game_detection.c) //////////////////////////////////////
+// Gfire Game Detector
+void gfire_game_detector_register(gfire_data *p_gfire);
+void gfire_game_detector_unregister(gfire_data *p_gfire);
+
+void gfire_game_detector_set_external_game(guint32 p_gameid);
+
+gboolean gfire_game_detector_is_playing();
+gboolean gfire_game_detector_is_voiping();
+
+guint32 gfire_game_detector_current_game();
+guint32 gfire_game_detector_current_voip();
+
+// Gfire Process List
 gfire_process_list *gfire_process_list_new();
 void gfire_process_list_free(gfire_process_list *p_list);
 void gfire_process_list_clear(gfire_process_list *p_list);
@@ -51,7 +106,7 @@ GList *gfire_game_detection_get_process_libraries(const guint32 p_pid);
 // For internal use only
 process_info *gfire_process_info_new(const gchar *p_name, const gchar *p_exe, const guint32 p_pid, const gchar *p_args);
 
-// OS dependent (gf_game_detection_X.c)
+// OS dependent (gf_game_detection_X.c) ////////////////////////////////////
 void gfire_process_list_update(gfire_process_list *p_list);
 void gfire_game_detection_process_libraries_clear(GList *p_list);
 

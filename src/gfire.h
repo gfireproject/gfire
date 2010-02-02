@@ -33,7 +33,6 @@ typedef struct _gfire_data gfire_data;
 #include "gf_buddies.h"
 #include "gf_chat.h"
 #include "gf_games.h"
-#include "gf_game_detection.h"
 #include "gf_p2p.h"
 #include "gf_groups.h"
 
@@ -62,13 +61,13 @@ typedef enum _gfire_find_group_mode
 	GFFG_BUDDY		// by buddy
 } gfire_find_group_mode;
 
-typedef struct _gfire_chat_msg
-{
-	guint8 *chat_id;	/* xfire chat ID of group chat */
-	guint32 uid;		/* userid of user posting the message */
-	gchar *im_str;		/* im text */
-	gfire_buddy *b;		/* for users joining the chat */
-} gfire_chat_msg;
+//typedef struct _gfire_chat_msg
+//{
+//	guint8 *chat_id;	/* xfire chat ID of group chat */
+//	guint32 uid;		/* userid of user posting the message */
+//	gchar *im_str;		/* im text */
+//	gfire_buddy *b;		/* for users joining the chat */
+//} gfire_chat_msg;
 
 struct _gfire_data
 {
@@ -98,14 +97,7 @@ struct _gfire_data
 
 	GList *chats;				/* glist of _gfire_chat structs */
 
-	// Detected programs
-	gfire_process_list *process_list;
-	gfire_game_data game_data;
-	gboolean external_game;
-	gfire_game_data voip_data;
-
 	// Timer callbacks
-	guint det_source;			/* g_timeout_add source number for game detection callback */
 	guint server_browser_pool;
 
 #ifdef HAVE_GTK
@@ -173,14 +165,12 @@ void gfire_add_chat(gfire_data *p_gfire, gfire_chat *p_chat);
 void gfire_leave_chat(gfire_data *p_gfire, gfire_chat *p_chat);
 
 // Gaming status
-gboolean gfire_is_playing(const gfire_data *p_gfire);
-gboolean gfire_is_talking(const gfire_data *p_gfire);
-const gfire_game_data *gfire_get_game_data(gfire_data *p_gfire);
-const gfire_game_data *gfire_get_voip_data(gfire_data *p_gfire);
-void gfire_join_game(gfire_data *p_gfire, const gfire_game_data *p_game_data);
+void gfire_set_game_status(gfire_data *p_gfire, const gfire_game_data *p_data);
+void gfire_set_voip_status(gfire_data *p_gfire, const gfire_game_data *p_data);
 
 // Appearance
 const gchar *gfire_get_name(const gfire_data *p_gfire);
+const gchar *gfire_get_nick(const gfire_data *p_gfire);
 void gfire_set_alias(gfire_data *p_gfire, const gchar* p_alias); // Local
 void gfire_set_nick(gfire_data *p_gfire, const gchar *p_nick); // Remote
 
@@ -194,9 +184,5 @@ gboolean gfire_is_self(const gfire_data *p_gfire, guint32 p_userid);
 // P2P
 gboolean gfire_has_p2p(const gfire_data *p_gfire);
 gfire_p2p_connection *gfire_get_p2p(const gfire_data *p_gfire);
-
-// Detection
-gboolean gfire_detect_running_processes_cb(gfire_data *p_gfire);
-void gfire_playing_external_game(gfire_data *p_gfire, guint32 p_gameid);
 
 #endif // _GFIRE_H
