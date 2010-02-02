@@ -401,8 +401,6 @@ static void gfire_game_detector_web_http_input_cb(gpointer p_con, gint p_fd, Pur
 	// Content
 	g_string_append_printf(response, "\r\n%s", content);
 
-	purple_debug_error("gfire", "detection: http: buffer = %s\n", response->str);
-
 	// Send response
 	send(connection->socket, response->str, strlen(response->str), 0);
 	g_string_free(response, TRUE);
