@@ -29,6 +29,7 @@ typedef struct _gfire_buddy gfire_buddy;
 typedef struct _gfire_clan gfire_clan;
 
 #include "gf_base.h"
+#include "gfire.h"
 #include "gf_games.h"
 #include "gf_p2p_session.h"
 #include "gf_groups.h"
@@ -40,6 +41,7 @@ struct _gfire_clan
 	gchar *long_name;			// Long Clan Name, e.g. "Gfire - Linux and Co Users"
 	gchar *short_name;			// Short Clan Name, e.g. "gfire"
 	PurpleGroup *prpl_group;	// Purple Buddy List Group
+	gboolean got_first_list;	// TRUE if the initializing buddy list has been received
 };
 
 // Enum with all possible buddy types
@@ -256,6 +258,9 @@ void gfire_clan_prpl_remove(gfire_clan *p_clan);
 
 // Initializing from Buddy List
 GList *gfire_clan_get_existing();
+
+// Buddy list cleanups
+void gfire_clan_check_for_left_members(gfire_clan *p_clan, gfire_data *p_gfire);
 
 // FOF GAME DATA
 fof_game_data *gfire_fof_game_data_create(const guint8 *p_sid, guint32 p_game, guint32 p_ip, guint16 p_port);

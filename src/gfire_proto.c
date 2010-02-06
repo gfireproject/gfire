@@ -667,6 +667,12 @@ void gfire_proto_clan_blist(gfire_data *p_gfire, guint16 p_packet_len)
 	g_list_free(userids);
 	g_list_free(names);
 	g_list_free(aliases);
+
+	if(!clan->got_first_list)
+	{
+		gfire_clan_check_for_left_members(clan, p_gfire);
+		clan->got_first_list = TRUE;
+	}
 }
 
 void gfire_proto_system_broadcast(gfire_data *p_gfire, guint16 p_packet_len)

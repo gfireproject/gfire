@@ -1731,6 +1731,101 @@ GList *gfire_clan_get_existing()
 	return ret;
 }
 
+void gfire_clan_check_for_left_members(gfire_clan *p_clan, gfire_data *p_gfire)
+{
+	if(!p_clan || !p_clan->prpl_group || !p_gfire)
+		return;
+
+	PurpleBlistNode *contact_buddy_node = purple_blist_node_get_first_child(PURPLE_BLIST_NODE(p_clan->prpl_group));
+	if(!contact_buddy_node)
+		return;
+
+	PurpleBlistNode *buddy_node = NULL;
+
+	while(contact_buddy_node)
+	{
+		gboolean in_contact = FALSE;
+		// No buddy and no contact
+		if(!PURPLE_BLIST_NODE_IS_BUDDY(contact_buddy_node) && !PURPLE_BLIST_NODE_IS_CONTACT(contact_buddy_node))
+		{
+			contact_buddy_node = purple_blist_node_get_sibling_next(contact_buddy_node);
+			continue;
+		}
+		// A contact, check the buddies inside of it
+		else if(PURPLE_BLIST_NODE_IS_CONTACT(contact_buddy_node))
+		{
+			in_contact = TRUE;
+			buddy_node = purple_blist_node_get_first_child(contact_buddy_node);
+
+			if(!buddy_node)
+				continue;
+		}
+		// A buddy, check it
+		else
+			buddy_node = contact_buddy_node;
+
+		gboolean removed = FALSE;
+
+		do
+		{
+			gboolean found = FALSE;
+			PurpleBuddy *pbuddy = PURPLE_BUDDY(buddy_node);
+
+			// Only check buddies of the current account
+			if(purple_buddy_get_account(pbuddy) != purple_connection_get_account(gfire_get_connection(p_gfire)))
+				continue;
+
+			// Search the PurpleBuddy in all registered buddies
+			GList *buddies = p_gfire->buddies;
+			while(buddies)
+			{
+				// Invalid buddy
+				if(!buddies->data)
+				{
+					buddies = g_list_next(buddies);
+					continue;
+				}
+
+				// Compare the names
+				gfire_buddy *gf_buddy = (gfire_buddy*)buddies->data;
+				if(g_strcmp0(gf_buddy->name, purple_buddy_get_name(pbuddy)) == 0)
+				{
+					found = TRUE;
+					break;
+				}
+
+				buddies = g_list_next(buddies);
+			}
+
+			// Delete the buddy if we couldn't find him
+			if(!found)
+			{
+				purple_debug(PURPLE_DEBUG_INFO, "gfire", "%s seems to have left his clan, removing buddy\n", purple_buddy_get_name(pbuddy));
+
+				// Get the next node before we delete the current one
+				if(in_contact)
+				{
+					buddy_node = purple_blist_node_get_sibling_next(buddy_node);
+					if(!buddy_node)
+						// The contact will also be removed, so get the next one
+						contact_buddy_node = purple_blist_node_get_sibling_next(contact_buddy_node);
+				}
+				else
+					contact_buddy_node = purple_blist_node_get_sibling_next(contact_buddy_node);
+
+				purple_blist_remove_buddy(pbuddy);
+
+				removed = TRUE;
+			}
+
+		// Repeat if we're in a contact, to check all buddies of it
+		} while(in_contact && ((removed && buddy_node) ||
+							   (!removed && (buddy_node = purple_blist_node_get_sibling_next(buddy_node)))));
+		if(!removed)
+			contact_buddy_node = purple_blist_node_get_sibling_next(contact_buddy_node);
+	}
+}
+
 fof_game_data *gfire_fof_game_data_create(const guint8 *p_sid, guint32 p_game, guint32 p_ip, guint16 p_port)
 {
 	if(!p_sid)
