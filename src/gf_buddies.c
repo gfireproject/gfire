@@ -379,6 +379,8 @@ void gfire_buddy_got_im(gfire_buddy *p_buddy, guint32 p_imindex, const gchar *p_
 
 				break;
 			}
+
+			cur = g_list_next(cur);
 		}
 
 		// IM was already received, skip displaying
@@ -405,6 +407,7 @@ void gfire_buddy_got_im(gfire_buddy *p_buddy, guint32 p_imindex, const gchar *p_
 			*imindex = i;
 			p_buddy->missing_ims = g_list_append(p_buddy->missing_ims, imindex);
 		}
+		p_buddy->highest_im = p_imindex;
 	}
 
 	// Show IM
