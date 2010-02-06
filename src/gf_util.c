@@ -110,7 +110,12 @@ gchar *gfire_strip_character_range(gchar *p_string, gchar p_start, gchar p_end)
 	{
 		if((p_string[i] >= p_start) && (p_string[i] <= p_end))
 		{
-			memcpy(&p_string[i], &p_string[i + 1], len - i);
+			int j = i;
+			while(p_string[j] != 0)
+			{
+				p_string[j] = p_string[j + 1];
+				j++;
+			}
 			i--;
 			len--;
 		}

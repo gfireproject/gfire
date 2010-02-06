@@ -135,8 +135,6 @@ static void gfire_chat_update_purple_chat(gfire_chat *p_chat)
 		// Insert the ID
 		gchar *id = purple_base64_encode(p_chat->chat_id, XFIRE_CHATID_LEN);
 		g_hash_table_replace(comp, g_strdup("chat_id"), id);
-
-		purple_blist_schedule_save();
 	}
 }
 

@@ -71,6 +71,7 @@ struct _gfire_p2p_connection
 	// Resend timeout
 	guint resend_source;
 	// Socket
+	PurpleNetworkListenData *listen_data;
 	int socket;
 	// Buffers
 	guint8 *buff_out;

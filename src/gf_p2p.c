@@ -581,6 +581,8 @@ static void gfire_p2p_connection_listen_cb(int p_fd, gpointer p_data)
 
 	gfire_p2p_connection *p2p = (gfire_p2p_connection*)p_data;
 
+	p2p->listen_data = NULL;
+
 	p2p->socket = p_fd;
 
 	p2p->prpl_inpa = purple_input_add(p_fd, PURPLE_INPUT_READ, gfire_p2p_connection_input_cb, p2p);
@@ -616,7 +618,7 @@ gfire_p2p_connection *gfire_p2p_connection_create()
 	ret->msgid = 1;
 
 	// Use random port (or from a range specified in Pidgins settings)
-	if(!purple_network_listen_range(0, 0, SOCK_DGRAM, gfire_p2p_connection_listen_cb, ret))
+	if(!(ret->listen_data = purple_network_listen_range(0, 0, SOCK_DGRAM, gfire_p2p_connection_listen_cb, ret)))
 	{
 		g_free(ret->buff_in);
 		g_free(ret->buff_out);
@@ -631,6 +633,9 @@ void gfire_p2p_connection_close(gfire_p2p_connection *p_p2p)
 {
 	if(!p_p2p)
 		return;
+
+	if(p_p2p->listen_data)
+		purple_network_listen_cancel(p_p2p->listen_data);
 
 	if(p_p2p->prpl_inpa > 0)
 		purple_input_remove(p_p2p->prpl_inpa);

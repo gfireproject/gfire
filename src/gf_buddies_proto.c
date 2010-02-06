@@ -872,6 +872,8 @@ void gfire_buddy_proto_fof_list(gfire_data *p_gfire, guint16 p_packet_len)
 
 							gfire_fof_game_data_free((fof_game_data*)cur->data);
 							gfire_fof_data = g_list_delete_link(gfire_fof_data, cur);
+
+							break;
 						}
 					}
 				}
@@ -884,6 +886,8 @@ void gfire_buddy_proto_fof_list(gfire_data *p_gfire, guint16 p_packet_len)
 						{
 							gfire_fof_game_data_free((fof_game_data*)cur->data);
 							gfire_fof_data = g_list_delete_link(gfire_fof_data, cur);
+
+							break;
 						}
 					}
 				}
@@ -897,6 +901,8 @@ void gfire_buddy_proto_fof_list(gfire_data *p_gfire, guint16 p_packet_len)
 					{
 						gfire_fof_game_data_free((fof_game_data*)cur->data);
 						gfire_fof_data = g_list_delete_link(gfire_fof_data, cur);
+
+						break;
 					}
 				}
 			}
@@ -910,6 +916,8 @@ void gfire_buddy_proto_fof_list(gfire_data *p_gfire, guint16 p_packet_len)
 				{
 					gfire_fof_game_data_free((fof_game_data*)cur->data);
 					gfire_fof_data = g_list_delete_link(gfire_fof_data, cur);
+
+					break;
 				}
 			}
 		}

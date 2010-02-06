@@ -23,6 +23,9 @@
 */
 
 #include "gf_server_browser_proto.h"
+
+#ifdef HAVE_GTK
+
 #include <sys/time.h>
 
 static GMutex *mutex;
@@ -362,3 +365,5 @@ guint16 gfire_server_browser_proto_create_serverlist_request(guint32 p_gameid)
 
 	return offset;
 }
+
+#endif // HAVE_GTK

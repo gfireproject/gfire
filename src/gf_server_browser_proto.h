@@ -22,13 +22,16 @@
  * along with Gfire.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef _GF_SERVER_BROWSER_PROTO_H
+#define _GF_SERVER_BROWSER_PROTO_H
+
 #include "gf_base.h"
+
+#ifdef HAVE_GTK
+
 #include "gf_network.h"
 #include "gf_protocol.h"
 #include "gfire.h"
-
-#ifndef _GF_SERVER_BROWSER_PROTO_H
-#define _GF_SERVER_BROWSER_PROTO_H
 
 #define GFIRE_SERVER_BROWSER_BUF 2048
 #define GFIRE_SERVER_BROWSER_THREADS_LIMIT 8
@@ -66,5 +69,7 @@ typedef struct _server_browser_callback_args
 void gfire_server_browser_update_server_list_thread(gfire_server_info *server_info);
 guint16 gfire_server_browser_proto_create_serverlist_request(guint32 p_gameid);
 void gfire_server_browser_proto_serverlist(gfire_data *p_gfire, guint16 p_packet_len);
+
+#endif // HAVE_GTK
 
 #endif // _GF_SERVER_BROWSER_PROTO_H

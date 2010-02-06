@@ -307,7 +307,10 @@ void gfire_parse_packet(gfire_data *p_gfire, guint16 p_packet_len, guint16 p_pac
 
 		case 150:
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received serverlist\n");
+			// Only used in conjunction with server browser which requires GTK
+#ifdef HAVE_GTK
 			gfire_server_browser_proto_serverlist(p_gfire, p_packet_len);
+#endif // HAVE_GTK
 		break;
 
 		case 151:
