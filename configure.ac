@@ -76,10 +76,10 @@ AC_SUBST(CFLAGS)
 #
 # Check for Pidgin
 #
-PKG_CHECK_MODULES(PIDGIN, pidgin, [AC_DEFINE(HAVE_PIDGIN, 1, [Define if we've found pidgin.])])
+PKG_CHECK_MODULES(PURPLE, purple, [AC_DEFINE(HAVE_PURPLE, 1, [Define if we've found libpurple.])])
 
-AC_SUBST(PIDGIN_CFLAGS)
-AC_SUBST(PIDGIN_LIBS)
+AC_SUBST(PURPLE_CFLAGS)
+AC_SUBST(PURPLE_LIBS)
 
 #
 # Check for GTK+ and other dependencies
@@ -145,12 +145,12 @@ echo;
 echo "Configuration complete."
 echo;
 
-pidginlibdir=$(pkg-config pidgin --variable=libdir)
-pidginpfxdir=$(pkg-config pidgin --variable=prefix)
+purplelibdir=$(pkg-config purple --variable=libdir)
+purplepfxdir=$(pkg-config purple --variable=prefix)
 
 echo "Debugging enabled.............: $enable_debug"
-echo "Pidgin package prefix.........: $pidginpfxdir"
-echo "Pidgin package libdir.........: $pidginlibdir"
+echo "Libpurple package prefix......: $purplepfxdir"
+echo "Libpurple package libdir......: $purplelibdir"
 echo "Install prefix................: $prefix"
 
 gfld=`eval echo $libdir`
