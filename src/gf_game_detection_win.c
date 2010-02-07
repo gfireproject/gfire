@@ -24,6 +24,8 @@
 
 #include "gf_game_detection.h"
 
+#ifdef _WIN32
+
 // Required headers
 #include <windows.h>
 #include <tlhelp32.h>
@@ -217,3 +219,5 @@ void gfire_process_list_update(gfire_process_list *p_list)
 
 	CloseHandle(hProcSnapShot);
 }
+
+#endif // _WIN32

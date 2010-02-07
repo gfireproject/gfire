@@ -26,8 +26,7 @@
 #include <time.h>
 
 // Networking includes, required for the "HTTP-server" as libpurple
-// offers no way to listen only on the localhost and makes sure that
-// that the listening socket stays open
+// offers no way to listen only on the localhost.
 #ifdef _WIN32
 	#include <winsock2.h>
 #else

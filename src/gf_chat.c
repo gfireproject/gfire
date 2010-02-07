@@ -361,9 +361,7 @@ void gfire_chat_set_topic(gfire_chat *p_chat, const gchar *p_topic, gboolean p_n
 	{
 		purple_debug(PURPLE_DEBUG_MISC, "gfire", "new topic for room %s: %s\n", oldtopic, p_topic);
 
-		gchar *wnd_title = g_strdup_printf(_("%s [Xfire Chat]"), p_chat->topic);
-		purple_conversation_set_title(p_chat->c, wnd_title);
-		g_free(wnd_title);
+		purple_conversation_set_title(p_chat->c, p_chat->topic);
 
 		gchar *tmpmsg = g_strdup_printf(_("This room's name has been changed to \"%s\"."), p_topic);
 		purple_conv_chat_write(PURPLE_CONV_CHAT(p_chat->c), "", tmpmsg, PURPLE_MESSAGE_SYSTEM, time(NULL));
@@ -485,11 +483,9 @@ void gfire_chat_show(gfire_chat *p_chat)
 		return;
 
 	// Create conversation
-	gchar *wnd_title = g_strdup_printf(_("%s [Xfire Chat]"), p_chat->topic);
-	p_chat->c = serv_got_joined_chat(gfire_get_connection(p_chat->owner), p_chat->purple_id, wnd_title);
-	g_free(wnd_title);
+	p_chat->c = serv_got_joined_chat(gfire_get_connection(p_chat->owner), p_chat->purple_id, p_chat->topic);
 
-	// Set topic
+	// Set motd
 	purple_conv_chat_set_topic(PURPLE_CONV_CHAT(p_chat->c), NULL, p_chat->motd);
 
 	// Join message
@@ -504,6 +500,8 @@ void gfire_chat_show(gfire_chat *p_chat)
 		purple_conv_chat_write(PURPLE_CONV_CHAT(p_chat->c), "", tmpmsg, PURPLE_MESSAGE_SYSTEM, time(NULL));
 		g_free(tmpmsg);
 	}
+
+	purple_conversation_present(p_chat->c);
 }
 
 void gfire_chat_invite(gfire_chat *p_chat, const gfire_buddy *p_buddy)
