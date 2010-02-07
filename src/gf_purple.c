@@ -474,11 +474,31 @@ static void gfire_purple_set_status(PurpleAccount *p_account, PurpleStatus *p_st
 	gfire_set_status(gfire, p_status);
 }
 
+static void gfire_purple_add_buddy_msg_ok_cb(PurpleBuddy *p_buddy, const gchar *p_msg)
+{
+	PurpleConnection *gc = purple_account_get_connection(purple_buddy_get_account(p_buddy));
+	if(!gc)
+		return;
+
+	// Send the invite with a message
+	guint16 packet_len = gfire_proto_create_invitation(purple_buddy_get_name(p_buddy), p_msg ? p_msg : "");
+	if(packet_len > 0) gfire_send(gc, packet_len);
+}
+
+static void gfire_purple_add_buddy_msg_cancel_cb(PurpleBuddy *p_buddy)
+{
+	PurpleConnection *gc = purple_account_get_connection(purple_buddy_get_account(p_buddy));
+	if(!gc)
+		return;
+
+	// Just send the invite
+	guint16 packet_len = gfire_proto_create_invitation(purple_buddy_get_name(p_buddy), "");
+	if(packet_len > 0) gfire_send(gc, packet_len);
+}
 
 static void gfire_purple_add_buddy(PurpleConnection *p_gc, PurpleBuddy *p_buddy, PurpleGroup *p_group)
 {
 	gfire_data *gfire = NULL;
-	guint16 packet_len = 0;
 	if(!p_gc || !(gfire = (gfire_data *)p_gc->proto_data) || !p_buddy || !purple_buddy_get_name(p_buddy))
 		return;
 
@@ -500,14 +520,19 @@ static void gfire_purple_add_buddy(PurpleConnection *p_gc, PurpleBuddy *p_buddy,
 		gf_buddy = gfire_buddy_create(0, purple_buddy_get_name(p_buddy), purple_buddy_get_alias(p_buddy), GFBT_FRIEND);
 		if(!gf_buddy)
 			return;
+
+		gfire_add_buddy(gfire, gf_buddy, group);
 	}
 	else
 		gfire_buddy_make_friend(gf_buddy, group);
 
-	gfire_add_buddy(gfire, gf_buddy, group);
-
-	packet_len = gfire_proto_create_invitation(p_buddy->name, "");
-	if(packet_len > 0) gfire_send(p_gc, packet_len);
+	// Request the invitation message
+	purple_request_input(p_gc, _("Xfire Invitation Message"),
+						 NULL, _("Please enter the message you want to send your buddy with this invite:"),
+						 _("Please add me to your friends list!"), TRUE, FALSE, "",
+						 _("Invite with a message"), G_CALLBACK(gfire_purple_add_buddy_msg_ok_cb),
+						 _("Invite without a message"), G_CALLBACK(gfire_purple_add_buddy_msg_cancel_cb),
+						 purple_connection_get_account(p_gc), NULL, NULL, p_buddy);
 }
 
 static void gfire_purple_remove_buddy(PurpleConnection *p_gc, PurpleBuddy *p_buddy, PurpleGroup *p_group)
