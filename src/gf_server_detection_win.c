@@ -30,7 +30,7 @@ void gfire_detect_teamspeak_server(guint8 **voip_ip, guint32 *voip_port)
 {
 }
 
-void gfire_server_detection_detect(gfire_data *p_gfire)
+void gfire_server_detection_detect(const guint32 p_pid)
 {
 }
 

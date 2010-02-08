@@ -34,13 +34,13 @@
 // Result must be freed when no longer used, using g_free()
 gchar *gfire_game_detection_winepath(const gchar *p_wine_prefix, const gchar *p_win_path)
 {
-	if (!p_win_path)
+	if(!p_win_path)
 		return NULL;
 
 	FILE *winepath;
 	gchar *cmd, cmd_out[PATH_MAX];
 
-	if (!p_wine_prefix)
+	if(!p_wine_prefix)
 		cmd = g_strdup_printf("winepath -u '%s'", p_win_path);
 	else
 		cmd = g_strdup_printf("WINEPREFIX='%s' winepath -u '%s'", p_wine_prefix, p_win_path);
@@ -48,10 +48,10 @@ gchar *gfire_game_detection_winepath(const gchar *p_wine_prefix, const gchar *p_
 	winepath = popen(cmd, "r");
 	g_free(cmd);
 
-	if (!winepath)
+	if(!winepath)
 		return NULL;
 
-	if (!fgets(cmd_out, PATH_MAX, winepath))
+	if(!fgets(cmd_out, PATH_MAX, winepath))
 	{
 		pclose(winepath);
 		return NULL;
@@ -65,7 +65,7 @@ gchar *gfire_game_detection_winepath(const gchar *p_wine_prefix, const gchar *p_
 
 void gfire_process_list_update(gfire_process_list *p_list)
 {
-	if (!p_list)
+	if(!p_list)
 		return;
 
 	gfire_process_list_clear(p_list);
@@ -73,7 +73,7 @@ void gfire_process_list_update(gfire_process_list *p_list)
 	DIR *proc = opendir("/proc");
 	struct dirent *proc_dirent;
 
-	if (!proc)
+	if(!proc)
 		return;
 
 	while((proc_dirent = readdir(proc)))
@@ -87,7 +87,7 @@ void gfire_process_list_update(gfire_process_list *p_list)
 		struct stat proc_dir_mode;
 		gchar *proc_path = g_strdup_printf("/proc/%s", proc_dirent->d_name);
 
-		if (stat(proc_path, &proc_dir_mode) == -1)
+		if(stat(proc_path, &proc_dir_mode) == -1)
 		{
 			g_free(proc_path);
 			continue;
@@ -96,7 +96,7 @@ void gfire_process_list_update(gfire_process_list *p_list)
 		g_free(proc_path);
 
 		// Don't check current process if not owned
-		if (geteuid() != proc_dir_mode.st_uid || !S_ISDIR(proc_dir_mode.st_mode))
+		if(geteuid() != proc_dir_mode.st_uid || !S_ISDIR(proc_dir_mode.st_mode))
 			continue;
 
 		// Get process id
@@ -105,7 +105,7 @@ void gfire_process_list_update(gfire_process_list *p_list)
 
 		while(*process_id_tmp != 0)
 		{
-			if (!g_ascii_isdigit(*process_id_tmp))
+			if(!g_ascii_isdigit(*process_id_tmp))
 				break;
 
 			process_id_tmp++;
@@ -122,7 +122,7 @@ void gfire_process_list_update(gfire_process_list *p_list)
 		gchar *proc_exe_path = g_strdup_printf("/proc/%u/exe", process_id);
 
 		proc_exe_len = readlink(proc_exe_path, proc_exe, PATH_MAX);
-		if (proc_exe_len == -1)
+		if(proc_exe_len == -1)
 		{
 			g_free(proc_exe_path);
 			continue;
@@ -138,7 +138,7 @@ void gfire_process_list_update(gfire_process_list *p_list)
 		gchar *proc_cmdline_path = g_strdup_printf("/proc/%u/cmdline", process_id);
 
 		proc_cmdline = fopen(proc_cmdline_path, "r");
-		if (!proc_cmdline)
+		if(!proc_cmdline)
 		{
 			g_free(process_exe);
 			g_free(proc_cmdline_path);
@@ -158,7 +158,7 @@ void gfire_process_list_update(gfire_process_list *p_list)
 
 		while(getdelim(&cmdline_current_arg, &proc_cmdline_size, 0, proc_cmdline) != -1)
 		{
-			if (i == 0)
+			if(i == 0)
 			{
 				proc_cmd = g_strdup(cmdline_current_arg);
 				i = -1;
@@ -170,7 +170,7 @@ void gfire_process_list_update(gfire_process_list *p_list)
 		g_free(cmdline_current_arg);
 		fclose(proc_cmdline);
 
-		if (!proc_cmd)
+		if(!proc_cmd)
 		{
 			g_free(process_exe);
 			g_string_free(current_arg_new, TRUE);
@@ -182,14 +182,14 @@ void gfire_process_list_update(gfire_process_list *p_list)
 		g_strstrip(process_args);
 
 		// Different behavious for Wine processes
-		if (!g_strcmp0(process_exe, "/usr/bin/wine-preloader"))
+		if(!g_strcmp0(process_exe, "/usr/bin/wine-preloader"))
 		{
 			// Get process environ to get wine prefix
 			FILE *proc_environ;
 			gchar *proc_environ_path = g_strdup_printf("/proc/%d/environ", process_id);
 
 			proc_environ = fopen(proc_environ_path, "r");
-			if (!proc_environ)
+			if(!proc_environ)
 			{
 				g_free(process_exe);
 				g_free(process_args);
@@ -207,7 +207,7 @@ void gfire_process_list_update(gfire_process_list *p_list)
 			{
 				wine_prefix_test = strstr(environ_current_value, "WINEPREFIX=");
 
-				if (wine_prefix_test != NULL)
+				if(wine_prefix_test != NULL)
 					process_wine_prefix = g_strdup_printf("%s", wine_prefix_test + 11);
 			}
 
@@ -218,7 +218,7 @@ void gfire_process_list_update(gfire_process_list *p_list)
 			process_name = gfire_game_detection_winepath(process_wine_prefix, proc_cmd);
 			g_free(process_wine_prefix);
 
-			if (!process_name)
+			if(!process_name)
 			{
 				g_free(process_exe);
 				g_free(process_args);
@@ -230,7 +230,7 @@ void gfire_process_list_update(gfire_process_list *p_list)
 			process_name_tmp = canonicalize_file_name(process_name);
 			g_free(process_name);
 
-			if (!process_name_tmp)
+			if(!process_name_tmp)
 			{
 				g_free(process_exe);
 				g_free(process_args);
@@ -242,7 +242,7 @@ void gfire_process_list_update(gfire_process_list *p_list)
 		else
 			process_name = g_strdup(g_strchomp(proc_exe));
 
-		if (!process_name)
+		if(!process_name)
 		{
 			g_free(process_exe);
 			g_free(process_args);
@@ -271,18 +271,18 @@ GList *gfire_game_detection_get_process_libraries(const guint32 p_pid)
 	FILE *proc_libs = fopen(proc_libs_path, "r");
 	g_free(proc_libs_path);
 
-	if (proc_libs)
+	if(proc_libs)
 	{
 		gchar buf[1024];
 		while(!feof(proc_libs))
 		{
-			if (fgets(buf, 1024, proc_libs))
+			if(fgets(buf, 1024, proc_libs))
 			{
-				if (strstr(buf, ".so"))
+				if(strstr(buf, ".so"))
 				{
 					// Getting file part only, using 20 spaces as delimiter
 					gchar *libs_file_part = strstr(buf, "                    ");
-					if (libs_file_part)
+					if(libs_file_part)
 					{
 						libs_file_part = g_path_get_basename(libs_file_part + 20);
 						process_libs = g_list_append(process_libs, libs_file_part);
@@ -301,9 +301,9 @@ void gfire_game_detection_process_libraries_clear(GList *p_list)
 {
 	while (p_list != NULL)
 	{
-		if (p_list->data)
+		if(p_list->data)
 			g_free(p_list->data);
-		
+
 		p_list = g_list_next(p_list);
 	}
 }

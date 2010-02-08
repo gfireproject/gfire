@@ -41,12 +41,14 @@
 
 typedef struct _gfire_server_detection
 {
+	guint32 game_pid;
+	
 	gchar ***netstat_servers;
 	gchar ***tcpdump_servers;
-	
+
 	gint detected_netstat_servers;
 	gint detected_tcpdump_servers;
-	
+
 	gboolean udp_detected;
 	gfire_game_detection_info *game_information;
 } gfire_server_detection;
@@ -57,7 +59,7 @@ void gfire_server_detection_free(gfire_server_detection *p_gfire_server_detectio
 void gfire_server_detection_arrays_clear(gfire_server_detection *p_gfire_server_detection);
 
 // Server detection core
-void gfire_server_detection_detect(gfire_data *p_gfire);
+void gfire_server_detection_detect(gfire_server_detection *p_server_detection_infos);
 gchar *gfire_server_detection_get(guint32 p_pid, gfire_server_detection *p_gfire_server_detection);
 int gfire_server_detection_get_ips(gchar** p_local_ip, gchar** p_remote_ip);
 void gfire_server_detection_remove_invalid_ips(gfire_server_detection *p_gfire_server_detection);
