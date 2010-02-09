@@ -1208,6 +1208,9 @@ static void _init_plugin(PurplePlugin *p_plugin)
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
 #endif // USE_NOTIFICATIONS
 
+	option = purple_account_option_bool_new(_("Change my status for other protocols as well"), "use_global_status", TRUE);
+	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
+
 	info.name = _("Xfire");
 	info.summary = _("Xfire Protocol Plugin");
 	info.description = _("Xfire Protocol Plugin");

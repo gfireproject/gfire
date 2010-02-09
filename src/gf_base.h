@@ -78,6 +78,7 @@
 #include "xmlnode.h"
 #include "privacy.h"
 #include "cmds.h"
+#include "savedstatuses.h"
 
 // Gfire debugging macros
 #include "gf_debug.h"

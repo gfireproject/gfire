@@ -31,40 +31,6 @@
 #include "gfire.h"
 
 #include <windows.h>
-#include <tlhelp32.h>
-
-// Windows Kernel Functionality
-typedef struct _PROCESS_BASIC_INFORMATION
-{
-	DWORD ExitStatus;
-	PVOID PebBaseAddress;
-	DWORD AffinityMask;
-	DWORD BasePriority;
-	DWORD UniqueProcessId;
-	DWORD ParentProcessId;
-} PROCESS_BASIC_INFORMATION, *PPROCESS_BASIC_INFORMATION;
-
-typedef struct _UNICODE_STRING
-{
-	USHORT Length;
-	USHORT MaximumLength;
-	PWSTR Buffer;
-} UNICODE_STRING, *PUNICODE_STRING;
-
-#ifndef NTSTATUS
-	typedef long NTSTATUS;
-#endif // NTSTATUS
-
-typedef NTSTATUS (NTAPI *_NtQueryInformationProcess)(
-	HANDLE ProcessHandle,
-	DWORD ProcessInformationClass,
-	PVOID ProcessInformation,
-	DWORD ProcessInformationLength,
-	PDWORD ReturnLength);
-
-gboolean check_process(const gchar *process, const gchar *process_argument);
-void gfire_detect_teamspeak_server(guint8 **voip_ip, guint32 *voip_port);
-void gfire_server_detection_detect(gfire_data *p_gfire);
 
 #endif // _WIN32
 

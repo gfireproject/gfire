@@ -170,7 +170,7 @@ static gboolean get_process_cmdline(gint p_pid, gchar **p_exe, gchar **p_cmd_lin
 
 	CloseHandle(process);
 
-	return TRUE;
+	return (*p_exe && *p_cmd_line);
 }
 
 void gfire_process_list_update(gfire_process_list *p_list)
@@ -199,17 +199,31 @@ void gfire_process_list_update(gfire_process_list *p_list)
 	{
 		if(pe.th32ProcessID > 0)
 		{
-
-			gchar *executable_name = pe.szExeFile;
-			if(!executable_name)
-				continue;
-
 			gchar *cmdline = NULL;
 			gchar *executable_file = NULL;
 			if(!get_process_cmdline(pe.th32ProcessID, &executable_file, &cmdline))
 				continue;
-			process_info *info = gfire_process_info_new(executable_name, executable_file, pe.th32ProcessID,
-														cmdline + strlen(pe.szExeFile));
+
+			// Extract the args from the command line
+			gchar *args = strstr(g_strstrip(cmdline), pe.szExeFile);
+			if(args)
+			{
+				args += strlen(pe.szExeFile);
+				if(args[0] == 0)
+					args = NULL;
+				// If the first char behind the process' name is ", strip it
+				else if(args[0] == '\"')
+				{
+					args++;
+					if(args[0] == 0)
+						args = NULL;
+				}
+			}
+			if(args)
+				g_strstrip(args);
+
+			// Add the process
+			process_info *info = gfire_process_info_new(executable_file, executable_file, pe.th32ProcessID, args);
 			g_free(cmdline);
 			g_free(executable_file);
 

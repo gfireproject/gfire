@@ -185,4 +185,8 @@ gboolean gfire_is_self(const gfire_data *p_gfire, guint32 p_userid);
 gboolean gfire_has_p2p(const gfire_data *p_gfire);
 gfire_p2p_connection *gfire_get_p2p(const gfire_data *p_gfire);
 
+// Account settings
+gboolean gfire_wants_server_detection(const gfire_data *p_gfire);
+gboolean gfire_wants_global_status_change(const gfire_data *p_gfire);
+
 #endif // _GFIRE_H

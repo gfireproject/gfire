@@ -1382,3 +1382,15 @@ void gfire_set_voip_status(gfire_data *p_gfire, const gfire_game_data *p_data)
 	guint16 len = gfire_proto_create_join_voip(p_data);
 	if(len > 0) gfire_send(p_gfire->gc, len);
 }
+
+gboolean gfire_wants_server_detection(const gfire_data *p_gfire)
+{
+	return (p_gfire && p_gfire->gc && purple_account_get_bool(purple_connection_get_account(p_gfire->gc),
+															  "server_detection_option", FALSE));
+}
+
+gboolean gfire_wants_global_status_change(const gfire_data *p_gfire)
+{
+	return (p_gfire && p_gfire->gc && purple_account_get_bool(purple_connection_get_account(p_gfire->gc),
+															  "use_global_status", TRUE));
+}

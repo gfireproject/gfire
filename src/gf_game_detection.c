@@ -43,14 +43,106 @@ static void gfire_game_detector_inform_instances()
 		purple_debug_info("gfire", "%s is running, sending ingame status.\n", NN(game_name));
 	else
 		purple_debug_misc("gfire", "Game is not running anymore, sending out-of-game status.\n");
-	g_free(game_name);
 
 	GList *cur = gfire_detector->instances;
+	gboolean do_global_status = FALSE;
 	while(cur)
 	{
 		gfire_set_game_status((gfire_data*)cur->data, &gfire_detector->game_data);
+
+		// Set to true if at least one account wants that
+		do_global_status = (do_global_status || gfire_wants_global_status_change((gfire_data*)cur->data));
 		cur = g_list_next(cur);
 	}
+
+	// Change the status of non-Xfire accounts as well if requested
+	if(do_global_status)
+	{
+		GList *accounts = purple_accounts_get_all_active();
+		GList *cur = accounts;
+		while(cur)
+		{
+			PurpleAccount *account = (PurpleAccount*)cur->data;
+
+			// Only change the status for non-Xfire protocols
+			if(!purple_utf8_strcasecmp(purple_account_get_protocol_id(account), GFIRE_PRPL_ID))
+			{
+				cur = g_list_next(cur);
+				continue;
+			}
+
+			// Set gaming status
+			if(gfire_detector->game_data.id != 0)
+			{
+				gchar *msg = g_strdup_printf(_("Playing %s"), game_name);
+				PurpleStatusType *status_type = purple_account_get_status_type_with_primitive(account,
+																							  PURPLE_STATUS_UNAVAILABLE);
+				// Set the status to unavailable/busy/dnd
+				if(status_type)
+				{
+					PurplePresence *presence = purple_account_get_presence(account);
+					if(presence)
+					{
+						PurpleStatus *status = purple_presence_get_status(presence,
+																		  purple_status_type_get_id(status_type));
+						if(status)
+						{
+							if(purple_status_type_get_attr(status_type, "message"))
+							{
+								purple_debug_info("gfire", "detection: Setting %s status to: %s\n",
+												  purple_account_get_username(account), msg);
+
+								GList *attrs = NULL;
+								attrs = g_list_append(attrs, "message");
+								attrs = g_list_append(attrs, g_strdup(msg));
+								purple_status_set_active_with_attrs_list(status, TRUE, attrs);
+								g_list_free(attrs);
+							}
+							else
+								purple_status_set_active(status, TRUE);
+						}
+					}
+				}
+				// No unavailable/busy/dnd status supported, just change the current status' message
+				else
+				{
+					PurpleStatus *status = purple_account_get_active_status(account);
+					if(purple_status_type_get_attr(purple_status_get_type(status), "message"))
+					{
+						purple_debug_info("gfire", "detection: Setting %s status to: %s\n",
+										  purple_account_get_username(account), msg);
+
+						GList *attrs = NULL;
+						attrs = g_list_append(attrs, "message");
+						attrs = g_list_append(attrs, g_strdup(msg));
+						purple_status_set_active_with_attrs_list(status, TRUE, attrs);
+						g_list_free(attrs);
+					}
+				}
+				g_free(msg);
+			}
+			// Restore old status
+			else
+			{
+				PurpleSavedStatus *savedstatus = purple_savedstatus_get_current();
+				if(savedstatus)
+				{
+					purple_debug_info("gfire", "detection: Resetting %s status\n",
+										  purple_account_get_username(account));
+
+					purple_savedstatus_activate_for_account(savedstatus, account);
+				}
+				else
+					purple_debug_warning("gfire", "detection: no status for status reset found\n");
+			}
+
+			cur = g_list_next(cur);
+		}
+
+		g_list_free(accounts);
+	}
+
+	g_free(game_name);
 }
 
 static gboolean gfire_game_detector_detect_cb(void *p_unused)
