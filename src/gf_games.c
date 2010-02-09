@@ -485,10 +485,7 @@ gfire_game_config_info *gfire_game_config_info_get(guint32 p_gameid)
 		{
 			gchar *launch_network_args_tmp = NULL;
 			if ((launch_network_args_tmp = xmlnode_get_data(cnode)))
-			{
 				game_info->game_connect = launch_network_args_tmp;
-				g_free(launch_network_args_tmp);
-			}
 		}
 	}
 
