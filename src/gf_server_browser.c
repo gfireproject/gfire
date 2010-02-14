@@ -25,40 +25,12 @@
 #include "gf_server_browser.h"
 
 #ifdef HAVE_GTK
-static void gfire_server_browser_request_list_cb(server_browser_callback_args *p_args, GtkWidget *p_button);
-static void gfire_server_browser_server_information_cb(server_browser_callback_args *p_args, GtkWidget *p_sender);
-static void gfire_server_browser_connect_cb(server_browser_callback_args *p_args, GtkWidget *p_sender);
-
-void gfire_server_browser_close(server_browser_callback_args *p_args, GtkWidget *p_button)
-{
-	if (!p_args)
-		return;
-
-	gfire_data *gfire = p_args->gfire;
-	GtkBuilder *builder = p_args->builder;
-
-	if (!gfire || !builder)
-	{
-		purple_debug_error("gfire", "Purple connection not set and/or couldn't get server browser interface.\n");
-		return;
-	}
-
-	if (servers_list_thread_pool)
-		g_thread_pool_free(servers_list_thread_pool, TRUE, FALSE);
-
-	if (gfire->server_browser_pool > 0)
-		g_source_remove(gfire->server_browser_pool);
-
-	GtkWidget *server_browser_window = GTK_WIDGET(gtk_builder_get_object(builder, "server_browser_window"));
-	gtk_widget_destroy(server_browser_window);
-}
-
 void gfire_server_browser_show(PurplePluginAction *p_action)
 {
 	PurpleConnection *gc = (PurpleConnection *)p_action->context;
 	gfire_data *gfire = NULL;
 
-	if (!gc || !(gfire = (gfire_data *)gc->proto_data))
+	if(!gc || !(gfire = (gfire_data *)gc->proto_data))
 	{
 		purple_debug_error("gfire", "Purple connection not set and/or couldn't access gfire data.\n");
 		return;
@@ -73,7 +45,7 @@ void gfire_server_browser_show(PurplePluginAction *p_action)
 	gtk_builder_add_from_file(builder, builder_file, NULL);
 	g_free(builder_file);
 
-	if (!builder)
+	if(!builder)
 	{
 		purple_debug_error("gfire", "Couldn't build server browser interface, file missing?\n");
 		return;
@@ -88,7 +60,6 @@ void gfire_server_browser_show(PurplePluginAction *p_action)
 	GtkWidget *game_combo = GTK_WIDGET(gtk_builder_get_object(builder, "game_combo"));
 
 	server_browser_callback_args *args;
-
 	args = g_malloc0(sizeof(server_browser_callback_args));
 	args->gfire = gfire;
 	args->builder = builder;
@@ -109,20 +80,61 @@ void gfire_server_browser_show(PurplePluginAction *p_action)
 		const gchar *game_name = xmlnode_get_attrib(node_child, "name");
 		gtk_combo_box_append_text(GTK_COMBO_BOX(game_combo), game_name);
 	}
-
 	xmlnode_free(node_child);
+
+	// Add main (parent) rows
+	GtkTreeIter iter;
+	GtkTreeStore *tree_store = GTK_TREE_STORE(gtk_builder_get_object(builder, "servers_list_tree_store"));
+
+	gtk_tree_store_append(tree_store, &iter, NULL);
+	gtk_tree_store_set(tree_store, &iter, 0, "Recent servers", -1);
+
+	gtk_tree_store_append(tree_store, &iter, NULL);
+	gtk_tree_store_set(tree_store, &iter, 0, "Favorite servers", -1);
+
+	gtk_tree_store_append(tree_store, &iter, NULL);
+	gtk_tree_store_set(tree_store, &iter, 0, "Friends' favorite servers", -1);
+
+	gtk_tree_store_append(tree_store, &iter, NULL);
+	gtk_tree_store_set(tree_store, &iter, 0, "All servers", -1);
+
+	// Show window
 	gtk_widget_show_all(server_browser_window);
 }
 
-static void gfire_server_browser_request_list_cb(server_browser_callback_args *p_args, GtkWidget *p_button)
+void gfire_server_browser_close(server_browser_callback_args *p_args, GtkWidget *p_button)
 {
-	if (!p_args)
+	if(!p_args)
 		return;
 
 	gfire_data *gfire = p_args->gfire;
 	GtkBuilder *builder = p_args->builder;
 
-	if (!gfire || !builder)
+	if(!gfire || !builder)
+	{
+		purple_debug_error("gfire", "Purple connection not set and/or couldn't get server browser interface.\n");
+		return;
+	}
+
+	if(servers_list_thread_pool)
+		g_thread_pool_free(servers_list_thread_pool, TRUE, FALSE);
+
+	if(gfire->server_browser_pool > 0)
+		g_source_remove(gfire->server_browser_pool);
+
+	GtkWidget *server_browser_window = GTK_WIDGET(gtk_builder_get_object(builder, "server_browser_window"));
+	gtk_widget_destroy(server_browser_window);
+}
+
+static void gfire_server_browser_request_list_cb(server_browser_callback_args *p_args, GtkWidget *p_unused)
+{
+	if(!p_args)
+		return;
+
+	gfire_data *gfire = p_args->gfire;
+	GtkBuilder *builder = p_args->builder;
+
+	if(!gfire || !builder)
 	{
 		purple_debug_error("gfire", "Purple connection not set and/or couldn't get server browser interface.\n");
 		return;
@@ -140,7 +152,7 @@ static void gfire_server_browser_request_list_cb(server_browser_callback_args *p
 	game_id = gfire_game_id(game_name);
 	g_free(game_name);
 
-	if (game_id != 0)
+	if(game_id != 0)
 	{
 		// Define game id, to be able to determine query types later
 		servers_list_queried_game_id = game_id;
@@ -159,7 +171,7 @@ static void gfire_server_browser_server_information_cb(server_browser_callback_a
 	gfire_data *gfire = p_args->gfire;
 	GtkBuilder *builder = p_args->builder;
 
-	if (!gfire || !builder)
+	if(!gfire || !builder)
 	{
 		purple_debug_error("gfire", "Purple connection not set and/or couldn't get server browser interface.\n");
 		return;
@@ -180,7 +192,7 @@ static void gfire_server_browser_server_information_cb(server_browser_callback_a
 	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(servers_tree_view));
 	model = gtk_tree_view_get_model(GTK_TREE_VIEW(servers_tree_view));
 
-	if (gtk_tree_selection_get_selected(selection, &model, &iter))
+	if(gtk_tree_selection_get_selected(selection, &model, &iter))
 	{
 		gchar *server_raw_info;
 
@@ -201,7 +213,7 @@ static void gfire_server_browser_connect_cb(server_browser_callback_args *p_args
 	gfire_data *gfire = p_args->gfire;
 	GtkBuilder *builder = p_args->builder;
 
-	if (!gfire || !builder)
+	if(!gfire || !builder)
 	{
 		purple_debug_error("gfire", "Purple connection not set and/or couldn't get server browser interface.\n");
 		return;
@@ -218,7 +230,7 @@ static void gfire_server_browser_connect_cb(server_browser_callback_args *p_args
 	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(servers_tree_view));
 	model = gtk_tree_view_get_model(GTK_TREE_VIEW(servers_tree_view));
 
-	if (gtk_tree_selection_get_selected(selection, &model, &iter))
+	if(gtk_tree_selection_get_selected(selection, &model, &iter))
 	{
 		gfire_game_data game;
 		gchar *server;

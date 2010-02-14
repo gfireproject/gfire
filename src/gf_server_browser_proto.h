@@ -28,7 +28,6 @@
 #include "gf_base.h"
 
 #ifdef HAVE_GTK
-
 #include "gf_network.h"
 #include "gf_protocol.h"
 #include "gfire.h"
@@ -41,7 +40,7 @@ guint32 servers_list_queried_game_id;
 
 typedef struct _gfire_server_info
 {
-	GtkTreeIter servers_list_iter;
+	GtkTreeIter server_list_iter;
 	gchar *query_type;
 
 	gchar *raw_info;
@@ -69,7 +68,6 @@ typedef struct _server_browser_callback_args
 void gfire_server_browser_update_server_list_thread(gfire_server_info *server_info);
 guint16 gfire_server_browser_proto_create_serverlist_request(guint32 p_gameid);
 void gfire_server_browser_proto_serverlist(gfire_data *p_gfire, guint16 p_packet_len);
-
 #endif // HAVE_GTK
 
 #endif // _GF_SERVER_BROWSER_PROTO_H
