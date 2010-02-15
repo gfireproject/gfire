@@ -31,11 +31,6 @@ static GList *gfire_games = NULL;
 static GList *gfire_games_external = NULL;
 static GList *gfire_games_config = NULL;
 
-// static Game manager vars
-#ifdef HAVE_GTK
-static GtkBuilder *gfire_gtk_builder = NULL;
-#endif // HAVE_GTK
-
 void gfire_update_games_list_cb(PurpleUtilFetchUrlData *p_url_data, gpointer p_data, const gchar *p_buf, gsize p_len, const gchar *p_error_message)
 {
 	if (!p_data || !p_buf || !p_len)
@@ -960,6 +955,8 @@ void gfire_join_game(const gfire_game_data *p_game_data)
 }
 
 #ifdef HAVE_GTK
+static GtkBuilder *gfire_gtk_builder = NULL;
+
 static void gfire_game_manager_reload_ui()
 {
 	if(!gfire_gtk_builder)
@@ -1287,12 +1284,13 @@ static void gfire_game_manager_update_executable_cb(GtkWidget *p_launch_button, 
 	gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(p_launch_button), gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(p_detect_button)));
 }
 
-static gboolean gfire_game_manager_closed_cb(GtkWidget *p_widget, GdkEvent *p_event, gpointer *p_data)
+static void gfire_game_manager_closed_cb(GtkObject *p_object, gpointer *p_data)
 {
-	g_object_unref(G_OBJECT(gfire_gtk_builder));
-	gfire_gtk_builder = NULL;
-
-	return FALSE;
+	if(gfire_gtk_builder)
+	{
+		g_object_unref(G_OBJECT(gfire_gtk_builder));
+		gfire_gtk_builder = NULL;
+	}
 }
 
 void gfire_game_manager_show(PurplePluginAction *p_action)
@@ -1328,7 +1326,7 @@ void gfire_game_manager_show(PurplePluginAction *p_action)
 	GtkWidget *edit_apply_button = GTK_WIDGET(gtk_builder_get_object(gfire_gtk_builder, "edit_apply_button"));
 	GtkWidget *edit_remove_button = GTK_WIDGET(gtk_builder_get_object(gfire_gtk_builder, "edit_remove_button"));
 
-	g_signal_connect(manage_games_window, "delete-event", G_CALLBACK(gfire_game_manager_closed_cb), NULL);
+	g_signal_connect(manage_games_window, "destroy", G_CALLBACK(gfire_game_manager_closed_cb), NULL);
 	g_signal_connect_swapped(add_detection_button, "current-folder-changed", G_CALLBACK(gfire_game_manager_update_executable_cb), add_launch_button);
 	g_signal_connect_swapped(add_executable_check_button, "toggled", G_CALLBACK(gfire_game_manager_update_executable_toggled_cb), gfire_gtk_builder);
 	g_signal_connect_swapped(add_close_button, "clicked", G_CALLBACK(gtk_widget_destroy), manage_games_window);
