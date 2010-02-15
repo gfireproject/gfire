@@ -707,8 +707,8 @@ static GList *gfire_purple_actions(PurplePlugin *p_plugin, gpointer p_context)
 		act = purple_plugin_action_new(_("Manage Games"), gfire_game_manager_show);
 		m = g_list_append(m, act);
 		// Disable server browser for the moment
-		// act = purple_plugin_action_new(_("Server Browser"), gfire_server_browser_show);
-		// m = g_list_append(m, act);
+		act = purple_plugin_action_new(_("Server Browser"), gfire_server_browser_show);
+		m = g_list_append(m, act);
 	}
 #endif // HAVE_GTK
 

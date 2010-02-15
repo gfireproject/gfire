@@ -23,6 +23,7 @@
 */
 
 #include "gf_server_browser_proto.h"
+#include "gf_server_browser.h"
 
 #ifdef HAVE_GTK
 #include <sys/time.h>
@@ -35,7 +36,7 @@ const char cod4_query[] = {0xFF, 0xFF, 0xFF, 0XFF, 0x67, 0x65, 0x74, 0x73, 0x74,
 const char quake3_query[] = {0xFF, 0xFF, 0xFF, 0xFF, 0x67, 0x65, 0x74, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x0A};
 const char ut2004_query[] = {0x5C, 0x69, 0x6E, 0x66, 0x6F, 0x5C};
 
-gfire_server_info *gfire_server_info_new()
+static gfire_server_info *gfire_server_info_new()
 {
 	gfire_server_info *server_info;
 	server_info = (gfire_server_info *)g_malloc0(sizeof(gfire_server_info));
@@ -43,7 +44,7 @@ gfire_server_info *gfire_server_info_new()
 	return server_info;
 }
 
-gchar *gfire_server_browser_send_packet(const guint32 server_ip, const gint server_port, const gchar server_query[])
+static gchar *gfire_server_browser_send_packet(const guint32 server_ip, const gint server_port, const gchar server_query[])
 {
 	if(server_ip && server_port && server_query)
 	{
@@ -93,7 +94,7 @@ gchar *gfire_server_browser_send_packet(const guint32 server_ip, const gint serv
 		return NULL;
 }
 
-gfire_server_info *gfire_server_browser_quake3(const guint32 server_ip, const gint server_port)
+static gfire_server_info *gfire_server_browser_quake3(const guint32 server_ip, const gint server_port)
 {
 	gfire_server_info *server_info = gfire_server_info_new();
 	gchar *server_response = gfire_server_browser_send_packet(server_ip, server_port, quake3_query);
@@ -152,7 +153,7 @@ gfire_server_info *gfire_server_browser_quake3(const guint32 server_ip, const gi
 	return server_info;
 }
 
-gfire_server_info *gfire_server_browser_wolfet(const guint32 server_ip, const gint server_port)
+static gfire_server_info *gfire_server_browser_wolfet(const guint32 server_ip, const gint server_port)
 {
 	gfire_server_info *server_info = gfire_server_info_new();
 	server_info = gfire_server_browser_quake3(server_ip, server_port);
@@ -210,7 +211,7 @@ void gfire_server_browser_update_server_list_thread(gfire_server_info *server_in
 	return;
 }
 
-gboolean gfire_server_browser_display_servers_cb(GtkTreeStore *p_tree_store)
+static gboolean gfire_server_browser_display_servers_cb(GtkTreeStore *p_tree_store)
 {
 	int i = 0;
 	while(i != -1)
@@ -223,43 +224,11 @@ gboolean gfire_server_browser_display_servers_cb(GtkTreeStore *p_tree_store)
 		}
 
 		gfire_server_info *server = g_queue_pop_head(&servers_list_queue);
+
 		if(server)
-		{
-			GtkTreeIter iter = server->server_list_iter;
+			gfire_server_browser_set_server(server);
 
-			if(server->name)
-			{
-				gchar *server_name_clean = g_strstrip(gfire_remove_quake3_color_codes(server->name));
-				gtk_tree_store_set(p_tree_store, &iter, 0, server_name_clean, -1);
-				g_free(server_name_clean);
-			}
-
-			if(server->ping)
-			{
-				gchar *server_ping = g_strdup_printf("%u", server->ping);
-				gtk_tree_store_set(p_tree_store, &iter, 1, server_ping, -1);
-				g_free(server_ping);
-			}
-
-			if(server->players && server->max_players)
-			{
-				gchar *server_players = g_strdup_printf("%u/%u", server->players, server->max_players);
-				gtk_tree_store_set(p_tree_store, &iter, 2, server_players, -1);
-				g_free(server_players);
-			}
-
-			if(server->map)
-				gtk_tree_store_set(p_tree_store, &iter, 3, server->map, -1);
-
-			if(server->raw_info)
-			{
-				gchar *server_raw_info = g_strdup(server->raw_info);
-				gtk_tree_store_set(p_tree_store, &iter, 5, server_raw_info, -1);
-				g_free(server_raw_info);
-			}
-
-			i++;
-		}
+		i++;
 		g_mutex_unlock(mutex);
 	}
 
@@ -277,12 +246,9 @@ void gfire_server_browser_proto_serverlist(gfire_data *p_gfire, guint16 p_packet
 	GList *ports = NULL;
 	GList *i, *p = NULL;
 
-	if(!p_gfire->server_browser)
-		return;
-
 	if(p_packet_len < 16)
 	{
-		purple_debug_error("gfire", "gfire_server_browser_proto_serverlist: Packet 131 received, but too short (%d bytes).\n", p_packet_len);
+		purple_debug_error("gfire", "Packet 131 received, but too short (%d bytes)\n", p_packet_len);
 		return;
 	}
 
@@ -305,20 +271,15 @@ void gfire_server_browser_proto_serverlist(gfire_data *p_gfire, guint16 p_packet
 
 	purple_debug(PURPLE_DEBUG_MISC, "gfire", "(serverlist): got the server list for %u\n", gameid);
 
-	// Set up server browser builder & list store
-	GtkBuilder *builder = p_gfire->server_browser;
-	GtkTreeStore *tree_store = GTK_TREE_STORE(gtk_builder_get_object(builder, "servers_list_tree_store"));
-	// gtk_list_store_clear(list_store);
+	// Add parent rows (also clears list)
+	gfire_server_browser_add_parent_rows();
 
 	// Initialize mutex & thread pool
 	if(!mutex)
 		mutex = g_mutex_new();
 
 	servers_list_thread_pool = g_thread_pool_new((GFunc )gfire_server_browser_update_server_list_thread,
-							 NULL, GFIRE_SERVER_BROWSER_THREADS_LIMIT + 1, FALSE, NULL);
-
-	GtkTreeIter all_servers_iter;
-	gtk_tree_model_get_iter_from_string(GTK_TREE_MODEL(tree_store), &all_servers_iter, "3");
+												 NULL, GFIRE_SERVER_BROWSER_THREADS_LIMIT + 1, FALSE, NULL);
 
 	// Add servers to list store & thread pool
 	for(; i; i = g_list_next(i))
@@ -331,8 +292,8 @@ void gfire_server_browser_proto_serverlist(gfire_data *p_gfire, guint16 p_packet
 
 		gchar *addr = gfire_game_data_addr_str(&ip_data);
 
-		gtk_tree_store_append(tree_store, &iter, &all_servers_iter);
-		gtk_tree_store_set(tree_store, &iter, 0, addr, 1, _("N/A"), 2, _("N/A"), 3, _("N/A"), 4, addr, -1);
+		// Add row for server, will be filled in later
+		iter = gfire_server_browser_add_server_row(addr);
 
 		// Get query type
 		const gchar *server_query_type = gfire_game_server_query_type(servers_list_queried_game_id);
@@ -357,7 +318,7 @@ void gfire_server_browser_proto_serverlist(gfire_data *p_gfire, guint16 p_packet
 	}
 
 	// Add timeout to display queried servers
-	p_gfire->server_browser_pool = g_timeout_add(800, (GSourceFunc )gfire_server_browser_display_servers_cb, tree_store);
+	p_gfire->server_browser_pool = g_timeout_add(800, (GSourceFunc )gfire_server_browser_display_servers_cb, NULL);
 }
 
 guint16 gfire_server_browser_proto_create_serverlist_request(guint32 p_gameid)
@@ -370,5 +331,4 @@ guint16 gfire_server_browser_proto_create_serverlist_request(guint32 p_gameid)
 
 	return offset;
 }
-
 #endif // HAVE_GTK

@@ -25,7 +25,10 @@
 #ifndef _GF_SERVER_BROWSER_PROTO_H
 #define _GF_SERVER_BROWSER_PROTO_H
 
+typedef struct _gfire_server_info gfire_server_info;
+
 #include "gf_base.h"
+#include "gf_server_browser.h"
 
 #ifdef HAVE_GTK
 #include "gf_network.h"
@@ -38,7 +41,7 @@
 static GThreadPool *servers_list_thread_pool;
 guint32 servers_list_queried_game_id;
 
-typedef struct _gfire_server_info
+struct _gfire_server_info
 {
 	GtkTreeIter server_list_iter;
 	gchar *query_type;
@@ -57,15 +60,8 @@ typedef struct _gfire_server_info
 
 	gchar *map;
 	gchar *game_type;
-} gfire_server_info;
+};
 
-typedef struct _server_browser_callback_args
-{
-	gfire_data *gfire;
-	GtkBuilder *builder;
-} server_browser_callback_args;
-
-void gfire_server_browser_update_server_list_thread(gfire_server_info *server_info);
 guint16 gfire_server_browser_proto_create_serverlist_request(guint32 p_gameid);
 void gfire_server_browser_proto_serverlist(gfire_data *p_gfire, guint16 p_packet_len);
 #endif // HAVE_GTK

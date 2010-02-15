@@ -100,11 +100,6 @@ struct _gfire_data
 	// Timer callbacks
 	guint server_browser_pool;
 
-#ifdef HAVE_GTK
-	// Server Browser
-	GtkBuilder *server_browser;
-#endif // HAVE_GTK
-
 	// Server Detection
 	GList *server_list;
 	gboolean server_changed;
