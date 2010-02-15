@@ -277,7 +277,7 @@ const gchar *gfire_game_server_query_type(guint32 p_gameid)
 
 gboolean gfire_game_foreach_dset(const gfire_game *p_game, GCallback p_callback, gpointer p_data, gboolean p_external)
 {
-	if(!p_game | !p_callback)
+	if(!p_game || !p_callback)
 		return FALSE;
 
 	GList *cur = p_game->detection_sets;
@@ -285,7 +285,10 @@ gboolean gfire_game_foreach_dset(const gfire_game *p_game, GCallback p_callback,
 	{
 		gfire_game_detection_set *dset = (gfire_game_detection_set*)cur->data;
 		if(!p_external && dset->external)
+		{
+			cur = g_list_next(cur);
 			continue;
+		}
 
 		if(((gboolean(*)(const gfire_game*,const gfire_game_detection_set*,gpointer))p_callback)(p_game, dset, p_data))
 			return TRUE;
