@@ -521,8 +521,13 @@ void gfire_bitlist_clear(gfire_bitlist *p_list)
 #ifdef USE_NOTIFICATIONS
 // Only initialize and deinitialize if we need to (other plugins use it etc.)
 static gboolean gfire_notify_initted = FALSE;
+static GHashTable *gfire_notify_buddies = NULL;
+
 static gboolean gfire_notify_init()
 {
+	if(!gfire_notify_buddies)
+		gfire_notify_buddies = g_hash_table_new(NULL, NULL);
+
 	if(!notify_is_initted())
 	{
 		if(!notify_init("Purple"))
@@ -538,10 +543,17 @@ void gfire_notify_uninit()
 {
 	if(gfire_notify_initted)
 		notify_uninit();
+
+	g_hash_table_destroy(gfire_notify_buddies);
+	gfire_notify_buddies = NULL;
 }
 
 static gboolean gfire_notify_closed_cb(NotifyNotification *p_notification)
 {
+	PurpleBuddy *buddy = PURPLE_BUDDY(g_object_get_data(G_OBJECT(p_notification), "buddy"));
+	if(buddy)
+		g_hash_table_remove(gfire_notify_buddies, buddy);
+
 	g_object_unref(G_OBJECT(p_notification));
 	return FALSE;
 }
@@ -568,7 +580,15 @@ void gfire_notify_buddy(PurpleBuddy *p_buddy, const gchar *p_title, const gchar 
 	if(!gfire_notify_init() || !p_buddy || !p_title)
 		return;
 
-	NotifyNotification *notification = notify_notification_new(p_title, p_msg, NULL, NULL);
+	NotifyNotification *notification = g_hash_table_lookup(gfire_notify_buddies, p_buddy);
+	if(notification)
+	{
+		notify_notification_update(notification, p_title, p_msg, NULL);
+		notify_notification_show(notification, NULL);
+		return;
+	}
+
+	notification = notify_notification_new(p_title, p_msg, NULL, NULL);
 
 	// Get Buddy Icon
 	PurpleBuddyIcon *icon = purple_buddy_get_icon(p_buddy);
@@ -591,6 +611,9 @@ void gfire_notify_buddy(PurpleBuddy *p_buddy, const gchar *p_title, const gchar 
 		g_object_unref(G_OBJECT(loader));
 	}
 
+	g_object_set_data(G_OBJECT(notification), "buddy", p_buddy);
+	g_hash_table_insert(gfire_notify_buddies, p_buddy, notification);
+
 	notify_notification_set_urgency(notification, NOTIFY_URGENCY_NORMAL);
 	notify_notification_set_timeout(notification, NOTIFY_EXPIRES_DEFAULT);
 	g_signal_connect(notification, "closed", G_CALLBACK(gfire_notify_closed_cb), NULL);
@@ -598,6 +621,7 @@ void gfire_notify_buddy(PurpleBuddy *p_buddy, const gchar *p_title, const gchar 
 	if(!notify_notification_show(notification, NULL))
 	{
 		purple_debug_error("gfire", "gfire_notify: failed to send notification\n");
+		g_hash_table_remove(gfire_notify_buddies, p_buddy);
 		g_object_unref(G_OBJECT(notification));
 	}
 }

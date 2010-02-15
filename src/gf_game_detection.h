@@ -29,7 +29,7 @@
 #include "gf_server_detection.h"
 
 #define GFIRE_DETECTION_INTERVAL 10 // in seconds
-#define GFIRE_WEB_DETECTION_TIMEOUT 10 // in seconds
+#define GFIRE_WEB_DETECTION_TIMEOUT 6 // in seconds
 
 
 typedef struct _process_info
