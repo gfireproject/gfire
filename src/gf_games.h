@@ -52,46 +52,46 @@ gchar *gfire_game_data_ip_str(const gfire_game_data *p_game);
 gchar *gfire_game_data_port_str(const gfire_game_data *p_game);
 gchar *gfire_game_data_addr_str(const gfire_game_data *p_game);
 
-// GFIRE GAME CONFIG INFO ///////////////////////////////////////////
-typedef struct _gfire_game_config_info
-{
-	guint32 game_id;
-	gchar *game_name;
-	gchar *game_prefix;
-	gchar *game_launch;
-	gchar *game_launch_args;
-	gchar *game_connect;
-} gfire_game_config_info;
-
-// Creation and freeing
-gfire_game_config_info *gfire_game_config_info_new();
-void gfire_game_config_info_free(gfire_game_config_info *p_launch_info);
-
-// Parsing
-gfire_game_config_info *gfire_game_config_info_get(guint32 p_gameid);
-gchar *gfire_game_config_info_get_command(gfire_game_config_info *game_config_info, const gfire_game_data *p_game_data);
-
-// GFIRE GAME DETECTION INFO ////////////////////////////////////////
-typedef struct _gfire_game_detection_info
-{
-	guint32 id;
-	gchar *executable;
-	gchar *arguments;
-	gchar **excluded_ports;
-	gboolean detect;
-} gfire_game_detection_info;
-
-// Creation and freeing
-gfire_game_detection_info *gfire_game_detection_info_create();
-void gfire_game_detection_info_free(gfire_game_detection_info *p_info);
-
-// Parsing
-gfire_game_detection_info *gfire_game_detection_info_get(guint32 p_gameid);
-
 // GFIRE GAME JOINING
 void gfire_join_game(const gfire_game_data *p_game_data);
 
 // GFIRE GAMES XML //////////////////////////////////////////////////
+typedef struct _gfire_game_detection_set
+{
+	// Detection
+	GList *required_args;
+	GList *invalid_args;
+
+	gboolean external;
+	gchar *detect_url;
+
+	// Server info
+	gchar *server_game_name;
+	gchar *server_status_type;
+	GList *server_broadcast_ports;
+
+	// Launching
+	gchar *password_args;
+	gchar *network_args;
+	gchar *launch_args;
+	gchar *launch_url;
+
+	// Server detection
+	gboolean detect_server;
+	GList *excluded_ports;
+} gfire_game_detection_set;
+
+typedef struct _gfire_game
+{
+	guint32 id;
+	gchar *name;
+	gchar *short_name;
+
+	gboolean is_voice;
+
+	GList *detection_sets;
+} gfire_game;
+
 gboolean gfire_game_load_games_xml();
 gboolean gfire_game_have_list();
 guint32 gfire_game_get_version();
@@ -99,19 +99,33 @@ gchar *gfire_game_get_version_str();
 guint32 gfire_game_id(const gchar *p_name);
 gchar *gfire_game_name(guint32 p_gameid);
 gchar *gfire_game_short_name(guint32 p_gameid);
-xmlnode *gfire_game_node_first();
-xmlnode *gfire_game_node_next(xmlnode *p_node);
 void gfire_update_version_cb(PurpleUtilFetchUrlData *p_url_data, gpointer p_data, const gchar *p_buf, gsize p_len, const gchar *p_error_message);
 void gfire_update_games_list_cb(PurpleUtilFetchUrlData *p_url_data, gpointer p_data, const gchar *p_buf, gsize p_len, const gchar *p_error_message);
-xmlnode *gfire_game_node_by_id(guint32 p_gameid);
+const gfire_game *gfire_game_by_id(guint32 p_gameid);
 guint32 gfire_game_id_by_url(const gchar *p_url);
-gchar *gfire_game_server_query_type(guint32 p_gameid);
+const gchar *gfire_game_server_query_type(guint32 p_gameid);
+GList *gfire_game_excluded_ports_copy(const gfire_game *p_game);
+gboolean gfire_game_foreach_dset(const gfire_game *p_game, GCallback p_callback, gpointer p_data, gboolean p_external);
+void gfire_game_cleanup();
 
 // GFIRE GAME CONFIG XML ////////////////////////////////////////////
-gboolean gfire_game_load_config_xml();
+typedef struct _gfire_game_configuration
+{
+	guint32 game_id;
+	gchar *launch_prefix;
+	gchar *detect_file;
+	gchar *launch_file;
+} gfire_game_configuration;
+
+// Loading / Cleanup
+gboolean gfire_game_load_config_xml(gboolean p_force);
+void gfire_game_config_cleanup();
+
+// Usage
+const gfire_game_configuration *gfire_game_config_by_id(guint32 p_gameid);
+gboolean gfire_game_config_foreach(GCallback p_callback, gpointer p_data);
+
 gboolean gfire_game_playable(guint32 p_gameid);
-xmlnode *gfire_game_config_node_first();
-xmlnode *gfire_game_config_node_next(xmlnode *p_node);
 
 // GFIRE GAME MANAGER ///////////////////////////////////////////////
 #ifdef HAVE_GTK

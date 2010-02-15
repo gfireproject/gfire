@@ -23,7 +23,6 @@
 */
 
 #include "gf_game_detection.h"
-#include "gf_server_detection.h"
 #include <time.h>
 
 // Networking includes, required for the "HTTP-server" as libpurple
@@ -145,194 +144,167 @@ static void gfire_game_detector_inform_instances()
 	g_free(game_name);
 }
 
+typedef struct _gfire_process_detection_data
+{
+	const gfire_game_configuration *gconf;
+	const gfire_game_detection_set *dset;
+
+	gboolean last_was_old;
+	gboolean checked_old_game;
+	gboolean old_running;
+	guint32 new_game;
+	guint32 pid;
+} gfire_process_detection_data;
+
+static gboolean gfire_game_detector_detect_game_dset_cb(const gfire_game *p_game, const gfire_game_detection_set *p_dset,
+														gpointer p_data)
+{
+	gfire_process_detection_data *data = (gfire_process_detection_data*)p_data;
+
+	// Don't check further sets if one already worked
+	if(data->new_game == p_game->id)
+		return FALSE;
+
+	// Check if the current detection set matches our environment
+	guint32 pid = gfire_process_list_contains(gfire_detector->process_list, data->gconf->detect_file,
+											  p_dset->required_args, p_dset->invalid_args, NULL);
+
+	if(gfire_detector->game_data.id == p_game->id)
+	{
+		data->checked_old_game = TRUE;
+		data->last_was_old = TRUE;
+		// Old game still running, abort
+		if(pid)
+		{
+			data->old_running = TRUE;
+			data->pid = pid;
+			data->dset = p_dset;
+			return TRUE;
+		}
+	}
+	else
+	{
+		if(data->last_was_old)
+		{
+			// Old game is not running anymore, but we already got a new one
+			if(!data->old_running && data->new_game)
+				return TRUE;
+
+			data->last_was_old = FALSE;
+		}
+
+		if(pid)
+		{
+			data->new_game = p_game->id;
+			data->pid = pid;
+			data->dset = p_dset;
+
+			// Old game has already been checked and is not running anymore, take this one
+			if(!gfire_detector->game_data.id || (data->checked_old_game && !data->old_running))
+				return TRUE;
+		}
+	}
+
+	return FALSE;
+}
+
+static gboolean gfire_game_detector_detect_conf_game_cb(const gfire_game_configuration *p_gconf, gpointer p_data)
+{
+	const gfire_game *game = gfire_game_by_id(p_gconf->game_id);
+	if(game)
+	{
+		gfire_process_detection_data *data = (gfire_process_detection_data*)p_data;
+		data->gconf = p_gconf;
+
+		// If a detection callback aborted the loop we abort as well to stop detection
+		if(gfire_game_foreach_dset(game, G_CALLBACK(gfire_game_detector_detect_game_dset_cb), data, FALSE))
+			return TRUE;
+	}
+
+	return FALSE;
+}
+
 static gboolean gfire_game_detector_detect_cb(void *p_unused)
 {
 	if(!gfire_detector)
 		return FALSE;
 
-	guint32 old_game = gfire_detector->game_data.id;
-	guint32 new_game = 0;
-	gboolean checked_old_game = FALSE;
-
 	gfire_process_list_update(gfire_detector->process_list);
 
-	xmlnode *gfire_game = gfire_game_config_node_first();
-	// Check all configured games until we have checked all,
-	// or have checked the old game and found a new one
-	for (; (gfire_game != NULL) && (new_game == 0 || !checked_old_game);
-		gfire_game = gfire_game_config_node_next(gfire_game))
+	gfire_process_detection_data *data = g_malloc0(sizeof(gfire_process_detection_data));
+	gfire_game_config_foreach(G_CALLBACK(gfire_game_detector_detect_conf_game_cb), data);
+
+	// We have detected a game
+	if(data->pid)
 	{
-		xmlnode *command_node = NULL;
-		xmlnode *detect_node = NULL;
-
-		command_node = xmlnode_get_child(gfire_game, "command");
-		if(!command_node)
-			continue;
-
-		detect_node = xmlnode_get_child(command_node, "detect");
-		if(!detect_node)
-			continue;
-
-		gchar *game_executable;
-		const gchar *game_id;
-		guint32 game_id_int = 0;
-
-		game_executable = xmlnode_get_data(detect_node);
-		if(!game_executable)
-			continue;
-
-		game_id = xmlnode_get_attrib(gfire_game, "id");
-		if(game_id)
-			sscanf(game_id, "%u", &game_id_int);
-		else
+		// We got a new game?
+		if(!gfire_detector->game_data.id || !data->old_running)
 		{
-			// We cannot successfully detect a game if we have no ID
-			g_free(game_executable);
-			continue;
-		}
+			gfire_server_detector_stop(gfire_detector->server_detector);
+			gfire_detector->server_changed = FALSE;
+			gfire_detector->server_ip_tmp = 0;
+			gfire_detector->server_port_tmp = 0;
 
-		// Arguments & required libraries are optional
-		const gchar *game_exec_required_args = NULL;
-		const gchar *game_exec_invalid_args = NULL;
-		gchar *game_required_libraries = NULL;
-
-		if (game_id_int)
-		{
-			xmlnode *game_config_node = gfire_game_node_by_id(game_id_int);
-			xmlnode *game_exec_args_node = NULL;
-			xmlnode *game_required_libraries_node = NULL;
-
-			if (game_config_node)
-			{
-				game_exec_args_node = xmlnode_get_child(game_config_node, "arguments");
-				game_required_libraries_node = xmlnode_get_child(game_config_node, "libraries");
-			}
-
-			if (game_exec_args_node)
-			{
-				game_exec_required_args = xmlnode_get_attrib(game_exec_args_node, "required");
-				game_exec_invalid_args = xmlnode_get_attrib(game_exec_args_node, "invalid");
-			}
-
-			if (game_required_libraries_node)
-				game_required_libraries = xmlnode_get_data(game_required_libraries_node);
-		}
-		else
-		{
-			purple_debug_error("gfire", "Couldn't get game ID to obtain game arguments and required libraries.\n");
-			g_free(game_executable);
-			continue;
-		}
-
-		gboolean process_running = gfire_process_list_contains(gfire_detector->process_list, game_executable,
-															   game_exec_required_args, game_exec_invalid_args,
-															   game_required_libraries);
-
-#ifndef _WIN32
-		// Launch server detection thread if needed
-		g_mutex_lock(gfire_detector->server_detection_thread_mutex);
-		if(process_running && game_executable != NULL && gfire_detector->server_detection_thread_running == FALSE)
-		{
-			gfire_detector->server_detection_thread_running = TRUE;
-
-			guint32 game_pid = gfire_process_list_get_pid(gfire_detector->process_list, game_executable);
-			if(game_pid != 0)
-			{
-				// Get all infos needed for detection
-				gfire_game_detection_info *detection_info = gfire_game_detection_info_get(game_id_int);
-				if (detection_info == NULL)
-					return FALSE;
-
-				// Create server detection struct
-				gfire_server_detection *server_detection_infos = gfire_server_detection_new();
-				server_detection_infos->game_information = detection_info;
-				server_detection_infos->game_pid = game_pid;
-
-				// Create server detection thread
-				g_thread_create((GThreadFunc )gfire_server_detection_detect, server_detection_infos, TRUE, NULL);
-			}
-		}
-		g_mutex_unlock(gfire_detector->server_detection_thread_mutex);
-#endif // _WIN32
-
-		if(game_required_libraries)
-			g_free(game_required_libraries);
-
-		// Old game not running anymore
-		if(old_game == game_id_int && !process_running)
-		{
 			gfire_game_data_reset(&gfire_detector->game_data);
-			checked_old_game = TRUE;
-		}
-		// Old game still running, no need for further detection
-		else if(old_game == game_id_int && process_running)
-		{
-			// Get temporary server ip and port
-			gfire_detector->game_data.ip.value = gfire_detector->server_ip_tmp;
-			gfire_detector->game_data.port = gfire_detector->server_port_tmp;
+			gfire_detector->game_data.id = data->new_game;
+			gfire_detector->game_type = GFGT_PROCESS;
 
 			gfire_game_detector_inform_instances();
-			break;
 		}
-		// Save the first running new game
-		else if(process_running && new_game == 0)
-			new_game = game_id_int;
-	}
+		// We do still play the old game, start a server detection cycle
+		else
+		{
+			// Check for changed server data
+			g_mutex_lock(gfire_detector->server_mutex);
+			if(gfire_detector->server_changed)
+			{
+				gfire_detector->server_changed = FALSE;
 
-	// Set a new game
-	if(gfire_detector->game_data.id == 0)
+				gfire_detector->game_data.ip.value = gfire_detector->server_ip_tmp;
+				gfire_detector->game_data.port = gfire_detector->server_port_tmp;
+				g_mutex_unlock(gfire_detector->server_mutex);
+
+				gfire_game_detector_inform_instances();
+			}
+			else
+				g_mutex_unlock(gfire_detector->server_mutex);
+
+			// Start new server detection if allowed
+			if(data->dset->detect_server)
+				gfire_server_detector_start(gfire_detector->server_detector, gfire_detector->game_data.id, data->pid);
+		}
+	}
+	// No game playing
+	else
 	{
-		gfire_detector->game_data.id = new_game;
+		if(gfire_detector->game_data.id)
+		{
+			gfire_server_detector_stop(gfire_detector->server_detector);
+			gfire_detector->server_changed = FALSE;
+			gfire_detector->server_ip_tmp = 0;
+			gfire_detector->server_port_tmp = 0;
 
-		if(new_game != 0)
-			gfire_detector->game_type = GFGT_PROCESS;
+			gfire_game_data_reset(&gfire_detector->game_data);
+			gfire_game_detector_inform_instances();
+		}
 	}
 
-	// If the game has changed, inform all instances about it
-	if(gfire_detector->game_data.id != old_game)
-		gfire_game_detector_inform_instances();
+	g_free(data);
 
 	return TRUE;
-
-	// gchar *game_exe = gfire_process_list_get_exe(gfire_detector->process_list, current_game_executable);
-
-	/* Get process ID
-	guint32 process_id;
-	if (!g_strcmp0(process_exe, "/usr/bin/wine-preloader"))
-		process_id = gfire_process_list_get_pid(p_gfire->process_list, "/usr/bin/wineserver");
-	else
-		process_id = gfire_process_list_get_pid(p_gfire->process_list, process_exe); */
 }
 
-void gfire_game_detector_update_server(const guint32 p_server_ip, const guint16 p_server_port)
+void gfire_game_detector_update_server(guint32 p_server_ip, guint16 p_server_port)
 {
-	// Set server ip & port
 	g_mutex_lock(gfire_detector->server_mutex);
-	gfire_detector->server_changed = TRUE;
-	gfire_detector->server_ip_tmp = p_server_ip;
-	gfire_detector->server_port_tmp = p_server_port;
+	// Only apply changes
+	if(gfire_detector->server_ip_tmp != p_server_ip || gfire_detector->server_port_tmp != p_server_port)
+	{
+		gfire_detector->server_changed = TRUE;
+		gfire_detector->server_ip_tmp = p_server_ip;
+		gfire_detector->server_port_tmp = p_server_port;
+	}
 	g_mutex_unlock(gfire_detector->server_mutex);
-}
-
-gboolean gfire_game_detector_check_server_detection_abortion()
-{
-	gboolean ret;
-
-	g_mutex_lock(gfire_detector->server_detection_thread_mutex);
-	ret = gfire_detector->server_detection_thread_abort;
-	g_mutex_unlock(gfire_detector->server_detection_thread_mutex);
-
-	if(ret == TRUE)
-		g_mutex_free(gfire_detector->server_detection_thread_mutex);
-
-	return ret;
-}
-
-void gfire_game_detecor_update_server_detection_thread_status(const gboolean p_status)
-{
-	g_mutex_lock(gfire_detector->server_detection_thread_mutex);
-	gfire_detector->server_detection_thread_running = p_status;
-	g_mutex_unlock(gfire_detector->server_detection_thread_mutex);
 }
 
 static gboolean gfire_game_detector_web_timeout_cb(void *p_unused)
@@ -668,11 +640,8 @@ static void gfire_game_detector_init()
 
 	gfire_detector = g_malloc0(sizeof(gfire_game_detector));
 
-	gfire_detector->server_changed = FALSE;
 	gfire_detector->server_mutex = g_mutex_new();
-	gfire_detector->server_detection_thread_running = FALSE;
-	gfire_detector->server_detection_thread_mutex = g_mutex_new();
-	gfire_detector->server_detection_thread_abort = FALSE;
+	gfire_detector->server_detector = gfire_server_detector_create();
 
 	gfire_detector->process_list = gfire_process_list_new();
 	gfire_game_detector_start_web_http();
@@ -689,19 +658,17 @@ static void gfire_game_detector_free()
 	if(!gfire_detector)
 		return;
 
+	// Stop server detection
+	gfire_server_detector_stop(gfire_detector->server_detector);
+	gfire_server_detector_free(gfire_detector->server_detector);
+	g_mutex_free(gfire_detector->server_mutex);
+
 	// Remove detection timer
 	if(gfire_detector->det_source != 0)
 		g_source_remove(gfire_detector->det_source);
 
 	gfire_game_detector_stop_web_http();
 	gfire_process_list_free(gfire_detector->process_list);
-
-	// Set server detection thread abortion flag
-	g_mutex_lock(gfire_detector->server_detection_thread_mutex);
-	gfire_detector->server_detection_thread_abort = TRUE;
-	g_mutex_unlock(gfire_detector->server_detection_thread_mutex);
-	// g_mutex_free(gfire_detector->server_mutex);
-	// g_mutex_free(gfire_detector->server_detection_thread_mutex);
 
 	g_free(gfire_detector);
 	gfire_detector = NULL;
@@ -865,7 +832,7 @@ void gfire_process_list_clear(gfire_process_list *p_list)
 	}
 }
 
-gboolean gfire_process_list_contains(const gfire_process_list *p_list, const gchar *p_name, const gchar *p_required_args, const gchar *p_invalid_args, const gchar *p_required_libraries)
+guint32 gfire_process_list_contains(const gfire_process_list *p_list, const gchar *p_name, const GList *p_required_args, const GList *p_invalid_args, const GList *p_required_libraries)
 {
 	if(!p_list || !p_list->processes || !p_name)
 		return FALSE;
@@ -882,23 +849,15 @@ gboolean gfire_process_list_contains(const gfire_process_list *p_list, const gch
 			// First check invalid arguments
 			gboolean process_invalid_args = FALSE;
 
-			if(p_invalid_args && strlen(p_invalid_args) > 0)
+			const GList *cur_arg = p_invalid_args;
+			while(cur_arg)
 			{
-				gchar **p_invalid_args_parts = g_strsplit(p_invalid_args, ";", -1);
-				if (p_invalid_args_parts)
+				if (strstr(info->args, cur_arg->data) != NULL)
 				{
-					int i;
-					for(i = 0; i < g_strv_length(p_invalid_args_parts); i++)
-					{
-						if (g_strrstr(info->args, p_invalid_args_parts[i]) != NULL)
-						{
-							process_invalid_args = TRUE;
-							break;
-						}
-					}
-
-					g_strfreev(p_invalid_args_parts);
+					process_invalid_args = TRUE;
+					break;
 				}
+				cur_arg = g_list_next(cur_arg);
 			}
 
 			// Then check required args
@@ -906,55 +865,45 @@ gboolean gfire_process_list_contains(const gfire_process_list *p_list, const gch
 
 			if (process_invalid_args != TRUE)
 			{
-				if(p_required_args && strlen(p_required_args) > 0)
+				cur_arg = p_required_args;
+				while(cur_arg)
 				{
-					gchar **p_required_args_parts = g_strsplit(p_required_args, ";", -1);
-					if (p_required_args_parts)
+					if (strstr(info->args, cur_arg->data) == NULL)
 					{
-						int i;
-						for(i = 0; i < g_strv_length(p_required_args_parts); i++)
-						{
-							if (g_strrstr(info->args, p_required_args_parts[i]) == NULL)
-							{
-								process_required_args = FALSE;
-								break;
-							}
-						}
-
-						g_strfreev(p_required_args_parts);
+						process_required_args = FALSE;
+						break;
 					}
+					cur_arg = g_list_next(cur_arg);
 				}
 			}
 
 			// Finally check required libraries
 			gboolean process_required_libraries = TRUE;
 #ifndef _WIN32
-			if (p_required_libraries && strlen(p_required_libraries) > 0)
+			if (p_required_libraries)
 			{
 				process_required_libraries = FALSE;
-				gchar **required_libraries_split = g_strsplit(p_required_libraries, ";", -1);
 
 				// Get process libs
 				GList *process_libs = gfire_game_detection_get_process_libraries(info->pid);
-				GList *cur = process_libs;
+				GList *cur_lib = process_libs;
 
-				for(; cur != NULL; cur = g_list_next(cur))
+				for(; cur_lib != NULL; cur_lib = g_list_next(cur))
 				{
-					int i;
-					for(i = 0; i < g_strv_length(required_libraries_split); i++)
+					const GList *cur_req_lib = p_required_libraries;
+					while(cur_req_lib)
 					{
-						if (!g_strcmp0(g_strchomp(cur->data), required_libraries_split[i]))
+						if (!g_strcmp0(g_strchomp(cur_lib->data), cur_req_lib->data))
 						{
 							process_required_libraries = TRUE;
 							break;
 						}
+						cur_req_lib = g_list_next(cur_req_lib);
 					}
 
 					if (process_required_libraries)
 						break;
 				}
-
-				g_strfreev(required_libraries_split);
 
 				gfire_game_detection_process_libraries_clear(process_libs);
 				g_list_free(process_libs);
@@ -963,13 +912,13 @@ gboolean gfire_process_list_contains(const gfire_process_list *p_list, const gch
 
 			// Return as found if valid
 			if (process_invalid_args == FALSE && process_required_args == TRUE && process_required_libraries == TRUE)
-				return TRUE;
+				return info->pid;
 		}
 
 		cur = g_list_next(cur);
 	}
 
-	return FALSE;
+	return 0;
 }
 
 guint32 gfire_process_list_get_pid(const gfire_process_list *p_list, const gchar *p_name)

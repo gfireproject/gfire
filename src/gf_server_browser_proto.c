@@ -335,7 +335,7 @@ void gfire_server_browser_proto_serverlist(gfire_data *p_gfire, guint16 p_packet
 		gtk_tree_store_set(tree_store, &iter, 0, addr, 1, _("N/A"), 2, _("N/A"), 3, _("N/A"), 4, addr, -1);
 
 		// Get query type
-		gchar *server_query_type = gfire_game_server_query_type(servers_list_queried_game_id);
+		const gchar *server_query_type = gfire_game_server_query_type(servers_list_queried_game_id);
 
 		// Add server to list
 		gfire_server_info *server_info = gfire_server_info_new();

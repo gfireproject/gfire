@@ -25,10 +25,45 @@
 #ifndef _GF_SERVER_DETECTION_H
 #define _GF_SERVER_DETECTION_H
 
-#ifdef _WIN32
-	#include "gf_server_detection_win.h"
-#else
-	#include "gf_server_detection_linux.h"
-#endif // _WIN32
+#include "gf_base.h"
+
+typedef struct _gfire_server_detector gfire_server_detector;
+typedef struct _gfire_server gfire_server;
+
+struct _gfire_server_detector
+{
+	gboolean running;
+	gboolean finished;
+	gboolean quit;
+
+	guint32 gameid;
+	guint32 pid;
+
+	guint32 ip;
+	guint16 port;
+
+	GMutex *mutex;
+
+	void *os_data;
+};
+
+struct _gfire_server
+{
+	guint32 ip;
+	guint16 port;
+	guint8 priority;
+};
+
+// Creation/freeing
+gfire_server_detector *gfire_server_detector_create();
+void gfire_server_detector_free(gfire_server_detector *p_detector);
+
+// Starting/stopping (OS dependent)
+void gfire_server_detector_start(gfire_server_detector *p_detector, guint32 p_gameid, guint32 p_pid);
+void gfire_server_detector_stop(gfire_server_detector *p_detector);
+
+// Status checks
+gboolean gfire_server_detector_running(const gfire_server_detector *p_detector);
+gboolean gfire_server_detector_finished(const gfire_server_detector *p_detector);
 
 #endif // _GF_SERVER_DETECTION_H

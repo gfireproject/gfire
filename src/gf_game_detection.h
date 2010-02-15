@@ -26,6 +26,7 @@
 
 #include "gf_base.h"
 #include "gfire.h"
+#include "gf_server_detection.h"
 
 #define GFIRE_DETECTION_INTERVAL 10 // in seconds
 #define GFIRE_WEB_DETECTION_TIMEOUT 10 // in seconds
@@ -68,16 +69,11 @@ typedef struct _gfire_game_detector
 	gfire_game_detection_type game_type;
 
 	// Server detection
-	gboolean server_changed;
+	gfire_server_detector *server_detector;
 	GMutex *server_mutex;
-
+	gboolean server_changed;
 	guint32 server_ip_tmp;
 	guint16 server_port_tmp;
-
-	gboolean server_detection_thread_running;
-	GMutex *server_detection_thread_mutex;
-
-	gboolean server_detection_thread_abort;
 
 	// Webgame detection
 	int socket;
@@ -106,15 +102,14 @@ gboolean gfire_game_detector_is_voiping();
 guint32 gfire_game_detector_current_game();
 guint32 gfire_game_detector_current_voip();
 
-void gfire_game_detector_update_server(const guint32 p_server_ip, const guint16 p_server_port);
-void gfire_game_detecor_update_server_detection_thread_status(const gboolean p_status);
-gboolean gfire_game_detector_check_server_detection_abortion();
+// Internal for server detection
+void gfire_game_detector_update_server(guint32 p_server_ip, guint16 p_server_port);
 
 // Gfire Process List
 gfire_process_list *gfire_process_list_new();
 void gfire_process_list_free(gfire_process_list *p_list);
 void gfire_process_list_clear(gfire_process_list *p_list);
-gboolean gfire_process_list_contains(const gfire_process_list *p_list, const gchar *p_name, const gchar *p_required_args, const gchar *p_invalid_args, const gchar *p_required_libraries);
+guint32 gfire_process_list_contains(const gfire_process_list *p_list, const gchar *p_name, const GList *p_required_args, const GList *p_invalid_args, const GList *p_required_libraries);
 gchar *gfire_process_list_get_exe(const gfire_process_list *p_list, const gchar *p_name);
 guint32 gfire_process_list_get_pid(const gfire_process_list *p_list, const gchar *p_name);
 GList *gfire_game_detection_get_process_libraries(const guint32 p_pid);

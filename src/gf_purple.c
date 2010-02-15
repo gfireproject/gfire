@@ -1057,6 +1057,10 @@ static gboolean _unload_plugin(PurplePlugin *p_plugin)
 	gfire_notify_uninit();
 #endif // USE_NOTIFICATION
 
+	// Delete all game data
+	gfire_game_config_cleanup();
+	gfire_game_cleanup();
+
 	purple_signals_disconnect_by_handle(p_plugin);
 	return TRUE;
 }

@@ -13,8 +13,6 @@ EXTRA_DIST = \
 	gf_menus.h \
 	gf_util.h \
 	gf_server_detection.h \
-	gf_server_detection_linux.h \
-	gf_server_detection_win.h \
 	gf_server_detection_win.c \
 	gf_game_detection.h \
 	gf_game_detection_linux.h \
@@ -66,6 +64,7 @@ libxfire_la_SOURCES = \
 	gf_util.c \
 	gf_server_detection_linux.c \
 	gf_game_detection.c \
+	gf_server_detection.c \
 	gf_game_detection_linux.c \
 	gf_ipc_server.c \
 	gf_ipc_proto.c \

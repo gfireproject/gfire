@@ -262,7 +262,8 @@ static void gfire_login_cb(gpointer p_data, gint p_source, const gchar *p_error_
 	gfire_ipc_server_register(gfire);
 
 	// Register this Gfire session with the game detection
-	gfire_game_detector_register(gfire);
+	if(purple_account_get_bool(purple_connection_get_account(gfire_get_connection(gfire)), "ingamedetectionnorm", TRUE))
+		gfire_game_detector_register(gfire);
 
 	// Setup P2P connection
 	if(purple_account_get_bool(purple_connection_get_account(gfire_get_connection(gfire)), "p2p_option", TRUE))

@@ -74,13 +74,13 @@ void gfire_server_browser_show(PurplePluginAction *p_action)
 	// Connect too when user double clicks on a server
 	g_signal_connect_swapped(servers_tree_view, "row-activated", G_CALLBACK(gfire_server_browser_connect_cb), args);
 
-	xmlnode *node_child = gfire_game_config_node_first();
+	/*xmlnode *node_child = gfire_game_config_node_first();
 	for(; node_child; node_child = gfire_game_config_node_next(node_child))
 	{
 		const gchar *game_name = xmlnode_get_attrib(node_child, "name");
 		gtk_combo_box_append_text(GTK_COMBO_BOX(game_combo), game_name);
 	}
-	xmlnode_free(node_child);
+	xmlnode_free(node_child);*/
 
 	// Add main (parent) rows
 	GtkTreeIter iter;
