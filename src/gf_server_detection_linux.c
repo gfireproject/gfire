@@ -235,7 +235,7 @@ static void gfire_server_detection_tcpdump(gfire_server_detection_linux *p_detec
 	gchar tcp_output[8192];
 
 	// Detect network connections using tcpdump
-	gchar *command = g_strdup("/usr/sbin/tcpdump -i wlan0 -ftnc 20 2>/dev/null");
+	gchar *command = g_strdup("/usr/sbin/tcpdump -i any -ftnc 20 2>/dev/null");
 	FILE *command_pipe = popen(command, "r");
 	g_free(command);
 
