@@ -227,6 +227,9 @@ static void gfire_server_browser_connect_cb(gfire_data *p_gfire, GtkWidget *p_se
 
 void gfire_server_browser_add_parent_rows()
 {
+	// Clear tree store
+	gtk_tree_store_clear(server_browser_tree_store);
+
 	// Add main (parent) rows
 	GtkTreeIter iter;
 

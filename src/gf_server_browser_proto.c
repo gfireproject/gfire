@@ -79,16 +79,17 @@ static gchar *gfire_server_browser_send_packet(const guint32 server_ip, const gi
 
 		// Read query response
 		n_read = recvfrom(query_socket, response, GFIRE_SERVER_BROWSER_BUF, 0, NULL, NULL);
-		if( n_read <= 0)
+		if(n_read <= 0)
+		{
+			close(query_socket);
 			return NULL;
+		}
 
 		// Close socket
 		close(query_socket);
 
 		// Return response
-		gchar *query_response = g_strdup_printf("%s", response);
-
-		return query_response;
+		return g_strdup_printf("%s", response);
 	}
 	else
 		return NULL;
