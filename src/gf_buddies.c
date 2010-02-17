@@ -781,13 +781,13 @@ void gfire_buddy_set_game_status(gfire_buddy *p_buddy, guint32 p_gameid, guint32
 		return;
 
 	#ifdef USE_NOTIFICATIONS
-	// Wait for 10 seconds on buddy creation, so we are not spammed by the initial game status
+	// Wait for 5 seconds on buddy creation, so we are not spammed by the initial game status
 	if(!p_buddy->show_game_status)
 	{
 		GTimeVal cur_time;
 		g_get_current_time(&cur_time);
 
-		if((cur_time.tv_sec - p_buddy->creation_time) >= 10)
+		if((cur_time.tv_sec - p_buddy->creation_time) >= 5)
 			p_buddy->show_game_status = TRUE;
 	}
 
