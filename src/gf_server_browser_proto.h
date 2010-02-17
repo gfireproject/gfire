@@ -30,13 +30,13 @@ typedef struct _gfire_server_info gfire_server_info;
 #include "gf_base.h"
 #include "gf_server_browser.h"
 
-#ifdef HAVE_GTK
+// #ifdef HAVE_GTK
 #include "gf_network.h"
 #include "gf_protocol.h"
 #include "gfire.h"
 
 #define GFIRE_SERVER_BROWSER_BUF 2048
-#define GFIRE_SERVER_BROWSER_THREADS_LIMIT 8
+#define GFIRE_SERVER_BROWSER_THREADS_LIMIT 15
 
 static GThreadPool *servers_list_thread_pool;
 guint32 servers_list_queried_game_id;
@@ -62,8 +62,31 @@ struct _gfire_server_info
 	gchar *game_type;
 };
 
+typedef struct _gfire_server_browser_server
+{
+	guint32 gameid;
+	guint32 ip;
+	guint16 port;
+} gfire_server_browser_server;
+
+typedef struct _gfire_server_browser
+{
+	guint32 max_favorites;
+	GList *favorite_servers;
+} gfire_server_browser;
+
 guint16 gfire_server_browser_proto_create_serverlist_request(guint32 p_gameid);
 void gfire_server_browser_proto_serverlist(gfire_data *p_gfire, guint16 p_packet_len);
-#endif // HAVE_GTK
+GList *server_browser_proto_get_favorite_servers(const guint32 p_gameid);
+guint16 gfire_server_browser_proto_request_add_favorite_server(guint32 p_gameid, guint32 p_ip, guint32 p_port);
+gboolean gfire_server_browser_can_add_favorite_server();
+gfire_server_info *gfire_server_browser_proto_query_server(gfire_server_info *p_server);
+gfire_server_info *gfire_server_info_new();
+void gfire_server_browser_add_favorite_server_local(guint32 p_gameid, guint32 p_ip, guint16 p_port);
+gboolean gfire_server_browser_proto_is_favorite_server(guint32 p_ip, guint16 p_port);
+guint16 gfire_server_browser_proto_request_remove_favorite_server(guint32 p_gameid, guint32 p_ip, guint32 p_port);
+void gfire_server_browser_add_favorite_server_local(guint32 p_gameid, guint32 p_ip, guint16 p_port);
+void gfire_server_browser_remove_favorite_server_local(guint32 p_gameid, guint32 p_ip, guint16 p_port);
+// #endif // HAVE_GTK
 
 #endif // _GF_SERVER_BROWSER_PROTO_H
