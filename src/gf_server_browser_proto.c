@@ -25,7 +25,7 @@
 #include "gf_server_browser_proto.h"
 #include "gf_server_browser.h"
 
-// #ifdef HAVE_GTK
+#ifdef HAVE_GTK
 #include <sys/time.h>
 
 static GMutex *mutex;
@@ -36,6 +36,12 @@ static gfire_server_browser *server_browser;
 const char cod4_query[] = {0xFF, 0xFF, 0xFF, 0XFF, 0x67, 0x65, 0x74, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73};
 const char quake3_query[] = {0xFF, 0xFF, 0xFF, 0xFF, 0x67, 0x65, 0x74, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x0A};
 const char ut2004_query[] = {0x5C, 0x69, 0x6E, 0x66, 0x6F, 0x5C};
+
+void gfire_server_browser_proto_init_mutex()
+{
+	if(!mutex)
+		mutex = g_mutex_new();
+}
 
 static gfire_server_browser *gfire_server_browser_new()
 {
@@ -224,7 +230,7 @@ void gfire_server_browser_update_server_list_thread(gfire_server_info *server_in
 	return;
 }
 
-static gboolean gfire_server_browser_display_servers_cb(GtkTreeStore *p_tree_store)
+gboolean gfire_server_browser_display_servers_cb(GtkTreeStore *p_tree_store)
 {
 	int i = 0;
 	while(i != -1)
@@ -246,6 +252,51 @@ static gboolean gfire_server_browser_display_servers_cb(GtkTreeStore *p_tree_sto
 	}
 
 	return TRUE;
+}
+
+void gfire_server_browser_show_fav_serverlist(guint32 p_gameid)
+{
+	// Initialize fav serverlist thread pool
+	fav_serverlist_thread_pool = g_thread_pool_new((GFunc )gfire_server_browser_update_server_list_thread,
+												   NULL, GFIRE_SERVER_BROWSER_THREADS_LIMIT + 1, FALSE, NULL);
+
+	// Add favorite servers to list store & thread pool
+	GList *favorite_servers = server_browser_proto_get_favorite_servers(p_gameid);
+
+	for(; favorite_servers; favorite_servers = g_list_next(favorite_servers))
+	{
+		GtkTreeIter iter;
+		gfire_game_data ip_data;
+
+		gfire_server_browser_server *server;
+		server = favorite_servers->data;
+
+		ip_data.ip.value = server->ip;
+		ip_data.port = server->port;
+
+		gchar *addr = gfire_game_data_addr_str(&ip_data);
+
+		// Add row for server, will be filled in later
+		iter = gfire_server_browser_add_favorite_server_row(addr);
+
+		// Get query type
+		const gchar *server_query_type = gfire_game_server_query_type(server->gameid);
+
+		// Add server to list
+		gfire_server_info *server_info = gfire_server_info_new();
+		server_info->ip_full = g_strdup(addr);
+		server_info->query_type = g_strdup(server_query_type);
+
+		// Insert tree iter
+		server_info->server_list_iter = iter;
+
+		// Push server to pool
+		g_thread_pool_push(fav_serverlist_thread_pool, server_info, NULL);
+
+		// Free data and go to next server
+		g_free(addr);
+		// g_free(i->data);
+	}
 }
 
 void gfire_server_browser_proto_serverlist(gfire_data *p_gfire, guint16 p_packet_len)
@@ -284,53 +335,9 @@ void gfire_server_browser_proto_serverlist(gfire_data *p_gfire, guint16 p_packet
 
 	purple_debug_misc("gfire", "(serverlist): got the server list for %u\n", gameid);
 
-	// Add parent rows (also clears list)
-	gfire_server_browser_add_parent_rows();
-
-	// Initialize mutex & thread pool
-	if(!mutex)
-		mutex = g_mutex_new();
-
-	servers_list_thread_pool = g_thread_pool_new((GFunc )gfire_server_browser_update_server_list_thread,
-												 NULL, GFIRE_SERVER_BROWSER_THREADS_LIMIT + 1, FALSE, NULL);
-
-	// Add favorite servers to list store & thread pool
-	GList *favorite_servers = server_browser_proto_get_favorite_servers(gameid);
-
-	for(; favorite_servers; favorite_servers = g_list_next(favorite_servers))
-	{
-		GtkTreeIter iter;
-		gfire_game_data ip_data;
-
-		gfire_server_browser_server *server;
-		server = favorite_servers->data;
-
-		ip_data.ip.value = server->ip;
-		ip_data.port = server->port;
-
-		gchar *addr = gfire_game_data_addr_str(&ip_data);
-
-		// Add row for server, will be filled in later
-		iter = gfire_server_browser_add_favorite_server_row(addr);
-
-		// Get query type
-		const gchar *server_query_type = gfire_game_server_query_type(server->gameid);
-
-		// Add server to list
-		gfire_server_info *server_info = gfire_server_info_new();
-		server_info->ip_full = g_strdup(addr);
-		server_info->query_type = g_strdup(server_query_type);
-
-		// Insert tree iter
-		server_info->server_list_iter = iter;
-
-		// Push server to pool
-		g_thread_pool_push(servers_list_thread_pool, server_info, NULL);
-
-		// Free data and go to next server
-		g_free(addr);
-		// g_free(i->data);
-	}
+	// Initialize serverlist thread pool (all)
+	serverlist_thread_pool = g_thread_pool_new((GFunc )gfire_server_browser_update_server_list_thread,
+											   NULL, GFIRE_SERVER_BROWSER_THREADS_LIMIT + 1, FALSE, NULL);
 
 	// Add servers to list store & thread pool
 	for(; i; i = g_list_next(i))
@@ -347,18 +354,18 @@ void gfire_server_browser_proto_serverlist(gfire_data *p_gfire, guint16 p_packet
 		iter = gfire_server_browser_add_server_row(addr);
 
 		// Get query type
-		const gchar *server_query_type = gfire_game_server_query_type(servers_list_queried_game_id);
+		const gchar *server_query_type = gfire_game_server_query_type(gameid);
 
 		// Add server to list
 		gfire_server_info *server_info = gfire_server_info_new();
-		server_info->query_type = server_info->ip_full = g_strdup(addr);
+		server_info->ip_full = g_strdup(addr);
 		server_info->query_type = g_strdup(server_query_type);
 
 		// Insert tree iter
 		server_info->server_list_iter = iter;
 
 		// Push server to pool
-		g_thread_pool_push(servers_list_thread_pool, server_info, NULL);
+		g_thread_pool_push(serverlist_thread_pool, server_info, NULL);
 
 		// Free data and go to next server
 		g_free(addr);
@@ -366,6 +373,80 @@ void gfire_server_browser_proto_serverlist(gfire_data *p_gfire, guint16 p_packet
 		g_free(p->data);
 
 		p = g_list_next(p);
+	}
+}
+
+void gfire_server_browser_proto_friends_favorite_serverlist(gfire_data *p_gfire, guint16 p_packet_len)
+{
+	if(!p_gfire)
+		return;
+
+	// FIXME: What's the correct length in bytes?
+	if(p_packet_len < 16)
+	{
+		purple_debug_error("gfire", "Packet 149 received, but too short (%d bytes)\n", p_packet_len);
+		return;
+	}
+
+	guint32 offset = XFIRE_HEADER_LEN;
+
+	guint32 gameid;
+	GList *ips = NULL;
+	GList *ports = NULL;
+	GList *userids = NULL;
+
+	offset = gfire_proto_read_attr_int32_ss(p_gfire->buff_in, &gameid, "gameid", offset);
+
+	offset = gfire_proto_read_attr_list_ss(p_gfire->buff_in, &ips, "gip", offset);
+	if(offset == -1)
+		return;
+
+	offset = gfire_proto_read_attr_list_ss(p_gfire->buff_in, &ports, "gport", offset);
+	if(offset == -1)
+		return;
+
+	offset = gfire_proto_read_attr_list_ss(p_gfire->buff_in, &userids, "friends", offset);
+	if(offset == -1)
+		return;
+
+	// Initialize friends' favorite serverlist thread pool
+	friends_fav_serverlist_thread_pool = g_thread_pool_new((GFunc )gfire_server_browser_update_server_list_thread,
+														   NULL, GFIRE_SERVER_BROWSER_THREADS_LIMIT + 1, FALSE, NULL);
+
+	// Add servers to list store & thread pool
+	for(; ips; ips = g_list_next(ips))
+	{
+		GtkTreeIter iter;
+		gfire_game_data ip_data;
+
+		ip_data.ip.value = *((guint32*)ips->data);
+		ip_data.port = *((guint32*)ports->data);
+
+		gchar *addr = gfire_game_data_addr_str(&ip_data);
+
+		// Add row for server, will be filled in later
+		iter = gfire_server_browser_add_friends_favorite_server_row(addr);
+
+		// Get query type
+		const gchar *server_query_type = gfire_game_server_query_type(gameid);
+
+		// Add server to list
+		gfire_server_info *server_info = gfire_server_info_new();
+		server_info->ip_full = g_strdup(addr);
+		server_info->query_type = g_strdup(server_query_type);
+
+		// Insert tree iter
+		server_info->server_list_iter = iter;
+
+		// Push server to pool
+		g_thread_pool_push(friends_fav_serverlist_thread_pool, server_info, NULL);
+
+		// Free data and go to next server
+		g_free(addr);
+		// g_free(i->data);
+		// g_free(p->data);
+
+		ports = g_list_next(ports);
 	}
 
 	// Add timeout to display queried servers
@@ -470,17 +551,15 @@ void gfire_server_browser_proto_favorite_serverlist(gfire_data *p_gfire, guint16
 	if(offset == -1)
 		return;
 
-	// Initialize server browser struct
+	// Initialize server browser struct & set max favorites
 	server_browser = gfire_server_browser_new();
+	server_browser->max_favorites = max_favorites;
 
 	// Fill in favorite server list
 	GList *favorite_servers = NULL;
 
 	for(; servers_ips; servers_ips = g_list_next(servers_ips))
 	{
-		// Max favorite servers
-		server_browser->max_favorites = max_favorites;
-
 		// Server (ip & port)
 		gfire_server_browser_server *server;
 		server = (gfire_server_browser_server *)g_malloc0(sizeof(gfire_server_browser_server));
@@ -552,9 +631,50 @@ void gfire_server_browser_remove_favorite_server_local(guint32 p_gameid, guint32
 		server = favorite_servers_tmp->data;
 
 		if(server->gameid == p_gameid && server->ip == p_ip && server->port == p_port)
-		{
 			server_browser->favorite_servers = g_list_remove(server_browser->favorite_servers, server);
-		}
 	}
 }
-// #endif // HAVE_GTK
+
+guint16 gfire_server_browser_proto_create_friends_favorite_serverlist_request(guint32 p_gameid)
+{
+	guint32 offset = XFIRE_HEADER_LEN;
+	p_gameid = GUINT32_TO_LE(p_gameid);
+
+	offset = gfire_proto_write_attr_ss("gameid", 0x02, &p_gameid, sizeof(p_gameid), offset);
+	gfire_proto_write_header(offset, 0x15, 1, 0);
+
+	return offset;
+}
+
+void gfire_server_browser_proto_remove_favorite_server(gfire_data *p_gfire, guint32 p_gameid, const gchar *p_ip, const gchar *p_port)
+{
+	gfire_game_data game;
+	gfire_game_data_ip_from_str(&game, p_ip);
+
+	guint16 port;
+	sscanf(p_port, "%hu", &port);
+	game.port = port;
+
+	guint16 packet_len = 0;
+	packet_len = gfire_server_browser_proto_request_remove_favorite_server(p_gameid, game.ip.value, port);
+
+	if(packet_len > 0)
+		gfire_send(gfire_get_connection(p_gfire), packet_len);
+}
+
+void gfire_server_browser_proto_add_favorite_server(gfire_data *p_gfire, guint32 p_gameid, const gchar *p_ip, const gchar *p_port)
+{
+	gfire_game_data game;
+	gfire_game_data_ip_from_str(&game, p_ip);
+
+	guint16 port;
+	sscanf(p_port, "%hu", &port);
+	game.port = port;
+
+	guint16 packet_len = 0;
+	packet_len = gfire_server_browser_proto_request_add_favorite_server(p_gameid, game.ip.value, port);
+
+	if(packet_len > 0)
+		gfire_send(gfire_get_connection(p_gfire), packet_len);
+}
+#endif // HAVE_GTK
