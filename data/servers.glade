@@ -185,7 +185,7 @@
                   <object class="GtkTreeViewColumn" id="ping_column">
                     <property name="resizable">True</property>
                     <property name="sizing">fixed</property>
-                    <property name="fixed_width">50</property>
+                    <property name="fixed_width">60</property>
                     <property name="title">Ping</property>
                     <property name="reorderable">True</property>
                     <property name="sort_indicator">True</property>
@@ -202,7 +202,7 @@
                   <object class="GtkTreeViewColumn" id="players_column">
                     <property name="resizable">True</property>
                     <property name="sizing">fixed</property>
-                    <property name="fixed_width">70</property>
+                    <property name="fixed_width">80</property>
                     <property name="title">Players</property>
                     <property name="reorderable">True</property>
                     <property name="sort_indicator">True</property>
@@ -248,7 +248,6 @@
     <property name="resizable">False</property>
     <property name="window_position">center</property>
     <property name="type_hint">normal</property>
-    <property name="has_separator">False</property>
     <child internal-child="vbox">
       <object class="GtkVBox" id="dialog_vbox">
         <property name="visible">True</property>
