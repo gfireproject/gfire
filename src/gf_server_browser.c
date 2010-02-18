@@ -297,12 +297,15 @@ void gfire_server_browser_set_server(gfire_server_info *p_server)
 	{
 		GtkTreeIter iter = p_server->server_list_iter;
 
+		// If we didn't get server name, then remove it
 		if(p_server->name)
 		{
 			gchar *server_name_clean = g_strstrip(gfire_remove_quake3_color_codes(p_server->name));
 			gtk_tree_store_set(server_browser_tree_store, &iter, 0, server_name_clean, -1);
 			g_free(server_name_clean);
 		}
+		else
+			gtk_tree_store_remove(server_browser_tree_store, &iter);
 
 		if(p_server->ping)
 		{

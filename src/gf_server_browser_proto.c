@@ -243,9 +243,7 @@ gboolean gfire_server_browser_display_servers_cb(GtkTreeStore *p_tree_store)
 		}
 
 		gfire_server_info *server = g_queue_pop_head(&servers_list_queue);
-
-		if(server)
-			gfire_server_browser_set_server(server);
+		gfire_server_browser_set_server(server);
 
 		i++;
 		g_mutex_unlock(mutex);
