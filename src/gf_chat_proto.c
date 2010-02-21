@@ -1036,11 +1036,9 @@ void gfire_chat_proto_invite(gfire_data *p_gfire, guint16 p_packet_len)
 	// assemble ghashtable
 	components = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
 	g_hash_table_replace(components, g_strdup("room"), room);
-	g_hash_table_replace(components, g_strdup("inv_alias"), nick);
-	g_hash_table_replace(components, g_strdup("inv_lid"), name);
-	g_hash_table_replace(components, g_strdup("chat_id"), chat_id);
-	g_hash_table_replace(components, g_strdup("inv_uid"), g_strdup_printf("%u", userid));
-	g_hash_table_replace(components, g_strdup("members"), g_strdup_printf("%s\n", name));
+	g_hash_table_replace(components, g_strdup("chat_id"), purple_base64_encode(chat_id, XFIRE_CHATID_LEN));
+
+	g_free(chat_id);
 
 	serv_got_chat_invite(gfire_get_connection(p_gfire), room, nick, "", components);
 }
