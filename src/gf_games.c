@@ -268,9 +268,12 @@ const gchar *gfire_game_server_query_type(guint32 p_gameid)
 		return NULL;
 
 	// Check the first set, servers should be the same for all different detection sets
-	gfire_game_detection_set *dset = (gfire_game_detection_set*)game->detection_sets->data;
-	if(dset)
-		return dset->server_status_type;
+	if(game->detection_sets)
+	{
+		gfire_game_detection_set *dset = (gfire_game_detection_set*)game->detection_sets->data;
+		if(dset)
+		 return dset->server_status_type;
+	}
 
 	return NULL;
 }
