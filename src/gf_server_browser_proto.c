@@ -26,21 +26,41 @@
 #include "gf_server_browser.h"
 
 #ifdef HAVE_GTK
-#include <sys/time.h>
-
-static GMutex *mutex;
-static GQueue servers_list_queue = G_QUEUE_INIT;
 static gfire_server_browser *server_browser;
 
-// Protocol queries
-const char cod4_query[] = {0xFF, 0xFF, 0xFF, 0XFF, 0x67, 0x65, 0x74, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73};
-const char quake3_query[] = {0xFF, 0xFF, 0xFF, 0xFF, 0x67, 0x65, 0x74, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x0A};
-const char ut2004_query[] = {0x5C, 0x69, 0x6E, 0x66, 0x6F, 0x5C};
+// Socket
+static int server_browser_socket;
+static int server_browser_socket_handle;
+static int server_browser_event_src;
 
-void gfire_server_browser_proto_init_mutex()
+// Queues
+static GQueue *server_browser_queue;
+static GQueue *server_browser_queried_queue;
+
+// Protocol queries
+#define SOURCE_QUERY "\xFF\xFF\xFF\xFF\x54Source Engine Query"
+#define Q3_QUERY "\xFF\xFF\xFF\xFFgetstatus"
+
+static GList *server_browser_proto_get_favorite_servers(guint32 p_gameid);
+
+void gfire_server_browser_proto_parse_packet_q3();
+void gfire_server_browser_proto_parse_packet_source();
+
+// Creation & freeing
+gfire_server_browser_server *gfire_server_browser_server_new()
 {
-	if(!mutex)
-		mutex = g_mutex_new();
+	gfire_server_browser_server *ret;
+	ret = (gfire_server_browser_server *)g_malloc0(sizeof(gfire_server_browser_server));
+
+	return ret;
+}
+
+gfire_server_browser_server_info *gfire_server_browser_server_info_new()
+{
+	gfire_server_browser_server_info *ret;
+	ret = (gfire_server_browser_server_info *)g_malloc0(sizeof(gfire_server_browser_server_info));
+
+	return ret;
 }
 
 static gfire_server_browser *gfire_server_browser_new()
@@ -51,249 +71,165 @@ static gfire_server_browser *gfire_server_browser_new()
 	return ret;
 }
 
-gfire_server_info *gfire_server_info_new()
+// Serverlist requests
+guint16 gfire_server_browser_proto_create_friends_favorite_serverlist_request(guint32 p_gameid)
 {
-	gfire_server_info *ret;
-	ret = (gfire_server_info *)g_malloc0(sizeof(gfire_server_info));
+	guint32 offset = XFIRE_HEADER_LEN;
+	p_gameid = GUINT32_TO_LE(p_gameid);
 
-	return ret;
+	offset = gfire_proto_write_attr_ss("gameid", 0x02, &p_gameid, sizeof(p_gameid), offset);
+	gfire_proto_write_header(offset, 0x15, 1, 0);
+
+	return offset;
 }
 
-static gchar *gfire_server_browser_send_packet(const guint32 server_ip, const gint server_port, const gchar server_query[])
+guint16 gfire_server_browser_proto_create_serverlist_request(guint32 p_gameid)
 {
-	if(server_ip && server_port && server_query)
-	{
-		// Create socket and set options
-		int query_socket;
+	guint32 offset = XFIRE_HEADER_LEN;
+	p_gameid = GUINT32_TO_LE(p_gameid);
 
-		struct sockaddr_in query_address;
-		unsigned short int query_port = server_port;
+	offset = gfire_proto_write_attr_bs(0x21, 0x02, &p_gameid, sizeof(p_gameid), offset);
+	gfire_proto_write_header(offset, 0x16, 1, 0);
 
-		// Open socket using UDP
-		if((query_socket = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
-			return NULL;
-
-		query_address.sin_family = AF_INET;
-		query_address.sin_addr.s_addr = server_ip;
-		query_address.sin_port = htons(query_port);
-
-		// Send query
-		if(sendto(query_socket, server_query, strlen(server_query), 0, (struct sockaddr *)&query_address, sizeof(query_address)) < 0)
-			return NULL;
-
-		// Wait for response
-		char response[GFIRE_SERVER_BROWSER_BUF];
-		int n_read;
-
-		// Define query timeout
-		struct timeval timeout;
-
-		timeout.tv_sec = 10;
-		timeout.tv_usec = 500 * 1000;
-		setsockopt(query_socket, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(struct timeval));
-
-		// Read query response
-		n_read = recvfrom(query_socket, response, GFIRE_SERVER_BROWSER_BUF, 0, NULL, NULL);
-		if(n_read <= 0)
-		{
-			close(query_socket);
-			return NULL;
-		}
-
-		// Close socket
-		close(query_socket);
-
-		// Return response
-		return g_strdup_printf("%s", response);
-	}
-	else
-		return NULL;
+	return offset;
 }
 
-static gfire_server_info *gfire_server_browser_quake3(const guint32 server_ip, const gint server_port)
+// Server query functions
+static void gfire_server_browser_send_packet(guint32 p_ip, guint16 p_port, const gchar p_query[])
 {
-	gfire_server_info *server_info = gfire_server_info_new();
-	gchar *server_response = gfire_server_browser_send_packet(server_ip, server_port, quake3_query);
-
-	if(!server_response)
-		return server_info;
-
-	// Fill raw info
-	g_strchomp(server_response);
-	server_info->raw_info = g_strdup(server_response);
-
-	// Build full IP
-	struct sockaddr_in antelope;
-	antelope.sin_addr.s_addr = server_ip;
-
-	server_info->ip_full = g_strdup_printf("%s:%u", inet_ntoa(antelope.sin_addr), server_port);
-
-	// Split response in 3 parts (message, server information, players)
-	gchar **server_response_parts = g_strsplit(server_response, "\n", 0);
-	g_free(server_response);
-
-	if(g_strv_length(server_response_parts) < 3)
-		return server_info;
-
-	gchar **server_response_split = g_strsplit(server_response_parts[1], "\\", 0);
-	if(server_response_split)
-	{
-		int i;
-		for (i = 0; i < g_strv_length(server_response_split); i++)
-		{
-			// IP & port
-			server_info->ip = server_ip;
-			server_info->port = server_port;
-
-			// Server name
-			if(!g_strcmp0("sv_hostname", server_response_split[i]))
-				server_info->name = server_response_split[i+1];
-
-			// Server map
-			if(!g_strcmp0("mapname", server_response_split[i]))
-				server_info->map = server_response_split[i+1];
-
-			// Max. players
-			if(!g_strcmp0("sv_maxclients", server_response_split[i]))
-				server_info->max_players = atoi(server_response_split[i+1]);
-		}
-
-		// Count players
-		guint32 players = g_strv_length(server_response_parts) - 2;
-		server_info->players = players;
-
-		// g_strfreev(server_response_parts);
-		// g_strfreev(server_response_split);
-	}
-
-	return server_info;
-}
-
-static gfire_server_info *gfire_server_browser_wolfet(const guint32 server_ip, const gint server_port)
-{
-	gfire_server_info *server_info = gfire_server_info_new();
-	server_info = gfire_server_browser_quake3(server_ip, server_port);
-
-	return server_info;
-}
-
-gfire_server_info *gfire_server_browser_proto_query_server(gfire_server_info *p_server)
-{
-	gfire_server_info *ret;
-	ret = gfire_server_info_new();
-
-	struct timeval query_time_start, query_time_end, query_time_elapsed;
-	gettimeofday(&query_time_start, NULL);
-
-	gchar **server_ip_full_parts = g_strsplit(p_server->ip_full, ":", -1);
-
-	// Determine query type
-	if(!g_strcmp0(p_server->query_type, "WOLFET"))
-		ret = gfire_server_browser_wolfet(inet_addr(server_ip_full_parts[0]), atoi(server_ip_full_parts[1]));
-	else if(!g_strcmp0(p_server->query_type, "COD2"))
-		ret = gfire_server_browser_wolfet(inet_addr(server_ip_full_parts[0]), atoi(server_ip_full_parts[1]));
-	else if(!g_strcmp0(p_server->query_type, "COD4MW"))
-		ret = gfire_server_browser_wolfet(inet_addr(server_ip_full_parts[0]), atoi(server_ip_full_parts[1]));
-	else
-		return ret;
-
-	gettimeofday(&query_time_end, NULL);
-
-	if(query_time_start.tv_usec > query_time_end.tv_usec)
-	{
-		query_time_end.tv_usec += 1000000;
-		query_time_end.tv_sec--;
-	}
-
-	query_time_elapsed.tv_usec = query_time_end.tv_usec - query_time_start.tv_usec;
-	query_time_elapsed.tv_sec = query_time_end.tv_sec - query_time_start.tv_sec;
-
-	ret->server_list_iter = p_server->server_list_iter;
-	ret->ping = query_time_elapsed.tv_usec / 1000;
-
-	return ret;
-}
-
-void gfire_server_browser_update_server_list_thread(gfire_server_info *server_info)
-{
-	if(!server_info)
+	if(!p_ip || !p_port || !p_query)
 		return;
 
-	gfire_server_info *server_info_queried;
-	server_info_queried = gfire_server_info_new();
-	server_info_queried = gfire_server_browser_proto_query_server(server_info);
+	struct sockaddr_in address;
+	memset(&address, 0, sizeof(address));
 
-	g_mutex_lock(mutex);
-	g_queue_push_head(&servers_list_queue, server_info_queried);
-	g_mutex_unlock(mutex);
+	address.sin_family = AF_INET;
+	address.sin_addr.s_addr = htonl(p_ip);
+	address.sin_port = htons(p_port);
 
-	return;
+	// Send query
+	sendto(server_browser_socket, p_query, strlen(p_query), 0, (struct sockaddr *)&address, sizeof(address));
 }
 
-gboolean gfire_server_browser_display_servers_cb(GtkTreeStore *p_tree_store)
+static void gfire_server_browser_proto_send_query(gfire_server_browser_server *p_server)
 {
-	int i = 0;
-	while(i != -1)
+	// Determine query type & perform query
+	if(!g_strcmp0(p_server->protocol, "WOLFET"))
+		gfire_server_browser_send_packet(p_server->ip, p_server->port, Q3_QUERY);
+	else if(!g_strcmp0(p_server->protocol, "SOURCE"))
+		gfire_server_browser_send_packet(p_server->ip, p_server->port, SOURCE_QUERY);
+}
+
+static gint gfire_server_browser_proto_timeout_cb(gpointer p_unused)
+{
+	gint i;
+
+	for(i = 0 ; i < 20; i++)
 	{
-		g_mutex_lock(mutex);
-		if(g_queue_is_empty(&servers_list_queue) == TRUE)
+		gfire_server_browser_server *server = g_queue_pop_head(server_browser_queue);
+
+		if(server != NULL)
 		{
-			g_mutex_unlock(mutex);
-			return TRUE;
+			// Send server query & push to queried queue
+			gfire_server_browser_proto_send_query(server);
+			g_queue_push_head(server_browser_queried_queue, server);
 		}
-
-		gfire_server_info *server = g_queue_pop_head(&servers_list_queue);
-		gfire_server_browser_set_server(server);
-
-		i++;
-		g_mutex_unlock(mutex);
 	}
 
 	return TRUE;
 }
 
-void gfire_server_browser_show_fav_serverlist(guint32 p_gameid)
+void gfire_server_brower_proto_input_cb(gpointer p_unused, PurpleInputCondition p_condition)
 {
-	// Initialize fav serverlist thread pool
-	fav_serverlist_thread_pool = g_thread_pool_new((GFunc )gfire_server_browser_update_server_list_thread,
-												   NULL, GFIRE_SERVER_BROWSER_THREADS_LIMIT + 1, FALSE, NULL);
+	const gchar *protocol = gfire_game_server_query_type(server_browser->current_gameid);
 
-	// Add favorite servers to list store & thread pool
+	// Determine protocol & parse packet
+	if(!g_strcmp0(protocol, "WOLFET"))
+		gfire_server_browser_proto_parse_packet_q3();
+	else if(!g_strcmp0(protocol, "SOURCE"))
+		gfire_server_browser_proto_parse_packet_source();
+}
+
+gboolean gfire_server_browser_proto_init()
+{
+	// Init socket
+	if(!server_browser_socket)
+	{
+		if((server_browser_socket = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
+			return FALSE;
+	}
+
+	// Set socket to non-blocking mode
+	int flags;
+
+	if((flags = fcntl(server_browser_socket, F_GETFL, 0)) < 0)
+		return FALSE;
+
+	if(fcntl(server_browser_socket, F_SETFL, flags | O_NONBLOCK) < 0)
+		return FALSE;
+
+	// Add query timeout
+	server_browser_event_src = g_timeout_add(500, gfire_server_browser_proto_timeout_cb, NULL);
+
+	// Init queues
+	server_browser_queue = g_queue_new();
+	server_browser_queried_queue = g_queue_new();
+
+	// Add input handler
+	server_browser_socket_handle = purple_input_add(server_browser_socket, PURPLE_INPUT_READ, (PurpleInputFunction )gfire_server_brower_proto_input_cb, NULL);
+
+	return TRUE;
+}
+
+void gfire_server_browser_proto_close()
+{
+	// Remove query timeout
+	if(server_browser_event_src)
+		g_source_remove(server_browser_event_src);
+
+	// Remove input handler
+	if(server_browser_socket_handle)
+		purple_input_remove(server_browser_socket_handle);
+
+	// Free queues
+	if(server_browser_queue)
+		g_queue_free(server_browser_queue);
+
+	if(server_browser_queried_queue)
+		g_queue_free(server_browser_queried_queue);
+
+	// Close socket
+	if(server_browser_socket)
+		close(server_browser_socket);
+}
+
+// Serverlist handlers
+void gfire_server_browser_proto_fav_serverlist_request(guint32 p_gameid)
+{
+	// Set current gameid
+	server_browser->current_gameid = p_gameid;
+
+	// Get fav serverlist (local)
 	GList *favorite_servers = server_browser_proto_get_favorite_servers(p_gameid);
 
+	// Push servers to fav serverlist queue as structs
 	for(; favorite_servers; favorite_servers = g_list_next(favorite_servers))
 	{
-		GtkTreeIter iter;
-		gfire_game_data ip_data;
 
 		gfire_server_browser_server *server;
 		server = favorite_servers->data;
 
-		ip_data.ip.value = server->ip;
-		ip_data.port = server->port;
+		// Create struct
+		server->protocol = (gchar *)gfire_game_server_query_type(p_gameid);
+		server->ip = server->ip;
+		server->port = server->port;
+		server->parent = 1;
 
-		gchar *addr = gfire_game_data_addr_str(&ip_data);
-
-		// Add row for server, will be filled in later
-		iter = gfire_server_browser_add_favorite_server_row(addr);
-
-		// Get query type
-		const gchar *server_query_type = gfire_game_server_query_type(server->gameid);
-
-		// Add server to list
-		gfire_server_info *server_info = gfire_server_info_new();
-		server_info->ip_full = g_strdup(addr);
-		server_info->query_type = g_strdup(server_query_type);
-
-		// Insert tree iter
-		server_info->server_list_iter = iter;
-
-		// Push server to pool
-		g_thread_pool_push(fav_serverlist_thread_pool, server_info, NULL);
+		// Push server struct to queue
+		g_queue_push_head(server_browser_queue, server);
 
 		// Free data and go to next server
-		g_free(addr);
-		// g_free(i->data);
+		// g_free(favorite_servers->data);
 	}
 }
 
@@ -303,10 +239,10 @@ void gfire_server_browser_proto_serverlist(gfire_data *p_gfire, guint16 p_packet
 		return;
 
 	guint32 offset = XFIRE_HEADER_LEN;
+
 	guint32 gameid;
 	GList *ips = NULL;
 	GList *ports = NULL;
-	GList *i, *p = NULL;
 
 	if(p_packet_len < 16)
 	{
@@ -325,52 +261,33 @@ void gfire_server_browser_proto_serverlist(gfire_data *p_gfire, guint16 p_packet
 	offset = gfire_proto_read_attr_list_bs(p_gfire->buff_in, &ports, 0x23, offset);
 	if(offset == -1 || !ports)
 	{
-		if(ips) g_list_free(ips);
+		if(ips)
+			g_list_free(ips);
+
 		return;
 	}
 
-	i = ips; p = ports;
+	purple_debug_misc("gfire", "(serverlist): Got the serverlist for %u\n", gameid);
 
-	purple_debug_misc("gfire", "(serverlist): got the server list for %u\n", gameid);
-
-	// Initialize serverlist thread pool (all)
-	serverlist_thread_pool = g_thread_pool_new((GFunc )gfire_server_browser_update_server_list_thread,
-											   NULL, GFIRE_SERVER_BROWSER_THREADS_LIMIT + 1, FALSE, NULL);
-
-	// Add servers to list store & thread pool
-	for(; i; i = g_list_next(i))
+	// Push servers to serverlist queue as structs
+	for(; ips; ips = g_list_next(ips))
 	{
-		GtkTreeIter iter;
-		gfire_game_data ip_data;
+		// Create struct
+		gfire_server_browser_server *server = gfire_server_browser_server_new();
 
-		ip_data.ip.value = *((guint32*)i->data);
-		ip_data.port = *((guint32*)p->data);
+		server->protocol = (gchar *)gfire_game_server_query_type(gameid);
+		server->ip = *((guint32 *)ips->data);
+		server->port = *((guint16 *)ports->data);
+		server->parent = 3;
 
-		gchar *addr = gfire_game_data_addr_str(&ip_data);
-
-		// Add row for server, will be filled in later
-		iter = gfire_server_browser_add_server_row(addr);
-
-		// Get query type
-		const gchar *server_query_type = gfire_game_server_query_type(gameid);
-
-		// Add server to list
-		gfire_server_info *server_info = gfire_server_info_new();
-		server_info->ip_full = g_strdup(addr);
-		server_info->query_type = g_strdup(server_query_type);
-
-		// Insert tree iter
-		server_info->server_list_iter = iter;
-
-		// Push server to pool
-		g_thread_pool_push(serverlist_thread_pool, server_info, NULL);
+		// Push server struct to queue
+		g_queue_push_head(server_browser_queue, server);
 
 		// Free data and go to next server
-		g_free(addr);
-		g_free(i->data);
-		g_free(p->data);
+		g_free(ips->data);
+		g_free(ports->data);
 
-		p = g_list_next(p);
+		ports = g_list_next(ports);
 	}
 }
 
@@ -407,112 +324,28 @@ void gfire_server_browser_proto_friends_favorite_serverlist(gfire_data *p_gfire,
 	if(offset == -1)
 		return;
 
-	// Initialize friends' favorite serverlist thread pool
-	friends_fav_serverlist_thread_pool = g_thread_pool_new((GFunc )gfire_server_browser_update_server_list_thread,
-														   NULL, GFIRE_SERVER_BROWSER_THREADS_LIMIT + 1, FALSE, NULL);
+	purple_debug_misc("gfire", "(serverlist): got the friends' favoritre serverlist for %u\n", gameid);
 
-	// Add servers to list store & thread pool
+	// Push servers to serverlist queue as structs
 	for(; ips; ips = g_list_next(ips))
 	{
-		GtkTreeIter iter;
-		gfire_game_data ip_data;
+		// Create struct
+		gfire_server_browser_server *server = gfire_server_browser_server_new();
 
-		ip_data.ip.value = *((guint32*)ips->data);
-		ip_data.port = *((guint32*)ports->data);
+		server->protocol = (gchar *)gfire_game_server_query_type(gameid);
+		server->ip = *((guint32 *)ips->data);
+		server->port = *((guint16 *)ports->data);
+		server->parent = 2;
 
-		gchar *addr = gfire_game_data_addr_str(&ip_data);
-
-		// Add row for server, will be filled in later
-		iter = gfire_server_browser_add_friends_favorite_server_row(addr);
-
-		// Get query type
-		const gchar *server_query_type = gfire_game_server_query_type(gameid);
-
-		// Add server to list
-		gfire_server_info *server_info = gfire_server_info_new();
-		server_info->ip_full = g_strdup(addr);
-		server_info->query_type = g_strdup(server_query_type);
-
-		// Insert tree iter
-		server_info->server_list_iter = iter;
-
-		// Push server to pool
-		g_thread_pool_push(friends_fav_serverlist_thread_pool, server_info, NULL);
+		// Push server struct to queue
+		g_queue_push_head(server_browser_queue, server);
 
 		// Free data and go to next server
-		g_free(addr);
-		// g_free(i->data);
-		// g_free(p->data);
+		g_free(ips->data);
+		g_free(ports->data);
 
 		ports = g_list_next(ports);
 	}
-
-	// Add timeout to display queried servers
-	p_gfire->server_browser_pool = g_timeout_add(800, (GSourceFunc )gfire_server_browser_display_servers_cb, NULL);
-}
-
-gboolean gfire_server_browser_proto_is_favorite_server(guint32 p_ip, guint16 p_port)
-{
-	gboolean ret = FALSE;
-
-	GList *favorite_servers_tmp = g_list_copy(server_browser->favorite_servers);
-
-	for(; favorite_servers_tmp; favorite_servers_tmp = g_list_next(favorite_servers_tmp))
-	{
-		gfire_server_browser_server *server;
-		server = favorite_servers_tmp->data;
-
-		if(server->ip == p_ip && server->port == p_port)
-		{
-			ret = TRUE;
-			break;
-		}
-	}
-
-	return ret;
-}
-
-guint16 gfire_server_browser_proto_create_serverlist_request(guint32 p_gameid)
-{
-	guint32 offset = XFIRE_HEADER_LEN;
-	p_gameid = GUINT32_TO_LE(p_gameid);
-
-	offset = gfire_proto_write_attr_bs(0x21, 0x02, &p_gameid, sizeof(p_gameid), offset);
-	gfire_proto_write_header(offset, 0x16, 1, 0);
-
-	return offset;
-}
-
-guint16 gfire_server_browser_proto_request_remove_favorite_server(guint32 p_gameid, guint32 p_ip, guint32 p_port)
-{
-	guint32 offset = XFIRE_HEADER_LEN;
-
-	p_gameid = GUINT32_TO_LE(p_gameid);
-	p_ip = GUINT32_TO_LE(p_ip);
-	p_port = GUINT32_TO_LE(p_port);
-
-	offset = gfire_proto_write_attr_ss("gameid", 0x02, &p_gameid, sizeof(p_gameid), offset);
-	offset = gfire_proto_write_attr_ss("gip", 0x02, &p_ip, sizeof(p_ip), offset);
-	offset = gfire_proto_write_attr_ss("gport", 0x02, &p_port, sizeof(p_port), offset);
-	gfire_proto_write_header(offset, 0x14, 3, 0);
-
-	return offset;
-}
-
-guint16 gfire_server_browser_proto_request_add_favorite_server(guint32 p_gameid, guint32 p_ip, guint32 p_port)
-{
-	guint32 offset = XFIRE_HEADER_LEN;
-
-	p_gameid = GUINT32_TO_LE(p_gameid);
-	p_ip = GUINT32_TO_LE(p_ip);
-	p_port = GUINT32_TO_LE(p_port);
-
-	offset = gfire_proto_write_attr_ss("gameid", 0x02, &p_gameid, sizeof(p_gameid), offset);
-	offset = gfire_proto_write_attr_ss("gip", 0x02, &p_ip, sizeof(p_ip), offset);
-	offset = gfire_proto_write_attr_ss("gport", 0x02, &p_port, sizeof(p_port), offset);
-	gfire_proto_write_header(offset, 0x13, 3, 0);
-
-	return offset;
 }
 
 void gfire_server_browser_proto_favorite_serverlist(gfire_data *p_gfire, guint16 p_packet_len)
@@ -560,7 +393,7 @@ void gfire_server_browser_proto_favorite_serverlist(gfire_data *p_gfire, guint16
 	{
 		// Server (ip & port)
 		gfire_server_browser_server *server;
-		server = (gfire_server_browser_server *)g_malloc0(sizeof(gfire_server_browser_server));
+		server = gfire_server_browser_server_new();
 
 		server->gameid = *((guint32 *)servers_gameids->data);
 		server->ip = *((guint32 *)servers_ips->data);
@@ -577,7 +410,8 @@ void gfire_server_browser_proto_favorite_serverlist(gfire_data *p_gfire, guint16
 	server_browser->favorite_servers = favorite_servers;
 }
 
-GList *server_browser_proto_get_favorite_servers(const guint32 p_gameid)
+// Favorite servers handling (local)
+static GList *server_browser_proto_get_favorite_servers(const guint32 p_gameid)
 {
 	GList *ret = NULL;
 
@@ -598,7 +432,7 @@ GList *server_browser_proto_get_favorite_servers(const guint32 p_gameid)
 	return ret;
 }
 
-gboolean gfire_server_browser_can_add_favorite_server()
+gboolean gfire_server_browser_can_add_fav_server()
 {
 	if(g_list_length(server_browser->favorite_servers) < server_browser->max_favorites)
 		return TRUE;
@@ -633,15 +467,237 @@ void gfire_server_browser_remove_favorite_server_local(guint32 p_gameid, guint32
 	}
 }
 
-guint16 gfire_server_browser_proto_create_friends_favorite_serverlist_request(guint32 p_gameid)
+// Packet parsers (per protocol)
+void gfire_server_browser_proto_parse_packet_q3()
+{
+	gchar server_response[1024];
+
+	struct sockaddr_in server;
+	socklen_t server_len;
+
+	server_len = sizeof(server);
+
+	int n_received = recvfrom(server_browser_socket, server_response, sizeof(server_response), 0, (struct sockaddr *)&server, &server_len);
+
+	if(n_received <= 0)
+		return;
+
+	gchar *ip = inet_ntoa(server.sin_addr);
+	gint port = ntohs(server.sin_port);
+
+	gfire_server_browser_server_info *server_info = gfire_server_browser_server_info_new();
+
+	// Fill raw info
+	g_strchomp(server_response);
+	server_info->raw_info = g_strdup(server_response);
+
+	server_info->ip_full = g_strdup_printf("%s:%d", ip, port);
+
+	// Split response in 3 parts (message, server information, players)
+	gchar **server_response_parts = g_strsplit(server_response, "\n", 0);
+	// g_free(server_response);
+
+	if(g_strv_length(server_response_parts) < 3)
+		return;
+
+	gchar **server_response_split = g_strsplit(server_response_parts[1], "\\", 0);
+	if(server_response_split)
+	{
+		int i;
+		for (i = 0; i < g_strv_length(server_response_split); i++)
+		{
+			// IP & port
+			gfire_game_data game;
+			gfire_game_data_ip_from_str(&game, ip);
+
+			server_info->ip = game.ip.value;
+			server_info->port = port;
+
+			// Server name
+			if(!g_strcmp0("sv_hostname", server_response_split[i]))
+				server_info->name = server_response_split[i+1];
+
+			// Server map
+			if(!g_strcmp0("mapname", server_response_split[i]))
+				server_info->map = server_response_split[i+1];
+
+			// Max. players
+			if(!g_strcmp0("sv_maxclients", server_response_split[i]))
+				server_info->max_players = atoi(server_response_split[i+1]);
+		}
+
+		// Count players
+		guint32 players = g_strv_length(server_response_parts) - 2;
+		server_info->players = players;
+
+		// g_strfreev(server_response_parts);
+		// g_strfreev(server_response_split);
+	}
+
+	// Add server to tree strore
+	gfire_server_browser_add_server(server_info);
+}
+
+void gfire_server_browser_proto_parse_packet_source()
+{
+	gint n_received;
+	gint index, str_len;
+
+	gchar buffer[1024];
+
+	struct sockaddr_in server;
+	socklen_t server_len;
+
+	server_len = sizeof(server);
+	n_received = recvfrom(server_browser_socket, buffer, sizeof(buffer), 0, (struct sockaddr *)&server, &server_len);
+
+	if(n_received <= 0)
+		return;
+
+	// FIXME: Should be replaced by inet_ntoa()
+	gchar *ip_str = inet_ntoa(server.sin_addr);
+	gint port = ntohs(server.sin_port);
+
+	// Check server type
+	if(buffer[4] != 0x49)
+		return;
+
+	// Directly skip version for server name
+	gchar hostname[256];
+	index = 6;
+
+	if((str_len = strlen(&buffer[index])) > (sizeof(hostname) -1))
+	{
+		if(g_strlcpy(hostname, &buffer[index], sizeof(hostname) -1) == 0)
+			return;
+
+		buffer[index + (sizeof(hostname) - 1)] = 0;
+	}
+	else if(buffer[index] != 0)
+	{
+		if(g_strlcpy(hostname, &buffer[index], str_len + 1) == 0)
+			return;
+	}
+	else
+		hostname[0] = 0;
+
+	index += str_len + 1;
+
+	// Map
+	gchar map[256];
+	sscanf(&buffer[index], "%s", map);
+
+	index += strlen(map) + 1;
+
+	// Game dir
+	gchar game_dir[256];
+	sscanf(&buffer[index], "%s", game_dir);
+
+	index += strlen(game_dir) + 1;
+
+	// Game description
+	gchar game_description[256];
+
+	if((str_len = strlen(&buffer[index])) > (sizeof(game_description) -1))
+	{
+		if(g_strlcpy(game_description, &buffer[index], sizeof(game_description) -1) == 0)
+			return;
+
+		buffer[index + (sizeof(game_description) - 1)] = 0;
+	}
+	else if(buffer[index] != 0)
+	{
+		if(g_strlcpy(game_description, &buffer[index], str_len + 1) == 0)
+			return;
+	}
+	else
+		game_description[0] = 0;
+
+	index += strlen(game_description) + 1;
+
+	// AppID
+	// short appid = *(short *)&buffer[index];
+
+	// Players
+	gchar num_players = buffer[index + 2];
+	gchar max_players = buffer[index + 3];
+	// gchar num_bots = buffer[index + 4];
+
+	/* Other vital information (not needed yet)
+	gchar dedicated = buffer[index + 5];
+	gchar os = buffer[index + 6];
+	gchar password = buffer[index + 7];
+	gchar secure = buffer[index + 8]; */
+
+	// Create server info struct
+	gfire_server_browser_server_info *server_info = gfire_server_browser_server_info_new();
+	server_info->gameid = server_browser->current_gameid;
+
+	server_info->ip = (guint32)ip_str;
+	server_info->port = port;
+	server_info->ip_full = g_strdup_printf("%s:%d", ip_str, port);
+	server_info->players = num_players;
+	server_info->max_players = max_players;
+	// server_info->ping = -1;
+	server_info->map = map;
+	server_info->name = hostname;
+
+	// Add server to tree strore
+	gfire_server_browser_add_server(server_info);
+}
+
+// Misc.
+guint16 gfire_server_browser_proto_request_add_favorite_server(guint32 p_gameid, guint32 p_ip, guint32 p_port)
 {
 	guint32 offset = XFIRE_HEADER_LEN;
+
 	p_gameid = GUINT32_TO_LE(p_gameid);
+	p_ip = GUINT32_TO_LE(p_ip);
+	p_port = GUINT32_TO_LE(p_port);
 
 	offset = gfire_proto_write_attr_ss("gameid", 0x02, &p_gameid, sizeof(p_gameid), offset);
-	gfire_proto_write_header(offset, 0x15, 1, 0);
+	offset = gfire_proto_write_attr_ss("gip", 0x02, &p_ip, sizeof(p_ip), offset);
+	offset = gfire_proto_write_attr_ss("gport", 0x02, &p_port, sizeof(p_port), offset);
+	gfire_proto_write_header(offset, 0x13, 3, 0);
 
 	return offset;
+}
+
+guint16 gfire_server_browser_proto_request_remove_favorite_server(guint32 p_gameid, guint32 p_ip, guint32 p_port)
+{
+	guint32 offset = XFIRE_HEADER_LEN;
+
+	p_gameid = GUINT32_TO_LE(p_gameid);
+	p_ip = GUINT32_TO_LE(p_ip);
+	p_port = GUINT32_TO_LE(p_port);
+
+	offset = gfire_proto_write_attr_ss("gameid", 0x02, &p_gameid, sizeof(p_gameid), offset);
+	offset = gfire_proto_write_attr_ss("gip", 0x02, &p_ip, sizeof(p_ip), offset);
+	offset = gfire_proto_write_attr_ss("gport", 0x02, &p_port, sizeof(p_port), offset);
+	gfire_proto_write_header(offset, 0x14, 3, 0);
+
+	return offset;
+}
+
+gboolean gfire_server_browser_proto_is_favorite_server(guint32 p_ip, guint16 p_port)
+{
+	gboolean ret = FALSE;
+
+	GList *favorite_servers_tmp = g_list_copy(server_browser->favorite_servers);
+
+	for(; favorite_servers_tmp; favorite_servers_tmp = g_list_next(favorite_servers_tmp))
+	{
+		gfire_server_browser_server *server;
+		server = favorite_servers_tmp->data;
+
+		if(server->ip == p_ip && server->port == p_port)
+		{
+			ret = TRUE;
+			break;
+		}
+	}
+
+	return ret;
 }
 
 void gfire_server_browser_proto_remove_favorite_server(gfire_data *p_gfire, guint32 p_gameid, const gchar *p_ip, const gchar *p_port)
@@ -674,5 +730,39 @@ void gfire_server_browser_proto_add_favorite_server(gfire_data *p_gfire, guint32
 
 	if(packet_len > 0)
 		gfire_send(gfire_get_connection(p_gfire), packet_len);
+}
+
+void gfire_server_browser_proto_push_fav_server(gfire_server_browser_server *p_server)
+{
+	g_queue_push_head(server_browser_queue, p_server);
+}
+
+static gint gfire_server_brower_proto_get_parent_cb(gconstpointer a, gconstpointer b)
+{
+	gfire_server_browser_server *server = (gfire_server_browser_server *)a;
+	gfire_server_browser_server_info *server_info = (gfire_server_browser_server_info *)b;
+
+	// Found matching server
+	if((server->ip == server_info->ip) && (server->port == server_info->port))
+		return 0;
+
+	return -1;
+}
+
+gint gfire_server_brower_proto_get_parent(gfire_server_browser_server_info *p_server)
+{
+	if(!p_server)
+		return -1;
+
+	GList *server_lst = g_queue_find_custom(server_browser_queried_queue, p_server,	gfire_server_brower_proto_get_parent_cb);
+
+	if(server_lst != NULL)
+	{
+		gfire_server_browser_server *server = (gfire_server_browser_server *)server_lst->data;
+		return server->parent;
+		// g_list_free(server_lst);
+	}
+
+	return -1;
 }
 #endif // HAVE_GTK

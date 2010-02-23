@@ -31,12 +31,9 @@
 #ifdef HAVE_GTK
 void gfire_server_browser_show(PurplePluginAction *p_action);
 
-// Server list tree view handling
+// Tree view handling
 void gfire_server_browser_add_parent_rows();
-GtkTreeIter gfire_server_browser_add_favorite_server_row(gchar *p_addr);
-GtkTreeIter gfire_server_browser_add_friends_favorite_server_row(gchar *p_addr);
-GtkTreeIter gfire_server_browser_add_server_row(gchar *p_addr);
-void gfire_server_browser_set_server(gfire_server_info *p_server);
+void gfire_server_browser_add_server(gfire_server_browser_server_info *p_server);
 #endif // HAVE_GTK
 
 #endif // _GF_SERVER_BROWSER_H
