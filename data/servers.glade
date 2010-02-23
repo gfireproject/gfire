@@ -187,6 +187,7 @@
                     <property name="sizing">fixed</property>
                     <property name="fixed_width">60</property>
                     <property name="title">Ping</property>
+                    <property name="clickable">True</property>
                     <property name="reorderable">True</property>
                     <property name="sort_indicator">True</property>
                     <property name="sort_column_id">1</property>
@@ -204,6 +205,7 @@
                     <property name="sizing">fixed</property>
                     <property name="fixed_width">80</property>
                     <property name="title">Players</property>
+                    <property name="clickable">True</property>
                     <property name="reorderable">True</property>
                     <property name="sort_indicator">True</property>
                     <property name="sort_column_id">2</property>
@@ -248,6 +250,7 @@
     <property name="resizable">False</property>
     <property name="window_position">center</property>
     <property name="type_hint">normal</property>
+    <signal name="destroy_event" handler="gtk_widget_hide_on_delete"/>
     <child internal-child="vbox">
       <object class="GtkVBox" id="dialog_vbox">
         <property name="visible">True</property>
@@ -313,10 +316,32 @@
             <property name="visible">True</property>
             <property name="layout_style">end</property>
             <child>
-              <placeholder/>
+              <object class="GtkButton" id="add_button">
+                <property name="label">gtk-add</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_stock">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="position">0</property>
+              </packing>
             </child>
             <child>
-              <placeholder/>
+              <object class="GtkButton" id="cancel_button">
+                <property name="label">gtk-cancel</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_stock">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="position">1</property>
+              </packing>
             </child>
           </object>
           <packing>
@@ -327,5 +352,9 @@
         </child>
       </object>
     </child>
+    <action-widgets>
+      <action-widget response="0">add_button</action-widget>
+      <action-widget response="-1">cancel_button</action-widget>
+    </action-widgets>
   </object>
 </interface>
