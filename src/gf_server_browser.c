@@ -139,7 +139,7 @@ static void gfire_server_browser_request_serverlist_cb(gfire_data *p_gfire, GtkW
 	if(gameid != 0)
 	{
 		// Init socket & co
-		if(gfire_server_browser_proto_init() == FALSE)
+		if(!gfire_server_browser_proto_init())
 			return;
 
 		// Add parent rows (also clears tree store)
@@ -157,20 +157,16 @@ static void gfire_server_browser_request_serverlist_cb(gfire_data *p_gfire, GtkW
 			gfire_send(gfire_get_connection(p_gfire), packet_len);
 
 		// Request friends' fav serverlist
-		packet_len = gfire_server_browser_proto_create_friends_favorite_serverlist_request(gameid);
+		packet_len = gfire_server_browser_proto_create_friends_fav_serverlist_request(gameid);
 		if(packet_len > 0)
 			gfire_send(gfire_get_connection(p_gfire), packet_len);
 	}
 }
 
-// FIXME: Must be revised!
 static void gfire_server_browser_connect_cb(gfire_data *p_gfire, GtkWidget *p_sender)
 {
-	if(!p_gfire || !server_browser_builder)
-	{
-		purple_debug_error("gfire", "Purple connection not set and/or couldn't access server browser interface.\n");
+	if(!p_gfire)
 		return;
-	}
 
 	GtkWidget *game_combo = GTK_WIDGET(gtk_builder_get_object(server_browser_builder, "game_combo"));
 	GtkWidget *servers_tree_view = GTK_WIDGET(gtk_builder_get_object(server_browser_builder, "servers_tree_view"));
@@ -183,29 +179,40 @@ static void gfire_server_browser_connect_cb(gfire_data *p_gfire, GtkWidget *p_se
 	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(servers_tree_view));
 	model = gtk_tree_view_get_model(GTK_TREE_VIEW(servers_tree_view));
 
+	// Get selected server
 	if(gtk_tree_selection_get_selected(selection, &model, &iter))
 	{
-		gfire_game_data game;
-		gchar *server;
-		gchar **server_tok;
+		gchar *selected_server;
+		gtk_tree_model_get(model, &iter, 4, &selected_server, -1);
 
-		gtk_tree_model_get(model, &iter, 4, &server, -1);
-		server_tok = g_strsplit(server, ":", -1);
-		g_free(server);
-
-		if(!server_tok)
+		if(!selected_server)
 			return;
 
+		gchar **server_split;
+		server_split = g_strsplit(selected_server, ":", -1);
+		g_free(selected_server);
+
+		if(!server_split)
+			return;
+
+		// Put server in struct
+		gfire_game_data game;
+
 		game.id = gfire_game_id(game_name);
-		gfire_game_data_ip_from_str(&game, server_tok[0]);
-		game.port = atoi(server_tok[1]);
+		gfire_game_data_ip_from_str(&game, server_split[0]);
+		game.port = atoi(server_split[1]);
 
-		g_strfreev(server_tok);
+		g_free(game_name);
+		g_strfreev(server_split);
 
+		// Finally join server
 		gfire_join_game(&game);
 	}
 	else
+	{
+		g_free(game_name);
 		purple_debug_error("gfire", "Couldn't get selected server to join.\n");
+	}
 }
 
 void gfire_server_browser_add_parent_rows()
@@ -215,22 +222,22 @@ void gfire_server_browser_add_parent_rows()
 
 	// Add main (parent) rows
 	gtk_tree_store_append(server_browser_tree_store, &recent_serverlist_iter, NULL);
-	gtk_tree_store_set(server_browser_tree_store, &recent_serverlist_iter, 0, "Recent servers", -1);
+	gtk_tree_store_set(server_browser_tree_store, &recent_serverlist_iter, 0, _("Recent servers"), -1);
 
 	gtk_tree_store_append(server_browser_tree_store, &fav_serverlist_iter, NULL);
-	gtk_tree_store_set(server_browser_tree_store, &fav_serverlist_iter, 0, "Favorite servers", -1);
+	gtk_tree_store_set(server_browser_tree_store, &fav_serverlist_iter, 0, _("Favorite servers"), -1);
 
 	gtk_tree_store_append(server_browser_tree_store, &friends_fav_serverlist_iter, NULL);
-	gtk_tree_store_set(server_browser_tree_store, &friends_fav_serverlist_iter, 0, "Friends' favorite servers", -1);
+	gtk_tree_store_set(server_browser_tree_store, &friends_fav_serverlist_iter, 0, _("Friends' favorite servers"), -1);
 
 	gtk_tree_store_append(server_browser_tree_store, &serverlist_iter, NULL);
-	gtk_tree_store_set(server_browser_tree_store, &serverlist_iter, 0, "All servers", -1);
+	gtk_tree_store_set(server_browser_tree_store, &serverlist_iter, 0, _("All servers"), -1);
 }
 
 void gfire_server_browser_add_server(gfire_server_browser_server_info *p_server)
 {
 	// Get parent row
-	int parent = gfire_server_brower_proto_get_parent(p_server);
+	gint parent = gfire_server_brower_proto_get_parent(p_server);
 
 	if(parent == -1)
 		return;
@@ -288,10 +295,10 @@ void gfire_server_browser_add_server(gfire_server_browser_server_info *p_server)
 
 static void gfire_server_browser_add_favorite_server_cb(gfire_data *p_gfire, GtkWidget *p_sender)
 {
-	if(gfire_server_browser_can_add_fav_server() == FALSE)
+	if(!gfire_server_browser_can_add_fav_server())
 	{
-		purple_notify_message(NULL, PURPLE_NOTIFY_MSG_ERROR, _("Server Browser: error"), _("Can't add any new favorite server"),
-							  _("You've reached the limit of favorite servers, you can however still remove other favorite servers in order to add new ones."), NULL, NULL);
+		purple_notify_error(NULL, _("Server Browser: error"), _("Can't add favorite server"),
+							_("You've reached the limit of favorite servers, you can however still remove favorite servers in order to add new ones."));
 
 		return;
 	}
@@ -306,24 +313,29 @@ static void gfire_server_browser_add_favorite_server_cb(gfire_data *p_gfire, Gtk
 	GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(servers_tree_view));
 	GtkTreeIter iter;
 
-	if(gtk_tree_selection_get_selected(selection, &model, &iter) == TRUE)
+	if(gtk_tree_selection_get_selected(selection, &model, &iter))
 	{
-		gchar *server;
-		gtk_tree_model_get(model, &iter, 4, &server, -1);
+		gchar *selected_server;
+		gtk_tree_model_get(model, &iter, 4, &selected_server, -1);
 
-		if(server != NULL)
+		if(selected_server)
 		{
-			gchar **server_tok;
-			server_tok = g_strsplit(server, ":", -1);
-			g_free(server);
+			gchar **server_split;
+			server_split = g_strsplit(selected_server, ":", -1);
+			g_free(selected_server);
 
-			gchar *ip_str = g_strdup(server_tok[0]);
-			gchar *port_str = g_strdup(server_tok[1]);
-
-			if(server_tok != NULL)
+			if(server_split)
 			{
+				gchar *ip_str = g_strdup(server_split[0]);
+				gchar *port_str = g_strdup(server_split[1]);
+
 				gtk_entry_set_text(GTK_ENTRY(ip_address_entry), ip_str);
 				gtk_entry_set_text(GTK_ENTRY(port_entry), port_str);
+
+				g_free(ip_str);
+				g_free(port_str);
+
+				g_strfreev(server_split);
 			}
 		}
 	}
@@ -334,12 +346,13 @@ static void gfire_server_browser_add_favorite_server_cb(gfire_data *p_gfire, Gtk
 		// Get user input
 		GtkWidget *game_combo = GTK_WIDGET(gtk_builder_get_object(server_browser_builder, "game_combo"));
 
-		gchar *ip_str = gtk_entry_get_text(GTK_ENTRY(ip_address_entry));
-		gchar *port_str = gtk_entry_get_text(GTK_ENTRY(port_entry));
 		const gchar *game_name = gtk_combo_box_get_active_text(GTK_COMBO_BOX(game_combo));
 		guint32 gameid = gfire_game_id(game_name);
 
-		// Check IP
+		const gchar *ip_str = gtk_entry_get_text(GTK_ENTRY(ip_address_entry));
+		const gchar *port_str = gtk_entry_get_text(GTK_ENTRY(port_entry));
+
+		// Check given IP
 		guint16 ip1, ip2, ip3, ip4;
 
 		if(sscanf(ip_str, "%3hu.%3hu.%3hu.%3hu", &ip1, &ip2, &ip3, &ip4) == 4)
@@ -352,29 +365,27 @@ static void gfire_server_browser_add_favorite_server_cb(gfire_data *p_gfire, Gtk
 
 				if(sscanf(port_str, "%hu", &port) == 1)
 				{
-					// Add favorite server to user Xfire's profile
-					gfire_server_browser_proto_add_favorite_server(p_gfire, gameid, ip_str, port_str);
+					// Add fav server to user Xfire's profile
+					gfire_server_browser_proto_add_fav_server(p_gfire, gameid, ip_str, port_str);
 
-					// Get IP & port in correct datatype
-					guint32 ip;
-
+					// Get IP in correct datatype
 					gfire_game_data game_tmp;
 					gfire_game_data_ip_from_str(&game_tmp, ip_str);
 
-					ip = game_tmp.ip.value;
+					guint32 ip = game_tmp.ip.value;
 
 					// Add to server to local list
 					gfire_server_browser_server *server = gfire_server_browser_server_new();
-					gfire_server_browser_add_favorite_server_local(gameid, ip, port);
+					gfire_server_browser_add_fav_server_local(gameid, ip, port);
 
-					// Push favorite server to fav serverlist queue
+					// Push fav server to fav queue
 					server->protocol = (gchar *)gfire_game_server_query_type(gameid);
 					server->ip = ip;
 					server->port = port;
 					server->parent = 1;
 
 					// Push server struct to queue
-					gfire_server_browser_proto_push_fav_server(server);
+					gfire_server_browser_proto_push_server(server);
 				}
 			}
 		}
@@ -390,6 +401,7 @@ static void gfire_server_browser_remove_favorite_server_cb(gfire_data *p_gfire, 
 
 	gchar *game_name = gtk_combo_box_get_active_text(GTK_COMBO_BOX(game_combo));
 	guint32 gameid = gfire_game_id(game_name);
+	g_free(game_name);
 
 	GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(servers_tree_view));
 	GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(servers_tree_view));
@@ -397,50 +409,52 @@ static void gfire_server_browser_remove_favorite_server_cb(gfire_data *p_gfire, 
 
 	if(gtk_tree_selection_get_selected(selection, &model, &iter))
 	{
-		gchar *server;
-		gtk_tree_model_get(model, &iter, 4, &server, -1);
+		gchar *selected_server;
+		gtk_tree_model_get(model, &iter, 4, &selected_server, -1);
 
-		if(!server)
+		if(!selected_server)
 			return;
 
-		gchar **server_tok;
-		server_tok = g_strsplit(server, ":", -1);
-		g_free(server);
+		gchar **server_split;
+		server_split = g_strsplit(selected_server, ":", -1);
+		g_free(selected_server);
 
-		gchar *ip_str = g_strdup(server_tok[0]);
-		gchar *port_str = g_strdup(server_tok[1]);
-
-		if(!server_tok)
+		if(!server_split)
 			return;
+
+		gchar *ip_str = g_strdup(server_split[0]);
+		gchar *port_str = g_strdup(server_split[1]);
 
 		// Get IP & port in correct datatype
-		gfire_game_data game;
-		gfire_game_data_ip_from_str(&game, server_tok[0]);
+		gfire_game_data game_tmp;
+		gfire_game_data_ip_from_str(&game_tmp, ip_str);
 
+		// Put server in struct
 		gfire_server_browser_server_info *server_info = gfire_server_browser_server_info_new();
 
-		server_info->ip = game.ip.value;
-		server_info->port =  atoi(server_tok[1]);
+		server_info->ip = game_tmp.ip.value;
+		server_info->port =  atoi(port_str);
 
-		g_strfreev(server_tok);
+		g_strfreev(server_split);
 
-		// Check if server is favorite server
-		if(gfire_server_browser_proto_is_favorite_server(server_info->ip, server_info->port) == FALSE)
+		// Check if server is fav server
+		if(!gfire_server_browser_proto_is_fav_server(server_info->ip, server_info->port))
 		{
-			purple_notify_message(NULL, PURPLE_NOTIFY_MSG_ERROR, _("Server Browser: error"), _("Can't remove selected server"),
-								  _("The selected server is not a favorite server and thus can't be removed."), NULL, NULL);
+			purple_notify_error(NULL, _("Server Browser: error"), _("Can't remove favorite server"),
+								_("The selected server is not a favorite server and thereby can't be removed."));
 
 			return;
 		}
 
-		// Remove favorite server from user Xfire's profile
-		gfire_server_browser_proto_remove_favorite_server(p_gfire, gameid, ip_str, port_str);
+		// Remove fav server from user Xfire's profile & local list
+		gfire_server_browser_proto_remove_fav_server(p_gfire, gameid, ip_str, port_str);
+		gfire_server_browser_remove_fav_server_local(gameid, server_info->ip, server_info->port);
 
-		// Remove favorite server from local list
-		gfire_server_browser_remove_favorite_server_local(gameid, server_info->ip, server_info->port);
-
-		// Remove from tree view
+		// Remove server from tree view
 		gtk_tree_store_remove(server_browser_tree_store, &iter);
+
+		g_free(ip_str);
+		g_free(port_str);
 	}
 	else
 		purple_debug_error("gfire", "Couldn't get selected favorite server to remove.\n");

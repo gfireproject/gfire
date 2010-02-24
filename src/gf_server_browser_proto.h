@@ -86,30 +86,30 @@ void gfire_server_browser_proto_close();
 gfire_server_browser_server_info *gfire_server_browser_server_info_new();
 gfire_server_browser_server *gfire_server_browser_server_new();
 
-guint16 gfire_server_browser_proto_create_friends_favorite_serverlist_request(guint32 p_gameid);
+guint16 gfire_server_browser_proto_create_friends_fav_serverlist_request(guint32 p_gameid);
 guint16 gfire_server_browser_proto_create_serverlist_request(guint32 p_gameid);
 
 // Local fav servers handling
-void gfire_server_browser_add_favorite_server_local(guint32 p_gameid, guint32 p_ip, guint16 p_port);
-void gfire_server_browser_remove_favorite_server_local(guint32 p_gameid, guint32 p_ip, guint16 p_port);
+void gfire_server_browser_add_fav_server_local(guint32 p_gameid, guint32 p_ip, guint16 p_port);
+void gfire_server_browser_remove_fav_server_local(guint32 p_gameid, guint32 p_ip, guint16 p_port);
 
 // Remote fav servers handling
-guint16 gfire_server_browser_proto_request_add_favorite_server(guint32 p_gameid, guint32 p_ip, guint32 p_port);
-guint16 gfire_server_browser_proto_request_remove_favorite_server(guint32 p_gameid, guint32 p_ip, guint32 p_port);
+guint16 gfire_server_browser_proto_request_add_fav_server(guint32 p_gameid, guint32 p_ip, guint32 p_port);
+guint16 gfire_server_browser_proto_request_remove_fav_server(guint32 p_gameid, guint32 p_ip, guint32 p_port);
 
-void gfire_server_browser_proto_add_favorite_server(gfire_data *p_gfire, guint32 p_gameid, const gchar *p_ip, const gchar *p_port);
-void gfire_server_browser_proto_remove_favorite_server(gfire_data *p_gfire, guint32 p_gameid, const gchar *p_ip, const gchar *p_port);
+void gfire_server_browser_proto_add_fav_server(gfire_data *p_gfire, guint32 p_gameid, const gchar *p_ip, const gchar *p_port);
+void gfire_server_browser_proto_remove_fav_server(gfire_data *p_gfire, guint32 p_gameid, const gchar *p_ip, const gchar *p_port);
 
 // Serverlist handlers
 void gfire_server_browser_proto_fav_serverlist_request(guint32 p_gameid);
-void gfire_server_browser_proto_favorite_serverlist(gfire_data *p_gfire, guint16 p_packet_len);
-void gfire_server_browser_proto_friends_favorite_serverlist(gfire_data *p_gfire, guint16 p_packet_len);
+void gfire_server_browser_proto_fav_serverlist(gfire_data *p_gfire, guint16 p_packet_len);
+void gfire_server_browser_proto_friends_fav_serverlist(gfire_data *p_gfire, guint16 p_packet_len);
 void gfire_server_browser_proto_serverlist(gfire_data *p_gfire, guint16 p_packet_len);
 
 // Misc.
 int gfire_server_browser_proto_get_parent_row();
-gboolean gfire_server_browser_proto_is_favorite_server(guint32 p_ip, guint16 p_port);
-void gfire_server_browser_proto_push_fav_server(gfire_server_browser_server *p_server);
+gboolean gfire_server_browser_proto_is_fav_server(guint32 p_ip, guint16 p_port);
+void gfire_server_browser_proto_push_server(gfire_server_browser_server *p_server);
 gboolean gfire_server_browser_can_add_fav_server();
 gint gfire_server_brower_proto_get_parent(gfire_server_browser_server_info *p_server);
 #endif // HAVE_GTK

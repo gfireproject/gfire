@@ -309,12 +309,12 @@ void gfire_parse_packet(gfire_data *p_gfire, guint16 p_packet_len, guint16 p_pac
 #ifdef HAVE_GTK
 		case 148:
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received favorite serverlist\n");
-			gfire_server_browser_proto_favorite_serverlist(p_gfire, p_packet_len);
+			gfire_server_browser_proto_fav_serverlist(p_gfire, p_packet_len);
 		break;
 
 		case 149:
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received friends' favorite serverlist");
-			gfire_server_browser_proto_friends_favorite_serverlist(p_gfire, p_packet_len);
+			gfire_server_browser_proto_friends_fav_serverlist(p_gfire, p_packet_len);
 		break;
 
 		case 150:
