@@ -1,21 +1,43 @@
-Authors
-=======
+Programming
+-----------
 Wolf Beat <asraniel@fryx.ch>
 Keith Geffert <keith@penguingurus.com>
 Laurent De Marez <laurentdemarez@gmail.com>
 Warren Dumortier <nwarrenfl@gmail.com>
 Oliver Ney <oliver@dryder.de>
 
-Special Thanks
-==============
-The folks in #pidgin (previously #gaim), especially rlaager, Paco-Paco and grim (thx grim for the build system :-))
-And a big thx to keamos which gave me many many packet dumps because i don't have windows and Xfire doesent work with WINE.
-A big thx to Brian "TLM" Davenport, he helped me with the win32 release and some bugs :-)
-Huge thanks to Keith Geffert which sent me patches for features i would never been able to do myself, thanks!
+Artwork
+-------
+Jakub Szypulka - Xfire protocol icons (http://cubestuff.wordpress.com/2008/06/26/xfire-goes-tango-2/)
+León Asad Castillejos - Recolouring of the small protocol icons
 
-Special thank to all the guys who helped testing the beta of 0.8.0!
-Also want to thank Flames who made a nice converter for the games id list.
-Lots of kuddos to the COD?GOD who made the patch for the buddies who don't appear online.
-And of course want to thank nwarrenfl who made the beautifull game manager and made auto game detection possible.
-Thanks to Gamma and GODJonez who helped me with the packet system.
-Finally want to thank Chewit who is also in the dev team, he hosts the site and makes sure that the games list always is up-to-date.
+
+Special thanks
+--------------
+The folks in #pidgin (previously #gaim), especially rlaager, Paco-Paco and grim
+	for their help with libpurple
+
+keamos
+	for his numerous xfire packet dumps
+
+
+Brian "TLM" Davenport
+	for his help with the initial win32 releases and some bugs :-)
+
+
+to all the guys who helped testing the beta of 0.8.0!
+
+COD?GOD
+	for his the patch for the buddies who don't appear online. (0.8.X series)
+
+
+Gamma and GODJonez
+	for their helpw ith the packet system.
+
+Chewit
+	who is also in the teams and keeps the project running :)
+
+
+Not listed?
+-----------
+If you think that we have missed you in this file, tell us!
