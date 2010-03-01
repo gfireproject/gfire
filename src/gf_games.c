@@ -888,7 +888,7 @@ static gchar *gfire_game_config_get_command(const gfire_game_configuration *p_gc
 	}*/
 
 	gchar *network_args = NULL;
-	if(dset->network_args && p_game_data)
+	if(dset->network_args && p_game_data && p_game_data->ip.value)
 	{
 		gchar *server_ip_tmp = NULL, *server_port_tmp = NULL, *tmp = NULL, *tmp2 = NULL;
 

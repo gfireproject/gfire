@@ -35,6 +35,7 @@ void gfire_menu_action_nick_change_cb(PurplePluginAction *p_action);
 void gfire_menu_action_reload_lconfig_cb(PurplePluginAction *p_action);
 void gfire_menu_action_about_cb(PurplePluginAction *p_action);
 void gfire_menu_action_profile_page_cb(PurplePluginAction *p_action);
+void gfire_menu_action_launch_game_cb(PurplePluginAction *p_action);
 
 // GFIRE BUDDY MENU /////////////////////////////////////////////////
 void gfire_buddy_menu_profile_cb(PurpleBlistNode *p_node, gpointer *p_data);
@@ -42,7 +43,7 @@ void gfire_buddy_menu_add_as_friend_cb(PurpleBlistNode *p_node, gpointer *p_data
 void gfire_buddy_menu_joingame_cb(PurpleBlistNode *p_node, gpointer *p_data);
 void gfire_buddy_menu_joinvoip_cb(PurpleBlistNode *p_node, gpointer *p_data);
 
-// GFIRE CLAN MENU
+// GFIRE CLAN MENU //////////////////////////////////////////////////
 void gfire_clan_menu_site_cb(PurpleBlistNode *p_node, gpointer *p_data);
 
 #endif // _GF_MENUS

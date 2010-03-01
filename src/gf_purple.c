@@ -389,7 +389,7 @@ static void gfire_purple_close(PurpleConnection *p_gc)
 	gfire_close((gfire_data*)p_gc->proto_data);
 }
 
-static gint32 gfire_purple_im_send(PurpleConnection *p_gc, const gchar *p_who, const gchar *p_what, PurpleMessageFlags p_flags)
+static int gfire_purple_im_send(PurpleConnection *p_gc, const gchar *p_who, const gchar *p_what, PurpleMessageFlags p_flags)
 {
 	PurplePresence *p = NULL;
 	gfire_data *gfire = NULL;
@@ -398,7 +398,7 @@ static gint32 gfire_purple_im_send(PurpleConnection *p_gc, const gchar *p_who, c
 	PurpleBuddy *buddy = NULL;
 
 	if (!p_gc || !(gfire = (gfire_data*)p_gc->proto_data))
-		return -1;
+		return -ENOTCONN;
 
 	gf_buddy = gfire_find_buddy(gfire, p_who, GFFB_NAME);
 	if (!gf_buddy)
@@ -682,11 +682,32 @@ void gfire_purple_nick_change_cb(PurpleConnection *p_gc, const gchar *p_entry)
 	purple_connection_set_display_name(p_gc, p_entry);
 }
 
+static gboolean gfire_purple_actions_game_cb(const gfire_game_configuration *p_gconf, GList **p_list)
+{
+	if(p_gconf && p_list)
+	{
+		const gfire_game *game = gfire_game_by_id(p_gconf->game_id);
+		if(game)
+		{
+			gchar *label = g_strdup_printf(_("Launch %s"), game->name);
+			PurplePluginAction *act = purple_plugin_action_new(label, gfire_menu_action_launch_game_cb);
+			if(act)
+			{
+				act->user_data = GUINT_TO_POINTER(p_gconf->game_id);
+				*p_list = g_list_append(*p_list, act);
+			}
+		}
+	}
+
+	return FALSE;
+}
+
 static GList *gfire_purple_actions(PurplePlugin *p_plugin, gpointer p_context)
 {
 	GList *m = NULL;
 	PurplePluginAction *act;
 
+	// General things
 	act = purple_plugin_action_new(_("Change Nickname"),
 			gfire_menu_action_nick_change_cb);
 	m = g_list_append(m, act);
@@ -694,11 +715,13 @@ static GList *gfire_purple_actions(PurplePlugin *p_plugin, gpointer p_context)
 			gfire_menu_action_profile_page_cb);
 	m = g_list_append(m, act);
 	m = g_list_append(m, NULL);
-	act = purple_plugin_action_new(_("Reload Game Config"),
-			gfire_menu_action_reload_lconfig_cb);
-	m = g_list_append(m, act);
 	act = purple_plugin_action_new(_("Friend Search"),
 			gfire_show_friend_search_cb);
+	m = g_list_append(m, act);
+
+	// Game configuration
+	act = purple_plugin_action_new(_("Reload Game Config"),
+			gfire_menu_action_reload_lconfig_cb);
 	m = g_list_append(m, act);
 
 #ifdef HAVE_GTK
@@ -706,13 +729,20 @@ static GList *gfire_purple_actions(PurplePlugin *p_plugin, gpointer p_context)
 	{
 		act = purple_plugin_action_new(_("Manage Games"), gfire_game_manager_show);
 		m = g_list_append(m, act);
-		// Disable server browser for the moment
+
+		// Server browser
 		act = purple_plugin_action_new(_("Server Browser"), gfire_server_browser_show);
 		m = g_list_append(m, act);
 	}
 #endif // HAVE_GTK
 
+	// Game launchers
 	m = g_list_append(m, NULL);
+	gfire_game_config_foreach(G_CALLBACK(gfire_purple_actions_game_cb), &m);
+	if(g_list_last(m)->data)
+		m = g_list_append(m, NULL);
+
+	// About
 	act = purple_plugin_action_new(_("About"),
 			gfire_menu_action_about_cb);
 	m = g_list_append(m, act);

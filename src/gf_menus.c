@@ -174,3 +174,17 @@ void gfire_menu_action_profile_page_cb(PurplePluginAction *p_action)
 	purple_notify_uri((void *)gc, uri);
 	g_free(uri);
 }
+
+void gfire_menu_action_launch_game_cb(PurplePluginAction *p_action)
+{
+	guint32 game_id = GPOINTER_TO_UINT(p_action->user_data);
+	if(game_id)
+	{
+		gfire_game_data launch_data;
+		memset(&launch_data, 0, sizeof(gfire_game_data));
+
+		launch_data.id = game_id;
+
+		gfire_join_game(&launch_data);
+	}
+}
