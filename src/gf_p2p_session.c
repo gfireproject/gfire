@@ -403,8 +403,8 @@ void gfire_p2p_session_add_file_transfer(gfire_p2p_session *p_session, PurpleXfe
 		return;
 
 	gfire_filetransfer *ft = gfire_filetransfer_create(p_session, p_xfer, 0);
-		if(!ft)
-			return;
+	if(!ft)
+		return;
 
 	if(p_session->connected)
 		gfire_filetransfer_start(ft);

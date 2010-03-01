@@ -43,6 +43,7 @@ struct _gfire_filetransfer
 	// Xfire transfer data
 	guint32 fileid;
 	guint32 msgid;
+	gboolean aborted;
 
 	// Chunks
 	guint64 chunk_count;
@@ -53,7 +54,7 @@ struct _gfire_filetransfer
 	guint64 chunks_received;
 
 	// The file itself
-	FILE *file;
+	int file;
 	guint64 size;
 };
 
@@ -81,7 +82,7 @@ void gfire_filetransfer_next_chunk(gfire_filetransfer *p_transfer);
 gfire_p2p_session *gfire_filetransfer_get_session(const gfire_filetransfer *p_transfer);
 PurpleXfer *gfire_filetransfer_get_xfer(const gfire_filetransfer *p_transfer);
 guint32 gfire_filetransfer_get_fileid(const gfire_filetransfer *p_transfer);
-FILE *gfire_filetransfer_get_file(const gfire_filetransfer *p_transfer);
+int gfire_filetransfer_get_file(const gfire_filetransfer *p_transfer);
 guint32 gfire_filetransfer_next_msgid(gfire_filetransfer *p_transfer);
 
 #endif // _GF_FILETRANSFER_H

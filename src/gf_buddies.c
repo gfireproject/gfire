@@ -859,7 +859,7 @@ void gfire_buddy_set_voip_status(gfire_buddy *p_buddy, guint32 p_voipid, guint32
 
 	gfire_buddy_update_status(p_buddy);
 
-	purple_debug(PURPLE_DEBUG_INFO, "gfire", "%s is playing %d on %d.%d.%d.%d:%d\n",
+	purple_debug(PURPLE_DEBUG_INFO, "gfire", "%s is using %d on %d.%d.%d.%d:%d\n",
 					 gfire_buddy_get_name(p_buddy), p_buddy->voip_data.id, p_buddy->voip_data.ip.octets[3],
 					 p_buddy->voip_data.ip.octets[2], p_buddy->voip_data.ip.octets[1],
 					 p_buddy->voip_data.ip.octets[0], p_buddy->voip_data.port);

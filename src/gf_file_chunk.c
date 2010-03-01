@@ -22,6 +22,15 @@
  * along with Gfire.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+// Include 64 bit file seeking functions
+#ifdef _WIN32
+#	include <io.h>
+#	define lseek64 _lseeki64
+#else
+#	define _LARGEFILE64_SOURCE
+#	include <unistd.h>
+#endif // _WIN32
+
 #include "gf_file_chunk.h"
 #include "gf_p2p_dl_proto.h"
 
@@ -72,8 +81,8 @@ void gfire_file_chunk_make_current(gfire_file_chunk *p_chunk)
 
 	if(p_chunk->type == GF_FILE_CHUNK_SEND)
 	{
-		fseek(gfire_filetransfer_get_file(p_chunk->ft), p_chunk->offset, SEEK_SET);
-		p_chunk->size = fread(p_chunk->data, 1, p_chunk->size, gfire_filetransfer_get_file(p_chunk->ft));
+		lseek64(gfire_filetransfer_get_file(p_chunk->ft), p_chunk->offset, SEEK_SET);
+		p_chunk->size = read(gfire_filetransfer_get_file(p_chunk->ft), p_chunk->data, p_chunk->size);
 	}
 }
 
@@ -96,8 +105,8 @@ void gfire_file_chunk_finalize(gfire_file_chunk *p_chunk)
 
 	if(p_chunk->type == GF_FILE_CHUNK_RECV)
 	{
-		fseek(gfire_filetransfer_get_file(p_chunk->ft), SEEK_SET, p_chunk->offset);
-		fwrite(p_chunk->data, 1, p_chunk->size, gfire_filetransfer_get_file(p_chunk->ft));
+		lseek64(gfire_filetransfer_get_file(p_chunk->ft), p_chunk->offset, SEEK_SET);
+		write(gfire_filetransfer_get_file(p_chunk->ft), p_chunk->data, p_chunk->size);
 	}
 
 	g_free(p_chunk->data);
@@ -138,7 +147,7 @@ void gfire_file_chunk_send_data(gfire_file_chunk *p_chunk, guint64 p_offset, gui
 	if(!p_chunk || !gfire_file_chunk_contains(p_chunk, p_offset, p_size))
 		return;
 
-	if(p_chunk->data)
+	if(!p_chunk->data)
 		gfire_file_chunk_make_current(p_chunk);
 
 	gfire_p2p_dl_proto_send_file_data_packet(gfire_filetransfer_get_session(p_chunk->ft),
@@ -150,6 +159,11 @@ void gfire_file_chunk_send_data(gfire_file_chunk *p_chunk, guint64 p_offset, gui
 	if(!gfire_bitlist_get(p_chunk->data_packets, data_packet))
 	{
 		// Update the GUI
+		if((purple_xfer_get_bytes_sent(gfire_filetransfer_get_xfer(p_chunk->ft)) + p_size)
+			> purple_xfer_get_size(gfire_filetransfer_get_xfer(p_chunk->ft)))
+			purple_xfer_set_size(gfire_filetransfer_get_xfer(p_chunk->ft),
+								 purple_xfer_get_bytes_sent(gfire_filetransfer_get_xfer(p_chunk->ft)) + p_size);
+
 		purple_xfer_set_bytes_sent(gfire_filetransfer_get_xfer(p_chunk->ft),
 								   purple_xfer_get_bytes_sent(gfire_filetransfer_get_xfer(p_chunk->ft)) + p_size);
 		purple_xfer_update_progress(gfire_filetransfer_get_xfer(p_chunk->ft));
@@ -254,7 +268,7 @@ static gboolean gfire_file_chunk_check_checksum(gfire_file_chunk *p_chunk)
 	if(!p_chunk->checksum)
 		return TRUE;
 
-	if(p_chunk->data)
+	if(!p_chunk->data)
 		gfire_file_chunk_make_current(p_chunk);
 
 	gchar hash[41];
@@ -281,6 +295,11 @@ void gfire_file_chunk_got_data(gfire_file_chunk *p_chunk, guint64 p_offset, guin
 	if(!gfire_bitlist_get(p_chunk->data_packets, data_packet))
 	{
 		// Update the GUI
+		if((purple_xfer_get_bytes_sent(gfire_filetransfer_get_xfer(p_chunk->ft)) + p_size)
+			> purple_xfer_get_size(gfire_filetransfer_get_xfer(p_chunk->ft)))
+			purple_xfer_set_size(gfire_filetransfer_get_xfer(p_chunk->ft),
+								 purple_xfer_get_bytes_sent(gfire_filetransfer_get_xfer(p_chunk->ft)) + p_size);
+
 		purple_xfer_set_bytes_sent(gfire_filetransfer_get_xfer(p_chunk->ft),
 								   purple_xfer_get_bytes_sent(gfire_filetransfer_get_xfer(p_chunk->ft)) + p_size);
 		purple_xfer_update_progress(gfire_filetransfer_get_xfer(p_chunk->ft));

@@ -22,6 +22,14 @@
  * along with Gfire.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifdef _WIN32
+#	include <io.h>
+#else
+#	define _LARGEFILE64_SOURCE
+#	include <fcntl.h>
+#	include <sys/stat.h>
+#endif // _WIN32
+
 #include "gf_filetransfer.h"
 #include "gf_p2p_dl_proto.h"
 
@@ -84,9 +92,12 @@ static void gfire_filetransfer_cancel(PurpleXfer *p_xfer)
 	if(purple_xfer_get_status(p_xfer) == PURPLE_XFER_STATUS_CANCEL_LOCAL)
 	{
 		gfire_filetransfer *ft = p_xfer->data;
-		// Send abortion event
-		gfire_p2p_dl_proto_send_file_event(ft->session, ft->fileid, 1, 2);
-		gfire_p2p_session_remove_file_transfer(ft->session, ft, TRUE);
+		if(!ft->aborted)
+		{
+			// Send abortion event
+			gfire_p2p_dl_proto_send_file_event(ft->session, ft->fileid, 1, 2);
+			gfire_p2p_session_remove_file_transfer(ft->session, ft, TRUE);
+		}
 	}
 }
 
@@ -99,12 +110,18 @@ static void gfire_filetransfer_request_accepted(PurpleXfer *p_xfer)
 
 	gfire_filetransfer *ft = p_xfer->data;
 
-	ft->file = fopen(purple_xfer_get_local_filename(ft->xfer), "w+b");
-	if(!ft->file)
+#ifdef _WIN32
+	if(_s_open_s(&ft->file, purple_xfer_get_local_filename(p_xfer), _O_CREAT | _O_WRONLY | _O_TRUNC | _O_BINARY,
+				 _SH_DENYWR, _S_IREAD | _S_IWRITE) != 0)
+#else
+	if((ft->file = open64(purple_xfer_get_local_filename(p_xfer), O_CREAT | O_WRONLY | O_TRUNC, S_IREAD | S_IWRITE)) == -1)
+#endif // _WIN32
 	{
 		purple_debug_error("gfire", "gfire_filetransfer_request_accepted: Couldn't open file for writing\n");
+		ft->aborted = TRUE;
 		gfire_p2p_dl_proto_send_file_request_reply(ft->session, ft->fileid, FALSE);
 		purple_xfer_cancel_local(p_xfer);
+		gfire_p2p_session_remove_file_transfer(ft->session, ft, TRUE);
 		return;
 	}
 
@@ -168,10 +185,15 @@ gfire_filetransfer *gfire_filetransfer_create(gfire_p2p_session *p_session, Purp
 	// Sending
 	if(purple_xfer_get_type(p_xfer) == PURPLE_XFER_SEND)
 	{
-		ret->file = fopen(purple_xfer_get_local_filename(p_xfer), "rb");
-		if(!ret->file)
+#ifdef _WIN32
+		if(_s_open_s(&ret->file, purple_xfer_get_local_filename(p_xfer), _O_RDONLY | _O_BINARY,
+					 _SH_DENYWR, _S_IREAD | _S_IWRITE) != 0)
+#else
+		if((ret->file = open64(purple_xfer_get_local_filename(p_xfer), O_RDONLY)) == -1)
+#endif // _WIN32
 		{
 			purple_debug_error("gfire", "gfire_filetransfer_init: Couldn't open file for reading\n");
+			ret->aborted = TRUE;
 			purple_xfer_cancel_local(p_xfer);
 			purple_xfer_unref(p_xfer);
 			g_free(ret);
@@ -219,6 +241,13 @@ void gfire_filetransfer_free(gfire_filetransfer *p_transfer, gboolean p_local_re
 
 	gfire_filetransfer_delete_chunks(p_transfer);
 
+	if(p_transfer->file >= 0)
+#ifdef _WIN32
+		_close(p_transfer->file);
+#else
+		close(p_transfer->file);
+#endif // _WIN32
+
 	if(!purple_xfer_is_completed(p_transfer->xfer))
 	{
 		// Remove incomplete file for now
@@ -235,9 +264,6 @@ void gfire_filetransfer_free(gfire_filetransfer *p_transfer, gboolean p_local_re
 	}
 
 	purple_xfer_unref(p_transfer->xfer);
-
-	if(p_transfer->file)
-		fclose(p_transfer->file);
 
 	g_free(p_transfer);
 }
@@ -366,9 +392,9 @@ guint32 gfire_filetransfer_get_fileid(const gfire_filetransfer *p_transfer)
 	return p_transfer ? p_transfer->fileid : 0;
 }
 
-FILE *gfire_filetransfer_get_file(const gfire_filetransfer *p_transfer)
+int gfire_filetransfer_get_file(const gfire_filetransfer *p_transfer)
 {
-	return p_transfer ? p_transfer->file : NULL;
+	return p_transfer ? p_transfer->file : -1;
 }
 
 guint32 gfire_filetransfer_next_msgid(gfire_filetransfer *p_transfer)
