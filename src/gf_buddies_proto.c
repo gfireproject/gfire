@@ -271,8 +271,12 @@ void gfire_buddy_proto_game_status(gfire_data *p_gfire, guint16 p_packet_len)
 		// Needs to be an FoF buddy
 		if(!gf_buddy)
 		{
-			fof_sids = g_list_append(fof_sids, s->data);
-			gfire_fof_data = g_list_append(gfire_fof_data, gfire_fof_game_data_create(s->data, *(guint32*)g->data, *(guint32*)ip->data, *(guint32*)gp->data & 0xFFFF));
+			if(gfire_wants_fofs(p_gfire))
+			{
+				fof_sids = g_list_append(fof_sids, s->data);
+				gfire_fof_data = g_list_append(gfire_fof_data, gfire_fof_game_data_create(s->data, *(guint32*)g->data, *(guint32*)ip->data, *(guint32*)gp->data & 0xFFFF));
+			}
+
 			g_free(g->data);
 			g_free(gp->data);
 			g_free(ip->data);
@@ -765,6 +769,9 @@ void gfire_buddy_proto_fof_list(gfire_data *p_gfire, guint16 p_packet_len)
 	GList *f, *na, *n, *s, *c;
 
 	offset = XFIRE_HEADER_LEN;
+
+	if(!gfire_wants_fofs(p_gfire))
+		return;
 
 	offset = gfire_proto_read_attr_list_ss(p_gfire->buff_in, &fofsid, "fnsid", offset);
 	if(offset == -1 || !fofsid)

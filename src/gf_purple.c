@@ -1245,6 +1245,9 @@ static void _init_plugin(PurplePlugin *p_plugin)
 	option = purple_account_option_bool_new(_("Change my status for other protocols as well"), "use_global_status", TRUE);
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
 
+	option = purple_account_option_bool_new(_("Show Friends of Friends"), "show_fofs", TRUE);
+	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
+
 	info.name = _("Xfire");
 	info.summary = _("Xfire Protocol Plugin");
 	info.description = _("Xfire Protocol Plugin");

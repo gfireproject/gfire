@@ -286,6 +286,11 @@ void gfire_parse_packet(gfire_data *p_gfire, guint16 p_packet_len, guint16 p_pac
 			gfire_proto_buddy_remove(p_gfire, p_packet_len);
 		break;
 
+		case 141:
+			purple_debug(PURPLE_DEBUG_MISC, "gfire", "client preferences received\n");
+			gfire_proto_client_preferences(p_gfire, p_packet_len);
+		break;
+
 		case 143:
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "Received friends search result\n");
 			gfire_friend_search_proto_result(p_gfire, p_packet_len);

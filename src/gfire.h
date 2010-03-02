@@ -100,10 +100,8 @@ struct _gfire_data
 	// Timer callbacks
 	guint server_browser_pool;
 
-	// Server Detection
-	GList *server_list;
-	gboolean server_changed;
-	GMutex *server_mutex;		/* mutex for writing found server */
+	// Client preferences
+	gboolean show_fofs;
 };
 
 typedef struct _invitation_callback_args
@@ -181,6 +179,8 @@ gboolean gfire_has_p2p(const gfire_data *p_gfire);
 gfire_p2p_connection *gfire_get_p2p(const gfire_data *p_gfire);
 
 // Account settings
+void gfire_set_show_fofs(gfire_data *p_gfire, gboolean p_show);
+gboolean gfire_wants_fofs(const gfire_data *p_gfire);
 gboolean gfire_wants_server_detection(const gfire_data *p_gfire);
 gboolean gfire_wants_global_status_change(const gfire_data *p_gfire);
 

@@ -53,11 +53,6 @@ gfire_data *gfire_create(PurpleConnection *p_gc)
 
 	gfire_network_init();
 
-	// Create server_ip_mutex
-	ret->server_mutex = g_mutex_new();
-	if(!ret->server_mutex)
-		goto error;
-
 	return ret;
 
 	error:
@@ -72,7 +67,6 @@ void gfire_free(gfire_data *p_gfire)
 		return;
 
 	if(p_gfire->sid) g_free(p_gfire->sid);
-	if(p_gfire->server_mutex) g_mutex_free(p_gfire->server_mutex);
 	if(p_gfire->buff_in) g_free(p_gfire->buff_in);
 
 	// Free all buddies
@@ -258,6 +252,9 @@ static void gfire_login_cb(gpointer p_data, gint p_source, const gchar *p_error_
 
 	gfire->clans = gfire_clan_get_existing();
 
+	// Get preferences
+	gfire->show_fofs = purple_account_get_bool(purple_connection_get_account(gfire->gc), "show_fofs", TRUE);
+
 	// Register this Gfire session with the IPC server
 	gfire_ipc_server_register(gfire);
 
@@ -278,10 +275,6 @@ void gfire_login(gfire_data *p_gfire)
 	if(!p_gfire)
 		return;
 
-	// Init threading system
-	if(!g_thread_supported())
-		g_thread_init(NULL);
-
 	PurpleAccount *account = purple_connection_get_account(gfire_get_connection(p_gfire));
 
 	purple_connection_update_progress(gfire_get_connection(p_gfire), _("Connecting"), 0, XFIRE_CONNECT_STEPS);
@@ -301,6 +294,14 @@ void gfire_close(gfire_data *p_gfire)
 		return;
 
 	PurpleConnection *gc = gfire_get_connection(p_gfire);
+
+	// Save client preferences
+	if(p_gfire->show_fofs != purple_account_get_bool(purple_connection_get_account(gc), "show_fofs", TRUE))
+	{
+		guint16 len = gfire_proto_create_client_preferences(
+				purple_account_get_bool(purple_connection_get_account(gc), "show_fofs", TRUE));
+		if(len) gfire_send(gc, len);
+	}
 
 	purple_debug(PURPLE_DEBUG_MISC, "gfire", "CONNECTION: close requested.\n");
 
@@ -1382,6 +1383,33 @@ void gfire_set_voip_status(gfire_data *p_gfire, const gfire_game_data *p_data)
 
 	guint16 len = gfire_proto_create_join_voip(p_data);
 	if(len > 0) gfire_send(p_gfire->gc, len);
+}
+
+void gfire_set_show_fofs(gfire_data *p_gfire, gboolean p_show)
+{
+	if(!p_gfire)
+		return;
+
+	if(p_show)
+		purple_debug_error("gfire", "should show fofs\n");
+	else
+		purple_debug_error("gfire", "should not show fofs\n");
+
+	if(purple_account_get_bool(purple_connection_get_account(p_gfire->gc), "show_fofs", TRUE) != p_show)
+	{
+		p_show = purple_account_get_bool(purple_connection_get_account(p_gfire->gc), "show_fofs", TRUE);
+
+		guint16 len = gfire_proto_create_client_preferences(p_show);
+		if(len) gfire_send(p_gfire->gc, len);
+	}
+
+	p_gfire->show_fofs = p_show;
+}
+
+gboolean gfire_wants_fofs(const gfire_data *p_gfire)
+{
+	return (p_gfire && p_gfire->gc && purple_account_get_bool(purple_connection_get_account(p_gfire->gc),
+															  "show_fofs", TRUE));
 }
 
 gboolean gfire_wants_server_detection(const gfire_data *p_gfire)
