@@ -22,13 +22,76 @@
  * along with Gfire.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "gfire_ipc.h"
 #include "gf_ipc_proto.h"
 #include "gfire_proto.h"
 #include "gf_game_detection.h"
 
-void gfire_ipc_proto_sdk(gfire_data *p_gfire, gchar *p_data, unsigned short p_len)
+static void gfire_ipc_proto_header_write(guint16 p_len, guint32 p_pid, guint16 p_type, guint8 *p_data)
 {
-	if(!p_gfire || !p_data || !p_len)
+	memcpy(p_data, &p_len, 2);
+	memcpy(p_data + 2, &p_pid, 4);
+	memcpy(p_data + 6, &p_type, 2);
+}
+
+guint16 gfire_ipc_proto_write_server_handshake(guint32 p_pid, gboolean p_ok, guint8 *p_data)
+{
+	if(!p_data)
+		return 0;
+
+	guint16 offset = GFIRE_IPC_HEADER_LEN;
+
+	// Write version validation
+	p_data[offset] = p_ok ? 1 : 0;
+	offset++;
+
+	gfire_ipc_proto_header_write(offset, p_pid, GFIRE_IPC_SERVER_HS, p_data);
+
+	return offset;
+}
+
+guint16 gfire_ipc_proto_write_shutdown(guint32 p_pid, guint8 *p_data)
+{
+	if(!p_data)
+		return 0;
+
+	gfire_ipc_proto_header_write(4, p_pid, GFIRE_IPC_SHUTDOWN, p_data);
+	return GFIRE_IPC_HEADER_LEN;
+}
+
+guint16 gfire_ipc_proto_write_keep_alive(guint32 p_pid, guint8 *p_data)
+{
+	if(!p_data)
+		return 0;
+
+	gfire_ipc_proto_header_write(4, p_pid, GFIRE_IPC_KEEP_ALIVE, p_data);
+	return GFIRE_IPC_HEADER_LEN;
+}
+
+void gfire_ipc_proto_client_handshake(gfire_ipc_server *p_server, guint16 p_len, const struct sockaddr_in *p_addr)
+{
+	if(!p_server || !p_len || !p_addr)
+		return;
+
+	// Get the PID of the header
+	guint32 pid;
+	memcpy(&pid, p_server->buffer + 2, 4);
+
+	guint16 offset = GFIRE_IPC_HEADER_LEN;
+
+	if(p_len < (GFIRE_IPC_HEADER_LEN + 2))
+		return;
+
+	guint16 version;
+	memcpy(&version, p_server->buffer + offset, 2);
+	offset += 2;
+
+	gfire_ipc_server_client_handshake(version, pid, p_addr);
+}
+
+void gfire_ipc_proto_sdk(gfire_ipc_server *p_server, guint16 p_len)
+{
+	if(!p_server || !p_len)
 		return;
 
 	if(!gfire_game_detector_is_playing())
@@ -37,13 +100,13 @@ void gfire_ipc_proto_sdk(gfire_data *p_gfire, gchar *p_data, unsigned short p_le
 		return;
 	}
 
-	unsigned short offset = 0;
+	guint16 offset = GFIRE_IPC_HEADER_LEN;
 
-	if(p_len < 4)
+	if(p_len < (GFIRE_IPC_HEADER_LEN + 4))
 		return;
 
 	unsigned int numpairs;
-	memcpy(&numpairs, p_data + offset, 4);
+	memcpy(&numpairs, p_server->buffer + offset, 4);
 	offset += 4;
 
 	GList *keys = NULL, *values = NULL;
@@ -59,7 +122,7 @@ void gfire_ipc_proto_sdk(gfire_data *p_gfire, gchar *p_data, unsigned short p_le
 		}
 
 		unsigned short keylen;
-		memcpy(&keylen, p_data + offset, 2);
+		memcpy(&keylen, p_server->buffer + offset, 2);
 		offset += 2;
 
 		if(p_len < (offset + 2))
@@ -69,7 +132,7 @@ void gfire_ipc_proto_sdk(gfire_data *p_gfire, gchar *p_data, unsigned short p_le
 			return;
 		}
 
-		keys = g_list_append(keys, g_strndup(p_data + offset, keylen));
+		keys = g_list_append(keys, g_strndup((gchar*)p_server->buffer + offset, keylen));
 		offset += keylen;
 
 		if(p_len < (offset + 2))
@@ -80,7 +143,7 @@ void gfire_ipc_proto_sdk(gfire_data *p_gfire, gchar *p_data, unsigned short p_le
 		}
 
 		unsigned short valuelen;
-		memcpy(&valuelen, p_data + offset, 2);
+		memcpy(&valuelen, p_server->buffer + offset, 2);
 		offset += 2;
 
 		if(p_len < (offset + valuelen))
@@ -90,14 +153,19 @@ void gfire_ipc_proto_sdk(gfire_data *p_gfire, gchar *p_data, unsigned short p_le
 			return;
 		}
 
-		values = g_list_append(values, g_strndup(p_data + offset, valuelen));
+		values = g_list_append(values, g_strndup((gchar*)p_server->buffer + offset, valuelen));
 		offset += valuelen;
 
 		purple_debug_misc("gfire", "\t%s=%s\n", (gchar*)g_list_last(keys)->data, (gchar*)g_list_last(values)->data);
 	}
 
 	guint16 packet = gfire_proto_create_game_sdk(keys, values);
-	if(packet > 0) gfire_send(gfire_get_connection(p_gfire), packet);
+	GList *instance = p_server->instances;
+	while(instance)
+	{
+		if(packet > 0) gfire_send(gfire_get_connection((gfire_data*)instance->data), packet);
+		instance = g_list_next(instance);
+	}
 
 	gfire_list_clear(keys);
 	gfire_list_clear(values);

@@ -25,20 +25,53 @@
 #ifndef _GFIRE_IPC_H
 #define _GFIRE_IPC_H
 
+#define GFIRE_IPC_VERSION 0
 #define GFIRE_IPC_PORT 52634
+#define GFIRE_IPC_CHAT_PORT (GFIRE_IPC_PORT + 1)
 #define GFIRE_IPC_BUFFER_LEN 65535
+#define GFIRE_IPC_KEEP_ALIVE_INTERVAL 15
+#define GFIRE_IPC_TIMEOUT 20
 
+#define GFIRE_IPC_HEADER_LEN 8
 /*
  * Layout of an IPC packet
  *
  * Header:
  *   2 bytes - length of whole packet
+ *   4 bytes - PID of the client
  *   2 bytes - ID (type) of packet
+ * Data:
  *   * bytes - ID dependend data
  *
  */
 
-// IPC Packet Type IDs
-#define GFIRE_IPC_ID_SDK 1
+// IPC Packet Types ////////////////////////////////////
+//	Client Handshake (sent by client)
+//		Packet layout:
+//		8 bytes - Header
+//		2 bytes - IPC version (see GFIRE_IPC_VERSION)
+#define GFIRE_IPC_CLIENT_HS		0x0001
+
+//	Server Handshake (sent by server)
+//		Packet layout:
+//		8 bytes - Header
+//		1 byte  - version okay (1 or 0)
+#define GFIRE_IPC_SERVER_HS		0x0002
+
+// Shutdown packet (sent by the closing side (client & server))
+//		Packet layout
+//		8 bytes - Header
+#define GFIRE_IPC_SHUTDOWN		0x0003
+
+// Keep-alive packet (sent by client & server in a 15s interval)
+//		Packet layout
+//		8 bytes - Header
+#define GFIRE_IPC_KEEP_ALIVE	0x0004
+
+// Xfire SDK data (sent by client)
+//		Packet layout
+//		8 bytes - Header
+//		Unknown
+#define GFIRE_IPC_ID_SDK		0x005F
 
 #endif // _GFIRE_IPC_H

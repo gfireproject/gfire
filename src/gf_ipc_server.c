@@ -34,7 +34,30 @@
 // IPC connection is shared between all Gfire instances
 static gfire_ipc_server *gfire_ipc = NULL;
 
+static gfire_ipc_client *gfire_ipc_client_create(const struct sockaddr_in *p_addr, guint32 p_pid)
+{
+	gfire_ipc_client *ret = (gfire_ipc_client*)g_malloc0(sizeof(gfire_ipc_client));
+	if(!ret)
+		return NULL;
+
+	memcpy(&ret->addr, p_addr, sizeof(struct sockaddr_in));
+	ret->pid = p_pid;
+
+	// Initialize the keep alive timeout
+	g_get_current_time(&ret->last_keep_alive);
+	return ret;
+}
+
+static void gfire_ipc_client_free(gfire_ipc_client *p_client)
+{
+	if(!p_client)
+		return;
+
+	g_free(p_client);
+}
+
 // Forward declaration
+static gboolean gfire_ipc_server_keep_alive_timeout_cb(gpointer p_data);
 static void gfire_ipc_server_input_cb(gpointer p_data, gint p_fd, PurpleInputCondition p_condition);
 
 static gfire_ipc_server *gfire_ipc_server_create()
@@ -43,17 +66,9 @@ static gfire_ipc_server *gfire_ipc_server_create()
 	if(!ret)
 		return NULL;
 
-	ret->buff_in = (gchar*)g_malloc0(GFIRE_IPC_BUFFER_LEN);
-	if(!ret->buff_in)
+	ret->buffer = (guint8*)g_malloc0(GFIRE_IPC_BUFFER_LEN);
+	if(!ret->buffer)
 	{
-		g_free(ret);
-		return NULL;
-	}
-
-	ret->buff_out = (gchar*)g_malloc0(GFIRE_IPC_BUFFER_LEN);
-	if(!ret->buff_out)
-	{
-		g_free(ret->buff_in);
 		g_free(ret);
 		return NULL;
 	}
@@ -63,10 +78,20 @@ static gfire_ipc_server *gfire_ipc_server_create()
 	return ret;
 }
 
+static void gfire_ipc_server_shutdown();
+
 static void gfire_ipc_server_free(gfire_ipc_server *p_ipc)
 {
 	if(!p_ipc)
 		return;
+
+	gfire_ipc_server_shutdown();
+
+	while(p_ipc->clients)
+	{
+		gfire_ipc_client_free((gfire_ipc_client*)p_ipc->clients->data);
+		p_ipc->clients = g_list_delete_link(p_ipc->clients, p_ipc->clients);
+	}
 
 	if(p_ipc->prpl_inpa)
 		purple_input_remove(p_ipc->prpl_inpa);
@@ -77,8 +102,7 @@ static void gfire_ipc_server_free(gfire_ipc_server *p_ipc)
 	if(p_ipc->instances)
 		g_list_free(p_ipc->instances);
 
-	g_free(p_ipc->buff_in);
-	g_free(p_ipc->buff_out);
+	g_free(p_ipc->buffer);
 
 	g_free(p_ipc);
 
@@ -113,9 +137,92 @@ static gboolean gfire_ipc_server_init()
 
 	gfire_ipc->prpl_inpa = purple_input_add(gfire_ipc->socket, PURPLE_INPUT_READ, gfire_ipc_server_input_cb, NULL);
 
+	gfire_ipc->keep_alive_to = g_timeout_add_seconds(GFIRE_IPC_KEEP_ALIVE_INTERVAL,
+													 (GSourceFunc)gfire_ipc_server_keep_alive_timeout_cb, NULL);
+
 	purple_debug_info("gfire", "IPC: Server started\n");
 
 	return TRUE;
+}
+
+static void gfire_ipc_server_send_direct(const struct sockaddr_in *p_addr, guint16 p_len)
+{
+	if(!gfire_ipc || !p_addr)
+		return;
+
+	if(sendto(gfire_ipc->socket, gfire_ipc->buffer, p_len, 0, (struct sockaddr*)p_addr,
+			  sizeof(struct sockaddr_in)) != p_len)
+		purple_debug_warning("gfire", "IPC: sent too less bytes!\n");
+}
+
+static void gfire_ipc_server_send(gfire_ipc_client *p_client, guint16 p_len)
+{
+	if(!gfire_ipc || !p_client)
+		return;
+
+	if(sendto(gfire_ipc->socket, gfire_ipc->buffer, p_len, 0, (struct sockaddr*)&p_client->addr,
+			  sizeof(struct sockaddr_in)) != p_len)
+		purple_debug_warning("gfire", "IPC: sent too less bytes!\n");
+}
+
+static void gfire_ipc_server_shutdown()
+{
+	if(!gfire_ipc)
+		return;
+
+	GList *client = gfire_ipc->clients;
+	while(client)
+	{
+		guint16 len = gfire_ipc_proto_write_shutdown(((gfire_ipc_client*)client->data)->pid, gfire_ipc->buffer);
+		if(len) gfire_ipc_server_send((gfire_ipc_client*)client->data, len);
+		client = g_list_next(client);
+	}
+
+	if(gfire_ipc->keep_alive_to)
+		g_source_remove(gfire_ipc->keep_alive_to);
+}
+
+void gfire_ipc_server_client_handshake(guint16 p_version, guint32 p_pid, const struct sockaddr_in *p_addr)
+{
+	if(!gfire_ipc)
+		return;
+
+	if(p_version < GFIRE_IPC_VERSION)
+	{
+		// Version is incompatible, tell that the client
+		purple_debug_info("gfire", "IPC: new client from PID %u with incompatible version %hu\n", p_pid, p_version);
+		guint16 len = gfire_ipc_proto_write_server_handshake(p_pid, FALSE, gfire_ipc->buffer);
+		gfire_ipc_server_send_direct(p_addr, len);
+		return;
+	}
+
+	gfire_ipc_client *client = gfire_ipc_client_create(p_addr, p_pid);
+	gfire_ipc->clients = g_list_append(gfire_ipc->clients, client);
+
+	guint16 len = gfire_ipc_proto_write_server_handshake(p_pid, TRUE, gfire_ipc->buffer);
+	if(len) gfire_ipc_server_send(client, len);
+
+	purple_debug_info("gfire", "IPC: new client from PID %u with version %hu (%u connected)\n", p_pid, p_version,
+					  g_list_length(gfire_ipc->clients));
+}
+
+static void gfire_ipc_server_client_shutdown(gfire_ipc_client *p_client)
+{
+	if(!gfire_ipc || !p_client)
+		return;
+
+	GList *node = g_list_find(gfire_ipc->clients, p_client);
+	if(node) gfire_ipc->clients = g_list_delete_link(gfire_ipc->clients, node);
+	gfire_ipc_client_free(p_client);
+	purple_debug_info("gfire", "IPC: Client removed (%u left)\n", g_list_length(gfire_ipc->clients));
+}
+
+static void gfire_ipc_server_client_keep_alive(gfire_ipc_client *p_client)
+{
+	if(!gfire_ipc || !p_client)
+		return;
+
+	g_get_current_time(&p_client->last_keep_alive);
 }
 
 void gfire_ipc_server_register(gfire_data *p_gfire)
@@ -148,6 +255,49 @@ void gfire_ipc_server_unregister(gfire_data *p_gfire)
 	}
 }
 
+static gboolean gfire_ipc_server_keep_alive_timeout_cb(gpointer p_data)
+{
+	if(!gfire_ipc)
+		return FALSE;
+
+	GTimeVal current_time;
+	g_get_current_time(&current_time);
+
+	GList *clist = gfire_ipc->clients;
+	while(clist)
+	{
+		gfire_ipc_client *client = (gfire_ipc_client*)clist->data;
+
+		// Check if the client timed out
+		if((current_time.tv_sec - client->last_keep_alive.tv_sec) >= GFIRE_IPC_TIMEOUT)
+		{
+			// Send the client a shutdown message anyway
+			guint16 len = gfire_ipc_proto_write_shutdown(client->pid, gfire_ipc->buffer);
+			if(len) gfire_ipc_server_send(client, len);
+
+			// Delete the client
+			gfire_ipc_client_free(client);
+
+			// Get the next list element
+			GList *to_delete = clist;
+			clist = g_list_next(clist);
+
+			// Delete the element
+			gfire_ipc->clients = g_list_delete_link(gfire_ipc->clients, to_delete);
+			purple_debug_info("gfire", "IPC: Client timed out (%u left)\n", g_list_length(gfire_ipc->clients));
+			continue;
+		}
+
+		// Send a keep alive packet
+		guint16 len = gfire_ipc_proto_write_keep_alive(client->pid, gfire_ipc->buffer);
+		if(len) gfire_ipc_server_send(client, len);
+
+		clist = g_list_next(clist);
+	}
+
+	return TRUE;
+}
+
 static void gfire_ipc_server_input_cb(gpointer p_data, gint p_fd, PurpleInputCondition p_condition)
 {
 	if(!gfire_ipc || p_fd < 0 || p_condition != PURPLE_INPUT_READ)
@@ -156,36 +306,62 @@ static void gfire_ipc_server_input_cb(gpointer p_data, gint p_fd, PurpleInputCon
 	// Receive data
 	struct sockaddr_in addr;
 	socklen_t addrlen = sizeof(struct sockaddr_in);
-	int length = recvfrom(gfire_ipc->socket, gfire_ipc->buff_in, GFIRE_IPC_BUFFER_LEN, 0, (struct sockaddr*)&addr, &addrlen);
+	int length = recvfrom(gfire_ipc->socket, gfire_ipc->buffer, GFIRE_IPC_BUFFER_LEN, 0,
+						  (struct sockaddr*)&addr, &addrlen);
 
 	// Parse IPC header /////////
 
 	// Invalid packet
-	if(length < 4)
+	if(length < GFIRE_IPC_HEADER_LEN)
 		return;
 
-	unsigned short ipc_len;
-	memcpy(&ipc_len, gfire_ipc->buff_in, 2);
+	guint16 ipc_len;
+	memcpy(&ipc_len, gfire_ipc->buffer, 2);
 
 	// Received incomplete/invalid packet
 	if(ipc_len != length)
 		return;
 
-	unsigned short ipc_id;
-	memcpy(&ipc_id, gfire_ipc->buff_in + 2, 2);
+	guint32 pid;
+	memcpy(&pid, gfire_ipc->buffer + 2, 4);
 
-	GList *current = gfire_ipc->instances;
-	for(; current; current = g_list_next(current))
+	// Get the client
+	gfire_ipc_client *client = NULL;
+	GList *clist = gfire_ipc->clients;
+	while(clist)
 	{
-		switch(ipc_id)
+		if(((gfire_ipc_client*)clist->data)->pid == pid)
 		{
-			case GFIRE_IPC_ID_SDK:
-				purple_debug_misc("gfire", "IPC: Received Xfire SDK data\n");
-				gfire_ipc_proto_sdk((gfire_data*)current->data, gfire_ipc->buff_in + 4, ipc_len - 4);
-				break;
-			default:
-				purple_debug_warning("gfire", "IPC: Received packet with ID %u and length %u (unknown)\n", ipc_id, ipc_len);
-				break;
+			client = (gfire_ipc_client*)clist->data;
+			break;
 		}
+
+		clist = g_list_next(clist);
+	}
+
+	guint16 ipc_id;
+	memcpy(&ipc_id, gfire_ipc->buffer + 6, 2);
+
+	switch(ipc_id)
+	{
+	case GFIRE_IPC_CLIENT_HS:
+		purple_debug_misc("gfire", "IPC: Received client handshake\n");
+		gfire_ipc_proto_client_handshake(gfire_ipc, ipc_len, &addr);
+		break;
+	case GFIRE_IPC_SHUTDOWN:
+		purple_debug_misc("gfire", "IPC: Received shutdown message\n");
+		gfire_ipc_server_client_shutdown(client);
+		break;
+	case GFIRE_IPC_KEEP_ALIVE:
+		purple_debug_misc("gfire", "IPC: Received keep-alive\n");
+		gfire_ipc_server_client_keep_alive(client);
+		break;
+	case GFIRE_IPC_ID_SDK:
+		purple_debug_misc("gfire", "IPC: Received Xfire SDK data\n");
+		gfire_ipc_proto_sdk(gfire_ipc, ipc_len);
+		break;
+	default:
+		purple_debug_warning("gfire", "IPC: Received packet with ID %u and length %u (unknown)\n", ipc_id, ipc_len);
+		break;
 	}
 }

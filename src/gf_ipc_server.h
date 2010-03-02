@@ -29,13 +29,23 @@
 #include "gfire_ipc.h"
 #include "gfire.h"
 
+typedef struct _gfire_ipc_client
+{
+	struct sockaddr_in addr;
+	guint32 pid;
+	GTimeVal last_keep_alive;
+} gfire_ipc_client;
+
 typedef struct _gfire_ipc_server
 {
 	// IPC connection
 	int socket;
-	gchar *buff_out;
-	gchar *buff_in;
+	guint8 *buffer;
 	int prpl_inpa;
+
+	// Connected clients
+	GList *clients;
+	guint keep_alive_to;
 
 	// Registered Gfire instances
 	GList *instances;
@@ -43,5 +53,8 @@ typedef struct _gfire_ipc_server
 
 void gfire_ipc_server_register(gfire_data *p_gfire);
 void gfire_ipc_server_unregister(gfire_data *p_gfire);
+
+// Internal
+void gfire_ipc_server_client_handshake(guint16 p_version, guint32 p_pid, const struct sockaddr_in *p_addr);
 
 #endif // _GF_IPC_SERVER_H

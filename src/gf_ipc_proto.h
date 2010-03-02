@@ -25,8 +25,15 @@
 #ifndef _GF_IPC_PROTO_H
 #define _GF_IPC_PROTO_H
 
-#include "gfire.h"
+#include "gf_ipc_server.h"
 
-void gfire_ipc_proto_sdk(gfire_data *p_gfire, gchar *p_data, unsigned short p_len);
+// Packet creation
+guint16 gfire_ipc_proto_write_server_handshake(guint32 p_pid, gboolean p_ok, guint8 *p_data);
+guint16 gfire_ipc_proto_write_shutdown(guint32 p_pid, guint8 *p_data);
+guint16 gfire_ipc_proto_write_keep_alive(guint32 p_pid, guint8 *p_data);
+
+// Packet parsing
+void gfire_ipc_proto_client_handshake(gfire_ipc_server *p_server, guint16 p_len, const struct sockaddr_in *p_addr);
+void gfire_ipc_proto_sdk(gfire_ipc_server *p_server, guint16 p_len);
 
 #endif // _GF_IPC_PROTO_H
