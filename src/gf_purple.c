@@ -269,7 +269,9 @@ static void gfire_purple_blist_tooltip_text(PurpleBuddy *p_buddy, PurpleNotifyUs
 			const GList *current = gfire_buddy_get_game_client_data(gf_buddy);
 			for(; current; current = g_list_next(current))
 			{
-				purple_notify_user_info_add_pair(p_user_info, NN(((game_client_data*)current->data)->key), NN(((game_client_data*)current->data)->value));
+				if(((game_client_data*)current->data)->value && (*((game_client_data*)current->data)->value != 0))
+					purple_notify_user_info_add_pair(p_user_info, NN(((game_client_data*)current->data)->key),
+													 ((game_client_data*)current->data)->value);
 			}
 		}
 
