@@ -45,6 +45,7 @@ guint16 gfire_proto_create_change_alias(const gchar *p_alias);
 guint16 gfire_proto_create_join_game(const gfire_game_data *p_game);
 guint16 gfire_proto_create_join_voip(const gfire_game_data *p_voip);
 guint16 gfire_proto_create_game_sdk(GList *p_keys, GList *p_values);
+guint16 gfire_proto_create_client_preferences(gboolean p_show_fofs);
 
 // Packet parsing
 void gfire_proto_buddy_list(gfire_data *p_gfire, guint16 p_packet_len);
@@ -57,5 +58,6 @@ void gfire_proto_clan_list(gfire_data *p_gfire, guint16 p_packet_len);
 void gfire_proto_clan_blist(gfire_data *p_gfire, guint16 p_packet_len);
 void gfire_proto_system_broadcast(gfire_data *p_gfire, guint16 p_packet_len);
 void gfire_proto_external_game(gfire_data *p_gfire, guint16 p_packet_len);
+void gfire_proto_client_preferences(gfire_data *p_gfire, guint16 p_packet_len);
 
 #endif // _GFIRE_PROTO_H
