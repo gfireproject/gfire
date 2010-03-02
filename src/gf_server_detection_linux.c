@@ -164,7 +164,7 @@ static void gfire_server_detection_netstat(gfire_server_detection_linux *p_detec
 					if(*((guint32*)cur->data) == inode)
 					{
 						gfire_server *server = g_malloc0(sizeof(gfire_server));
-						server->ip = ip;
+						server->ip = g_ntohl(ip);
 						server->port = port;
 
 						p_detection->tcp_servers = g_list_append(p_detection->tcp_servers, server);
@@ -212,7 +212,7 @@ static void gfire_server_detection_netstat(gfire_server_detection_linux *p_detec
 					if(*((guint32*)cur->data) == inode)
 					{
 						gfire_server *server = g_malloc0(sizeof(gfire_server));
-						server->ip = ip;
+						server->ip = g_ntohl(ip);
 						server->port = port;
 
 						p_detection->local_udp_connections = g_list_append(p_detection->local_udp_connections, server);
@@ -573,11 +573,11 @@ static void gfire_server_detection_thread(gfire_server_detection_linux *p_detect
 	// Get the best IP
 	const gfire_server *server = gfire_server_detection_guess_server(p_detection);
 	// Tell the games detection about the server if there is one and it's priority isn't 0
-	if(server && server->priority)
-		gfire_game_detector_update_server(server->ip, server->port);
+	if(server /*&& server->priority*/)
+		((void(*)(guint32,guint16))p_detection->detector->server_callback)(server->ip, server->port);
 	else
 		// Tell the games detection there is no server
-		gfire_game_detector_update_server(0, 0);
+		((void(*)(guint32,guint16))p_detection->detector->server_callback)(0, 0);
 
 	// Finalize the thread
 	g_mutex_lock(p_detection->detector->mutex);

@@ -69,11 +69,17 @@ typedef struct _gfire_game_detector
 	gfire_game_detection_type game_type;
 
 	// Server detection
-	gfire_server_detector *server_detector;
 	GMutex *server_mutex;
-	gboolean server_changed;
-	guint32 server_ip_tmp;
-	guint16 server_port_tmp;
+	//	Game
+	gfire_server_detector *g_server_detector;
+	gboolean g_server_changed;
+	guint32 g_server_ip;
+	guint16 g_server_port;
+	//	VoIP
+	gfire_server_detector *v_server_detector;
+	gboolean v_server_changed;
+	guint32 v_server_ip;
+	guint16 v_server_port;
 
 	// Webgame detection
 	int socket;
@@ -101,9 +107,6 @@ gboolean gfire_game_detector_is_voiping();
 
 guint32 gfire_game_detector_current_game();
 guint32 gfire_game_detector_current_voip();
-
-// Internal for server detection
-void gfire_game_detector_update_server(guint32 p_server_ip, guint16 p_server_port);
 
 // Gfire Process List
 gfire_process_list *gfire_process_list_new();

@@ -1,12 +1,16 @@
 #include "gf_server_detection.h"
 
-gfire_server_detector *gfire_server_detector_create()
+gfire_server_detector *gfire_server_detector_create(GCallback p_server_callback)
 {
+	if(!p_server_callback)
+		return NULL;
+
 	gfire_server_detector *ret = g_malloc0(sizeof(gfire_server_detector));
 	if(!ret)
 		return NULL;
 
 	ret->mutex = g_mutex_new();
+	ret->server_callback = p_server_callback;
 
 	return ret;
 }

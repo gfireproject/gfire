@@ -42,6 +42,8 @@ struct _gfire_server_detector
 	guint32 ip;
 	guint16 port;
 
+	GCallback server_callback;
+
 	GMutex *mutex;
 
 	void *os_data;
@@ -55,7 +57,7 @@ struct _gfire_server
 };
 
 // Creation/freeing
-gfire_server_detector *gfire_server_detector_create();
+gfire_server_detector *gfire_server_detector_create(GCallback p_server_callback);
 void gfire_server_detector_free(gfire_server_detector *p_detector);
 
 // Starting/stopping (OS dependent)

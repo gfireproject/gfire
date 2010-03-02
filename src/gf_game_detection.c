@@ -35,11 +35,16 @@
 
 static gfire_game_detector *gfire_detector = NULL;
 
-static void gfire_game_detector_inform_instances()
+static void gfire_game_detector_inform_instances_game()
 {
 	gchar *game_name = gfire_game_name(gfire_detector->game_data.id);
+
 	if(gfire_detector->game_data.id != 0)
-		purple_debug_info("gfire", "%s is running, sending ingame status.\n", NN(game_name));
+	{
+		gchar *addr = gfire_game_data_addr_str(&gfire_detector->game_data);
+		purple_debug_info("gfire", "%s is running, sending ingame status. (%s)\n", game_name, addr);
+		g_free(addr);
+	}
 	else
 		purple_debug_misc("gfire", "Game is not running anymore, sending out-of-game status.\n");
 
@@ -144,16 +149,44 @@ static void gfire_game_detector_inform_instances()
 	g_free(game_name);
 }
 
+static void gfire_game_detector_inform_instances_voip()
+{
+	if(gfire_detector->voip_data.id != 0)
+	{
+		gchar *voip_name = gfire_game_name(gfire_detector->voip_data.id);
+		gchar *addr = gfire_game_data_addr_str(&gfire_detector->voip_data);
+		purple_debug_info("gfire", "%s is running, sending VoIP status. (%s)\n", voip_name, addr);
+		g_free(addr);
+		g_free(voip_name);
+	}
+	else
+		purple_debug_misc("gfire", "VoIP application is not running anymore, sending status.\n");
+
+	GList *cur = gfire_detector->instances;
+	while(cur)
+	{
+		gfire_set_voip_status((gfire_data*)cur->data, &gfire_detector->voip_data);
+		cur = g_list_next(cur);
+	}
+}
+
 typedef struct _gfire_process_detection_data
 {
 	const gfire_game_configuration *gconf;
-	const gfire_game_detection_set *dset;
 
-	gboolean last_was_old;
-	gboolean checked_old_game;
-	gboolean old_running;
-	guint32 new_game;
-	guint32 pid;
+	// Game
+	const gfire_game_detection_set *g_dset;
+	gboolean g_checked_old;
+	gboolean g_old_running;
+	guint32 g_new_game;
+	guint32 g_pid;
+
+	// VoIP
+	const gfire_game_detection_set *v_dset;
+	gboolean v_checked_old;
+	gboolean v_old_running;
+	guint32 v_new_voip;
+	guint32 v_pid;
 } gfire_process_detection_data;
 
 static gboolean gfire_game_detector_detect_game_dset_cb(const gfire_game *p_game, const gfire_game_detection_set *p_dset,
@@ -161,49 +194,61 @@ static gboolean gfire_game_detector_detect_game_dset_cb(const gfire_game *p_game
 {
 	gfire_process_detection_data *data = (gfire_process_detection_data*)p_data;
 
-	// Don't check further sets if one already worked
-	if(data->new_game == p_game->id)
-		return FALSE;
-
 	// Check if the current detection set matches our environment
 	guint32 pid = gfire_process_list_contains(gfire_detector->process_list, data->gconf->detect_file,
 											  p_dset->required_args, p_dset->invalid_args, NULL);
 
-	if(gfire_detector->game_data.id == p_game->id)
+	// VoIP app
+	if(p_game->is_voice)
 	{
-		data->checked_old_game = TRUE;
-		data->last_was_old = TRUE;
-		// Old game still running, abort
-		if(pid)
+		if(gfire_detector->voip_data.id == p_game->id)
 		{
-			data->old_running = TRUE;
-			data->pid = pid;
-			data->dset = p_dset;
-			return TRUE;
+			data->v_checked_old = TRUE;
+			data->v_old_running = (pid != 0);
+			if(pid)
+			{
+				data->v_pid = pid;
+				data->v_dset = p_dset;
+			}
+		}
+		else if(pid)
+		{
+			data->v_new_voip = p_game->id;
+			data->v_pid = pid;
+			data->v_dset = p_dset;
 		}
 	}
+	// Game
 	else
 	{
-		if(data->last_was_old)
+		if(gfire_detector->game_data.id == p_game->id)
 		{
-			// Old game is not running anymore, but we already got a new one
-			if(!data->old_running && data->new_game)
-				return TRUE;
-
-			data->last_was_old = FALSE;
+			data->g_checked_old = TRUE;
+			data->g_old_running = (pid != 0);
+			if(pid)
+			{
+				data->g_pid = pid;
+				data->g_dset = p_dset;
+			}
 		}
-
-		if(pid)
+		else if(pid)
 		{
-			data->new_game = p_game->id;
-			data->pid = pid;
-			data->dset = p_dset;
-
-			// Old game has already been checked and is not running anymore, take this one
-			if(!gfire_detector->game_data.id || (data->checked_old_game && !data->old_running))
-				return TRUE;
+			data->g_new_game = p_game->id;
+			data->g_pid = pid;
+			data->g_dset = p_dset;
 		}
 	}
+
+	// Check if we can abort
+		// Old game still running / not running anymore but new one available
+	if(((gfire_detector->game_data.id && data->g_checked_old && (data->g_old_running || data->g_new_game)) ||
+		// No old game present, but new one found
+		(!gfire_detector->game_data.id && data->g_new_game)) &&
+	   // Old VoIP app still running / not running anymore but new one available
+	   ((gfire_detector->voip_data.id && data->v_checked_old && (data->v_old_running || data->v_new_voip)) ||
+		// No old VoIP app present, but new one found
+		(!gfire_detector->voip_data.id && data->v_new_voip)))
+		return TRUE;
 
 	return FALSE;
 }
@@ -235,43 +280,49 @@ static gboolean gfire_game_detector_detect_cb(void *p_unused)
 	gfire_game_config_foreach(G_CALLBACK(gfire_game_detector_detect_conf_game_cb), data);
 
 	// We have detected a game
-	if(data->pid)
+	if(data->g_pid)
 	{
 		// We got a new game?
-		if(!gfire_detector->game_data.id || !data->old_running)
+		if(!gfire_detector->game_data.id || !data->g_old_running)
 		{
-			gfire_server_detector_stop(gfire_detector->server_detector);
-			gfire_detector->server_changed = FALSE;
-			gfire_detector->server_ip_tmp = 0;
-			gfire_detector->server_port_tmp = 0;
+			gfire_server_detector_stop(gfire_detector->g_server_detector);
+			gfire_detector->g_server_changed = FALSE;
+			gfire_detector->g_server_ip = 0;
+			gfire_detector->g_server_port = 0;
 
 			gfire_game_data_reset(&gfire_detector->game_data);
-			gfire_detector->game_data.id = data->new_game;
+			gfire_detector->game_data.id = data->g_new_game;
 			gfire_detector->game_type = GFGT_PROCESS;
 
-			gfire_game_detector_inform_instances();
+			gfire_game_detector_inform_instances_game();
+
+			// Start new server detection if allowed
+			if(data->g_dset->detect_server)
+				gfire_server_detector_start(gfire_detector->g_server_detector, gfire_detector->game_data.id,
+											data->g_pid);
 		}
 		// We do still play the old game, start a server detection cycle
 		else
 		{
 			// Check for changed server data
 			g_mutex_lock(gfire_detector->server_mutex);
-			if(gfire_detector->server_changed)
+			if(gfire_detector->g_server_changed)
 			{
-				gfire_detector->server_changed = FALSE;
+				gfire_detector->g_server_changed = FALSE;
 
-				gfire_detector->game_data.ip.value = gfire_detector->server_ip_tmp;
-				gfire_detector->game_data.port = gfire_detector->server_port_tmp;
+				gfire_detector->game_data.ip.value = gfire_detector->g_server_ip;
+				gfire_detector->game_data.port = gfire_detector->g_server_port;
 				g_mutex_unlock(gfire_detector->server_mutex);
 
-				gfire_game_detector_inform_instances();
+				gfire_game_detector_inform_instances_game();
 			}
 			else
 				g_mutex_unlock(gfire_detector->server_mutex);
 
 			// Start new server detection if allowed
-			if(data->dset->detect_server)
-				gfire_server_detector_start(gfire_detector->server_detector, gfire_detector->game_data.id, data->pid);
+			if(data->g_dset->detect_server)
+				gfire_server_detector_start(gfire_detector->g_server_detector, gfire_detector->game_data.id,
+											data->g_pid);
 		}
 	}
 	// No game playing
@@ -279,13 +330,73 @@ static gboolean gfire_game_detector_detect_cb(void *p_unused)
 	{
 		if(gfire_detector->game_data.id)
 		{
-			gfire_server_detector_stop(gfire_detector->server_detector);
-			gfire_detector->server_changed = FALSE;
-			gfire_detector->server_ip_tmp = 0;
-			gfire_detector->server_port_tmp = 0;
+			gfire_server_detector_stop(gfire_detector->g_server_detector);
+			gfire_detector->g_server_changed = FALSE;
+			gfire_detector->g_server_ip = 0;
+			gfire_detector->g_server_port = 0;
 
 			gfire_game_data_reset(&gfire_detector->game_data);
-			gfire_game_detector_inform_instances();
+			gfire_game_detector_inform_instances_game();
+		}
+	}
+
+	// We have detected a VoIP app
+	if(data->v_pid)
+	{
+		// We got a new VoIP app?
+		if(!gfire_detector->voip_data.id || !data->v_old_running)
+		{
+			gfire_server_detector_stop(gfire_detector->v_server_detector);
+			gfire_detector->v_server_changed = FALSE;
+			gfire_detector->v_server_ip = 0;
+			gfire_detector->v_server_port = 0;
+
+			gfire_game_data_reset(&gfire_detector->voip_data);
+			gfire_detector->voip_data.id = data->v_new_voip;
+
+			gfire_game_detector_inform_instances_voip();
+
+			// Start new server detection if allowed
+			if(data->v_dset->detect_server)
+				gfire_server_detector_start(gfire_detector->v_server_detector, gfire_detector->voip_data.id,
+											data->v_pid);
+		}
+		// Still the old one
+		else
+		{
+			// Check for changed server data
+			g_mutex_lock(gfire_detector->server_mutex);
+			if(gfire_detector->v_server_changed)
+			{
+				gfire_detector->v_server_changed = FALSE;
+
+				gfire_detector->voip_data.ip.value = gfire_detector->v_server_ip;
+				gfire_detector->voip_data.port = gfire_detector->v_server_port;
+				g_mutex_unlock(gfire_detector->server_mutex);
+
+				gfire_game_detector_inform_instances_voip();
+			}
+			else
+				g_mutex_unlock(gfire_detector->server_mutex);
+
+			// Start new server detection if allowed
+			if(data->v_dset->detect_server)
+				gfire_server_detector_start(gfire_detector->v_server_detector, gfire_detector->voip_data.id,
+											data->v_pid);
+		}
+	}
+	// No VoIP app running
+	else
+	{
+		if(gfire_detector->voip_data.id)
+		{
+			gfire_server_detector_stop(gfire_detector->v_server_detector);
+			gfire_detector->v_server_changed = FALSE;
+			gfire_detector->v_server_ip = 0;
+			gfire_detector->v_server_port = 0;
+
+			gfire_game_data_reset(&gfire_detector->voip_data);
+			gfire_game_detector_inform_instances_voip();
 		}
 	}
 
@@ -294,15 +405,28 @@ static gboolean gfire_game_detector_detect_cb(void *p_unused)
 	return TRUE;
 }
 
-void gfire_game_detector_update_server(guint32 p_server_ip, guint16 p_server_port)
+static void gfire_game_detector_update_game_server(guint32 p_server_ip, guint16 p_server_port)
 {
 	g_mutex_lock(gfire_detector->server_mutex);
 	// Only apply changes
-	if(gfire_detector->server_ip_tmp != p_server_ip || gfire_detector->server_port_tmp != p_server_port)
+	if(gfire_detector->g_server_ip != p_server_ip || gfire_detector->g_server_port != p_server_port)
 	{
-		gfire_detector->server_changed = TRUE;
-		gfire_detector->server_ip_tmp = p_server_ip;
-		gfire_detector->server_port_tmp = p_server_port;
+		gfire_detector->g_server_changed = TRUE;
+		gfire_detector->g_server_ip = p_server_ip;
+		gfire_detector->g_server_port = p_server_port;
+	}
+	g_mutex_unlock(gfire_detector->server_mutex);
+}
+
+static void gfire_game_detector_update_voip_server(guint32 p_server_ip, guint16 p_server_port)
+{
+	g_mutex_lock(gfire_detector->server_mutex);
+	// Only apply changes
+	if(gfire_detector->v_server_ip != p_server_ip || gfire_detector->v_server_port != p_server_port)
+	{
+		gfire_detector->v_server_changed = TRUE;
+		gfire_detector->v_server_ip = p_server_ip;
+		gfire_detector->v_server_port = p_server_port;
 	}
 	g_mutex_unlock(gfire_detector->server_mutex);
 }
@@ -327,7 +451,7 @@ static gboolean gfire_game_detector_web_timeout_cb(void *p_unused)
 		gfire_detector->det_source = g_timeout_add_seconds(GFIRE_DETECTION_INTERVAL,
 														   (GSourceFunc)gfire_game_detector_detect_cb, NULL);
 
-		gfire_game_detector_inform_instances();
+		gfire_game_detector_inform_instances_game();
 
 		return FALSE;
 	}
@@ -443,7 +567,7 @@ static void gfire_game_detector_web_http_input_cb(gpointer p_con, gint p_fd, Pur
 									g_timeout_add_seconds(GFIRE_WEB_DETECTION_TIMEOUT,
 														  (GSourceFunc)gfire_game_detector_web_timeout_cb, NULL);
 
-							gfire_game_detector_inform_instances();
+							gfire_game_detector_inform_instances_game();
 						}
 
 						// Update the timeout
@@ -641,7 +765,8 @@ static void gfire_game_detector_init()
 	gfire_detector = g_malloc0(sizeof(gfire_game_detector));
 
 	gfire_detector->server_mutex = g_mutex_new();
-	gfire_detector->server_detector = gfire_server_detector_create();
+	gfire_detector->g_server_detector = gfire_server_detector_create(G_CALLBACK(gfire_game_detector_update_game_server));
+	gfire_detector->v_server_detector = gfire_server_detector_create(G_CALLBACK(gfire_game_detector_update_voip_server));
 
 	gfire_detector->process_list = gfire_process_list_new();
 	gfire_game_detector_start_web_http();
@@ -659,8 +784,10 @@ static void gfire_game_detector_free()
 		return;
 
 	// Stop server detection
-	gfire_server_detector_stop(gfire_detector->server_detector);
-	gfire_server_detector_free(gfire_detector->server_detector);
+	gfire_server_detector_stop(gfire_detector->g_server_detector);
+	gfire_server_detector_stop(gfire_detector->v_server_detector);
+	gfire_server_detector_free(gfire_detector->g_server_detector);
+	gfire_server_detector_free(gfire_detector->v_server_detector);
 	g_mutex_free(gfire_detector->server_mutex);
 
 	// Remove detection timer
@@ -727,7 +854,7 @@ void gfire_game_detector_set_external_game(guint32 p_gameid)
 		g_source_remove(gfire_detector->det_source);
 		gfire_detector->det_source = 0;
 
-		gfire_game_detector_inform_instances();
+		gfire_game_detector_inform_instances_game();
 	}
 	else if(gfire_detector->game_data.id != 0 && p_gameid == 0)
 	{
@@ -738,7 +865,7 @@ void gfire_game_detector_set_external_game(guint32 p_gameid)
 		gfire_detector->det_source = g_timeout_add_seconds(GFIRE_DETECTION_INTERVAL,
 														   (GSourceFunc)gfire_game_detector_detect_cb, NULL);
 
-		gfire_game_detector_inform_instances();
+		gfire_game_detector_inform_instances_game();
 	}
 }
 

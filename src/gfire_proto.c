@@ -223,7 +223,7 @@ guint16 gfire_proto_create_join_voip(const gfire_game_data *p_voip)
 	guint32 offset = XFIRE_HEADER_LEN;
 
 	// "vid"
-	guint32 voipid = GUINT32_TO_LE(p_voip->id);
+	guint32 voipid = p_voip->ip.value ? GUINT32_TO_LE(p_voip->id) : 0;
 	offset = gfire_proto_write_attr_ss("vid", 0x02, &voipid, sizeof(voipid), offset);
 
 	// "vip"
