@@ -25,197 +25,15 @@
 #include "gf_server_browser.h"
 
 #ifdef HAVE_GTK
-static GtkBuilder *server_browser_builder = NULL;
-static GtkTreeStore *server_browser_tree_store;
+static GtkBuilder *gfire_gtk_builder = NULL;
+static GtkTreeStore *server_browser_tree_store = NULL;
 
 static GtkTreeIter recent_serverlist_iter;
 static GtkTreeIter fav_serverlist_iter;
 static GtkTreeIter friends_fav_serverlist_iter;
 static GtkTreeIter serverlist_iter;
 
-static gboolean gfire_server_browser_add_configured_games_cb(const gfire_game_configuration *p_gconf, GtkWidget *p_game_combo);
-static void gfire_server_browser_request_serverlist_cb(gfire_data *p_gfire, GtkWidget *p_sender);
-static void gfire_server_browser_connect_cb(gfire_data *p_gfire, GtkWidget *p_sender);
-static void gfire_server_browser_close(gfire_data *p_gfire, GtkWidget *p_sender);
-
-static void gfire_server_browser_add_favorite_server_cb(gfire_data *p_gfire, GtkWidget *p_sender);
-static void gfire_server_browser_remove_favorite_server_cb(gfire_data *p_gfire, GtkWidget *p_sender);
-
-void gfire_server_browser_show(PurplePluginAction *p_action)
-{
-	PurpleConnection *gc = (PurpleConnection *)p_action->context;
-	gfire_data *gfire = (gfire_data *)gc->proto_data;
-
-	if(!gc || !gfire)
-		return;
-
-	// Only one server browser at a time
-	if(server_browser_builder)
-		return;
-
-	server_browser_builder = gtk_builder_new();
-	gtk_builder_set_translation_domain(server_browser_builder, GETTEXT_PACKAGE);
-
-	gchar *builder_file = g_build_filename(DATADIR, "purple", "gfire", "servers.glade", NULL);
-	gtk_builder_add_from_file(server_browser_builder, builder_file, NULL);
-	g_free(builder_file);
-
-	if(!server_browser_builder)
-	{
-		purple_debug_error("gfire", "Couldn't build server browser interface.\n");
-		return;
-	}
-
-	GtkWidget *server_browser_window = GTK_WIDGET(gtk_builder_get_object(server_browser_builder, "server_browser_window"));
-	GtkWidget *tree_view = GTK_WIDGET(gtk_builder_get_object(server_browser_builder, "servers_tree_view"));
-	GtkWidget *refresh_button = GTK_WIDGET(gtk_builder_get_object(server_browser_builder, "refresh_button"));
-	GtkWidget *connect_button = GTK_WIDGET(gtk_builder_get_object(server_browser_builder, "connect_button"));
-	GtkWidget *add_favorite_button = GTK_WIDGET(gtk_builder_get_object(server_browser_builder, "add_favorite_button"));
-	GtkWidget *remove_favorite_button = GTK_WIDGET(gtk_builder_get_object(server_browser_builder, "remove_favorite_button"));
-	GtkWidget *quit_button = GTK_WIDGET(gtk_builder_get_object(server_browser_builder, "quit_button"));
-	GtkWidget *game_combo = GTK_WIDGET(gtk_builder_get_object(server_browser_builder, "game_combo"));
-
-	g_signal_connect_swapped(server_browser_window, "destroy", G_CALLBACK(gfire_server_browser_close), gfire);
-	g_signal_connect_swapped(quit_button, "clicked", G_CALLBACK(gfire_server_browser_close), gfire);
-
-	g_signal_connect_swapped(refresh_button, "clicked", G_CALLBACK(gfire_server_browser_request_serverlist_cb), gfire);
-	g_signal_connect_swapped(connect_button, "clicked", G_CALLBACK(gfire_server_browser_connect_cb), gfire);
-	g_signal_connect_swapped(add_favorite_button, "clicked", G_CALLBACK(gfire_server_browser_add_favorite_server_cb), gfire);
-	g_signal_connect_swapped(remove_favorite_button, "clicked", G_CALLBACK(gfire_server_browser_remove_favorite_server_cb), gfire);
-
-	// Connect too when user double clicks on a server
-	g_signal_connect_swapped(tree_view, "row-activated", G_CALLBACK(gfire_server_browser_connect_cb), gfire);
-
-	// Add configured games & initialize tree store
-	gfire_game_config_foreach(G_CALLBACK(gfire_server_browser_add_configured_games_cb), game_combo);
-	server_browser_tree_store = GTK_TREE_STORE(gtk_builder_get_object(server_browser_builder, "servers_list_tree_store"));
-
-	// Show window
-	gtk_widget_show_all(server_browser_window);
-}
-
-static gboolean gfire_server_browser_add_configured_games_cb(const gfire_game_configuration *p_gconf, GtkWidget *p_game_combo)
-{
-	const gfire_game *game = gfire_game_by_id(p_gconf->game_id);
-	if(game)
-		gtk_combo_box_append_text(GTK_COMBO_BOX(p_game_combo), game->name);
-
-	return FALSE;
-}
-
-static void gfire_server_browser_close(gfire_data *p_gfire, GtkWidget *p_sender)
-{
-	if(!p_gfire)
-		return;
-
-	// Destroy window
-	GtkWidget *server_browser_window = GTK_WIDGET(gtk_builder_get_object(server_browser_builder, "server_browser_window"));
-	gtk_widget_destroy(server_browser_window);
-
-	// Close socket & co
-	gfire_server_browser_proto_close();
-
-	if(server_browser_builder)
-	{
-		g_object_unref(G_OBJECT(server_browser_builder));
-		server_browser_builder = NULL;
-	}
-}
-
-static void gfire_server_browser_request_serverlist_cb(gfire_data *p_gfire, GtkWidget *p_sender)
-{
-	if(!p_gfire)
-		return;
-
-	GtkWidget *game_combo = GTK_WIDGET(gtk_builder_get_object(server_browser_builder, "game_combo"));
-	GtkWidget *list_store = GTK_WIDGET(gtk_builder_get_object(server_browser_builder, "servers_list_store"));
-
-	gtk_list_store_clear(GTK_LIST_STORE(list_store));
-
-	gchar *game_name = gtk_combo_box_get_active_text(GTK_COMBO_BOX(game_combo));
-	guint32 gameid = gfire_game_id(game_name);
-	g_free(game_name);
-
-	if(gameid != 0)
-	{
-		// Init socket & co
-		if(!gfire_server_browser_proto_init())
-			return;
-
-		// Add parent rows (also clears tree store)
-		gfire_server_browser_add_parent_rows();
-
-		// Show fav serverlist (local)
-		gfire_server_browser_proto_fav_serverlist_request(gameid);
-
-		// Make serverlist requests to Xfire
-		guint16 packet_len = 0;
-
-		// Request serverlist
-		packet_len = gfire_server_browser_proto_create_serverlist_request(gameid);
-		if(packet_len > 0)
-			gfire_send(gfire_get_connection(p_gfire), packet_len);
-
-		// Request friends' fav serverlist
-		packet_len = gfire_server_browser_proto_create_friends_fav_serverlist_request(gameid);
-		if(packet_len > 0)
-			gfire_send(gfire_get_connection(p_gfire), packet_len);
-	}
-}
-
-static void gfire_server_browser_connect_cb(gfire_data *p_gfire, GtkWidget *p_sender)
-{
-	if(!p_gfire)
-		return;
-
-	GtkWidget *game_combo = GTK_WIDGET(gtk_builder_get_object(server_browser_builder, "game_combo"));
-	GtkWidget *servers_tree_view = GTK_WIDGET(gtk_builder_get_object(server_browser_builder, "servers_tree_view"));
-
-	GtkTreeSelection *selection;
-	GtkTreeModel *model;
-	GtkTreeIter iter;
-
-	gchar *game_name = gtk_combo_box_get_active_text(GTK_COMBO_BOX(game_combo));
-	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(servers_tree_view));
-	model = gtk_tree_view_get_model(GTK_TREE_VIEW(servers_tree_view));
-
-	// Get selected server
-	if(gtk_tree_selection_get_selected(selection, &model, &iter))
-	{
-		gchar *selected_server;
-		gtk_tree_model_get(model, &iter, 4, &selected_server, -1);
-
-		if(!selected_server)
-			return;
-
-		gchar **server_split;
-		server_split = g_strsplit(selected_server, ":", -1);
-		g_free(selected_server);
-
-		if(!server_split)
-			return;
-
-		// Put server in struct
-		gfire_game_data game;
-
-		game.id = gfire_game_id(game_name);
-		gfire_game_data_ip_from_str(&game, server_split[0]);
-		game.port = atoi(server_split[1]);
-
-		g_free(game_name);
-		g_strfreev(server_split);
-
-		// Finally join server
-		gfire_join_game(&game);
-	}
-	else
-	{
-		g_free(game_name);
-		purple_debug_error("gfire", "Couldn't get selected server to join.\n");
-	}
-}
-
-void gfire_server_browser_add_parent_rows()
+static void gfire_server_browser_add_parent_rows()
 {
 	// Clear tree store
 	gtk_tree_store_clear(server_browser_tree_store);
@@ -234,11 +52,11 @@ void gfire_server_browser_add_parent_rows()
 	gtk_tree_store_set(server_browser_tree_store, &serverlist_iter, 0, _("All servers"), -1);
 }
 
+// FIXME: not revised
 void gfire_server_browser_add_server(gfire_server_browser_server_info *p_server)
 {
 	// Get parent row
 	gint parent = gfire_server_brower_proto_get_parent(p_server);
-
 	if(parent == -1)
 		return;
 
@@ -251,7 +69,7 @@ void gfire_server_browser_add_server(gfire_server_browser_server_info *p_server)
 		gtk_tree_store_append(server_browser_tree_store, &iter, &fav_serverlist_iter);
 	else if(parent == 2)
 		gtk_tree_store_append(server_browser_tree_store, &iter, &friends_fav_serverlist_iter);
-	else if(parent ==3)
+	else if(parent == 3)
 		gtk_tree_store_append(server_browser_tree_store, &iter, &serverlist_iter);
 
 	gtk_tree_store_set(server_browser_tree_store, &iter, 0, p_server->ip_full, 1, _("N/A"), 2, _("N/A"), 3, _("N/A"), 4, p_server->ip_full, -1);
@@ -293,9 +111,9 @@ void gfire_server_browser_add_server(gfire_server_browser_server_info *p_server)
 	}
 }
 
-static void gfire_server_browser_add_favorite_server_cb(gfire_data *p_gfire, GtkWidget *p_sender)
+static void gfire_server_browser_add_fav_server_cb(gfire_data *p_gfire, GtkWidget *p_sender)
 {
-	if(!gfire_server_browser_can_add_fav_server())
+	if(!gfire_server_browser_proto_can_add_fav_server())
 	{
 		purple_notify_error(NULL, _("Server Browser: error"), _("Can't add favorite server"),
 							_("You've reached the limit of favorite servers, you can however still remove favorite servers in order to add new ones."));
@@ -303,10 +121,10 @@ static void gfire_server_browser_add_favorite_server_cb(gfire_data *p_gfire, Gtk
 		return;
 	}
 
-	GtkWidget *servers_tree_view = GTK_WIDGET(gtk_builder_get_object(server_browser_builder, "servers_tree_view"));
-	GtkWidget *add_favorite_dialog = GTK_WIDGET(gtk_builder_get_object(server_browser_builder, "add_favorite_dialog"));
-	GtkWidget *ip_address_entry = GTK_WIDGET(gtk_builder_get_object(server_browser_builder, "ip_address_entry"));
-	GtkWidget *port_entry = GTK_WIDGET(gtk_builder_get_object(server_browser_builder, "port_entry"));
+	GtkWidget *servers_tree_view = GTK_WIDGET(gtk_builder_get_object(gfire_gtk_builder, "servers_tree_view"));
+	GtkWidget *add_favorite_dialog = GTK_WIDGET(gtk_builder_get_object(gfire_gtk_builder, "add_favorite_dialog"));
+	GtkWidget *ip_address_entry = GTK_WIDGET(gtk_builder_get_object(gfire_gtk_builder, "ip_address_entry"));
+	GtkWidget *port_entry = GTK_WIDGET(gtk_builder_get_object(gfire_gtk_builder, "port_entry"));
 
 	// Eventually get selected server
 	GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(servers_tree_view));
@@ -344,7 +162,7 @@ static void gfire_server_browser_add_favorite_server_cb(gfire_data *p_gfire, Gtk
 	if(result == 0)
 	{
 		// Get user input
-		GtkWidget *game_combo = GTK_WIDGET(gtk_builder_get_object(server_browser_builder, "game_combo"));
+		GtkWidget *game_combo = GTK_WIDGET(gtk_builder_get_object(gfire_gtk_builder, "game_combo"));
 
 		const gchar *game_name = gtk_combo_box_get_active_text(GTK_COMBO_BOX(game_combo));
 		guint32 gameid = gfire_game_id(game_name);
@@ -394,10 +212,10 @@ static void gfire_server_browser_add_favorite_server_cb(gfire_data *p_gfire, Gtk
 	gtk_widget_hide(add_favorite_dialog);
 }
 
-static void gfire_server_browser_remove_favorite_server_cb(gfire_data *p_gfire, GtkWidget *p_sender)
+static void gfire_server_browser_remove_fav_server_cb(gfire_data *p_gfire, GtkWidget *p_sender)
 {
-	GtkWidget *game_combo = GTK_WIDGET(gtk_builder_get_object(server_browser_builder, "game_combo"));
-	GtkWidget *servers_tree_view = GTK_WIDGET(gtk_builder_get_object(server_browser_builder, "servers_tree_view"));
+	GtkWidget *game_combo = GTK_WIDGET(gtk_builder_get_object(gfire_gtk_builder, "game_combo"));
+	GtkWidget *servers_tree_view = GTK_WIDGET(gtk_builder_get_object(gfire_gtk_builder, "servers_tree_view"));
 
 	gchar *game_name = gtk_combo_box_get_active_text(GTK_COMBO_BOX(game_combo));
 	guint32 gameid = gfire_game_id(game_name);
@@ -458,5 +276,177 @@ static void gfire_server_browser_remove_favorite_server_cb(gfire_data *p_gfire, 
 	}
 	else
 		purple_debug_error("gfire", "Couldn't get selected favorite server to remove.\n");
+}
+
+static void gfire_server_browser_request_serverlist_cb(gfire_data *p_gfire, GtkWidget *p_sender)
+{
+	if(!p_gfire)
+		return;
+
+	GtkWidget *game_combo = GTK_WIDGET(gtk_builder_get_object(gfire_gtk_builder, "game_combo"));
+	GtkWidget *list_store = GTK_WIDGET(gtk_builder_get_object(gfire_gtk_builder, "servers_list_store"));
+
+	gtk_list_store_clear(GTK_LIST_STORE(list_store));
+
+	gchar *game_name = gtk_combo_box_get_active_text(GTK_COMBO_BOX(game_combo));
+	guint32 gameid = gfire_game_id(game_name);
+	g_free(game_name);
+
+	if(gameid != 0)
+	{
+		// Set requested gameid
+		gfire_server_browser_proto_set_curr_gameid(gameid);
+
+		// Add parent rows (also clears tree store)
+		gfire_server_browser_add_parent_rows();
+
+		// Show fav serverlist (local)
+		gfire_server_browser_proto_fav_serverlist_request(gameid);
+
+		// Make serverlist requests to Xfire
+		guint16 packet_len = 0;
+
+		// Request serverlist
+		packet_len = gfire_server_browser_proto_create_serverlist_request(gameid);
+		if(packet_len > 0)
+			gfire_send(gfire_get_connection(p_gfire), packet_len);
+
+		// Request friends' fav serverlist
+		packet_len = gfire_server_browser_proto_create_friends_fav_serverlist_request(gameid);
+		if(packet_len > 0)
+			gfire_send(gfire_get_connection(p_gfire), packet_len);
+	}
+}
+
+static void gfire_server_browser_connect_cb(gfire_data *p_gfire, GtkWidget *p_sender)
+{
+	if(!p_gfire)
+		return;
+
+	GtkWidget *game_combo = GTK_WIDGET(gtk_builder_get_object(gfire_gtk_builder, "game_combo"));
+	GtkWidget *servers_tree_view = GTK_WIDGET(gtk_builder_get_object(gfire_gtk_builder, "servers_tree_view"));
+
+	GtkTreeSelection *selection;
+	GtkTreeModel *model;
+	GtkTreeIter iter;
+
+	gchar *game_name = gtk_combo_box_get_active_text(GTK_COMBO_BOX(game_combo));
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(servers_tree_view));
+	model = gtk_tree_view_get_model(GTK_TREE_VIEW(servers_tree_view));
+
+	// Get selected server
+	if(gtk_tree_selection_get_selected(selection, &model, &iter))
+	{
+		gchar *selected_server;
+		gtk_tree_model_get(model, &iter, 4, &selected_server, -1);
+
+		if(!selected_server)
+			return;
+
+		gchar **server_split;
+		server_split = g_strsplit(selected_server, ":", -1);
+		g_free(selected_server);
+
+		if(!server_split)
+			return;
+
+		// Put server in struct
+		gfire_game_data game;
+
+		game.id = gfire_game_id(game_name);
+		gfire_game_data_ip_from_str(&game, server_split[0]);
+		game.port = atoi(server_split[1]);
+
+		g_free(game_name);
+		g_strfreev(server_split);
+
+		// Finally join server
+		gfire_join_game(&game);
+	}
+	else
+	{
+		g_free(game_name);
+		purple_debug_error("gfire", "Couldn't get selected server to join.\n");
+	}
+}
+
+static void gfire_server_browser_close(gfire_data *p_gfire, GtkWidget *p_sender)
+{
+	if(!p_gfire)
+		return;
+
+	if(gfire_gtk_builder)
+	{
+		// Destroy window
+		GtkWidget *server_browser_window = GTK_WIDGET(gtk_builder_get_object(gfire_gtk_builder, "server_browser_window"));
+		gtk_widget_destroy(server_browser_window);
+
+		// Free builder
+		g_object_unref(G_OBJECT(gfire_gtk_builder));
+		gfire_gtk_builder = NULL;
+	}
+}
+
+static gboolean gfire_server_browser_add_configured_games_cb(const gfire_game_configuration *p_gconf, GtkWidget *p_game_combo)
+{
+	const gfire_game *game = gfire_game_by_id(p_gconf->game_id);
+	if(game)
+		gtk_combo_box_append_text(GTK_COMBO_BOX(p_game_combo), game->name);
+
+	return FALSE;
+}
+
+void gfire_server_browser_show(PurplePluginAction *p_action)
+{
+	PurpleConnection *gc = (PurpleConnection *)p_action->context;
+	gfire_data *gfire = (gfire_data *)gc->proto_data;
+
+	if(!gc || !gfire)
+		return;
+
+	// Only one server browser at a time
+	if(gfire_gtk_builder)
+		return;
+
+	gfire_gtk_builder = gtk_builder_new();
+
+	if(!gfire_gtk_builder)
+	{
+		purple_debug_error("gfire", "Couldn't build game manager interface.\n");
+		return;
+	}
+
+	gtk_builder_set_translation_domain(gfire_gtk_builder, GETTEXT_PACKAGE);
+
+	gchar *builder_file = g_build_filename(DATADIR, "purple", "gfire", "servers.glade", NULL);
+	gtk_builder_add_from_file(gfire_gtk_builder, builder_file, NULL);
+	g_free(builder_file);
+
+	GtkWidget *server_browser_window = GTK_WIDGET(gtk_builder_get_object(gfire_gtk_builder, "server_browser_window"));
+	GtkWidget *tree_view = GTK_WIDGET(gtk_builder_get_object(gfire_gtk_builder, "servers_tree_view"));
+	GtkWidget *refresh_button = GTK_WIDGET(gtk_builder_get_object(gfire_gtk_builder, "refresh_button"));
+	GtkWidget *connect_button = GTK_WIDGET(gtk_builder_get_object(gfire_gtk_builder, "connect_button"));
+	GtkWidget *add_fav_button = GTK_WIDGET(gtk_builder_get_object(gfire_gtk_builder, "add_favorite_button"));
+	GtkWidget *remove_fav_button = GTK_WIDGET(gtk_builder_get_object(gfire_gtk_builder, "remove_favorite_button"));
+	GtkWidget *quit_button = GTK_WIDGET(gtk_builder_get_object(gfire_gtk_builder, "quit_button"));
+	GtkWidget *game_combo = GTK_WIDGET(gtk_builder_get_object(gfire_gtk_builder, "game_combo"));
+
+	g_signal_connect_swapped(server_browser_window, "destroy", G_CALLBACK(gfire_server_browser_close), gfire);
+	g_signal_connect_swapped(quit_button, "clicked", G_CALLBACK(gfire_server_browser_close), gfire);
+
+	g_signal_connect_swapped(refresh_button, "clicked", G_CALLBACK(gfire_server_browser_request_serverlist_cb), gfire);
+	g_signal_connect_swapped(connect_button, "clicked", G_CALLBACK(gfire_server_browser_connect_cb), gfire);
+	g_signal_connect_swapped(add_fav_button, "clicked", G_CALLBACK(gfire_server_browser_add_fav_server_cb), gfire);
+	g_signal_connect_swapped(remove_fav_button, "clicked", G_CALLBACK(gfire_server_browser_remove_fav_server_cb), gfire);
+
+	// Connect too when user double clicks on a server
+	g_signal_connect_swapped(tree_view, "row-activated", G_CALLBACK(gfire_server_browser_connect_cb), gfire);
+
+	// Add configured games & initialize tree store
+	gfire_game_config_foreach(G_CALLBACK(gfire_server_browser_add_configured_games_cb), game_combo);
+	server_browser_tree_store = GTK_TREE_STORE(gtk_builder_get_object(gfire_gtk_builder, "servers_list_tree_store"));
+
+	// Show window
+	gtk_widget_show_all(server_browser_window);
 }
 #endif // HAVE_GTK

@@ -30,9 +30,6 @@
 
 #ifdef HAVE_GTK
 void gfire_server_browser_show(PurplePluginAction *p_action);
-
-// Tree view handling
-void gfire_server_browser_add_parent_rows();
 void gfire_server_browser_add_server(gfire_server_browser_server_info *p_server);
 #endif // HAVE_GTK
 
