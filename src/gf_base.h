@@ -109,7 +109,7 @@
 #define GFIRE_DEFAULT_GROUP_NAME "Xfire"
 #define GFIRE_FRIENDS_OF_FRIENDS_GROUP_NAME _("Xfire - Friends of Friends playing games")
 #define GFIRE_CLAN_GROUP_FORMATTING "%s [%s]" // long name, short name
-#define GFIRE_GAMES_XML_URL "http://gfireproject.org/files/gfire_games.xml"
+#define GFIRE_GAMES_XML_URL "http://gfireproject.org/files/gfire_games_v2.xml"
 #define GFIRE_CURRENT_VERSION_XML_URL "http://gfireproject.org/files/gfire_version.xml"
 #define XFIRE_HEADER_LEN 5
 #define XFIRE_USERID_LEN 4
