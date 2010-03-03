@@ -39,8 +39,11 @@ struct _gfire_server_detector
 	guint32 gameid;
 	guint32 pid;
 
-	guint32 ip;
-	guint16 port;
+	GList *tcp_servers;
+	GList *local_udp_connections;
+	GList *udp_servers;
+
+	GList *excluded_ports;
 
 	GCallback server_callback;
 
@@ -63,6 +66,10 @@ void gfire_server_detector_free(gfire_server_detector *p_detector);
 // Starting/stopping (OS dependent)
 void gfire_server_detector_start(gfire_server_detector *p_detector, guint32 p_gameid, guint32 p_pid);
 void gfire_server_detector_stop(gfire_server_detector *p_detector);
+
+// Server handling
+void gfire_server_detection_remove_invalid_servers(gfire_server_detector *p_detection, const GList *p_local_ips);
+const gfire_server *gfire_server_detection_guess_server(gfire_server_detector *p_detection);
 
 // Status checks
 gboolean gfire_server_detector_running(const gfire_server_detector *p_detector);

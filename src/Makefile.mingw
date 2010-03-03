@@ -21,7 +21,7 @@ WIN32_CFLAGS = \
 	-I${WIN32_DEV_DIR}/gtk_2_0/lib/glib-2.0/include \
 	-I${WIN32_DEV_DIR}/gtk_2_0/include/atk-1.0 \
 	-I${WIN32_DEV_DIR}/gtk_2_0/include/cairo
-WIN32_LIBS = -L${WIN32_GTK_DIR}/lib -L${WIN32_PIDGIN_DIR}/libpurple -lgobject-2.0 -lglib-2.0 -lgthread-2.0 -lws2_32 -lintl -lgdk-win32-2.0 -lgtk-win32-2.0 -lpurple -lpsapi -liphlpapi
+WIN32_LIBS = -L${WIN32_GTK_DIR}/lib -L${WIN32_PIDGIN_DIR}/libpurple -lgobject-2.0 -lglib-2.0 -lgthread-2.0 -lws2_32 -lintl -lgdk-win32-2.0 -lgtk-win32-2.0 -lpurple -lpsapi
 GFIRE_SRC_DIR = .
 
 CFLAGS = -O2 -pipe -mno-cygwin -Wall -I. -I${GFIRE_DIR} -I${GFIRE_SRC_DIR} ${WIN32_CFLAGS} ${LIBPURPLE_CFLAGS}

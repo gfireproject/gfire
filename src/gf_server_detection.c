@@ -49,3 +49,144 @@ gboolean gfire_server_detector_finished(const gfire_server_detector *p_detector)
 	g_mutex_unlock(p_detector->mutex);
 	return ret;
 }
+
+void gfire_server_detection_remove_invalid_servers(gfire_server_detector *p_detection, const GList *p_local_ips)
+{
+	// Check detected TCP servers
+	GList *cur = p_detection->tcp_servers;
+	while(cur)
+	{
+		gboolean deleted = FALSE;
+		gfire_server *server = (gfire_server*)cur->data;
+
+		// Check against local IPs
+		const GList *lip = p_local_ips;
+		while(lip)
+		{
+			if(server->ip == *((guint32*)lip->data))
+			{
+				deleted = TRUE;
+				GList *to_delete = cur;
+				cur = g_list_next(cur);
+
+				g_free(server);
+				p_detection->tcp_servers = g_list_delete_link(p_detection->tcp_servers, to_delete);
+
+				break;
+			}
+			lip = g_list_next(lip);
+		}
+		if(deleted)
+			continue;
+
+		// Check against invalid ports
+		GList *port = p_detection->excluded_ports;
+		while(port)
+		{
+			if(server->port == *((guint16*)port->data))
+			{
+				deleted = TRUE;
+				GList *to_delete = cur;
+				cur = g_list_next(cur);
+
+				g_free(server);
+				p_detection->tcp_servers = g_list_delete_link(p_detection->tcp_servers, to_delete);
+
+				break;
+			}
+			port = g_list_next(port);
+		}
+		if(deleted)
+			continue;
+
+		cur = g_list_next(cur);
+	}
+
+	// Check detected UDP servers
+	cur = p_detection->udp_servers;
+	while(cur)
+	{
+		gboolean deleted = FALSE;
+		gfire_server *server = (gfire_server*)cur->data;
+
+		// Check against local IPs
+		const GList *lip = p_local_ips;
+		while(lip)
+		{
+			if(server->ip == *((guint32*)lip->data))
+			{
+				deleted = TRUE;
+				GList *to_delete = cur;
+				cur = g_list_next(cur);
+
+				g_free(server);
+				p_detection->udp_servers = g_list_delete_link(p_detection->udp_servers, to_delete);
+
+				break;
+			}
+			lip = g_list_next(lip);
+		}
+		if(deleted)
+			continue;
+
+		// Check against invalid ports
+		GList *port = p_detection->excluded_ports;
+		while(port)
+		{
+			if(server->port == *((guint16*)port->data))
+			{
+				deleted = TRUE;
+				GList *to_delete = cur;
+				cur = g_list_next(cur);
+
+				g_free(server);
+				p_detection->udp_servers = g_list_delete_link(p_detection->udp_servers, to_delete);
+
+				break;
+			}
+			port = g_list_next(port);
+		}
+		if(deleted)
+			continue;
+
+		cur = g_list_next(cur);
+	}
+}
+
+// Sorts from highest to lowest priority
+static gint gfire_server_cmp(const gfire_server *p_server1, const gfire_server *p_server2)
+{
+	if(p_server1->priority < p_server2->priority)
+		return 1;
+	else if(p_server1->priority == p_server2->priority)
+		return 0;
+	else
+		return -1;
+}
+
+const gfire_server *gfire_server_detection_guess_server(gfire_server_detector *p_detection)
+{
+	// Get best TCP server
+	gfire_server *tcp = NULL;
+	if(p_detection->tcp_servers)
+	{
+		p_detection->tcp_servers = g_list_sort(p_detection->tcp_servers, (GCompareFunc)gfire_server_cmp);
+		tcp = p_detection->tcp_servers->data;
+	}
+
+	// Get best UDP server
+	gfire_server *udp = NULL;
+	if(p_detection->udp_servers)
+	{
+		p_detection->udp_servers = g_list_sort(p_detection->udp_servers, (GCompareFunc)gfire_server_cmp);
+		udp = p_detection->udp_servers->data;
+	}
+
+	if(!tcp)
+		return udp;
+	else if(!udp)
+		return tcp;
+	else
+		// Return TCP only if it has better priority than UDP (most servers use UDP anyway)
+		return (tcp->priority > udp->priority) ? tcp : udp;
+}

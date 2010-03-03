@@ -24,6 +24,8 @@
 
 #ifdef _WIN32
 #	include <io.h>
+#	include <share.h>
+#	include <sys/stat.h>
 #else
 #	define _LARGEFILE64_SOURCE
 #	include <fcntl.h>
@@ -111,8 +113,8 @@ static void gfire_filetransfer_request_accepted(PurpleXfer *p_xfer)
 	gfire_filetransfer *ft = p_xfer->data;
 
 #ifdef _WIN32
-	if(_s_open_s(&ft->file, purple_xfer_get_local_filename(p_xfer), _O_CREAT | _O_WRONLY | _O_TRUNC | _O_BINARY,
-				 _SH_DENYWR, _S_IREAD | _S_IWRITE) != 0)
+	if((ft->file = _sopen(purple_xfer_get_local_filename(p_xfer), _O_CREAT | _O_WRONLY | _O_TRUNC | _O_BINARY,
+						  _SH_DENYWR, _S_IREAD | _S_IWRITE)) == -1)
 #else
 	if((ft->file = open64(purple_xfer_get_local_filename(p_xfer), O_CREAT | O_WRONLY | O_TRUNC, S_IREAD | S_IWRITE)) == -1)
 #endif // _WIN32
@@ -186,8 +188,8 @@ gfire_filetransfer *gfire_filetransfer_create(gfire_p2p_session *p_session, Purp
 	if(purple_xfer_get_type(p_xfer) == PURPLE_XFER_SEND)
 	{
 #ifdef _WIN32
-		if(_s_open_s(&ret->file, purple_xfer_get_local_filename(p_xfer), _O_RDONLY | _O_BINARY,
-					 _SH_DENYWR, _S_IREAD | _S_IWRITE) != 0)
+		if((ret->file = _sopen(purple_xfer_get_local_filename(p_xfer), _O_RDONLY | _O_BINARY,
+							   _SH_DENYWR, _S_IREAD | _S_IWRITE)) == -1)
 #else
 		if((ret->file = open64(purple_xfer_get_local_filename(p_xfer), O_RDONLY)) == -1)
 #endif // _WIN32

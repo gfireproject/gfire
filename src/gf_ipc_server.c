@@ -306,7 +306,7 @@ static void gfire_ipc_server_input_cb(gpointer p_data, gint p_fd, PurpleInputCon
 	// Receive data
 	struct sockaddr_in addr;
 	socklen_t addrlen = sizeof(struct sockaddr_in);
-	int length = recvfrom(gfire_ipc->socket, gfire_ipc->buffer, GFIRE_IPC_BUFFER_LEN, 0,
+	int length = recvfrom(gfire_ipc->socket, (gchar*)gfire_ipc->buffer, GFIRE_IPC_BUFFER_LEN, 0,
 						  (struct sockaddr*)&addr, &addrlen);
 
 	// Parse IPC header /////////

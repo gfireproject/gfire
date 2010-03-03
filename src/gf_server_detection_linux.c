@@ -28,50 +28,9 @@
 #include <dirent.h>
 #include <ifaddrs.h>
 
-typedef struct _gfire_server_detection_linux
+static void gfire_server_detection_netstat(gfire_server_detector *p_detection)
 {
-	gfire_server_detector *detector;
-
-	GList *tcp_servers;
-	GList *local_udp_connections;
-	GList *udp_servers;
-
-	GList *excluded_ports;
-
-	GThread *thread;
-} gfire_server_detection_linux;
-
-static gfire_server_detection_linux *gfire_server_detection_linux_create(gfire_server_detector *p_detector, GList *p_ports)
-{
-	if(!p_detector)
-		return NULL;
-
-	gfire_server_detection_linux *ret = g_malloc0(sizeof(gfire_server_detection_linux));
-	if(!ret)
-		return NULL;
-
-	ret->detector = p_detector;
-	ret->excluded_ports = p_ports;
-
-	return ret;
-}
-
-static void gfire_server_detection_linux_free(gfire_server_detection_linux *p_detection)
-{
-	if(!p_detection)
-		return;
-
-	gfire_list_clear(p_detection->tcp_servers);
-	gfire_list_clear(p_detection->local_udp_connections);
-	gfire_list_clear(p_detection->udp_servers);
-	gfire_list_clear(p_detection->excluded_ports);
-
-	g_free(p_detection);
-}
-
-static void gfire_server_detection_netstat(gfire_server_detection_linux *p_detection)
-{
-	gchar *fd_dir_path = g_strdup_printf("/proc/%u/fd", p_detection->detector->pid);
+	gchar *fd_dir_path = g_strdup_printf("/proc/%u/fd", p_detection->pid);
 	DIR *fd_dir = opendir(fd_dir_path);
 
 	// No such dir, netstat won't work
@@ -230,7 +189,7 @@ static void gfire_server_detection_netstat(gfire_server_detection_linux *p_detec
 	gfire_list_clear(inodes);
 }
 
-static void gfire_server_detection_tcpdump(gfire_server_detection_linux *p_detection, const GList *p_local_ips)
+static void gfire_server_detection_tcpdump(gfire_server_detector *p_detection, const GList *p_local_ips)
 {
 	gchar tcp_output[8192];
 
@@ -247,15 +206,15 @@ static void gfire_server_detection_tcpdump(gfire_server_detection_linux *p_detec
 		if(fgets(tcp_output, 8192, command_pipe))
 		{
 			// Check if we should abort
-			g_mutex_lock(p_detection->detector->mutex);
-			if(p_detection->detector->quit)
+			g_mutex_lock(p_detection->mutex);
+			if(p_detection->quit)
 			{
-				g_mutex_unlock(p_detection->detector->mutex);
+				g_mutex_unlock(p_detection->mutex);
 				pclose(command_pipe);
 				return;
 			}
 			else
-				g_mutex_unlock(p_detection->detector->mutex);
+				g_mutex_unlock(p_detection->mutex);
 
 			guint16 sip1[4];
 			guint16 port1;
@@ -358,148 +317,6 @@ static void gfire_server_detection_tcpdump(gfire_server_detection_linux *p_detec
 	pclose(command_pipe);
 }
 
-static void gfire_server_detection_remove_invalid_servers(gfire_server_detection_linux *p_detection,
-														  const GList *p_local_ips)
-{
-	// Check detected TCP servers
-	GList *cur = p_detection->tcp_servers;
-	while(cur)
-	{
-		gboolean deleted = FALSE;
-		gfire_server *server = (gfire_server*)cur->data;
-
-		// Check against local IPs
-		const GList *lip = p_local_ips;
-		while(lip)
-		{
-			if(server->ip == *((guint32*)lip->data))
-			{
-				deleted = TRUE;
-				GList *to_delete = cur;
-				cur = g_list_next(cur);
-
-				g_free(server);
-				p_detection->tcp_servers = g_list_delete_link(p_detection->tcp_servers, to_delete);
-
-				break;
-			}
-			lip = g_list_next(lip);
-		}
-		if(deleted)
-			continue;
-
-		// Check against invalid ports
-		GList *port = p_detection->excluded_ports;
-		while(port)
-		{
-			if(server->port == *((guint16*)port->data))
-			{
-				deleted = TRUE;
-				GList *to_delete = cur;
-				cur = g_list_next(cur);
-
-				g_free(server);
-				p_detection->tcp_servers = g_list_delete_link(p_detection->tcp_servers, to_delete);
-
-				break;
-			}
-			port = g_list_next(port);
-		}
-		if(deleted)
-			continue;
-
-		cur = g_list_next(cur);
-	}
-
-	// Check detected UDP servers
-	cur = p_detection->udp_servers;
-	while(cur)
-	{
-		gboolean deleted = FALSE;
-		gfire_server *server = (gfire_server*)cur->data;
-
-		// Check against local IPs
-		const GList *lip = p_local_ips;
-		while(lip)
-		{
-			if(server->ip == *((guint32*)lip->data))
-			{
-				deleted = TRUE;
-				GList *to_delete = cur;
-				cur = g_list_next(cur);
-
-				g_free(server);
-				p_detection->udp_servers = g_list_delete_link(p_detection->udp_servers, to_delete);
-
-				break;
-			}
-			lip = g_list_next(lip);
-		}
-		if(deleted)
-			continue;
-
-		// Check against invalid ports
-		GList *port = p_detection->excluded_ports;
-		while(port)
-		{
-			if(server->port == *((guint16*)port->data))
-			{
-				deleted = TRUE;
-				GList *to_delete = cur;
-				cur = g_list_next(cur);
-
-				g_free(server);
-				p_detection->udp_servers = g_list_delete_link(p_detection->udp_servers, to_delete);
-
-				break;
-			}
-			port = g_list_next(port);
-		}
-		if(deleted)
-			continue;
-
-		cur = g_list_next(cur);
-	}
-}
-
-// Sorts from highest to lowest priority
-static gint gfire_server_cmp(const gfire_server *p_server1, const gfire_server *p_server2)
-{
-	if(p_server1->priority < p_server2->priority)
-		return 1;
-	else if(p_server1->priority == p_server2->priority)
-		return 0;
-	else
-		return -1;
-}
-
-static const gfire_server *gfire_server_detection_guess_server(gfire_server_detection_linux *p_detection)
-{
-	// Get best TCP server
-	gfire_server *tcp = NULL;
-	if(p_detection->tcp_servers)
-	{
-		p_detection->tcp_servers = g_list_sort(p_detection->tcp_servers, (GCompareFunc)gfire_server_cmp);
-		tcp = p_detection->tcp_servers->data;
-	}
-
-	// Get best UDP server
-	gfire_server *udp = NULL;
-	if(p_detection->udp_servers)
-	{
-		p_detection->udp_servers = g_list_sort(p_detection->udp_servers, (GCompareFunc)gfire_server_cmp);
-		udp = p_detection->udp_servers->data;
-	}
-
-	if(!tcp)
-		return udp;
-	else if(!udp)
-		return tcp;
-	else
-		// Return TCP only if it has better priority than UDP (most servers use UDP anyway)
-		return (tcp->priority > udp->priority) ? tcp : udp;
-}
-
 static GList *gfire_server_detection_get_local_ips()
 {
 	struct ifaddrs *if_addresses, *if_addresses_tmp;
@@ -528,25 +345,20 @@ static GList *gfire_server_detection_get_local_ips()
 	return ret;
 }
 
-static void gfire_server_detection_thread(gfire_server_detection_linux *p_detection)
+static void gfire_server_detection_thread(gfire_server_detector *p_detection)
 {
 	GList *local_ips = gfire_server_detection_get_local_ips();
+	const gfire_server *server = NULL;
 
 	// Get all TCP servers and local UDP connections
 	gfire_server_detection_netstat(p_detection);
 
 	// Check if we've been requested to stop already
-	g_mutex_lock(p_detection->detector->mutex);
-	if(p_detection->detector->quit)
-	{
-		p_detection->detector->running = FALSE;
-		g_mutex_unlock(p_detection->detector->mutex);
-		gfire_server_detection_linux_free(p_detection);
-		gfire_list_clear(local_ips);
-		return;
-	}
+	g_mutex_lock(p_detection->mutex);
+	if(p_detection->quit)
+		goto abort;
 	else
-		g_mutex_unlock(p_detection->detector->mutex);
+		g_mutex_unlock(p_detection->mutex);
 
 	// Filter all found TCP servers
 	gfire_server_detection_remove_invalid_servers(p_detection, local_ips);
@@ -555,37 +367,46 @@ static void gfire_server_detection_thread(gfire_server_detection_linux *p_detect
 	gfire_server_detection_tcpdump(p_detection, local_ips);
 
 	// Check if we've been requested to stop already
-	g_mutex_lock(p_detection->detector->mutex);
-	if(p_detection->detector->quit)
-	{
-		p_detection->detector->running = FALSE;
-		g_mutex_unlock(p_detection->detector->mutex);
-		gfire_server_detection_linux_free(p_detection);
-		gfire_list_clear(local_ips);
-		return;
-	}
+	g_mutex_lock(p_detection->mutex);
+	if(p_detection->quit)
+		goto abort;
 	else
-		g_mutex_unlock(p_detection->detector->mutex);
+		g_mutex_unlock(p_detection->mutex);
 
 	// Filter all found TCP & UDP servers
 	gfire_server_detection_remove_invalid_servers(p_detection, local_ips);
 
 	// Get the best IP
-	const gfire_server *server = gfire_server_detection_guess_server(p_detection);
+	server = gfire_server_detection_guess_server(p_detection);
 	// Tell the games detection about the server if there is one and it's priority isn't 0
 	if(server /*&& server->priority*/)
-		((void(*)(guint32,guint16))p_detection->detector->server_callback)(server->ip, server->port);
+		((void(*)(guint32,guint16))p_detection->server_callback)(server->ip, server->port);
 	else
 		// Tell the games detection there is no server
-		((void(*)(guint32,guint16))p_detection->detector->server_callback)(0, 0);
+		((void(*)(guint32,guint16))p_detection->server_callback)(0, 0);
 
 	// Finalize the thread
-	g_mutex_lock(p_detection->detector->mutex);
-	p_detection->detector->running = FALSE;
-	p_detection->detector->finished = TRUE;
-	g_mutex_unlock(p_detection->detector->mutex);
-	gfire_server_detection_linux_free(p_detection);
+	g_mutex_lock(p_detection->mutex);
+	p_detection->running = FALSE;
+	p_detection->finished = TRUE;
+
+	goto cleanup;
+
+abort:
+	p_detection->running = FALSE;
+
+cleanup:
 	gfire_list_clear(local_ips);
+	gfire_list_clear(p_detection->excluded_ports);
+	p_detection->excluded_ports = NULL;
+	gfire_list_clear(p_detection->local_udp_connections);
+	p_detection->local_udp_connections = NULL;
+	gfire_list_clear(p_detection->tcp_servers);
+	p_detection->tcp_servers = NULL;
+	gfire_list_clear(p_detection->udp_servers);
+	p_detection->udp_servers = NULL;
+
+	g_mutex_unlock(p_detection->mutex);
 }
 
 void gfire_server_detector_start(gfire_server_detector *p_detector, guint32 p_gameid, guint32 p_pid)
@@ -603,15 +424,7 @@ void gfire_server_detector_start(gfire_server_detector *p_detector, guint32 p_ga
 
 	// Get all infos needed for detection
 	const gfire_game *game = gfire_game_by_id(p_gameid);
-
-	gfire_server_detection_linux *detection_data = gfire_server_detection_linux_create(p_detector,
-																					   gfire_game_excluded_ports_copy(game));
-	if(!detection_data)
-	{
-		gfire_server_detection_linux_free(detection_data);
-		return;
-	}
-	p_detector->os_data = detection_data;
+	p_detector->excluded_ports = gfire_game_excluded_ports_copy(game);
 
 	p_detector->pid = p_pid;
 
@@ -620,7 +433,7 @@ void gfire_server_detector_start(gfire_server_detector *p_detector, guint32 p_ga
 	p_detector->running = TRUE;
 
 	// Create server detection thread
-	detection_data->thread = g_thread_create((GThreadFunc)gfire_server_detection_thread, detection_data, TRUE, NULL);
+	p_detector->os_data = g_thread_create((GThreadFunc)gfire_server_detection_thread, p_detector, TRUE, NULL);
 }
 
 void gfire_server_detector_stop(gfire_server_detector *p_detector)
@@ -636,12 +449,10 @@ void gfire_server_detector_stop(gfire_server_detector *p_detector)
 		return;
 	}
 
-	gfire_server_detection_linux *data = (gfire_server_detection_linux*)p_detector->os_data;
-
 	// Tell the thread to terminate
 	p_detector->quit = TRUE;
 	g_mutex_unlock(p_detector->mutex);
 
 	// Wait until the thread terminates
-	g_thread_join(data->thread);
+	g_thread_join((GThread*)p_detector->os_data);
 }
