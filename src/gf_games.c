@@ -713,6 +713,27 @@ static xmlnode *gfire_game_configuration_to_xmlnode(const gfire_game_configurati
 	return ret;
 }
 
+static gint gfire_game_configuration_compare(const gfire_game_configuration *p_a, const gfire_game_configuration *p_b)
+{
+	const gfire_game *game_a = gfire_game_by_id(p_a->game_id);
+	const gfire_game *game_b = gfire_game_by_id(p_b->game_id);
+
+	if(!game_a)
+		return 1;
+	else if(!game_b)
+		return -1;
+	else
+		return g_strcmp0(game_a->name, game_b->name);
+}
+
+static void gfire_game_config_sort()
+{
+	if(!gfire_games_config)
+		return;
+
+	gfire_games_config = g_list_sort(gfire_games_config, (GCompareFunc)gfire_game_configuration_compare);
+}
+
 gboolean gfire_game_load_config_xml(gboolean p_force)
 {
 	if(!p_force && gfire_games_config)
@@ -761,6 +782,8 @@ gboolean gfire_game_load_config_xml(gboolean p_force)
 
 		game_node = xmlnode_get_next_twin(game_node);
 	}
+
+	gfire_game_config_sort();
 
 	xmlnode_free(node);
 
@@ -1084,6 +1107,7 @@ static void gfire_game_manager_add_cb(GtkBuilder *p_builder, GtkWidget *p_button
 																			  game_launch, game_prefix);
 
 			gfire_games_config = g_list_append(gfire_games_config, gconf);
+			gfire_game_config_sort();
 			gfire_game_save_config_xml();
 
 			purple_notify_message(NULL, PURPLE_NOTIFY_MSG_INFO, _("Manage Games: game added"),
