@@ -207,8 +207,14 @@ gchar *gfire_game_get_version_str()
 	time_t version = gfire_games_version;
 	struct tm *time_data = localtime(&version);
 
-	gchar *ret = g_malloc(100 * sizeof(gchar));
-	strftime(ret, 100, "%d %B %Y", time_data);
+	gchar *local_str = g_malloc(100 * sizeof(gchar));
+	strftime(local_str, 100, "%d %B %Y", time_data);
+
+	gchar *ret = g_locale_to_utf8(local_str, -1, NULL, NULL, NULL);
+	g_free(local_str);
+
+	if(!ret)
+		return g_strdup(_("Unknown"));
 
 	return ret;
 }

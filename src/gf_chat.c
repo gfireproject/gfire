@@ -528,7 +528,7 @@ void gfire_chat_send(gfire_chat *p_chat, const gchar *p_msg)
 	gchar *unescaped = purple_unescape_html(no_html);
 	g_free(no_html);
 
-	guint16 len = gfire_chat_proto_create_message(p_chat->chat_id, p_msg);
+	guint16 len = gfire_chat_proto_create_message(p_chat->chat_id, unescaped);
 	if(len > 0) gfire_send(gfire_get_connection(p_chat->owner), len);
 
 	g_free(unescaped);
