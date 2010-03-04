@@ -31,21 +31,17 @@
 
 #include "gf_game_detection.h"
 
-// Result must be freed when no longer used, using g_free()
-gchar *gfire_game_detection_winepath(const gchar *p_wine_prefix, const gchar *p_win_path)
+static const gchar *get_winepath(const gchar *p_wine_prefix, const gchar *p_command)
 {
-	if(!p_win_path)
-		return NULL;
+	static gchar cmd_out[PATH_MAX];
 
-	FILE *winepath;
-	gchar *cmd, cmd_out[PATH_MAX];
-
+	gchar *cmd = NULL;
 	if(!p_wine_prefix)
-		cmd = g_strdup_printf("winepath -u '%s'", p_win_path);
+		cmd = g_strdup_printf("winepath -u '%s'", p_command);
 	else
-		cmd = g_strdup_printf("WINEPREFIX='%s' winepath -u '%s'", p_wine_prefix, p_win_path);
+		cmd = g_strdup_printf("WINEPREFIX='%s' winepath -u '%s'", p_wine_prefix, p_command);
 
-	winepath = popen(cmd, "r");
+	FILE *winepath = popen(cmd, "r");
 	g_free(cmd);
 
 	if(!winepath)
@@ -57,10 +53,115 @@ gchar *gfire_game_detection_winepath(const gchar *p_wine_prefix, const gchar *p_
 		return NULL;
 	}
 
+
 	pclose(winepath);
 
 	// Remove trailing spaces and return
-	return g_strdup(g_strstrip(cmd_out));
+	return g_strstrip(cmd_out);
+}
+
+static const gchar *get_proc_exe(const gchar *p_proc_path)
+{
+	static gchar exe[PATH_MAX];
+
+	gchar *proc_exe = g_strdup_printf("%s/exe", p_proc_path);
+
+	int len = readlink(proc_exe, exe, PATH_MAX - 1);
+	if(len == -1)
+	{
+		g_free(proc_exe);
+		return NULL;
+	}
+	g_free(proc_exe);
+
+	exe[len] = 0;
+	return exe;
+}
+
+static void get_proc_cmdline(gchar **p_command, gchar **p_args, const gchar *p_proc_path)
+{
+	// Get process cmdline
+	gchar *proc_cmdline = g_strdup_printf("%s/cmdline", p_proc_path);
+
+	FILE *fcmdline = fopen(proc_cmdline, "r");
+	g_free(proc_cmdline);
+
+	if(!fcmdline)
+		return;
+
+	gchar *line = NULL;
+	size_t line_len = 0;
+	gboolean first = TRUE;
+	GString *arg_str = g_string_new("");
+
+	while(getdelim(&line, &line_len, 0, fcmdline) != -1)
+	{
+		if(!first)
+			g_string_append_printf(arg_str, "%s ", line);
+		else
+		{
+			first = FALSE;
+			*p_command = g_strdup(line);
+		}
+	}
+	g_free(line);
+
+	fclose(fcmdline);
+
+	*p_args = g_strstrip(g_string_free(arg_str, FALSE));
+}
+
+static GHashTable *get_environ(const gchar *p_proc_path)
+{
+	// Get process environment
+	gchar *proc_environ = g_strdup_printf("%s/environ", p_proc_path);
+
+	FILE *fenviron = fopen(proc_environ, "r");
+	g_free(proc_environ);
+
+	if(!fenviron)
+		return NULL;
+
+	GHashTable *ret = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
+
+	gchar *line = NULL;
+	size_t line_len = 0;
+
+	while(getdelim(&line, &line_len, 0, fenviron) != -1)
+	{
+		const gchar *equal = strchr(line, '=');
+		if(!equal)
+			continue;
+
+		g_hash_table_insert(ret, g_strndup(line, equal - line), g_strdup(equal + 1));
+	}
+	fclose(fenviron);
+	g_free(line);
+
+	return ret;
+}
+
+static const gchar *get_proc_cwd(GHashTable *p_environ, const gchar *p_proc_path)
+{
+	static gchar cwd[PATH_MAX];
+
+	const gchar *env_cwd = g_hash_table_lookup(p_environ, "PWD");
+	if(env_cwd)
+	{
+		strncpy(cwd, env_cwd, PATH_MAX);
+		return cwd;
+	}
+
+	gchar *proc_cwd = g_strdup_printf("%s/cwd", p_proc_path);
+
+	if(readlink(proc_cwd, cwd, PATH_MAX) == -1)
+	{
+		g_free(proc_cwd);
+		return NULL;
+	}
+
+	g_free(proc_cwd);
+	return cwd;
 }
 
 void gfire_process_list_update(gfire_process_list *p_list)
@@ -78,192 +179,147 @@ void gfire_process_list_update(gfire_process_list *p_list)
 
 	while((proc_dirent = readdir(proc)))
 	{
-		gchar *process_name = NULL;
-		gchar *process_exe = NULL;
-		gchar *process_args = NULL;
-		gchar *process_wine_prefix = NULL;
+		// Check if we got a valid process dir
+		gboolean dir_valid = TRUE;
+		int i = 0;
+		for(; i < strlen(proc_dirent->d_name); i++)
+		{
+			if(!g_ascii_isdigit(proc_dirent->d_name[i]))
+			{
+				dir_valid = FALSE;
+				break;
+			}
+		}
+		if(!dir_valid)
+			continue;
 
-		// Get directory mode
-		struct stat proc_dir_mode;
 		gchar *proc_path = g_strdup_printf("/proc/%s", proc_dirent->d_name);
 
-		if(stat(proc_path, &proc_dir_mode) == -1)
+		// Check if it is a directory and owned by the current user
+		struct stat process_stat;
+		if(stat(proc_path, &process_stat) == -1)
 		{
 			g_free(proc_path);
 			continue;
 		}
 
-		g_free(proc_path);
-
 		// Don't check current process if not owned
-		if(geteuid() != proc_dir_mode.st_uid || !S_ISDIR(proc_dir_mode.st_mode))
+		if(geteuid() != process_stat.st_uid || !S_ISDIR(process_stat.st_mode))
+		{
+			g_free(proc_path);
 			continue;
+		}
 
 		// Get process id
 		guint32 process_id;
-		gchar *process_id_tmp = proc_dirent->d_name;
-
-		while(*process_id_tmp != 0)
-		{
-			if(!g_ascii_isdigit(*process_id_tmp))
-				break;
-
-			process_id_tmp++;
-		}
-
-		if(*process_id_tmp != 0)
-			continue;
-
-		process_id = (guint32 )atoi(proc_dirent->d_name);
+		sscanf(proc_dirent->d_name, "%u", &process_id);
 
 		// Get process exe
-		gchar proc_exe[PATH_MAX];
-		gint proc_exe_len = 0;
-		gchar *proc_exe_path = g_strdup_printf("/proc/%u/exe", process_id);
-
-		proc_exe_len = readlink(proc_exe_path, proc_exe, PATH_MAX);
-		if(proc_exe_len == -1)
+		const gchar *process_exe = get_proc_exe(proc_path);
+		if(!process_exe)
 		{
-			g_free(proc_exe_path);
+			g_free(proc_path);
 			continue;
 		}
 
-		g_free(proc_exe_path);
+		// Get process' command line
+		gchar *process_cmd = NULL;
+		gchar *process_args = NULL;
+		get_proc_cmdline(&process_cmd, &process_args, proc_path);
 
-		proc_exe[proc_exe_len] = 0;
-		process_exe = g_strdup(proc_exe);
-
-		// Get process cmdline
-		FILE *proc_cmdline;
-		gchar *proc_cmdline_path = g_strdup_printf("/proc/%u/cmdline", process_id);
-
-		proc_cmdline = fopen(proc_cmdline_path, "r");
-		if(!proc_cmdline)
+		gchar *process_real_exe = NULL;
+		// Different behaviour for Wine processes
+		if(strstr(process_exe, "wine-preloader"))
 		{
-			g_free(process_exe);
-			g_free(proc_cmdline_path);
-			continue;
-		}
-
-		g_free(proc_cmdline_path);
-
-		gchar *cmdline_current_arg = NULL;
-		size_t proc_cmdline_size;
-		gint i = 0;
-
-		// Get process cmd & args
-		gchar *proc_cmd = NULL;
-		GString *current_arg_new = NULL;
-		current_arg_new = g_string_new("");
-
-		while(getdelim(&cmdline_current_arg, &proc_cmdline_size, 0, proc_cmdline) != -1)
-		{
-			if(i == 0)
-			{
-				proc_cmd = g_strdup(cmdline_current_arg);
-				i = -1;
-			}
-			else
-				g_string_append_printf(current_arg_new, "%s ", cmdline_current_arg);
-		}
-
-		g_free(cmdline_current_arg);
-		fclose(proc_cmdline);
-
-		if(!proc_cmd)
-		{
-			g_free(process_exe);
-			g_string_free(current_arg_new, TRUE);
-			continue;
-		}
-
-		process_args = g_string_free(current_arg_new, FALSE);
-		// Remove tons of spaces sometimes present in cmdline
-		g_strstrip(process_args);
-
-		// Different behavious for Wine processes
-		if(!g_strcmp0(process_exe, "/usr/bin/wine-preloader"))
-		{
-			// Get process environ to get wine prefix
-			FILE *proc_environ;
-			gchar *proc_environ_path = g_strdup_printf("/proc/%d/environ", process_id);
-
-			proc_environ = fopen(proc_environ_path, "r");
-			if(!proc_environ)
-			{
-				g_free(process_exe);
-				g_free(process_args);
-				g_free(proc_environ_path);
-				continue;
-			}
-
-			g_free(proc_environ_path);
-
-			gchar *environ_current_value = NULL;
-			size_t proc_environ_size = 0;
-
-			gchar *wine_prefix_test = NULL;
-			while(getdelim(&environ_current_value, &proc_environ_size, 0, proc_environ) != -1)
-			{
-				wine_prefix_test = strstr(environ_current_value, "WINEPREFIX=");
-
-				if(wine_prefix_test != NULL)
-					process_wine_prefix = g_strdup_printf("%s", wine_prefix_test + 11);
-			}
-
-			g_free(wine_prefix_test);
-			fclose(proc_environ);
+			// Get Wine prefix for winepath
+			GHashTable *environ = get_environ(proc_path);
+			const gchar *prefix = NULL;
+			if(environ)
+				prefix = g_hash_table_lookup(environ, "WINEPREFIX");
 
 			// Get process name using winepath
-			process_name = gfire_game_detection_winepath(process_wine_prefix, proc_cmd);
-			g_free(process_wine_prefix);
+			const gchar *real_path = get_winepath(prefix, process_cmd);
 
-			if(!process_name)
+			// Some error occured
+			if(!real_path)
 			{
-				g_free(process_exe);
+				g_hash_table_destroy(environ);
+				g_free(process_cmd);
 				g_free(process_args);
+				g_free(proc_path);
 				continue;
 			}
 
-			// Get path without symlinks
-			gchar *process_name_tmp;
-			process_name_tmp = canonicalize_file_name(process_name);
-			g_free(process_name);
+			// Get the physical path
+			gchar *phys_path = canonicalize_file_name(real_path);
 
-			if(!process_name_tmp)
+			// We might have only the executables name, try with adding the CWD
+			if(!phys_path)
 			{
-				g_free(process_exe);
-				g_free(process_args);
-				continue;
+				const gchar *cwd = get_proc_cwd(environ, proc_path);
+				// Okay, we really can't do anything about it
+				if(!cwd)
+				{
+					g_hash_table_destroy(environ);
+					g_free(process_cmd);
+					g_free(process_args);
+					g_free(proc_path);
+					continue;
+				}
+
+				gchar *full_cmd = g_strdup_printf("%s/%s", cwd, process_cmd);
+				g_free(process_cmd);
+
+				real_path = get_winepath(prefix, full_cmd);
+				g_free(full_cmd);
+				g_hash_table_destroy(environ);
+
+				// Again some error :'(
+				if(!real_path)
+				{
+					g_free(process_args);
+					g_free(proc_path);
+					continue;
+				}
+
+				// Try again
+				phys_path = canonicalize_file_name(real_path);
+
+				// Okay...we lost
+				if(!phys_path)
+				{
+					g_free(process_args);
+					g_free(proc_path);
+					continue;
+				}
+			}
+			else
+			{
+				g_hash_table_destroy(environ);
+				g_free(process_cmd);
 			}
 
-			process_name = process_name_tmp;
+			process_real_exe = phys_path;
 		}
 		else
-			process_name = g_strdup(g_strchomp(proc_exe));
-
-		if(!process_name)
 		{
-			g_free(process_exe);
-			g_free(process_args);
-			continue;
+			g_free(process_cmd);
+			process_real_exe = g_strdup(process_exe);
 		}
 
 		// Add process to list
-		process_info *info = NULL;
-
-		info = gfire_process_info_new(process_name, process_exe, process_id, process_args);
+		process_info *info = gfire_process_info_new(process_real_exe, process_id, process_args);
 		p_list->processes = g_list_append(p_list->processes, info);
 
-		g_free(process_name);
-		g_free(process_exe);
+		g_free(process_real_exe);
 		g_free(process_args);
+		g_free(proc_path);
 	}
 
 	closedir(proc);
 }
 
-GList *gfire_game_detection_get_process_libraries(const guint32 p_pid)
+/*GList *gfire_game_detection_get_process_libraries(const guint32 p_pid)
 {
 	GList *process_libs = NULL;
 
@@ -306,4 +362,4 @@ void gfire_game_detection_process_libraries_clear(GList *p_list)
 
 		p_list = g_list_next(p_list);
 	}
-}
+}*/

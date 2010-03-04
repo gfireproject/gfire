@@ -196,7 +196,7 @@ static gboolean gfire_game_detector_detect_game_dset_cb(const gfire_game *p_game
 
 	// Check if the current detection set matches our environment
 	guint32 pid = gfire_process_list_contains(gfire_detector->process_list, data->gconf->detect_file,
-											  p_dset->required_args, p_dset->invalid_args, NULL);
+											  p_dset->required_args, p_dset->invalid_args/*, NULL*/);
 
 	// VoIP app
 	if(p_game->is_voice)
@@ -913,14 +913,13 @@ void gfire_process_list_free(gfire_process_list *p_list)
 	g_free(p_list);
 }
 
-process_info *gfire_process_info_new(const gchar *p_name, const gchar *p_exe, const guint32 p_pid, const gchar *p_args)
+process_info *gfire_process_info_new(const gchar *p_exe, const guint32 p_pid, const gchar *p_args)
 {
-	if (!p_name || !p_exe || !p_pid)
+	if (!p_exe || !p_pid)
 		return NULL;
 
 	process_info *ret = g_malloc0(sizeof(process_info));
 
-	ret->name = g_strdup(p_name);
 	ret->exe = g_strdup(p_exe);
 	ret->pid = p_pid;
 
@@ -934,9 +933,6 @@ static void gfire_process_info_free(process_info *p_info)
 {
 	if(!p_info)
 		return;
-
-	if(p_info->name)
-		g_free(p_info->name);
 
 	if(p_info->exe)
 		g_free(p_info->exe);
@@ -959,9 +955,10 @@ void gfire_process_list_clear(gfire_process_list *p_list)
 	}
 }
 
-guint32 gfire_process_list_contains(const gfire_process_list *p_list, const gchar *p_name, const GList *p_required_args, const GList *p_invalid_args, const GList *p_required_libraries)
+guint32 gfire_process_list_contains(const gfire_process_list *p_list, const gchar *p_exe, const GList *p_required_args,
+									const GList *p_invalid_args/*, const GList *p_required_libraries*/)
 {
-	if(!p_list || !p_list->processes || !p_name)
+	if(!p_list || !p_list->processes || !p_exe)
 		return FALSE;
 
 	GList *cur = p_list->processes;
@@ -971,7 +968,7 @@ guint32 gfire_process_list_contains(const gfire_process_list *p_list, const gcha
 		if(!info)
 			continue;
 
-		if(g_strcmp0(info->name, p_name) == 0)
+		if(g_strcmp0(info->exe, p_exe) == 0)
 		{
 			// First check invalid arguments
 			gboolean process_invalid_args = FALSE;
@@ -1005,7 +1002,7 @@ guint32 gfire_process_list_contains(const gfire_process_list *p_list, const gcha
 			}
 
 			// Finally check required libraries
-			gboolean process_required_libraries = TRUE;
+			/*gboolean process_required_libraries = TRUE;
 #ifndef _WIN32
 			if (p_required_libraries)
 			{
@@ -1035,10 +1032,10 @@ guint32 gfire_process_list_contains(const gfire_process_list *p_list, const gcha
 				gfire_game_detection_process_libraries_clear(process_libs);
 				g_list_free(process_libs);
 			}
-#endif // _WIN32
+#endif // _WIN32*/
 
 			// Return as found if valid
-			if (process_invalid_args == FALSE && process_required_args == TRUE && process_required_libraries == TRUE)
+			if (process_invalid_args == FALSE && process_required_args == TRUE /*&& process_required_libraries == TRUE*/)
 				return info->pid;
 		}
 
@@ -1048,9 +1045,9 @@ guint32 gfire_process_list_contains(const gfire_process_list *p_list, const gcha
 	return 0;
 }
 
-guint32 gfire_process_list_get_pid(const gfire_process_list *p_list, const gchar *p_name)
+guint32 gfire_process_list_get_pid(const gfire_process_list *p_list, const gchar *p_exe)
 {
-	if (!p_list || !p_name)
+	if (!p_list || !p_exe)
 		return 0;
 
 	GList *cur = p_list->processes;
@@ -1060,7 +1057,7 @@ guint32 gfire_process_list_get_pid(const gfire_process_list *p_list, const gchar
 		if(!info)
 			continue;
 
-		if(!g_strcmp0(info->name, p_name))
+		if(!g_strcmp0(info->exe, p_exe))
 			return info->pid;
 
 		cur = g_list_next(cur);
@@ -1068,26 +1065,4 @@ guint32 gfire_process_list_get_pid(const gfire_process_list *p_list, const gchar
 
 	// Return nothing found
 	return 0;
-}
-
-gchar *gfire_process_list_get_exe(const gfire_process_list *p_list, const gchar *p_name)
-{
-	if (!p_list || !p_name)
-		return NULL;
-
-	GList *cur = p_list->processes;
-	while(cur)
-	{
-		process_info *info = cur->data;
-		if(!info)
-			continue;
-
-		if(!g_strcmp0(info->name, p_name))
-			return info->exe;
-
-		cur = g_list_next(cur);
-	}
-
-	// Return error (-1) if nothing found
-	return NULL;
 }

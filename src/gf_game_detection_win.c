@@ -223,7 +223,7 @@ void gfire_process_list_update(gfire_process_list *p_list)
 				g_strstrip(args);
 
 			// Add the process
-			process_info *info = gfire_process_info_new(executable_file, executable_file, pe.th32ProcessID, args);
+			process_info *info = gfire_process_info_new(executable_file, pe.th32ProcessID, args);
 			g_free(cmdline);
 			g_free(executable_file);
 
