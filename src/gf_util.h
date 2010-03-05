@@ -40,6 +40,7 @@ void gfire_list_clear(GList *p_list);
 
 // Utils for handling strings
 gchar *gfire_strip_character_range(gchar *p_string, gchar p_start, gchar p_end);
+void gfire_strip_invalid_utf8(gchar *p_utf8);
 
 // Utils for SHA-1 hashing
 void hashSha1(const gchar *p_input, gchar *p_digest);

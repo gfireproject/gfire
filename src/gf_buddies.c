@@ -996,13 +996,9 @@ void gfire_buddy_set_alias(gfire_buddy *p_buddy, const gchar *p_alias)
 		p_buddy->alias = NULL;
 	else
 	{
-		if(g_utf8_validate(p_alias, -1, NULL))
-		{
-			p_buddy->alias = g_strdup(p_alias);
-			gfire_strip_character_range(p_buddy->alias, 0x01, 0x1F);
-		}
-		else
-			p_buddy->alias = NULL;
+		p_buddy->alias = g_strdup(p_alias);
+		gfire_strip_invalid_utf8(p_buddy->alias);
+		gfire_strip_character_range(p_buddy->alias, 0x01, 0x1F);
 	}
 
 	if(p_buddy->prpl_buddy &&
@@ -1045,6 +1041,8 @@ void gfire_buddy_set_status(gfire_buddy *p_buddy, const gchar *p_status_msg)
 	if(p_status_msg)
 	{
 		p_buddy->status_msg = g_strdup(p_status_msg);
+		gfire_strip_invalid_utf8(p_buddy->status_msg);
+
 		if((strncmp(p_status_msg, "(AFK) ", 6) == 0) || (strncmp(p_status_msg, "(ABS) ", 6) == 0))
 		{
 			p_buddy->status = PURPLE_STATUS_AWAY;
