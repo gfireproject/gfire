@@ -205,6 +205,9 @@ static void gfire_update_cb(PurpleUtilFetchUrlData *p_url_data, gpointer p_data,
 
 static void gfire_update(gfire_data *p_gfire)
 {
+	// Load game xml from user dir; these don't need to work unless we are connected
+	gfire_game_load_config_xml(FALSE);
+
 	static gboolean updated = FALSE;
 
 	if(!updated)
