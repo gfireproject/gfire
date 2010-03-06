@@ -4,8 +4,10 @@
   <!-- interface-naming-policy project-wide -->
   <object class="GtkWindow" id="manage_games_window">
     <property name="title" translatable="yes">Manage Games</property>
+    <property name="window_position">center</property>
     <property name="default_width">600</property>
     <property name="default_height">350</property>
+    <property name="destroy_with_parent">True</property>
     <child>
       <object class="GtkAlignment" id="alignment">
         <property name="visible">True</property>
@@ -100,7 +102,7 @@
                                 <property name="visible">True</property>
                                 <child>
                                   <object class="GtkCheckButton" id="add_executable_check_button">
-                                    <property name="label" translatable="yes">Use detection</property>
+                                    <property name="label" translatable="yes">Use same file</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">False</property>
@@ -328,7 +330,7 @@
                                 <property name="visible">True</property>
                                 <child>
                                   <object class="GtkCheckButton" id="edit_executable_check_button">
-                                    <property name="label" translatable="yes">Use detection</property>
+                                    <property name="label" translatable="yes">Use same file</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">False</property>
