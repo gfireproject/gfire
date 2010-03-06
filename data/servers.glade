@@ -12,9 +12,9 @@
     <columns>
       <!-- column-name server_name -->
       <column type="gchararray"/>
-      <!-- column-name server_ping -->
+      <!-- column-name server_ping_str -->
       <column type="gchararray"/>
-      <!-- column-name server_players -->
+      <!-- column-name server_players_str -->
       <column type="gchararray"/>
       <!-- column-name server_map -->
       <column type="gchararray"/>
@@ -22,6 +22,10 @@
       <column type="gchararray"/>
       <!-- column-name server_raw_info -->
       <column type="gchararray"/>
+      <!-- column-name server_ping -->
+      <column type="gint"/>
+      <!-- column-name server_players -->
+      <column type="gint"/>
     </columns>
   </object>
   <object class="GtkWindow" id="server_browser_window">
@@ -167,9 +171,8 @@
                   <object class="GtkTreeViewColumn" id="name_column">
                     <property name="resizable">True</property>
                     <property name="sizing">fixed</property>
-                    <property name="max_width">256</property>
+                    <property name="min_width">350</property>
                     <property name="title">Name</property>
-                    <property name="expand">True</property>
                     <property name="clickable">True</property>
                     <property name="reorderable">True</property>
                     <property name="sort_indicator">True</property>
@@ -186,12 +189,12 @@
                   <object class="GtkTreeViewColumn" id="ping_column">
                     <property name="resizable">True</property>
                     <property name="sizing">fixed</property>
-                    <property name="fixed_width">60</property>
+                    <property name="min_width">50</property>
                     <property name="title">Ping</property>
                     <property name="clickable">True</property>
                     <property name="reorderable">True</property>
                     <property name="sort_indicator">True</property>
-                    <property name="sort_column_id">1</property>
+                    <property name="sort_column_id">6</property>
                     <child>
                       <object class="GtkCellRendererText" id="ping_cell_renderer"/>
                       <attributes>
@@ -204,12 +207,12 @@
                   <object class="GtkTreeViewColumn" id="players_column">
                     <property name="resizable">True</property>
                     <property name="sizing">fixed</property>
-                    <property name="fixed_width">80</property>
+                    <property name="min_width">65</property>
                     <property name="title">Players</property>
                     <property name="clickable">True</property>
                     <property name="reorderable">True</property>
                     <property name="sort_indicator">True</property>
-                    <property name="sort_column_id">2</property>
+                    <property name="sort_column_id">7</property>
                     <child>
                       <object class="GtkCellRendererText" id="players_cell_renderer"/>
                       <attributes>
@@ -222,7 +225,7 @@
                   <object class="GtkTreeViewColumn" id="map_column">
                     <property name="resizable">True</property>
                     <property name="sizing">fixed</property>
-                    <property name="fixed_width">135</property>
+                    <property name="min_width">100</property>
                     <property name="title">Map</property>
                     <property name="clickable">True</property>
                     <property name="reorderable">True</property>
