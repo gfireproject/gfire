@@ -65,7 +65,7 @@ struct _gfire_server_browser_server
 	guint16 port;
 
 	gint parent;
-	struct timeval time;
+	GTimeVal time;
 };
 
 struct _gfire_server_browser_server_info
@@ -80,7 +80,7 @@ struct _gfire_server_browser_server_info
 
 	guint32 ip;
 	guint16 port;
-	guint32 ping;
+	guint16 ping;
 
 	guint32 players;
 	guint32 max_players;
