@@ -91,12 +91,15 @@ static gchar *gfire_filetype_get(const gchar *p_path)
 	if(!p_path)
 		return NULL;
 
-	FILE *fp;
-	gchar output[256];
+	gchar output[8192];
+	*output = 0;
 
 	gchar *command = g_strdup_printf("file \"%s\"", p_path);
-	fp = popen(command, "r");
+	FILE *fp = popen(command, "r");
 	g_free(command);
+
+	if(!fp)
+		return NULL;
 
 	fgets(output, sizeof(output), fp);
 	pclose(fp);
@@ -109,6 +112,9 @@ gboolean gfire_filetype_use_wine(const gchar *p_path)
 	gchar *match, *filetype;
 
 	filetype = gfire_filetype_get(p_path);
+	if(!filetype)
+		return FALSE;
+
 	match = strstr(filetype, "PE32 executable for MS Windows");
 	g_free(filetype);
 

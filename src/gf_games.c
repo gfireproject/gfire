@@ -965,6 +965,87 @@ static gchar *gfire_game_config_get_command(const gfire_game_configuration *p_gc
 	return launch_cmd;
 }
 
+static void gfire_join_game_parse_prefix(const gchar *p_prefix, gchar **p_exe_prefix, GList **p_env_keys,
+										 GList **p_env_values)
+{
+	if(!p_prefix || !p_exe_prefix || !p_env_keys || !p_env_values)
+		return;
+
+	GString *prefix = g_string_new("");
+
+	const gchar *pos = p_prefix;
+	const gchar *end = NULL;
+	do
+	{
+		// Find the next space / end of string
+		const gchar *space = strchr(pos, ' ');
+		if(!space)
+			space = p_prefix + strlen(p_prefix);
+		// Find the next equal
+		const gchar *equal = strchr(pos, '=');
+
+		// We got an env var setting
+		if(equal && (equal < space))
+		{
+			if((equal + 1) <= (p_prefix + strlen(p_prefix)))
+			{
+				end = equal + 1;
+
+				gchar *key = g_strndup(pos, equal - pos);
+
+				if(*key != 0)
+				{
+					gchar *value = NULL;
+					if(*(equal + 1) == '"')
+					{
+						const gchar *quote = strchr(equal + 2, '"');
+						if(quote)
+						{
+							value = g_strndup(equal + 2, quote - equal - 2);
+							end = quote;
+						}
+					}
+					else
+					{
+						value = g_strndup(equal + 1, space - equal - 1);
+						end = space;
+					}
+
+					if(value)
+					{
+						*p_env_keys = g_list_append(*p_env_keys, key);
+						*p_env_values = g_list_append(*p_env_values, value);
+					}
+					else
+						g_free(key);
+
+					if(end == (p_prefix + strlen(p_prefix)))
+						end = NULL;
+					else
+						end += 1;
+				}
+				else
+					g_free(key);
+			}
+			else
+				end = NULL;
+		}
+		else
+		{
+			gchar *chunk = g_strndup(pos, space - pos);
+			g_string_append_printf(prefix, " %s", chunk);
+			g_free(chunk);
+
+			if(space == (p_prefix + strlen(p_prefix)))
+				end = NULL;
+			else
+				end = space + 1;
+		}
+	} while((pos = end));
+
+	*p_exe_prefix = g_string_free(prefix, FALSE);
+}
+
 void gfire_join_game(const gfire_game_data *p_game_data)
 {
 	const gfire_game_configuration *gconf = gfire_game_config_by_id(p_game_data->id);
@@ -981,30 +1062,44 @@ void gfire_join_game(const gfire_game_data *p_game_data)
 		return;
 	}
 
+	GString *command = g_string_new(game_launch_command);
+	g_free(game_launch_command);
+
 	// Set environment variable if needed
 	if(gconf->launch_prefix)
 	{
-		// Remove quotes as only needed in a shell
-		gchar *env = purple_strreplace(gconf->launch_prefix, "\"", "");
+		gchar *prefix = NULL;
+		GList *env_keys = NULL;
+		GList *env_values = NULL;
 
-		// Split KEY=VALUE
-		gchar **env_split = g_strsplit(env, "=", -1);
-		if(env_split)
+		gfire_join_game_parse_prefix(gconf->launch_prefix, &prefix, &env_keys, &env_values);
+		if(prefix)
 		{
-			// Set environment variable for the current environment
-			if(env_split[0] && env_split[1])
-				g_setenv(env_split[0], env_split[1], TRUE);
-
-			g_strfreev(env_split);
+			g_string_prepend_c(command, ' ');
+			g_string_prepend(command, prefix);
 		}
 
-		g_free(env);
+		if(env_keys)
+		{
+			GList *cur_key = env_keys;
+			GList *cur_value = env_values;
+			while(cur_key)
+			{
+				g_setenv((gchar*)cur_key->data, (gchar*)cur_value->data, TRUE);
+
+				cur_key = g_list_next(cur_key);
+				cur_value = g_list_next(cur_value);
+			}
+
+			gfire_list_clear(env_keys);
+			gfire_list_clear(env_values);
+		}
 	}
 
 	// Launch command
-	purple_debug_misc("gfire", "Launching game and joining server: %s\n", game_launch_command);
-	g_spawn_command_line_async(game_launch_command, NULL);
-	g_free(game_launch_command);
+	purple_debug_misc("gfire", "Launching game and joining server: %s\n", command->str);
+	g_spawn_command_line_async(command->str, NULL);
+	g_string_free(command, TRUE);
 }
 
 #ifdef HAVE_GTK
