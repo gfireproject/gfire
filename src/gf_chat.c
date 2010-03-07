@@ -704,9 +704,9 @@ static PurpleCmdRet gfire_chat_command_handler(PurpleConversation *p_conv, const
 		return PURPLE_CMD_RET_FAILED;
 
 	// Save command
-	if(!purple_utf8_strcasecmp(p_cmd, _("save")))
+	if(!purple_utf8_strcasecmp(p_cmd, "save"))
 	{
-		if(!purple_utf8_strcasecmp(p_args[0], _("yes")))
+		if(!purple_utf8_strcasecmp(p_args[0], "yes"))
 		{
 			if(!chat->purple_chat)
 				purple_blist_request_add_chat(purple_conversation_get_account(p_conv), NULL, NULL, chat->topic);
@@ -715,7 +715,7 @@ static PurpleCmdRet gfire_chat_command_handler(PurpleConversation *p_conv, const
 
 			return PURPLE_CMD_RET_OK;
 		}
-		else if(!purple_utf8_strcasecmp(p_args[0], _("no")))
+		else if(!purple_utf8_strcasecmp(p_args[0], "no"))
 		{
 			gfire_chat_set_saved(chat, FALSE);
 			return PURPLE_CMD_RET_OK;
@@ -727,7 +727,7 @@ static PurpleCmdRet gfire_chat_command_handler(PurpleConversation *p_conv, const
 		}
 	}
 	// Change room name command
-	else if(!purple_utf8_strcasecmp(p_cmd, _("rename")))
+	else if(!purple_utf8_strcasecmp(p_cmd, "rename"))
 	{
 		if(!purple_utf8_strcasecmp(chat->topic, p_args[0]))
 		{
@@ -742,22 +742,22 @@ static PurpleCmdRet gfire_chat_command_handler(PurpleConversation *p_conv, const
 		}
 	}
 	// Change password command
-	else if(!purple_utf8_strcasecmp(p_cmd, _("password")))
+	else if(!purple_utf8_strcasecmp(p_cmd, "password"))
 	{
 		guint16 len = gfire_chat_proto_create_change_password(chat->chat_id, p_args[0]);
 		if(len > 0) gfire_send(gfire_get_connection(gfire), len);
 		return PURPLE_CMD_RET_OK;
 	}
 	// Change visibility command
-	else if(!purple_utf8_strcasecmp(p_cmd, _("visibility")))
+	else if(!purple_utf8_strcasecmp(p_cmd, "visibility"))
 	{
-		if(!purple_utf8_strcasecmp(p_args[0], _("public")))
+		if(!purple_utf8_strcasecmp(p_args[0], "public"))
 		{
 			guint16 len = gfire_chat_proto_create_change_access(chat->chat_id, Public);
 			if(len > 0) gfire_send(gfire_get_connection(gfire), len);
 			return PURPLE_CMD_RET_OK;
 		}
-		else if(!purple_utf8_strcasecmp(p_args[0], _("friends")))
+		else if(!purple_utf8_strcasecmp(p_args[0], "friends"))
 		{
 			guint16 len = gfire_chat_proto_create_change_access(chat->chat_id, Friends);
 			if(len > 0) gfire_send(gfire_get_connection(gfire), len);
@@ -770,15 +770,15 @@ static PurpleCmdRet gfire_chat_command_handler(PurpleConversation *p_conv, const
 		}
 	}
 	// Silence command
-	else if(!purple_utf8_strcasecmp(p_cmd, _("silence")))
+	else if(!purple_utf8_strcasecmp(p_cmd, "silence"))
 	{
-		if(!purple_utf8_strcasecmp(p_args[0], _("on")))
+		if(!purple_utf8_strcasecmp(p_args[0], "on"))
 		{
 			guint16 len = gfire_chat_proto_create_change_silenced(chat->chat_id, TRUE);
 			if(len > 0) gfire_send(gfire_get_connection(gfire), len);
 			return PURPLE_CMD_RET_OK;
 		}
-		else if(!purple_utf8_strcasecmp(p_args[0], _("off")))
+		else if(!purple_utf8_strcasecmp(p_args[0], "off"))
 		{
 			guint16 len = gfire_chat_proto_create_change_silenced(chat->chat_id, FALSE);
 			if(len > 0) gfire_send(gfire_get_connection(gfire), len);
@@ -791,15 +791,15 @@ static PurpleCmdRet gfire_chat_command_handler(PurpleConversation *p_conv, const
 		}
 	}
 	// User-Join/Leave-Messages command
-	else if(!purple_utf8_strcasecmp(p_cmd, _("userjoinmsg")))
+	else if(!purple_utf8_strcasecmp(p_cmd, "userjoinmsg"))
 	{
-		if(!purple_utf8_strcasecmp(p_args[0], _("on")))
+		if(!purple_utf8_strcasecmp(p_args[0], "on"))
 		{
 			guint16 len = gfire_chat_proto_create_change_show_join_leave(chat->chat_id, TRUE);
 			if(len > 0) gfire_send(gfire_get_connection(gfire), len);
 			return PURPLE_CMD_RET_OK;
 		}
-		else if(!purple_utf8_strcasecmp(p_args[0], _("off")))
+		else if(!purple_utf8_strcasecmp(p_args[0], "off"))
 		{
 			guint16 len = gfire_chat_proto_create_change_show_join_leave(chat->chat_id, FALSE);
 			if(len > 0) gfire_send(gfire_get_connection(gfire), len);
@@ -812,7 +812,7 @@ static PurpleCmdRet gfire_chat_command_handler(PurpleConversation *p_conv, const
 		}
 	}
 	// Change user permission command
-	else if(!purple_utf8_strcasecmp(p_cmd, _("permission")))
+	else if(!purple_utf8_strcasecmp(p_cmd, "permission"))
 	{
 		if(chat->own_permission < Moderator)
 		{
@@ -846,13 +846,13 @@ static PurpleCmdRet gfire_chat_command_handler(PurpleConversation *p_conv, const
 		}
 
 		guint32 permission;
-		if(!purple_utf8_strcasecmp(_("muted"), p_args[1]))
+		if(!purple_utf8_strcasecmp("muted", p_args[1]))
 			permission = Muted;
-		else if(!purple_utf8_strcasecmp(_("normal"), p_args[1]))
+		else if(!purple_utf8_strcasecmp("normal", p_args[1]))
 			permission = Normal;
-		else if(!purple_utf8_strcasecmp(_("power"), p_args[1]))
+		else if(!purple_utf8_strcasecmp("power", p_args[1]))
 			permission = Power_User;
-		else if(!purple_utf8_strcasecmp(_("moderator"), p_args[1]))
+		else if(!purple_utf8_strcasecmp("moderator", p_args[1]))
 		{
 			if(chat->own_permission != Admin)
 			{
@@ -861,7 +861,7 @@ static PurpleCmdRet gfire_chat_command_handler(PurpleConversation *p_conv, const
 			}
 			permission = Moderator;
 		}
-		else if(!purple_utf8_strcasecmp(_("admin"), p_args[1]))
+		else if(!purple_utf8_strcasecmp("admin", p_args[1]))
 		{
 			if(chat->own_permission != Admin)
 			{
@@ -881,7 +881,7 @@ static PurpleCmdRet gfire_chat_command_handler(PurpleConversation *p_conv, const
 		return PURPLE_CMD_RET_OK;
 	}
 	// Kick buddy command
-	else if(!purple_utf8_strcasecmp(p_cmd, _("kick")))
+	else if(!purple_utf8_strcasecmp(p_cmd, "kick"))
 	{
 		if(chat->own_permission < Moderator)
 		{
@@ -919,7 +919,7 @@ static PurpleCmdRet gfire_chat_command_handler(PurpleConversation *p_conv, const
 		return PURPLE_CMD_RET_OK;
 	}
 	// Change default permission command
-	else if(!purple_utf8_strcasecmp(p_cmd, _("def_permission")))
+	else if(!purple_utf8_strcasecmp(p_cmd, "def_permission"))
 	{
 		if(chat->own_permission < Moderator)
 		{
@@ -928,13 +928,13 @@ static PurpleCmdRet gfire_chat_command_handler(PurpleConversation *p_conv, const
 		}
 
 		guint32 permission;
-		if(!purple_utf8_strcasecmp(_("muted"), p_args[0]))
+		if(!purple_utf8_strcasecmp("muted", p_args[0]))
 			permission = Muted;
-		else if(!purple_utf8_strcasecmp(_("normal"), p_args[0]))
+		else if(!purple_utf8_strcasecmp("normal", p_args[0]))
 			permission = Normal;
-		else if(!purple_utf8_strcasecmp(_("power"), p_args[0]))
+		else if(!purple_utf8_strcasecmp("power", p_args[0]))
 			permission = Power_User;
-		else if(!purple_utf8_strcasecmp(_("moderator"), p_args[0]))
+		else if(!purple_utf8_strcasecmp("moderator", p_args[0]))
 		{
 			if(chat->own_permission != Admin)
 			{
@@ -943,7 +943,7 @@ static PurpleCmdRet gfire_chat_command_handler(PurpleConversation *p_conv, const
 			}
 			permission = Moderator;
 		}
-		else if(!purple_utf8_strcasecmp(_("admin"), p_args[0]))
+		else if(!purple_utf8_strcasecmp("admin", p_args[0]))
 		{
 			if(chat->own_permission != Admin)
 			{
