@@ -32,6 +32,9 @@ typedef struct _gfire_bitlist gfire_bitlist;
 // Utils for the server browser
 gchar *gfire_remove_quake3_color_codes(const gchar *p_string);
 
+// Utils for filetype detection
+gboolean gfire_filetype_use_wine(const gchar *p_path);
+
 // Utils for handling HTML
 gchar *gfire_escape_html(const gchar *p_html);
 

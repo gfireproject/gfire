@@ -86,6 +86,38 @@ gchar *gfire_escape_html(const gchar *p_html)
 		return NULL;
 }
 
+static gchar *gfire_filetype_get(const gchar *p_path)
+{
+	if(!p_path)
+		return NULL;
+
+	FILE *fp;
+	gchar output[256];
+
+	gchar *command = g_strdup_printf("file \"%s\"", p_path);
+	fp = popen(command, "r");
+	g_free(command);
+
+	fgets(output, sizeof(output), fp);
+	pclose(fp);
+
+	return g_strdup(output);
+}
+
+gboolean gfire_filetype_use_wine(const gchar *p_path)
+{
+	gchar *match, *filetype;
+
+	filetype = gfire_filetype_get(p_path);
+	match = strstr(filetype, "PE32 executable for MS Windows");
+	g_free(filetype);
+
+	if(match)
+	   return TRUE;
+	else
+		return FALSE;
+}
+
 void gfire_list_clear(GList *p_list)
 {
 	if(!p_list)
