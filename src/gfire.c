@@ -4,8 +4,8 @@
  * Copyright (C) 2000-2001, Beat Wolf <asraniel@fryx.ch>
  * Copyright (C) 2006,      Keith Geffert <keith@penguingurus.com>
  * Copyright (C) 2008-2009	Laurent De Marez <laurentdemarez@gmail.com>
- * Copyright (C) 2009       Warren Dumortier <nwarrenfl@gmail.com>
- * Copyright (C) 2009	    Oliver Ney <oliver@dryder.de>
+ * Copyright (C) 2009-2010  Warren Dumortier <nwarrenfl@gmail.com>
+ * Copyright (C) 2009-2010  Oliver Ney <oliver@dryder.de>
  *
  * This file is part of Gfire.
  *
@@ -148,31 +148,42 @@ static void gfire_update_cb(PurpleUtilFetchUrlData *p_url_data, gpointer p_data,
 		{
 			// Get current Gfire and games list version
 			guint32 gfire_latest_version = 0;
-			guint32 games_list_version = 0;
 			if(xmlnode_get_attrib(version_node, "version"))
 				sscanf(xmlnode_get_attrib(version_node, "version"), "%u", &gfire_latest_version);
+			const gchar *gfire_latest_suffix = xmlnode_get_attrib(version_node, "suffix");
+
+			guint32 games_list_version = 0;
 			if(xmlnode_get_attrib(version_node, "games_list_version"))
 				sscanf(xmlnode_get_attrib(version_node, "games_list_version"), "%u", &games_list_version);
 
 			// Notify user if Gfire can be updated
-			if (GFIRE_VERSION < gfire_latest_version)
+				// Higher version number
+			if ((GFIRE_VERSION < gfire_latest_version) ||
+				// Same version, current one is not SVN
+				((GFIRE_VERSION == gfire_latest_version) && (g_strcmp0(GFIRE_VERSION_SUFFIX, "svn") != 0) &&
+				 // Released suffix is higher than the current
+				 strlen(GFIRE_VERSION_SUFFIX) && (g_strcmp0(gfire_latest_suffix, GFIRE_VERSION_SUFFIX) > 0)))
 			{
 				gchar *msg = NULL;
 #ifdef USE_NOTIFICATIONS
 				if(purple_account_get_bool(purple_connection_get_account(p_data), "use_notify", TRUE))
 				{
-					msg = g_strdup_printf(_("Gfire <b>%u.%u.%u</b> is now available.\nVisit the Gfire website for more information!"),
-										  (gfire_latest_version & (0xFF << 16)) >> 16, (gfire_latest_version & (0xFF << 8)) >> 8,
-										  gfire_latest_version & 0xFF);
+					msg = g_strdup_printf(_("Gfire <b>%u.%u.%u%s%s</b> is now available.\nVisit the Gfire website for "
+											"more information!"), (gfire_latest_version & (0xFF << 16)) >> 16,
+										  (gfire_latest_version & (0xFF << 8)) >> 8, gfire_latest_version & 0xFF,
+										  (gfire_latest_suffix && strlen(gfire_latest_suffix)) ? "-" : "",
+										  gfire_latest_suffix ? gfire_latest_suffix : "");
 					gfire_notify_system(_("New Gfire Version"), msg);
 				}
 				else
 #endif // USE_NOTIFICATIONS
 				{
 				// FIXME: implement a way to disable this notification
-					msg = g_strdup_printf(_("Gfire %u.%u.%u is now available.\nVisit the Gfire website for more information!"),
-										  (gfire_latest_version & (0xFF << 16)) >> 16, (gfire_latest_version & (0xFF << 8)) >> 8,
-										  gfire_latest_version & 0xFF);
+					msg = g_strdup_printf(_("Gfire %u.%u.%u%s%s is now available.\nVisit the Gfire website for more "
+											"information!"), (gfire_latest_version & (0xFF << 16)) >> 16,
+										  (gfire_latest_version & (0xFF << 8)) >> 8, gfire_latest_version & 0xFF,
+										  (gfire_latest_suffix && strlen(gfire_latest_suffix)) ? "-" : "",
+										  gfire_latest_suffix ? gfire_latest_suffix : "");
 					purple_notify_message(p_data, PURPLE_NOTIFY_MSG_WARNING, _("New Gfire Version"), _("New Gfire Version"),
 										  msg, NULL, NULL);
 				}

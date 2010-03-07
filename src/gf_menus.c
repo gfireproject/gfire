@@ -4,8 +4,8 @@
  * Copyright (C) 2000-2001, Beat Wolf <asraniel@fryx.ch>
  * Copyright (C) 2006,      Keith Geffert <keith@penguingurus.com>
  * Copyright (C) 2008-2009	Laurent De Marez <laurentdemarez@gmail.com>
- * Copyright (C) 2009       Warren Dumortier <nwarrenfl@gmail.com>
- * Copyright (C) 2009	    Oliver Ney <oliver@dryder.de>
+ * Copyright (C) 2009-2010  Warren Dumortier <nwarrenfl@gmail.com>
+ * Copyright (C) 2009-2010  Oliver Ney <oliver@dryder.de>
  *
  * This file is part of Gfire.
  *
@@ -149,12 +149,12 @@ void gfire_menu_action_about_cb(PurplePluginAction *p_action)
 	if(gfire_game_have_list())
 	{
 		gchar *version_str = gfire_game_get_version_str();
-		msg = g_strdup_printf(_("Gfire Version:\t\t%s\nGame List Version:\t\t%s"), GFIRE_VERSION_STRING, version_str);
+		msg = g_strdup_printf(_("Gfire Version: %s\nGame List Version: %s"), GFIRE_VERSION_STRING, version_str);
 		g_free(version_str);
 	}
 	else
 	{
-		msg = g_strdup_printf(_("Gfire Version:\t\t%s"), GFIRE_VERSION_STRING);
+		msg = g_strdup_printf(_("Gfire Version: %s"), GFIRE_VERSION_STRING);
 	}
 
 	purple_request_action(gc, _("About Gfire"), _("Xfire Plugin for Pidgin"), msg, PURPLE_DEFAULT_ACTION_NONE,
