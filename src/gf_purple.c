@@ -542,7 +542,6 @@ static void gfire_purple_remove_buddy(PurpleConnection *p_gc, PurpleBuddy *p_bud
 	gfire_data *gfire = NULL;
 	gfire_buddy *gf_buddy = NULL;
 	PurpleAccount *account = NULL;
-	gboolean buddynorm = TRUE;
 
 	if(!p_gc || !(gfire = (gfire_data *)p_gc->proto_data) || !p_buddy || !p_buddy->name) return;
 
@@ -555,18 +554,18 @@ static void gfire_purple_remove_buddy(PurpleConnection *p_gc, PurpleBuddy *p_bud
 		return;
 	}
 
-	buddynorm = purple_account_get_bool(account, "buddynorm", TRUE);
-	if(buddynorm && gfire_buddy_is_friend(gf_buddy))
+	if(gfire_buddy_is_friend(gf_buddy))
 	{
-		gchar *tmp = g_strdup_printf(_("Not Removing %s"), gfire_buddy_get_name(gf_buddy));
-		purple_debug(PURPLE_DEBUG_MISC, "gfire", "gfire_purple_remove_buddy: buddynorm TRUE not removing buddy %s.\n", gfire_buddy_get_name(gf_buddy));
-		purple_notify_message((void *)p_gc, PURPLE_NOTIFY_MSG_INFO, _("Xfire Buddy Removal Denied"), tmp, _("Account settings are set to not remove buddies\n"
-																													   "The buddy will be restored on your next login"), NULL, NULL);
-		if(tmp) g_free(tmp);
+		purple_debug(PURPLE_DEBUG_MISC, "gfire", "Removing buddy: %s\n", gfire_buddy_get_name(gf_buddy));
+		gfire_remove_buddy(gfire, gf_buddy, TRUE, FALSE);
 	}
-
-	purple_debug(PURPLE_DEBUG_MISC, "gfire", "Removing buddy: %s\n", gfire_buddy_get_name(gf_buddy));
-	gfire_remove_buddy(gfire, gf_buddy, !buddynorm, FALSE);
+	else
+	{
+		purple_notify_message((void *)p_gc, PURPLE_NOTIFY_MSG_INFO, _("Xfire Buddy Removal"), _("Xfire Buddy Removal"),
+							  _("You have removed a buddy which is not on your friends list, it will be "
+								"restored on the next login."), NULL, NULL);
+		gfire_remove_buddy(gfire, gf_buddy, FALSE, FALSE);
+	}
 }
 
 /* connection keep alive.  We send a packet to the xfire server
@@ -1221,14 +1220,14 @@ static void _init_plugin(PurplePlugin *p_plugin)
 	option = purple_account_option_int_new(_("Version"), "version", XFIRE_PROTO_VERSION);
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options,option);
 
-	option = purple_account_option_bool_new(_("Don't delete buddies from server"), "buddynorm", FALSE);
-	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options,option);
-
 	option = purple_account_option_bool_new(_("Buddies can see if I'm typing"), "typenorm", TRUE);
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options,option);
 
 	option = purple_account_option_bool_new(_("Auto detect for ingame status"), "ingamedetectionnorm", TRUE);
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options,option);
+
+	option = purple_account_option_bool_new(_("Change my status for other protocols as well"), "use_global_status", TRUE);
+	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
 
 	option = purple_account_option_bool_new(_("Notify me when my status is ingame"), "ingamenotificationnorm", FALSE);
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options,option);
@@ -1243,9 +1242,6 @@ static void _init_plugin(PurplePlugin *p_plugin)
 	option = purple_account_option_bool_new(_("Display notifications for certain events"), "use_notify", TRUE);
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
 #endif // USE_NOTIFICATIONS
-
-	option = purple_account_option_bool_new(_("Change my status for other protocols as well"), "use_global_status", TRUE);
-	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
 
 	option = purple_account_option_bool_new(_("Show Friends of Friends"), "show_fofs", TRUE);
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
