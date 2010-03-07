@@ -284,9 +284,9 @@ static void gfire_server_browser_request_serverlist_cb(gfire_data *p_gfire, GtkW
 		return;
 
 	GtkWidget *game_combo = GTK_WIDGET(gtk_builder_get_object(gfire_gtk_builder, "game_combo"));
-	GtkWidget *list_store = GTK_WIDGET(gtk_builder_get_object(gfire_gtk_builder, "servers_list_store"));
+	GtkTreeStore *tree_store = GTK_TREE_STORE(gtk_builder_get_object(gfire_gtk_builder, "servers_list_store"));
 
-	gtk_list_store_clear(GTK_LIST_STORE(list_store));
+	gtk_tree_store_clear(tree_store);
 
 	gchar *game_name = gtk_combo_box_get_active_text(GTK_COMBO_BOX(game_combo));
 	guint32 gameid = gfire_game_id(game_name);

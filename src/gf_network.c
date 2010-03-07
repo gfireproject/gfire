@@ -315,7 +315,7 @@ void gfire_parse_packet(gfire_data *p_gfire, guint16 p_packet_len, guint16 p_pac
 		break;
 
 		case 149:
-			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received friends' favorite serverlist");
+			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received friends' favorite serverlist\n");
 			gfire_server_browser_proto_friends_fav_serverlist(p_gfire, p_packet_len);
 		break;
 
