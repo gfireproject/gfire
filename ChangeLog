@@ -1,9 +1,49 @@
 # Changelog for Gfire
-# Copyright 2006-2009 Wolf Beat, Keith Geffert, Laurent De Marez, Warren Dumortier, Oliver Ney
+# Copyright 2006-2010 Wolf Beat, Keith Geffert, Laurent De Marez, Warren Dumortier, Oliver Ney
 # Distributed under the GPLv3
-# $Id: CHANGELOG, v0.8.1
+# $Id: CHANGELOG, v0.9.0
 
 Gfire:
+0.9.0
+- Added File Transfer
+- Added Server Browser
+- Added Server Detection
+- Added Avatar Support
+- Added Clan/Guild Support
+- Added Friends of Friends
+- Added Improvements to Game Manager
+- Added Windows Game Detection
+- Added Internationlisation of Languages
+- Added Advanced Status Handling
+- Added Web Game Detection
+- Added New Icons
+- Added Notifications by libnotify
+- Added Custom group management
+- Added Largely improved chat room support
+- Added VoIP software detection (requires working server detection)
+- Complete Code Rewrite
+- Better organisation of code
+- 'Get Info' Fully Working!
+- Completed network data handling issues
+- Preventing a user logging in, with their username containing uppercase characters
+- Status did not change if you logged off and logged back in
+- Reversed IP address in contact listings
+- In some Linux distros, the buddy list was not being displayed
+- Messages recieved came with html tags
+- HTML tags in Status, if contained a URL link
+- Fixed a crash when Status receiver "Playing"
+- Fixed a crash when sending an offline message
+- Fixed severual bugs with the games list and game manager
+- Updated Web Links
+- Now useable with Finch again
+
+0.8.3
+- Fixed some bug in the network code which denied all logins
+- Added the Xfire statistics packet
+
+0.8.2
+- Update the Gfire URLs due to a server change
+
 0.8.1
 - Fix crash on login with some Linux distros.
 - Small bugfixes/changes.

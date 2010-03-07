@@ -1,18 +1,36 @@
+/*
+ * purple - Xfire Protocol Plugin
+ *
+ * Copyright (C) 2000-2001, Beat Wolf <asraniel@fryx.ch>
+ * Copyright (C) 2006,      Keith Geffert <keith@penguingurus.com>
+ * Copyright (C) 2008-2009	Laurent De Marez <laurentdemarez@gmail.com>
+ * Copyright (C) 2009-2010  Warren Dumortier <nwarrenfl@gmail.com>
+ * Copyright (C) 2009-2010  Oliver Ney <oliver@dryder.de>
+ *
+ * This file is part of Gfire.
+ *
+ * Gfire is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Gfire.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 // gfire_config_win.h. Copied from gfire_config.h for Windows builds
 #ifndef _GFIRE_CONFIG_H
 #define _GFIRE_CONFIG_H
-
-/* Compareable Gfire version */
-#define GFIRE_VERSION ((GFIRE_VERSION_MAJOR << 16) | (GFIRE_VERSION_MINOR << 8) | GFIRE_VERSION_PATCH)
 
 /* always defined to indicate that i18n is enabled */
 #define ENABLE_NLS 1
 
 /* Define the gettext package to be used */
 #define GETTEXT_PACKAGE "gfire"
-
-/* Gfire version suffix available */
-#define GFIRE_VERSION_HAS_SUFFIX 1
 
 /* Gfire major version */
 #define GFIRE_VERSION_MAJOR 0
@@ -25,6 +43,9 @@
 
 /* Gfire version string */
 #define GFIRE_VERSION_STRING "0.9.0-svn"
+
+/* Gfire version suffix */
+#define GFIRE_VERSION_SUFFIX "svn"
 
 /* Define to 1 if you have the `bind_textdomain_codeset' function. */
 #define HAVE_BIND_TEXTDOMAIN_CODESET 1

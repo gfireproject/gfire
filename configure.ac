@@ -8,7 +8,7 @@ m4_define(gfire_version, m4_include(VERSION))
 m4_define(gfire_version_patch, regexp(gfire_version, [\([0-9]+\).\([0-9]+\).\([0-9]+\)], [\3]))
 m4_define(gfire_version_minor, regexp(gfire_version, [\([0-9]+\).\([0-9]+\).\([0-9]+\)], [\2]))
 m4_define(gfire_version_major, regexp(gfire_version, [\([0-9]+\).\([0-9]+\).\([0-9]+\)], [\1]))
-m4_define(gfire_version_suffix, regexp(gfire_version, [\([0-9]+\).\([0-9]+\).\([0-9]+\)\(-[a-zA-Z0-9]+\)], [\4]))
+m4_define(gfire_version_suffix, regexp(gfire_version, [\([0-9]+\).\([0-9]+\).\([0-9]+\)-?\([a-zA-Z0-9]+\)], [\4]))
 
 AC_PREREQ(2.50)
 AC_INIT([Gfire], [gfire_version], [gfireteam@gmail.com])
@@ -36,20 +36,13 @@ AM_GLIB_GNU_GETTEXT
 AH_TOP([
 #ifndef _GFIRE_CONFIG_H
 #define _GFIRE_CONFIG_H
-
-/* Compareable Gfire version */
-#define GFIRE_VERSION ((GFIRE_VERSION_MAJOR << 16) | (GFIRE_VERSION_MINOR << 8) | GFIRE_VERSION_PATCH)
 ])
 AH_BOTTOM([#endif])
 
+AC_DEFINE_UNQUOTED([GFIRE_VERSION_SUFFIX], ["gfire_version_suffix"], [Gfire version suffix])
 AC_DEFINE([GFIRE_VERSION_PATCH], [gfire_version_patch], [Gfire patch version])
 AC_DEFINE([GFIRE_VERSION_MINOR], [gfire_version_minor], [Gfire minor version])
 AC_DEFINE([GFIRE_VERSION_MAJOR], [gfire_version_major], [Gfire major version])
-if test "gfire_version_suffix" = ""; then
-	AC_DEFINE([GFIRE_VERSION_HAS_SUFFIX], [0], [Gfire version suffix available])
-else
-	AC_DEFINE([GFIRE_VERSION_HAS_SUFFIX], [1], [Gfire version suffix available])
-fi
 AC_DEFINE_UNQUOTED([GFIRE_VERSION_STRING], ["gfire_version"], [Gfire version string])
 
 #
