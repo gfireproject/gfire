@@ -13,7 +13,6 @@ src/gf_games.c
 src/gf_network.c
 src/gf_protocol.c
 src/gf_purple.c
-src/gf_query.c
 src/gfire.c
 src/gfire_proto.c
 src/gf_server_browser.c
