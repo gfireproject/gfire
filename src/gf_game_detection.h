@@ -68,6 +68,7 @@ typedef struct _gfire_game_detector
 	gfire_game_detection_type game_type;
 
 	// Server detection
+	guint8 server_detection_ref;
 	GMutex *server_mutex;
 	//	Game
 	gfire_server_detector *g_server_detector;

@@ -297,7 +297,7 @@ static gboolean gfire_game_detector_detect_cb(void *p_unused)
 			gfire_game_detector_inform_instances_game();
 
 			// Start new server detection if allowed
-			if(data->g_dset->detect_server)
+			if(gfire_detector->server_detection_ref && data->g_dset->detect_server)
 				gfire_server_detector_start(gfire_detector->g_server_detector, gfire_detector->game_data.id,
 											data->g_pid);
 		}
@@ -320,7 +320,7 @@ static gboolean gfire_game_detector_detect_cb(void *p_unused)
 				g_mutex_unlock(gfire_detector->server_mutex);
 
 			// Start new server detection if allowed
-			if(data->g_dset->detect_server)
+			if(gfire_detector->server_detection_ref && data->g_dset->detect_server)
 				gfire_server_detector_start(gfire_detector->g_server_detector, gfire_detector->game_data.id,
 											data->g_pid);
 		}
@@ -357,7 +357,7 @@ static gboolean gfire_game_detector_detect_cb(void *p_unused)
 			gfire_game_detector_inform_instances_voip();
 
 			// Start new server detection if allowed
-			if(data->v_dset->detect_server)
+			if(gfire_detector->server_detection_ref && data->v_dset->detect_server)
 				gfire_server_detector_start(gfire_detector->v_server_detector, gfire_detector->voip_data.id,
 											data->v_pid);
 		}
@@ -380,7 +380,7 @@ static gboolean gfire_game_detector_detect_cb(void *p_unused)
 				g_mutex_unlock(gfire_detector->server_mutex);
 
 			// Start new server detection if allowed
-			if(data->v_dset->detect_server)
+			if(gfire_detector->server_detection_ref && data->v_dset->detect_server)
 				gfire_server_detector_start(gfire_detector->v_server_detector, gfire_detector->voip_data.id,
 											data->v_pid);
 		}
@@ -812,6 +812,8 @@ void gfire_game_detector_register(gfire_data *p_gfire)
 		gfire_game_detector_init();
 
 	gfire_detector->instances = g_list_append(gfire_detector->instances, p_gfire);
+	if(gfire_wants_server_detection(p_gfire))
+		gfire_detector->server_detection_ref++;
 
 	purple_debug_info("gfire", "detection: Gfire instance added (new count: %u)\n",
 					  g_list_length(gfire_detector->instances));
@@ -826,6 +828,8 @@ void gfire_game_detector_unregister(gfire_data *p_gfire)
 	if(!node)
 		return;
 
+	if(gfire_wants_server_detection(p_gfire))
+		gfire_detector->server_detection_ref--;
 	gfire_detector->instances = g_list_delete_link(gfire_detector->instances, node);
 
 	purple_debug_info("gfire", "detection: Gfire instance removed (new count: %u)\n",
