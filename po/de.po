@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Gfire 0.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-03-07 18:27+0100\n"
-"PO-Revision-Date: 2009-10-29 22:49+0100\n"
+"POT-Creation-Date: 2010-03-08 02:26+0100\n"
+"PO-Revision-Date: 2010-03-08 02:18+0100\n"
 "Last-Translator: Oliver Ney <oliver@dryder.de>\n"
 "Language-Team: German <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -16,6 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Poedit-Language: German\n"
 "X-Poedit-Country: GERMANY\n"
+"X-Poedit-SourceCharset: utf-8\n"
 
 #: ../data/games.glade.h:1
 msgid "<b>Advanced settings</b>"
@@ -49,33 +50,32 @@ msgstr "Datei für Start:"
 msgid "Launch prefix:"
 msgstr "Startprefix:"
 
-#: ../data/games.glade.h:9 ../src/gf_purple.c:732
+#: ../data/games.glade.h:9 ../src/gf_purple.c:731
 msgid "Manage Games"
 msgstr "Spiele verwalten"
 
 #: ../data/games.glade.h:10
 msgid "Use same file"
-msgstr ""
+msgstr "Nutze die gleiche Datei"
 
 #: ../data/servers.glade.h:1
 msgid "IP Address:"
-msgstr ""
+msgstr "IP Adresse:"
 
 #: ../data/servers.glade.h:2
-#, fuzzy
 msgid "Port:"
-msgstr "Port"
+msgstr "Port:"
 
 #. Server browser
-#: ../data/servers.glade.h:3 ../src/gf_purple.c:736
+#: ../data/servers.glade.h:3 ../src/gf_purple.c:735
 msgid "Server Browser"
 msgstr "Server Browser"
 
 #: ../data/servers.glade.h:4
 msgid "gtk-add"
-msgstr ""
+msgstr "gtk-add"
 
-#: ../src/gf_base.h:110
+#: ../src/gf_base.h:113
 msgid "Xfire - Friends of Friends playing games"
 msgstr "Xfire - Freunde von Freunden spielen"
 
@@ -89,13 +89,13 @@ msgstr ""
 "%s"
 
 #: ../src/gf_buddies.c:801
-#, fuzzy, c-format
+#, c-format
 msgid "Playing <b>%s</b> now!"
-msgstr "Spielt %s"
+msgstr "Spielt jetzt <b>%s</b>!"
 
 #: ../src/gf_buddies.c:808
 msgid "Stopped playing!"
-msgstr ""
+msgstr "Hat aufgehört zu spielen!"
 
 #: ../src/gf_buddies.c:1086 ../src/gf_game_detection.c:81
 #, c-format
@@ -146,12 +146,12 @@ msgstr "Du hast momentan das Recht \"%s\"."
 
 #: ../src/gf_chat.c:311
 msgid "Buddy has been kicked."
-msgstr ""
+msgstr "Teilnehmer wurde gekickt."
 
 #: ../src/gf_chat.c:366
-#, fuzzy, c-format
+#, c-format
 msgid "This room's name has been changed to \"%s\"."
-msgstr "%ss Recht wurden auf \"%s\" geändert."
+msgstr "Der Name dieses Chat-Raums wurde auf \"%s\" geändert."
 
 #: ../src/gf_chat.c:401
 #, c-format
@@ -168,9 +168,9 @@ msgid "Your permission has been changed to \"%s\"."
 msgstr "Deine Rechte wurden auf \"%s\" geändert."
 
 #: ../src/gf_chat.c:462
-#, fuzzy, c-format
+#, c-format
 msgid "%s's permission has been changed to \"%s\"."
-msgstr "%ss Recht wurden auf \"%s\" geändert."
+msgstr "%ss Rechte wurden auf \"%s\" geändert."
 
 #. Join message
 #: ../src/gf_chat.c:492
@@ -188,116 +188,113 @@ msgstr ""
 "%s"
 
 #: ../src/gf_chat.c:582
-#, fuzzy, c-format
+#, c-format
 msgid "This room's default permission has been changed to \"%s\"."
-msgstr "%ss Recht wurden auf \"%s\" geändert."
+msgstr "Die Standardberechtigung in diesem Raum wurde auf \"%s\" geändert."
 
 #: ../src/gf_chat.c:601
 msgid "Public"
-msgstr ""
+msgstr "Öffentlich"
 
 #: ../src/gf_chat.c:604
-#, fuzzy
 msgid "Friends only"
-msgstr "Freunde"
+msgstr "Nur Freunde"
 
 #: ../src/gf_chat.c:610
-#, fuzzy, c-format
+#, c-format
 msgid "This room's visibility has been changed to \"%s\"."
-msgstr "%ss Recht wurden auf \"%s\" geändert."
+msgstr "Die Sichtbarkeit dieses Raumes wurde auf \"%s\" geändert."
 
 #: ../src/gf_chat.c:625
 #, c-format
 msgid "This room is now password protected."
-msgstr ""
+msgstr "Dieser Raum ist jetzt passwortgeschützt."
 
 #: ../src/gf_chat.c:627
 #, c-format
 msgid "This room is no longer password protected."
-msgstr ""
+msgstr "Dieser Raum ist nicht länger passwortgeschützt."
 
 #: ../src/gf_chat.c:629
-#, fuzzy, c-format
+#, c-format
 msgid "This room's password has been changed."
-msgstr "Dein Status wurde geändert."
+msgstr "Das Passwort dieses Raumes wurde geändert."
 
 #: ../src/gf_chat.c:649
 #, c-format
 msgid "This room is now silenced."
-msgstr ""
+msgstr "Dieser Raum ist jetzt stumm geschaltet."
 
 #: ../src/gf_chat.c:651
 #, c-format
 msgid "This room is no longer silenced."
-msgstr ""
+msgstr "Dieser Raum ist nicht länger stumm geschaltet."
 
 #: ../src/gf_chat.c:671
 #, c-format
 msgid "Buddy join-/leave-messages will be displayed now."
-msgstr ""
+msgstr "Beitritts- und Verlassensnachrichten werden nun angezeigt."
 
 #: ../src/gf_chat.c:673
 #, c-format
 msgid "Buddy join-/leave-messages will no longer be displayed."
-msgstr ""
+msgstr "Beitritts- und Verlassensnachrichten werden nicht länger angezeigt."
 
 #: ../src/gf_chat.c:725 ../src/gf_chat.c:789 ../src/gf_chat.c:810
 #, c-format
 msgid "Unknown argument: %s"
-msgstr ""
+msgstr "Unbekanntes Argument: %s"
 
 #: ../src/gf_chat.c:734
 msgid ""
 "New and old name are identical. Please note that chat room names have no "
 "case."
 msgstr ""
+"Neuer und alter Name sind identisch. Bitte beachte, dass Chat-Raum Namen "
+"nicht zwischen Groß- und Kleinschreibung unterscheiden."
 
 #: ../src/gf_chat.c:768
 #, c-format
 msgid "Unknown visibility: %s"
-msgstr ""
+msgstr "Unbekannte Sichtbarkeit: %s"
 
 #: ../src/gf_chat.c:819
 msgid "You are not allowed to grant/revoke any permissions."
-msgstr ""
+msgstr "Es ist dir nicht gestattet, Berechtigungen zu vergeben/zu entziehen."
 
 #: ../src/gf_chat.c:838 ../src/gf_chat.c:907
 #, c-format
 msgid "Unknown buddy: %s"
-msgstr ""
+msgstr "Unbekannter Teilnehmer: %s"
 
 #: ../src/gf_chat.c:844
-#, fuzzy
 msgid "You can't change your own permission!"
-msgstr "Du hast momentan das Recht \"%s\"."
+msgstr "Du kannst deine eigene Berechtigung nicht ändern."
 
 #: ../src/gf_chat.c:859 ../src/gf_chat.c:868
-#, fuzzy
 msgid "You are not allowed to grant this permission."
-msgstr "Du hast momentan das Recht \"%s\"."
+msgstr "Dir ist nicht gestattet, diese Berechtigung zu vergeben."
 
 #: ../src/gf_chat.c:875 ../src/gf_chat.c:957
 #, c-format
 msgid "Unknown permission: %s"
-msgstr ""
+msgstr "Unbekannte Berechtigung: %s"
 
 #: ../src/gf_chat.c:888
 msgid "You are not allowed to kick buddies."
-msgstr ""
+msgstr "Es ist dir nicht erlaubt, Teilnehmer zu kicken."
 
 #: ../src/gf_chat.c:913
 msgid "You can't kick yourself!"
-msgstr ""
+msgstr "Du kannst dich nicht selbst kicken!"
 
 #: ../src/gf_chat.c:926
-#, fuzzy
 msgid "You are not allowed to change the default permission."
-msgstr "Du hast momentan das Recht \"%s\"."
+msgstr "Dir ist nicht gestattet, die Standardberechtigung zu ändern."
 
 #: ../src/gf_chat.c:941 ../src/gf_chat.c:950
-#, fuzzy
 msgid "You are not allowed to set this default permission."
-msgstr "Du hast momentan das Recht \"%s\"."
+msgstr "Dir ist nicht gestattet, diese Standardberechtigung zu setzen."
 
 #: ../src/gf_chat.c:983
 msgid ""
@@ -306,12 +303,19 @@ msgid ""
 "you will be asked to save the chat room to your buddy list if it is not "
 "already there. If you decline this request the save will NOT be performed."
 msgstr ""
+"save &lt;yes|no&gt;:<br />Speichere den aktuellen Chat-Raum in Xfire. Dies "
+"speichert alle Chat-Raum Einstellungen und Berechtigungen. Bei &quot;"
+"yes&quot; wirst du gefragt, ob du den Raum in deiner Buddy Liste speichern "
+"möchtest. Wenn du diese Anfrage abbrichst, wird die Speicherung NICHT "
+"durchgeführt."
 
 #: ../src/gf_chat.c:992
 msgid ""
 "rename &lt;new-chat-name&gt;:<br />Changes the current name for this room."
 "<br/><br />Requires &quot;Admin&quot; permission."
 msgstr ""
+"rename &lt;neuer-chat-name%gt;:<br />Ändert den aktuellen Namen für diesen "
+"Chat-Raum.<br /><br />Benötigt &quot;Admin&quot; Berechtigungen."
 
 #: ../src/gf_chat.c:998
 msgid ""
@@ -319,12 +323,17 @@ msgid ""
 "room. &quot;/password&quot; results in removing the current password.<br /"
 "><br />Requires &quot;Admin&quot; permission."
 msgstr ""
+"password [&lt;neues-passwort&gt;]:<br />Ändert das aktuelle Passwort für "
+"diesen Raum. &quot;/password&quot; löscht das aktuelle Passwort.<br /><br /"
+">Benötigt &quot;Admin&quot; Berechtigungen."
 
 #: ../src/gf_chat.c:1005
 msgid ""
 "password &lt;public|friends&gt;:<br />Changes the current visibility for "
 "this room.<br /><br />Requires &quot;Admin&quot; permission."
 msgstr ""
+"password &lt;public|friends&gt;:<br />Ändert die aktuelle Sichtbarkeit "
+"dieses Chat-Raumes.<br /><br />Benötigt &quot;Admin&quot; Berechtigungen."
 
 #: ../src/gf_chat.c:1011
 msgid ""
@@ -332,6 +341,9 @@ msgid ""
 "should not be able to talk in this room.<br /><br />Requires &quot;"
 "Moderator&quot; or higher permission."
 msgstr ""
+"silence &lt;on|off&gt;:<br />Setzt, ob Teilnehmer mit weniger als Moderator-"
+"Rechten in diesem Raum reden dürfen.<br /><br />Benötigt &quot;"
+"Moderator&quot; oder höhere Berechtigungen."
 
 #: ../src/gf_chat.c:1018
 msgid ""
@@ -339,6 +351,10 @@ msgid ""
 "and &quot;&lt;User&gt; left&quot; messages should be displayed in this room."
 "<br /><br />Requires &quot;Moderator&quot; or higher permission."
 msgstr ""
+"userjoinmsg &lt;on|off&gt;:<br />Setzt, ob &quot;&lt;Teilnehmer&gt; "
+"beigetreten&quot; und &quot;&lt;Teilnehmer&gt; hat den Raum verlassen&quot;-"
+"Nachrichten in diesem Raum angezeigt werden sollen.<br /><br />Benötigt "
+"&quot;Moderator&quot; oder höhere Berechtigungen."
 
 #: ../src/gf_chat.c:1026
 msgid ""
@@ -348,12 +364,19 @@ msgid ""
 "own permission.<br /><br />Requires &quot;Moderator&quot; or higher "
 "permission."
 msgstr ""
+"permission &lt;nutzername&gt; &lt;muted|normal|power|moderator|admin&gt;:"
+"<br />Setzt <i>nutzername</i>s Berechtigung. Nur Admins dürfen anderen "
+"Teilnehmern die &quot;Admin&quot;-Berechtigung geben.<br />Bitte beachte, "
+"dass du deine eigenen Berechtigungen nicht ändern kannst.<br /><br /"
+">Benötigt &quot;Moderator&quot; oder höhere Berechtigungen."
 
 #: ../src/gf_chat.c:1035
 msgid ""
 "kick &lt;username&gt;:<br />Kicks <i>username</i> from the channel.<br /"
 "><br />Requires &quot;Moderator&quot; or higher permission."
 msgstr ""
+"kick &lt;nutzername&gt;:<br />Kickt <i>nutzername</i> aus dem Chat-Raum.<br /"
+"><br />Benötigt &quot;Moderator&quot; oder höhere Berechtigungen."
 
 #: ../src/gf_chat.c:1042
 msgid ""
@@ -361,31 +384,38 @@ msgid ""
 "room's default permission. New buddies who join this room will have this "
 "permission<br /><br />Requires &quot;Moderator&quot; or higher permission."
 msgstr ""
+"def_permission &lt;muted|normal|power|moderator|admin&gt;:<br />Setzt die "
+"Standardberechtigung in diesem Chat-Raum. Neue Teilnehmer, die diesen Raum "
+"betreten, werden diese Berechtigung haben.<br /><br />Benötigt &quot;"
+"Moderator&quot; oder höhere Berechtigungen."
 
 #: ../src/gf_chat.c:1116
 msgid ""
 "You attempted to join a chat room using an invalid password. Please try "
 "again."
 msgstr ""
+"Du hast versucht einen Chat-Raum mit einem ungültigen Passwort zu betreten, "
+"bitte versuche es noch einmal."
 
 #: ../src/gf_chat.c:1117
 msgid "Invalid password"
-msgstr ""
+msgstr "Ungültiges Passwort"
 
 #: ../src/gf_chat.c:1121
 msgid ""
 "You attempted to join a chat room that is password protected. Please try "
 "again."
 msgstr ""
+"Du hast versucht einen Chat-Raum zu betreten, der durch ein Passwort "
+"gesichert wird. Bitte versuche es noch einmal."
 
 #: ../src/gf_chat.c:1122
 msgid "Password required"
-msgstr ""
+msgstr "Passwort benötigt"
 
 #: ../src/gf_chat.c:1130
-#, fuzzy
 msgid "Join"
-msgstr "Beitrittsdatum"
+msgstr "Beitreten"
 
 #: ../src/gf_chat.c:1131 ../src/gf_friend_search.c:66 ../src/gf_menus.c:123
 msgid "Cancel"
@@ -393,18 +423,19 @@ msgstr "Abbrechen"
 
 #: ../src/gf_chat_proto.c:517
 msgid "Chat room join error"
-msgstr ""
+msgstr "Fehler beim Chat-Raum-Betreten"
 
 #: ../src/gf_chat_proto.c:517
-#, fuzzy
 msgid "Unknown error"
-msgstr "Unbekannt"
+msgstr "Unbekannter Fehler"
 
 #: ../src/gf_chat_proto.c:518
 msgid ""
 "Unknown join error. You might be blocked from this chat room or are already "
 "in 5 rooms."
 msgstr ""
+"Unbekannter Fehler beim Beitreten. Du könntest aus diesem Raum verbannt "
+"worden sein oder du bist bereits in 5 Chat-Räumen."
 
 #: ../src/gf_friend_search.c:64 ../src/gf_friend_search.c:106
 msgid "Xfire Friend Search"
@@ -440,14 +471,13 @@ msgid "Search results"
 msgstr "Suchergebnisse"
 
 #: ../src/gf_games.c:43
-#, fuzzy, c-format
+#, c-format
 msgid "The Games List has been updated to version: %s."
-msgstr "Game List wurde aktualisiert"
+msgstr "Die Game List wurde auf Version %s aktualisiert."
 
 #: ../src/gf_games.c:47 ../src/gf_games.c:50 ../src/gf_games.c:51
-#, fuzzy
 msgid "New Gfire Game List Version"
-msgstr "Neue Game List Version: %s"
+msgstr "Neue Game List Version"
 
 #: ../src/gf_games.c:1215 ../src/gf_games.c:1251 ../src/gf_games.c:1327
 #: ../src/gf_games.c:1353 ../src/gf_games.c:1368 ../src/gf_games.c:1382
@@ -460,7 +490,7 @@ msgstr "Konnte das Spiel nicht hinzufügen"
 
 #: ../src/gf_games.c:1216
 msgid "There's no such game, please try again."
-msgstr ""
+msgstr "Solch ein Spiel gibt es nicht, bitte versuche es noch einmal."
 
 #: ../src/gf_games.c:1232
 msgid "Manage Games: game added"
@@ -520,7 +550,7 @@ msgstr "Konnte das Spiel nicht entfernen"
 
 #: ../src/gf_games.c:1354
 msgid "No such game, please try again!"
-msgstr ""
+msgstr "Solch ein Spiel gibt es nicht, bitte versuche es noch einmal."
 
 #: ../src/gf_games.c:1378
 msgid "Manage Games: game removed"
@@ -566,25 +596,25 @@ msgstr "Du hast dich woanders angemeldet."
 #. Community site
 #: ../src/gf_purple.c:156
 msgid "Xfire Community Site"
-msgstr ""
+msgstr "Xfire Gemeinschafts Seite"
 
-#: ../src/gf_purple.c:256 ../src/gfire.c:1123
+#: ../src/gf_purple.c:256 ../src/gfire.c:1134
 msgid "Game"
 msgstr "Spiel"
 
-#: ../src/gf_purple.c:262 ../src/gf_purple.c:1215 ../src/gfire.c:1129
+#: ../src/gf_purple.c:262 ../src/gf_purple.c:1214 ../src/gfire.c:1140
 msgid "Server"
 msgstr "Server"
 
-#: ../src/gf_purple.c:292 ../src/gfire.c:1148
+#: ../src/gf_purple.c:292 ../src/gfire.c:1159
 msgid "unknown"
 msgstr "unbekannt"
 
-#: ../src/gf_purple.c:307 ../src/gfire.c:1112 ../src/gfire.c:1115
+#: ../src/gf_purple.c:307 ../src/gfire.c:1123 ../src/gfire.c:1126
 msgid "Status"
 msgstr "Status"
 
-#: ../src/gf_purple.c:317 ../src/gfire.c:1161
+#: ../src/gf_purple.c:317 ../src/gfire.c:1172
 msgid "Common Friends"
 msgstr "Gemeinsame Freunde"
 
@@ -603,398 +633,389 @@ msgstr "Nachricht konnte nicht gesendet werden. Buddy ist offline"
 
 #. Request the invitation message
 #: ../src/gf_purple.c:532
-#, fuzzy
 msgid "Xfire Invitation Message"
-msgstr "Xfire Systemmeldung:"
+msgstr "Xfire Einladungsnachricht"
 
 #: ../src/gf_purple.c:533
 msgid "Please enter the message you want to send your buddy with this invite:"
 msgstr ""
+"Bitte gib die Nachricht ein, die du deinem Freund mit dieser Einladung "
+"schicken möchtest:"
 
 #: ../src/gf_purple.c:534
 msgid "Please add me to your friends list!"
-msgstr ""
+msgstr "Bitte nimm mich in deine Freundesliste auf!"
 
 #: ../src/gf_purple.c:535
 msgid "Invite with a message"
-msgstr ""
+msgstr "Einladen mit einer Nachricht"
 
 #: ../src/gf_purple.c:536
 msgid "Invite without a message"
-msgstr ""
+msgstr "Einladen ohne eine Nachricht"
 
-#: ../src/gf_purple.c:561
-#, c-format
-msgid "Not Removing %s"
-msgstr "Entferne nicht %s"
+#: ../src/gf_purple.c:564
+msgid "Xfire Buddy Removal"
+msgstr "Entfernen eines Xfire Buddys"
 
-#: ../src/gf_purple.c:563
-msgid "Xfire Buddy Removal Denied"
-msgstr "Entfernen des Xfire Buddys abgelehnt"
-
-#: ../src/gf_purple.c:563
+#: ../src/gf_purple.c:565
 msgid ""
-"Account settings are set to not remove buddies\n"
-"The buddy will be restored on your next login"
+"You have removed a buddy which is not on your friends list, it will be "
+"restored on the next login."
 msgstr ""
-"Die Account Einstellung ist, Buddys nicht aus Xfire zu löschen.\n"
-"Der Buddy wird beim nächsten Login wiederhergestellt."
+"Du hast einen Buddy entfernt, welcher nicht auf deiner Freundesliste ist. Er "
+"wird beim nächsten Login wiederhergestellt."
 
-#: ../src/gf_purple.c:621
+#: ../src/gf_purple.c:620
 msgid "Add as friend"
 msgstr "Als Freund hinzufügen"
 
-#: ../src/gf_purple.c:636
+#: ../src/gf_purple.c:635
 msgid "Join Game ..."
 msgstr "Spiel beitreten..."
 
-#: ../src/gf_purple.c:652
+#: ../src/gf_purple.c:651
 msgid "Join VoIP ..."
 msgstr "VoIP beitreten..."
 
-#: ../src/gf_purple.c:662
+#: ../src/gf_purple.c:661
 msgid "Xfire Profile"
 msgstr "Xfire Profil"
 
-#: ../src/gf_purple.c:694
-#, fuzzy, c-format
+#: ../src/gf_purple.c:693
+#, c-format
 msgid "Launch %s"
-msgstr "Startargumente:"
+msgstr "Starte %s"
 
 #. General things
-#: ../src/gf_purple.c:713
+#: ../src/gf_purple.c:712
 msgid "Change Nickname"
 msgstr "Nicknamen ändern"
 
-#: ../src/gf_purple.c:716
+#: ../src/gf_purple.c:715
 msgid "My Profile Page"
 msgstr "Mein Profil"
 
-#: ../src/gf_purple.c:720
+#: ../src/gf_purple.c:719
 msgid "Friend Search"
 msgstr "Freundessuche"
 
 #. Game configuration
-#: ../src/gf_purple.c:725
+#: ../src/gf_purple.c:724
 msgid "Reload Game Config"
 msgstr "Spielkonfiguration neu laden"
 
 #. About
-#: ../src/gf_purple.c:748
+#: ../src/gf_purple.c:747
 msgid "About"
 msgstr "Über Gfire"
 
-#: ../src/gf_purple.c:802
+#: ../src/gf_purple.c:801
 msgid "_Room:"
-msgstr ""
+msgstr "_Raum:"
 
-#: ../src/gf_purple.c:808
+#: ../src/gf_purple.c:807
 msgid "_Password:"
-msgstr ""
+msgstr "_Passwort:"
 
-#: ../src/gf_purple.c:897
+#: ../src/gf_purple.c:896
 msgid "Xfire Groupchat"
 msgstr "Xfire Gruppenchat"
 
-#: ../src/gf_purple.c:897
+#: ../src/gf_purple.c:896
 msgid "MotD change failed"
 msgstr "MotD Änderung fehlgeschlagen"
 
-#: ../src/gf_purple.c:898
+#: ../src/gf_purple.c:897
 msgid "The MotD contains more than 200 characters."
 msgstr "Die MotD enthält mehr als 200 Zeichen."
 
-#: ../src/gf_purple.c:984
-#, fuzzy
+#: ../src/gf_purple.c:983
 msgid "Friends of friends group name restored"
-msgstr "Freunde von Freunde-Gruppenname"
+msgstr "Freunde von Freunde-Gruppenname wiederhergestellt"
 
-#: ../src/gf_purple.c:984 ../src/gf_purple.c:1002
-#, fuzzy
+#: ../src/gf_purple.c:983 ../src/gf_purple.c:1001
 msgid "Group name restored"
-msgstr "Spiel entfernt"
+msgstr "Gruppenname wiederhergestellt"
 
-#: ../src/gf_purple.c:984
+#: ../src/gf_purple.c:983
 msgid ""
 "You have renamed Xfire's FoF group name. Unfortunately we had to restore "
 "this groups name."
 msgstr ""
+"Du hast Xfires \"Freunde von Freunden\"-Gruppenname geändert. "
+"Unglücklicherweise mussten wir den Namen wiederherstellen. "
 
-#: ../src/gf_purple.c:1002
+#: ../src/gf_purple.c:1001
 msgid "Clan's group name restored"
-msgstr ""
+msgstr "Clan-Gruppen-Name wiederhergestellt"
 
-#: ../src/gf_purple.c:1002
+#: ../src/gf_purple.c:1001
 msgid ""
 "You have renamed the group name of a Xfire clan. Unfortunately we had to "
 "restore this groups name."
 msgstr ""
+"Du hast den Gruppenamen eines Xfire Clans geändert. Unglücklicherweise "
+"mussten wir den Namen wiederherstellen. "
 
-#: ../src/gf_purple.c:1218
+#: ../src/gf_purple.c:1217
 msgid "Port"
 msgstr "Port"
 
-#: ../src/gf_purple.c:1221
+#: ../src/gf_purple.c:1220
 msgid "Version"
 msgstr "Version"
 
-#: ../src/gf_purple.c:1224
-msgid "Don't delete buddies from server"
-msgstr "Entferne Buddies nicht vom Server"
-
-#: ../src/gf_purple.c:1227
+#: ../src/gf_purple.c:1223
 msgid "Buddies can see if I'm typing"
 msgstr "Buddies sehen, wenn ich tippe"
 
-#: ../src/gf_purple.c:1230
+#: ../src/gf_purple.c:1226
 msgid "Auto detect for ingame status"
 msgstr "Erkenne meinen Ingame-Status"
 
-#: ../src/gf_purple.c:1233
+#: ../src/gf_purple.c:1229
+msgid "Change my status for other protocols as well"
+msgstr "Ändere meinen Status auch für andere Protokolle"
+
+#: ../src/gf_purple.c:1232
 msgid "Notify me when my status is ingame"
 msgstr "Benachrichtige mich, wenn mein Status ingame ist"
 
-#: ../src/gf_purple.c:1236
-#, fuzzy
+#: ../src/gf_purple.c:1235
 msgid "Enable server detection"
 msgstr "Nutze Servererkennung"
 
-#: ../src/gf_purple.c:1239
+#: ../src/gf_purple.c:1238
 msgid "Use Xfires P2P features"
 msgstr "Nutze Xfires P2P Features"
 
-#: ../src/gf_purple.c:1243
+#: ../src/gf_purple.c:1242
 msgid "Display notifications for certain events"
-msgstr ""
+msgstr "Zeige Benachrichtigungen bei verschiedenen Ereignissen"
 
-#: ../src/gf_purple.c:1247
-msgid "Change my status for other protocols as well"
-msgstr ""
-
-#: ../src/gf_purple.c:1250
-#, fuzzy
+#: ../src/gf_purple.c:1246
 msgid "Show Friends of Friends"
-msgstr "Freunde von Freunde-Gruppenname"
+msgstr "Zeige Freunde von Freunden"
 
-#: ../src/gf_purple.c:1253
+#: ../src/gf_purple.c:1249
 msgid "Xfire"
 msgstr "Xfire"
 
-#: ../src/gf_purple.c:1254 ../src/gf_purple.c:1255
+#: ../src/gf_purple.c:1250 ../src/gf_purple.c:1251
 msgid "Xfire Protocol Plugin"
 msgstr "Xfire Protokoll Plugin"
 
-#: ../src/gfire.c:164
-#, fuzzy, c-format
+#: ../src/gfire.c:171
+#, c-format
 msgid ""
-"Gfire <b>%u.%u.%u</b> is now available.\n"
+"Gfire <b>%u.%u.%u%s%s</b> is now available.\n"
 "Visit the Gfire website for more information!"
 msgstr ""
-"Eine neuere Gfire Version ist verfügbar. Besuche die Gfire Website für "
-"weitere Infos."
+"Gfire <b>%u.%u.%u%s%s</b> ist jetzt verfügbar.\n"
+"Besuche die Gfire Website für weitere Infos!"
 
-#: ../src/gfire.c:167 ../src/gfire.c:176
-#, fuzzy
+#: ../src/gfire.c:176 ../src/gfire.c:187
 msgid "New Gfire Version"
 msgstr "Neue Gfire Version"
 
 #. FIXME: implement a way to disable this notification
-#: ../src/gfire.c:173
-#, fuzzy, c-format
+#: ../src/gfire.c:182
+#, c-format
 msgid ""
-"Gfire %u.%u.%u is now available.\n"
+"Gfire %u.%u.%u%s%s is now available.\n"
 "Visit the Gfire website for more information!"
 msgstr ""
-"Eine neuere Gfire Version ist verfügbar. Besuche die Gfire Website für "
-"weitere Infos."
+"Gfire %u.%u.%u%s%s ist jetzt verfügbar.\n"
+"Besuche die Gfire Website für weitere Infos!"
 
-#: ../src/gfire.c:284
+#: ../src/gfire.c:295
 msgid "Connecting"
 msgstr "Verbinde"
 
-#: ../src/gfire.c:290
+#: ../src/gfire.c:301
 msgid "Couldn't create socket."
 msgstr "Konnte Socket nicht erstellen"
 
-#: ../src/gfire.c:437
+#: ../src/gfire.c:448
 msgid "Login sent"
 msgstr "Login gesendet"
 
 #. TRANSLATORS: Keep "(AFK)" as is!
 #. Suggestion: Use Xfires original AFK message here
-#: ../src/gfire.c:463
+#: ../src/gfire.c:474
 msgid "(AFK) Away From Keyboard"
 msgstr "(AFK) Away From Keyboard (Nicht am Computer)"
 
 #. TRANSLATORS: Keep "(Busy)" as is!
-#: ../src/gfire.c:470
+#: ../src/gfire.c:481
 msgid "(Busy) I'm busy!"
 msgstr "(Busy) Ich bin beschäftigt!"
 
-#: ../src/gfire.c:741 ../src/gfire.c:750 ../src/gfire.c:920 ../src/gfire.c:929
+#: ../src/gfire.c:752 ../src/gfire.c:761 ../src/gfire.c:931 ../src/gfire.c:940
 msgid "Error"
 msgstr "Fehler"
 
-#: ../src/gfire.c:741
+#: ../src/gfire.c:752
 msgid "Retrieving gamerig data failed!"
 msgstr "Empfangen der Gamerig-Daten fehlgeschlagen!"
 
-#: ../src/gfire.c:750
+#: ../src/gfire.c:761
 msgid "Invalid gamerig data received!"
 msgstr "Ungültige Gamerig-Daten empfangen!"
 
-#: ../src/gfire.c:765
+#: ../src/gfire.c:776
 #, c-format
 msgid "%ss Gaming Rig:"
 msgstr "%ss Gaming Rig:"
 
-#: ../src/gfire.c:775
+#: ../src/gfire.c:786
 msgid "Manufacturer"
 msgstr "Hersteller"
 
-#: ../src/gfire.c:784
+#: ../src/gfire.c:795
 msgid "Processor"
 msgstr "Prozessor"
 
-#: ../src/gfire.c:793
+#: ../src/gfire.c:804
 msgid "Memory"
 msgstr "Speicher"
 
-#: ../src/gfire.c:802
+#: ../src/gfire.c:813
 msgid "Video Card"
 msgstr "Grafikkarte"
 
-#: ../src/gfire.c:811
+#: ../src/gfire.c:822
 msgid "Sound Card"
 msgstr "Soundkarte"
 
-#: ../src/gfire.c:820
+#: ../src/gfire.c:831
 msgid "Mainboard"
 msgstr "Mainboard"
 
-#: ../src/gfire.c:829
+#: ../src/gfire.c:840
 msgid "Hard Drive"
 msgstr "Festplatte"
 
-#: ../src/gfire.c:838
+#: ../src/gfire.c:849
 msgid "Monitor"
 msgstr "Monitor"
 
-#: ../src/gfire.c:847
+#: ../src/gfire.c:858
 msgid "Keyboard"
 msgstr "Tastatur"
 
-#: ../src/gfire.c:856
+#: ../src/gfire.c:867
 msgid "Mouse"
 msgstr "Maus"
 
-#: ../src/gfire.c:865
+#: ../src/gfire.c:876
 msgid "Mouse Surface"
 msgstr "Mauspad"
 
-#: ../src/gfire.c:874
+#: ../src/gfire.c:885
 msgid "Speakers"
 msgstr "Lautsprecher"
 
-#: ../src/gfire.c:883
+#: ../src/gfire.c:894
 msgid "Computer Case"
 msgstr "Gehäuse"
 
-#: ../src/gfire.c:892
+#: ../src/gfire.c:903
 msgid "Operating System"
 msgstr "Betriebssystem"
 
-#: ../src/gfire.c:920
+#: ../src/gfire.c:931
 msgid "Retrieving profile data failed!"
 msgstr "Empfangen der Profil-Daten fehlgeschlagen!"
 
-#: ../src/gfire.c:929
+#: ../src/gfire.c:940
 msgid "Invalid profile data received!"
 msgstr "Ungültige Profil-Daten empfangen!"
 
-#: ../src/gfire.c:934
+#: ../src/gfire.c:945
 msgid "Profile"
 msgstr "Profil"
 
-#: ../src/gfire.c:944
+#: ../src/gfire.c:955
 #, c-format
 msgid "%ss Profile:"
 msgstr "%ss Profil:"
 
-#: ../src/gfire.c:954
+#: ../src/gfire.c:965
 msgid "Real Name"
 msgstr "Echter Name"
 
-#: ../src/gfire.c:963
+#: ../src/gfire.c:974
 msgid "Age"
 msgstr "Alter"
 
-#: ../src/gfire.c:972
+#: ../src/gfire.c:983
 msgid "Gender"
 msgstr "Geschlecht"
 
-#: ../src/gfire.c:972
+#: ../src/gfire.c:983
 msgid "Male"
 msgstr "Männlich"
 
-#: ../src/gfire.c:972
+#: ../src/gfire.c:983
 msgid "Female"
 msgstr "Weiblich"
 
-#: ../src/gfire.c:981
+#: ../src/gfire.c:992
 msgid "Occupation"
 msgstr "Tätigkeit"
 
-#: ../src/gfire.c:990
+#: ../src/gfire.c:1001
 msgid "Country"
 msgstr "Land"
 
-#: ../src/gfire.c:999
+#: ../src/gfire.c:1010
 msgid "Location"
 msgstr "Ort"
 
-#: ../src/gfire.c:1008
+#: ../src/gfire.c:1019
 msgid "Gaming Style"
 msgstr "Spielstil"
 
-#: ../src/gfire.c:1017
+#: ../src/gfire.c:1028
 msgid "Interests"
 msgstr "Interessen"
 
-#: ../src/gfire.c:1026
+#: ../src/gfire.c:1037
 msgid "Friends"
 msgstr "Freunde"
 
-#: ../src/gfire.c:1035
+#: ../src/gfire.c:1046
 msgid "Join Date"
 msgstr "Beitrittsdatum"
 
-#: ../src/gfire.c:1097
+#: ../src/gfire.c:1108
 msgid "Nickname"
 msgstr "Nickname"
 
-#: ../src/gfire.c:1115
+#: ../src/gfire.c:1126
 msgid "Offline"
 msgstr "Offline"
 
-#: ../src/gfire.c:1171
+#: ../src/gfire.c:1182
 msgid "Additional game info:"
 msgstr "Zusätzliche Spielinfos:"
 
-#: ../src/gfire.c:1187
+#: ../src/gfire.c:1198
 #, c-format
 msgid "%ss Clans:"
 msgstr "%ss Clans:"
 
-#: ../src/gfire.c:1271
+#: ../src/gfire.c:1282
 msgid "Connection timed out"
 msgstr "Zeitüberschreitung der Verbindung"
 
-#: ../src/gfire.c:1374
+#: ../src/gfire.c:1385
 msgid "Ingame status"
 msgstr "Ingame Status"
 
-#: ../src/gfire.c:1375
+#: ../src/gfire.c:1386
 msgid "Your status has been changed."
 msgstr "Dein Status wurde geändert."
 
@@ -1012,47 +1033,49 @@ msgstr "Xfire Systemmeldung:"
 
 #: ../src/gf_server_browser.c:43
 msgid "Recent servers"
-msgstr ""
+msgstr "Zuletzt genutzte Server"
 
 #: ../src/gf_server_browser.c:46
 msgid "Favorite servers"
-msgstr ""
+msgstr "Favoriten"
 
 #: ../src/gf_server_browser.c:49
 msgid "Friends' favorite servers"
-msgstr ""
+msgstr "Favoriten deiner Freunde"
 
 #: ../src/gf_server_browser.c:52
 msgid "All servers"
-msgstr ""
+msgstr "Alle Server"
 
 #: ../src/gf_server_browser.c:75
 msgid "N/A"
 msgstr "N/A"
 
 #: ../src/gf_server_browser.c:118 ../src/gf_server_browser.c:261
-#, fuzzy
 msgid "Server Browser: error"
-msgstr "Server Browser"
+msgstr "Server Browser: Fehler"
 
 #: ../src/gf_server_browser.c:118
 msgid "Can't add favorite server"
-msgstr ""
+msgstr "Konnte den Server nicht hinzufügen"
 
 #: ../src/gf_server_browser.c:119
 msgid ""
 "You've reached the limit of favorite servers, you can however still remove "
 "favorite servers in order to add new ones."
 msgstr ""
+"Du hast das Maximum der erlaubten Favoriten erreicht. Du kannst allerdings "
+"alte Server löschen, um neue hinzuzufügen."
 
 #: ../src/gf_server_browser.c:261
 msgid "Can't remove favorite server"
-msgstr ""
+msgstr "Konnte Favoriten nicht löschen"
 
 #: ../src/gf_server_browser.c:262
 msgid ""
 "The selected server is not a favorite server and thereby can't be removed."
 msgstr ""
+"Der ausgewählte Server ist kein Favorit, kann daher nicht gelöscht werden."
 
 #: ../src/gf_menus.c:122
 msgid "Change Xfire nickname"
@@ -1084,17 +1107,17 @@ msgid "Reloading was successful."
 msgstr "Datei erfolgreich neu geladen."
 
 #: ../src/gf_menus.c:152
-#, fuzzy, c-format
+#, c-format
 msgid ""
-"Gfire Version:\t\t%s\n"
-"Game List Version:\t\t%s"
+"Gfire Version: %s\n"
+"Game List Version: %s"
 msgstr ""
-"Gfire Version:\t\t%s\n"
-"Game List Version:\t%s"
+"Gfire Version: %s\n"
+"Game List Version: %s"
 
 #: ../src/gf_menus.c:157
-#, fuzzy, c-format
-msgid "Gfire Version:\t\t%s"
+#, c-format
+msgid "Gfire Version: %s"
 msgstr "Gfire Version: %s"
 
 #: ../src/gf_menus.c:160
@@ -1119,7 +1142,20 @@ msgstr "Wiki"
 
 #: ../src/gf_p2p_session.c:412
 msgid "Please wait until a connection with your buddy has been established!"
-msgstr ""
+msgstr "Bitte warte, bis eine Verbindung zu deinem Freund hergestellt wurde!"
+
+#~ msgid "Not Removing %s"
+#~ msgstr "Entferne nicht %s"
+
+#~ msgid ""
+#~ "Account settings are set to not remove buddies\n"
+#~ "The buddy will be restored on your next login"
+#~ msgstr ""
+#~ "Die Account Einstellung ist, Buddys nicht aus Xfire zu löschen.\n"
+#~ "Der Buddy wird beim nächsten Login wiederhergestellt."
+
+#~ msgid "Don't delete buddies from server"
+#~ msgstr "Entferne Buddies nicht vom Server"
 
 #~ msgid "Connect option:"
 #~ msgstr "Verbindungsoption:"

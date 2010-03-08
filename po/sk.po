@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Gfire 0.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-03-07 18:27+0100\n"
+"POT-Creation-Date: 2010-03-08 02:26+0100\n"
 "PO-Revision-Date: 2009-08-28 16:31+0100\n"
 "Last-Translator: Marek Niklíček <mareknik@gmail.com>\n"
 "Language-Team: none\n"
@@ -47,7 +47,7 @@ msgstr "Spustiť súbor:"
 msgid "Launch prefix:"
 msgstr "Prefix pri spustení:"
 
-#: ../data/games.glade.h:9 ../src/gf_purple.c:732
+#: ../data/games.glade.h:9 ../src/gf_purple.c:731
 msgid "Manage Games"
 msgstr "Spravovať hry:"
 
@@ -65,7 +65,7 @@ msgid "Port:"
 msgstr "Port"
 
 #. Server browser
-#: ../data/servers.glade.h:3 ../src/gf_purple.c:736
+#: ../data/servers.glade.h:3 ../src/gf_purple.c:735
 msgid "Server Browser"
 msgstr "Serverový prehliadač"
 
@@ -73,7 +73,7 @@ msgstr "Serverový prehliadač"
 msgid "gtk-add"
 msgstr ""
 
-#: ../src/gf_base.h:110
+#: ../src/gf_base.h:113
 msgid "Xfire - Friends of Friends playing games"
 msgstr "Xfire - Priatelia priateľov hrajú hry"
 
@@ -556,23 +556,23 @@ msgstr "Prihlásili ste sa z iného miesta."
 msgid "Xfire Community Site"
 msgstr ""
 
-#: ../src/gf_purple.c:256 ../src/gfire.c:1123
+#: ../src/gf_purple.c:256 ../src/gfire.c:1134
 msgid "Game"
 msgstr "Hra"
 
-#: ../src/gf_purple.c:262 ../src/gf_purple.c:1215 ../src/gfire.c:1129
+#: ../src/gf_purple.c:262 ../src/gf_purple.c:1214 ../src/gfire.c:1140
 msgid "Server"
 msgstr "Server"
 
-#: ../src/gf_purple.c:292 ../src/gfire.c:1148
+#: ../src/gf_purple.c:292 ../src/gfire.c:1159
 msgid "unknown"
 msgstr "neznámy"
 
-#: ../src/gf_purple.c:307 ../src/gfire.c:1112 ../src/gfire.c:1115
+#: ../src/gf_purple.c:307 ../src/gfire.c:1123 ../src/gfire.c:1126
 msgid "Status"
 msgstr "Stav"
 
-#: ../src/gf_purple.c:317 ../src/gfire.c:1161
+#: ../src/gf_purple.c:317 ../src/gfire.c:1172
 msgid "Common Friends"
 msgstr "Priatelia"
 
@@ -610,374 +610,364 @@ msgstr ""
 msgid "Invite without a message"
 msgstr ""
 
-#: ../src/gf_purple.c:561
-#, c-format
-msgid "Not Removing %s"
-msgstr "Nevymaže sa %s"
-
-#: ../src/gf_purple.c:563
-msgid "Xfire Buddy Removal Denied"
+#: ../src/gf_purple.c:564
+#, fuzzy
+msgid "Xfire Buddy Removal"
 msgstr "Xfire odstránenie kamaráta odmietnuté"
 
-#: ../src/gf_purple.c:563
+#: ../src/gf_purple.c:565
 msgid ""
-"Account settings are set to not remove buddies\n"
-"The buddy will be restored on your next login"
+"You have removed a buddy which is not on your friends list, it will be "
+"restored on the next login."
 msgstr ""
-"Nastavenie účtu je nastavené na nevymazávanie kamarátov\n"
-"Kamarát bude obnovený pri vašom opätovnom prihlásení"
 
-#: ../src/gf_purple.c:621
+#: ../src/gf_purple.c:620
 msgid "Add as friend"
 msgstr "Pridať ako priateľa"
 
-#: ../src/gf_purple.c:636
+#: ../src/gf_purple.c:635
 msgid "Join Game ..."
 msgstr "Pridať sa do hry ..."
 
-#: ../src/gf_purple.c:652
+#: ../src/gf_purple.c:651
 msgid "Join VoIP ..."
 msgstr "Pridať sa do VoIP ..."
 
-#: ../src/gf_purple.c:662
+#: ../src/gf_purple.c:661
 msgid "Xfire Profile"
 msgstr "Xfire profil"
 
-#: ../src/gf_purple.c:694
+#: ../src/gf_purple.c:693
 #, fuzzy, c-format
 msgid "Launch %s"
 msgstr "Parametre pri spustení:"
 
 #. General things
-#: ../src/gf_purple.c:713
+#: ../src/gf_purple.c:712
 msgid "Change Nickname"
 msgstr "Zmeniť prezývku"
 
-#: ../src/gf_purple.c:716
+#: ../src/gf_purple.c:715
 msgid "My Profile Page"
 msgstr "Moja profilová stránka"
 
-#: ../src/gf_purple.c:720
+#: ../src/gf_purple.c:719
 msgid "Friend Search"
 msgstr "Hľadanie priateľov"
 
 #. Game configuration
-#: ../src/gf_purple.c:725
+#: ../src/gf_purple.c:724
 msgid "Reload Game Config"
 msgstr "Znovu načítať konfiguráciu hry"
 
 #. About
-#: ../src/gf_purple.c:748
+#: ../src/gf_purple.c:747
 msgid "About"
 msgstr "O Gfire"
 
-#: ../src/gf_purple.c:802
+#: ../src/gf_purple.c:801
 msgid "_Room:"
 msgstr ""
 
-#: ../src/gf_purple.c:808
+#: ../src/gf_purple.c:807
 msgid "_Password:"
 msgstr ""
 
-#: ../src/gf_purple.c:897
+#: ../src/gf_purple.c:896
 msgid "Xfire Groupchat"
 msgstr "Xfire skupinový chat"
 
-#: ../src/gf_purple.c:897
+#: ../src/gf_purple.c:896
 msgid "MotD change failed"
 msgstr "MotD zmena zlyhala"
 
-#: ../src/gf_purple.c:898
+#: ../src/gf_purple.c:897
 msgid "The MotD contains more than 200 characters."
 msgstr "MotD obsahuje viac než 200 znakov."
 
-#: ../src/gf_purple.c:984
+#: ../src/gf_purple.c:983
 #, fuzzy
 msgid "Friends of friends group name restored"
 msgstr "Xfire - Priatelia priateľov hrajú hry"
 
-#: ../src/gf_purple.c:984 ../src/gf_purple.c:1002
+#: ../src/gf_purple.c:983 ../src/gf_purple.c:1001
 #, fuzzy
 msgid "Group name restored"
 msgstr "Hra bola odstránená"
 
-#: ../src/gf_purple.c:984
+#: ../src/gf_purple.c:983
 msgid ""
 "You have renamed Xfire's FoF group name. Unfortunately we had to restore "
 "this groups name."
 msgstr ""
 
-#: ../src/gf_purple.c:1002
+#: ../src/gf_purple.c:1001
 msgid "Clan's group name restored"
 msgstr ""
 
-#: ../src/gf_purple.c:1002
+#: ../src/gf_purple.c:1001
 msgid ""
 "You have renamed the group name of a Xfire clan. Unfortunately we had to "
 "restore this groups name."
 msgstr ""
 
-#: ../src/gf_purple.c:1218
+#: ../src/gf_purple.c:1217
 msgid "Port"
 msgstr "Port"
 
-#: ../src/gf_purple.c:1221
+#: ../src/gf_purple.c:1220
 msgid "Version"
 msgstr "Verzia"
 
-#: ../src/gf_purple.c:1224
-msgid "Don't delete buddies from server"
-msgstr "Nevymazať kamarátov zo servera"
-
-#: ../src/gf_purple.c:1227
+#: ../src/gf_purple.c:1223
 msgid "Buddies can see if I'm typing"
 msgstr "Kamaráti môžu vidieť, kedy píšem"
 
-#: ../src/gf_purple.c:1230
+#: ../src/gf_purple.c:1226
 msgid "Auto detect for ingame status"
 msgstr "Automatická detekcia pre herný stav (ingame)"
 
-#: ../src/gf_purple.c:1233
+#: ../src/gf_purple.c:1229
+msgid "Change my status for other protocols as well"
+msgstr ""
+
+#: ../src/gf_purple.c:1232
 msgid "Notify me when my status is ingame"
 msgstr "Upozorni ma, keď môj stav je herný (ingame)"
 
-#: ../src/gf_purple.c:1236
+#: ../src/gf_purple.c:1235
 #, fuzzy
 msgid "Enable server detection"
 msgstr "Použiť serverovú detekciu"
 
-#: ../src/gf_purple.c:1239
+#: ../src/gf_purple.c:1238
 msgid "Use Xfires P2P features"
 msgstr ""
 
-#: ../src/gf_purple.c:1243
+#: ../src/gf_purple.c:1242
 msgid "Display notifications for certain events"
 msgstr ""
 
-#: ../src/gf_purple.c:1247
-msgid "Change my status for other protocols as well"
-msgstr ""
-
-#: ../src/gf_purple.c:1250
+#: ../src/gf_purple.c:1246
 #, fuzzy
 msgid "Show Friends of Friends"
 msgstr "Xfire - Priatelia priateľov hrajú hry"
 
-#: ../src/gf_purple.c:1253
+#: ../src/gf_purple.c:1249
 msgid "Xfire"
 msgstr "Xfire"
 
-#: ../src/gf_purple.c:1254 ../src/gf_purple.c:1255
+#: ../src/gf_purple.c:1250 ../src/gf_purple.c:1251
 msgid "Xfire Protocol Plugin"
 msgstr "Xfire Protocol Plugin"
 
-#: ../src/gfire.c:164
+#: ../src/gfire.c:171
 #, c-format
 msgid ""
-"Gfire <b>%u.%u.%u</b> is now available.\n"
+"Gfire <b>%u.%u.%u%s%s</b> is now available.\n"
 "Visit the Gfire website for more information!"
 msgstr ""
 
-#: ../src/gfire.c:167 ../src/gfire.c:176
+#: ../src/gfire.c:176 ../src/gfire.c:187
 #, fuzzy
 msgid "New Gfire Version"
 msgstr "Gfire verzia: %s"
 
 #. FIXME: implement a way to disable this notification
-#: ../src/gfire.c:173
+#: ../src/gfire.c:182
 #, c-format
 msgid ""
-"Gfire %u.%u.%u is now available.\n"
+"Gfire %u.%u.%u%s%s is now available.\n"
 "Visit the Gfire website for more information!"
 msgstr ""
 
-#: ../src/gfire.c:284
+#: ../src/gfire.c:295
 msgid "Connecting"
 msgstr "Pripájam sa"
 
-#: ../src/gfire.c:290
+#: ../src/gfire.c:301
 msgid "Couldn't create socket."
 msgstr "Nemôžem vytvoriť socket."
 
-#: ../src/gfire.c:437
+#: ../src/gfire.c:448
 msgid "Login sent"
 msgstr "Login poslaný"
 
 #. TRANSLATORS: Keep "(AFK)" as is!
 #. Suggestion: Use Xfires original AFK message here
-#: ../src/gfire.c:463
+#: ../src/gfire.c:474
 msgid "(AFK) Away From Keyboard"
 msgstr "(AFK) Som mimo počítača"
 
 #. TRANSLATORS: Keep "(Busy)" as is!
-#: ../src/gfire.c:470
+#: ../src/gfire.c:481
 msgid "(Busy) I'm busy!"
 msgstr "(Busy) Som zaneprázdnený!"
 
-#: ../src/gfire.c:741 ../src/gfire.c:750 ../src/gfire.c:920 ../src/gfire.c:929
+#: ../src/gfire.c:752 ../src/gfire.c:761 ../src/gfire.c:931 ../src/gfire.c:940
 msgid "Error"
 msgstr "Chyba"
 
-#: ../src/gfire.c:741
+#: ../src/gfire.c:752
 msgid "Retrieving gamerig data failed!"
 msgstr "Získavanie dát o hernej zostave zlyhalo!"
 
-#: ../src/gfire.c:750
+#: ../src/gfire.c:761
 msgid "Invalid gamerig data received!"
 msgstr "Prijaté dáta hernej zostavy sú neplatné!"
 
-#: ../src/gfire.c:765
+#: ../src/gfire.c:776
 #, c-format
 msgid "%ss Gaming Rig:"
 msgstr "%ss Herná zostava:"
 
-#: ../src/gfire.c:775
+#: ../src/gfire.c:786
 msgid "Manufacturer"
 msgstr "Výrobca"
 
-#: ../src/gfire.c:784
+#: ../src/gfire.c:795
 msgid "Processor"
 msgstr "Procesor"
 
-#: ../src/gfire.c:793
+#: ../src/gfire.c:804
 msgid "Memory"
 msgstr "Pamäť"
 
-#: ../src/gfire.c:802
+#: ../src/gfire.c:813
 msgid "Video Card"
 msgstr "Grafická karta"
 
-#: ../src/gfire.c:811
+#: ../src/gfire.c:822
 msgid "Sound Card"
 msgstr "Zvuková karta"
 
-#: ../src/gfire.c:820
+#: ../src/gfire.c:831
 msgid "Mainboard"
 msgstr "Základná doska"
 
-#: ../src/gfire.c:829
+#: ../src/gfire.c:840
 msgid "Hard Drive"
 msgstr "Pevný disk"
 
-#: ../src/gfire.c:838
+#: ../src/gfire.c:849
 msgid "Monitor"
 msgstr "Monitor"
 
-#: ../src/gfire.c:847
+#: ../src/gfire.c:858
 msgid "Keyboard"
 msgstr "Klávesnica"
 
-#: ../src/gfire.c:856
+#: ../src/gfire.c:867
 msgid "Mouse"
 msgstr "Myš"
 
-#: ../src/gfire.c:865
+#: ../src/gfire.c:876
 msgid "Mouse Surface"
 msgstr "Podložka pod myš"
 
-#: ../src/gfire.c:874
+#: ../src/gfire.c:885
 msgid "Speakers"
 msgstr "Reproduktory"
 
-#: ../src/gfire.c:883
+#: ../src/gfire.c:894
 msgid "Computer Case"
 msgstr "Počítačová skrinka"
 
-#: ../src/gfire.c:892
+#: ../src/gfire.c:903
 msgid "Operating System"
 msgstr "Operačný systém"
 
-#: ../src/gfire.c:920
+#: ../src/gfire.c:931
 msgid "Retrieving profile data failed!"
 msgstr "Získavanie dát o profile zlyhalo!"
 
-#: ../src/gfire.c:929
+#: ../src/gfire.c:940
 msgid "Invalid profile data received!"
 msgstr "Prijaté dáta o profile sú neplatné!"
 
-#: ../src/gfire.c:934
+#: ../src/gfire.c:945
 msgid "Profile"
 msgstr "Profil"
 
-#: ../src/gfire.c:944
+#: ../src/gfire.c:955
 #, c-format
 msgid "%ss Profile:"
 msgstr "%ss Profil:"
 
-#: ../src/gfire.c:954
+#: ../src/gfire.c:965
 msgid "Real Name"
 msgstr "Skutočné meno"
 
-#: ../src/gfire.c:963
+#: ../src/gfire.c:974
 msgid "Age"
 msgstr "Vek"
 
-#: ../src/gfire.c:972
+#: ../src/gfire.c:983
 msgid "Gender"
 msgstr "Pohlavie"
 
-#: ../src/gfire.c:972
+#: ../src/gfire.c:983
 msgid "Male"
 msgstr "Muž"
 
-#: ../src/gfire.c:972
+#: ../src/gfire.c:983
 msgid "Female"
 msgstr "Žena"
 
-#: ../src/gfire.c:981
+#: ../src/gfire.c:992
 msgid "Occupation"
 msgstr "Zamestnanie"
 
-#: ../src/gfire.c:990
+#: ../src/gfire.c:1001
 msgid "Country"
 msgstr "Krajina"
 
-#: ../src/gfire.c:999
+#: ../src/gfire.c:1010
 msgid "Location"
 msgstr "Miesto"
 
-#: ../src/gfire.c:1008
+#: ../src/gfire.c:1019
 msgid "Gaming Style"
 msgstr "Štýl hrania"
 
-#: ../src/gfire.c:1017
+#: ../src/gfire.c:1028
 msgid "Interests"
 msgstr "Záujmy"
 
-#: ../src/gfire.c:1026
+#: ../src/gfire.c:1037
 msgid "Friends"
 msgstr "Priatelia"
 
-#: ../src/gfire.c:1035
+#: ../src/gfire.c:1046
 msgid "Join Date"
 msgstr "Dátum zaregistrovania"
 
-#: ../src/gfire.c:1097
+#: ../src/gfire.c:1108
 msgid "Nickname"
 msgstr "Prezývka"
 
-#: ../src/gfire.c:1115
+#: ../src/gfire.c:1126
 msgid "Offline"
 msgstr "Offline"
 
-#: ../src/gfire.c:1171
+#: ../src/gfire.c:1182
 msgid "Additional game info:"
 msgstr "Dodatočné informácie o hre:"
 
-#: ../src/gfire.c:1187
+#: ../src/gfire.c:1198
 #, c-format
 msgid "%ss Clans:"
 msgstr "%ss Klany:"
 
-#: ../src/gfire.c:1271
+#: ../src/gfire.c:1282
 msgid "Connection timed out"
 msgstr "Čas spojenia vypršal"
 
-#: ../src/gfire.c:1374
+#: ../src/gfire.c:1385
 msgid "Ingame status"
 msgstr "Herný stav"
 
-#: ../src/gfire.c:1375
+#: ../src/gfire.c:1386
 msgid "Your status has been changed."
 msgstr "Váš stav sa zmenil."
 
@@ -1068,15 +1058,15 @@ msgstr "Znovu načítanie bolo úspešné."
 #: ../src/gf_menus.c:152
 #, fuzzy, c-format
 msgid ""
-"Gfire Version:\t\t%s\n"
-"Game List Version:\t\t%s"
+"Gfire Version: %s\n"
+"Game List Version: %s"
 msgstr ""
 "Gfire verzia:\t\t%s\n"
 "Verzia zoznamu hier:\t%s"
 
 #: ../src/gf_menus.c:157
 #, fuzzy, c-format
-msgid "Gfire Version:\t\t%s"
+msgid "Gfire Version: %s"
 msgstr "Gfire verzia: %s"
 
 #: ../src/gf_menus.c:160
@@ -1102,6 +1092,19 @@ msgstr "Wiki"
 #: ../src/gf_p2p_session.c:412
 msgid "Please wait until a connection with your buddy has been established!"
 msgstr ""
+
+#~ msgid "Not Removing %s"
+#~ msgstr "Nevymaže sa %s"
+
+#~ msgid ""
+#~ "Account settings are set to not remove buddies\n"
+#~ "The buddy will be restored on your next login"
+#~ msgstr ""
+#~ "Nastavenie účtu je nastavené na nevymazávanie kamarátov\n"
+#~ "Kamarát bude obnovený pri vašom opätovnom prihlásení"
+
+#~ msgid "Don't delete buddies from server"
+#~ msgstr "Nevymazať kamarátov zo servera"
 
 #~ msgid "Connect option:"
 #~ msgstr "Možnosti pripojenia:"
