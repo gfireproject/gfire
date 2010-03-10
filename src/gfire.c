@@ -290,6 +290,9 @@ void gfire_login(gfire_data *p_gfire)
 	if(!p_gfire)
 		return;
 
+	if(!g_thread_get_initialized())
+		g_thread_init(NULL);
+
 	PurpleAccount *account = purple_connection_get_account(gfire_get_connection(p_gfire));
 
 	purple_connection_update_progress(gfire_get_connection(p_gfire), _("Connecting"), 0, XFIRE_CONNECT_STEPS);

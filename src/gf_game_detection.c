@@ -972,7 +972,12 @@ guint32 gfire_process_list_contains(const gfire_process_list *p_list, const gcha
 		if(!info)
 			continue;
 
-		if(g_strcmp0(info->exe, p_exe) == 0)
+#ifdef _WIN32
+		// Windows handles file names case-insensitive in contrast to most other OSes
+		if(!purple_utf8_strcasecmp(info->exe, p_exe))
+#else
+		if(!g_strcmp0(info->exe, p_exe) == 0)
+#endif // _WIN32
 		{
 			// First check invalid arguments
 			gboolean process_invalid_args = FALSE;

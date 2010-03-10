@@ -1002,8 +1002,9 @@ void gfire_chat_register_commands()
 	gfire_chat_visibility_cmd = purple_cmd_register("visibility", "w", PURPLE_CMD_P_PRPL,
 											  PURPLE_CMD_FLAG_CHAT | PURPLE_CMD_FLAG_PRPL_ONLY,
 											  GFIRE_PRPL_ID, gfire_chat_command_handler,
-											  _("password &lt;public|friends&gt;:<br />Changes the current visibility for "
-												"this room.<br /><br />Requires &quot;Admin&quot; permission."), NULL);
+											  _("visibilty &lt;public|friends&gt;:<br />Changes the current visibility "
+												"for this room.<br /><br />Requires &quot;Admin&quot; permission."),
+											  NULL);
 
 	gfire_chat_silence_cmd = purple_cmd_register("silence", "w", PURPLE_CMD_P_PRPL,
 											  PURPLE_CMD_FLAG_CHAT | PURPLE_CMD_FLAG_PRPL_ONLY,

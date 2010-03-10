@@ -316,6 +316,7 @@ gboolean gfire_p2p_dl_proto_file_request(gfire_p2p_session *p_session, const gui
 		return TRUE;
 	}
 
+	g_strstrip(desc);
 	gchar *msg = g_strdup_printf(_("File Description: %s"), (strlen(desc) > 0) ? desc : _("No description entered"));
 	g_free(desc);
 
