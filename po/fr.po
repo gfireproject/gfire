@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Gfire 0.9.0 Beta\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-03-09 20:29+0100\n"
+"POT-Creation-Date: 2010-03-10 23:14+0100\n"
 "PO-Revision-Date: 2010-03-07 14:43+0100\n"
 "Last-Translator: Warren Dumortier <nwarrenfl@gmail.com>\n"
 "Language-Team: French\n"
@@ -323,14 +323,15 @@ msgstr ""
 "réquise: &quot;Admin&quot;."
 
 #: ../src/gf_chat.c:1005
+#, fuzzy
 msgid ""
-"password &lt;public|friends&gt;:<br />Changes the current visibility for "
+"visibilty &lt;public|friends&gt;:<br />Changes the current visibility for "
 "this room.<br /><br />Requires &quot;Admin&quot; permission."
 msgstr ""
 "password &lt;public|friends&gt;:<br />Change la visibilité de la salle.<br /"
 "><br />Permission réquise: &quot;Admin&quot;."
 
-#: ../src/gf_chat.c:1011
+#: ../src/gf_chat.c:1012
 msgid ""
 "silence &lt;on|off&gt;:<br />Sets whether non-Moderators and non-Admins "
 "should not be able to talk in this room.<br /><br />Requires &quot;"
@@ -340,7 +341,7 @@ msgstr ""
 "non-admins peuvent parler dans la salle.<br /><br />Permission réquite: "
 "&quot;Modérateur&quot; ou plus élevé."
 
-#: ../src/gf_chat.c:1018
+#: ../src/gf_chat.c:1019
 msgid ""
 "userjoinmsg &lt;on|off&gt;:<br />Set whether &quot;&lt;User&gt; joined&quot; "
 "and &quot;&lt;User&gt; left&quot; messages should be displayed in this room."
@@ -350,7 +351,7 @@ msgstr ""
 "concernant les (dé)connexions de contacts sont affichés dans la salle.<br /"
 "><br />Permission réquise: &quot;Modérateur&quot; ou plus élevé."
 
-#: ../src/gf_chat.c:1026
+#: ../src/gf_chat.c:1027
 msgid ""
 "permission &lt;username&gt; &lt;muted|normal|power|moderator|admin&gt;:<br /"
 ">Set <i>username</i>'s permission. Only admins may give other users the "
@@ -364,7 +365,7 @@ msgstr ""
 "que vous ne pouvez pas modifier votre permission.<br /><br />Permission "
 "réquise: &quot;Modérateur&quot; ou plus élevé."
 
-#: ../src/gf_chat.c:1035
+#: ../src/gf_chat.c:1036
 msgid ""
 "kick &lt;username&gt;:<br />Kicks <i>username</i> from the channel.<br /"
 "><br />Requires &quot;Moderator&quot; or higher permission."
@@ -372,7 +373,7 @@ msgstr ""
 "kick &lt;username&gt;:<br />Kicke <i>username</i> de la salle.<br /><br /"
 ">Permission réquise: &quot;Modérateur&quot; ou plus élevé."
 
-#: ../src/gf_chat.c:1042
+#: ../src/gf_chat.c:1043
 msgid ""
 "def_permission &lt;muted|normal|power|moderator|admin&gt;:<br />Set this "
 "room's default permission. New buddies who join this room will have this "
@@ -383,7 +384,7 @@ msgstr ""
 "réjoint cette salle recevra cette permission.<br /><br />Permission réquise: "
 "&quot;Modérateur&quot; ou plus élevé."
 
-#: ../src/gf_chat.c:1116
+#: ../src/gf_chat.c:1117
 msgid ""
 "You attempted to join a chat room using an invalid password. Please try "
 "again."
@@ -391,11 +392,11 @@ msgstr ""
 "Vous avez essayé de rejoindre une salle de tchat avec un mot de passe "
 "incorrect. Veuillez réessayer."
 
-#: ../src/gf_chat.c:1117
+#: ../src/gf_chat.c:1118
 msgid "Invalid password"
 msgstr "Mot de passe incorrect"
 
-#: ../src/gf_chat.c:1121
+#: ../src/gf_chat.c:1122
 msgid ""
 "You attempted to join a chat room that is password protected. Please try "
 "again."
@@ -403,15 +404,15 @@ msgstr ""
 "Vous avez essayé de rejoindre une salle de tchat protégée par un mot de "
 "passe. Veuillez réessayer."
 
-#: ../src/gf_chat.c:1122
+#: ../src/gf_chat.c:1123
 msgid "Password required"
 msgstr "Mot de passe réquis"
 
-#: ../src/gf_chat.c:1130
+#: ../src/gf_chat.c:1131
 msgid "Join"
 msgstr "Rejoindre"
 
-#: ../src/gf_chat.c:1131 ../src/gf_friend_search.c:66 ../src/gf_menus.c:123
+#: ../src/gf_chat.c:1132 ../src/gf_friend_search.c:66 ../src/gf_menus.c:123
 msgid "Cancel"
 msgstr "Annuler"
 
@@ -586,23 +587,23 @@ msgstr "Vous vous êtes connecté depuis un autre emplacement."
 msgid "Xfire Community Site"
 msgstr "Communauté Xfire"
 
-#: ../src/gf_purple.c:256 ../src/gfire.c:1134
+#: ../src/gf_purple.c:256 ../src/gfire.c:1137
 msgid "Game"
 msgstr "Jeu"
 
-#: ../src/gf_purple.c:262 ../src/gf_purple.c:1214 ../src/gfire.c:1140
+#: ../src/gf_purple.c:262 ../src/gf_purple.c:1214 ../src/gfire.c:1143
 msgid "Server"
 msgstr "Serveur"
 
-#: ../src/gf_purple.c:292 ../src/gfire.c:1159
+#: ../src/gf_purple.c:292 ../src/gfire.c:1162
 msgid "unknown"
 msgstr "inconnu"
 
-#: ../src/gf_purple.c:307 ../src/gfire.c:1123 ../src/gfire.c:1126
+#: ../src/gf_purple.c:307 ../src/gfire.c:1126 ../src/gfire.c:1129
 msgid "Status"
 msgstr "Statut"
 
-#: ../src/gf_purple.c:317 ../src/gfire.c:1172
+#: ../src/gf_purple.c:317 ../src/gfire.c:1175
 msgid "Common Friends"
 msgstr "Amis communs"
 
@@ -814,193 +815,193 @@ msgstr ""
 "Gfire %u.%u.%u est maintenant disponible.\n"
 "Visitez le site web de Gfire pour plus d'informations!"
 
-#: ../src/gfire.c:295
+#: ../src/gfire.c:298
 msgid "Connecting"
 msgstr "Connexion en cours"
 
-#: ../src/gfire.c:301
+#: ../src/gfire.c:304
 msgid "Couldn't create socket."
 msgstr "Impossible de créer le socket."
 
-#: ../src/gfire.c:448
+#: ../src/gfire.c:451
 msgid "Login sent"
 msgstr "Connexion: envoyée"
 
 #. TRANSLATORS: Keep "(AFK)" as is!
 #. Suggestion: Use Xfires original AFK message here
-#: ../src/gfire.c:474
+#: ../src/gfire.c:477
 msgid "(AFK) Away From Keyboard"
 msgstr "(AFK) Absent(e)"
 
 #. TRANSLATORS: Keep "(Busy)" as is!
-#: ../src/gfire.c:481
+#: ../src/gfire.c:484
 msgid "(Busy) I'm busy!"
 msgstr "(Busy) Occupé!"
 
-#: ../src/gfire.c:752 ../src/gfire.c:761 ../src/gfire.c:931 ../src/gfire.c:940
+#: ../src/gfire.c:755 ../src/gfire.c:764 ../src/gfire.c:934 ../src/gfire.c:943
 msgid "Error"
 msgstr "Erreur"
 
-#: ../src/gfire.c:752
+#: ../src/gfire.c:755
 msgid "Retrieving gamerig data failed!"
 msgstr "Echer lors de la réception de la gaming rig!"
 
-#: ../src/gfire.c:761
+#: ../src/gfire.c:764
 msgid "Invalid gamerig data received!"
 msgstr "Données de gaming rig invalides reçues!"
 
-#: ../src/gfire.c:776
+#: ../src/gfire.c:779
 #, c-format
 msgid "%ss Gaming Rig:"
 msgstr "Gaming rig de %s:"
 
-#: ../src/gfire.c:786
+#: ../src/gfire.c:789
 msgid "Manufacturer"
 msgstr "Fabricant"
 
-#: ../src/gfire.c:795
+#: ../src/gfire.c:798
 msgid "Processor"
 msgstr "Processeur"
 
-#: ../src/gfire.c:804
+#: ../src/gfire.c:807
 msgid "Memory"
 msgstr "Mémoire"
 
-#: ../src/gfire.c:813
+#: ../src/gfire.c:816
 msgid "Video Card"
 msgstr "Carte graphique"
 
-#: ../src/gfire.c:822
+#: ../src/gfire.c:825
 msgid "Sound Card"
 msgstr "Carte son"
 
-#: ../src/gfire.c:831
+#: ../src/gfire.c:834
 msgid "Mainboard"
 msgstr "Carte mère"
 
-#: ../src/gfire.c:840
+#: ../src/gfire.c:843
 msgid "Hard Drive"
 msgstr "Disque dur"
 
-#: ../src/gfire.c:849
+#: ../src/gfire.c:852
 msgid "Monitor"
 msgstr "Moniteur"
 
-#: ../src/gfire.c:858
+#: ../src/gfire.c:861
 msgid "Keyboard"
 msgstr "Clavier"
 
-#: ../src/gfire.c:867
+#: ../src/gfire.c:870
 msgid "Mouse"
 msgstr "Souris"
 
-#: ../src/gfire.c:876
+#: ../src/gfire.c:879
 msgid "Mouse Surface"
 msgstr "Tapis de souris"
 
-#: ../src/gfire.c:885
+#: ../src/gfire.c:888
 msgid "Speakers"
 msgstr "Haut-parleurs"
 
-#: ../src/gfire.c:894
+#: ../src/gfire.c:897
 msgid "Computer Case"
 msgstr "Boîtier PC"
 
-#: ../src/gfire.c:903
+#: ../src/gfire.c:906
 msgid "Operating System"
 msgstr "Système d'exploitation"
 
-#: ../src/gfire.c:931
+#: ../src/gfire.c:934
 msgid "Retrieving profile data failed!"
 msgstr "Echec lors de la réception des données de profil!"
 
-#: ../src/gfire.c:940
+#: ../src/gfire.c:943
 msgid "Invalid profile data received!"
 msgstr "Données de profil invalides reçues!"
 
-#: ../src/gfire.c:945
+#: ../src/gfire.c:948
 msgid "Profile"
 msgstr "Profil"
 
-#: ../src/gfire.c:955
+#: ../src/gfire.c:958
 #, c-format
 msgid "%ss Profile:"
 msgstr "Profil de %s"
 
-#: ../src/gfire.c:965
+#: ../src/gfire.c:968
 msgid "Real Name"
 msgstr "Nom réel"
 
-#: ../src/gfire.c:974
+#: ../src/gfire.c:977
 msgid "Age"
 msgstr "Age"
 
-#: ../src/gfire.c:983
+#: ../src/gfire.c:986
 msgid "Gender"
 msgstr "Sexe"
 
-#: ../src/gfire.c:983
+#: ../src/gfire.c:986
 msgid "Male"
 msgstr "Homme"
 
-#: ../src/gfire.c:983
+#: ../src/gfire.c:986
 msgid "Female"
 msgstr "Femme"
 
-#: ../src/gfire.c:992
+#: ../src/gfire.c:995
 msgid "Occupation"
 msgstr "Occupation"
 
-#: ../src/gfire.c:1001
+#: ../src/gfire.c:1004
 msgid "Country"
 msgstr "Pays"
 
-#: ../src/gfire.c:1010
+#: ../src/gfire.c:1013
 msgid "Location"
 msgstr "Location"
 
-#: ../src/gfire.c:1019
+#: ../src/gfire.c:1022
 msgid "Gaming Style"
 msgstr "Style de jeu"
 
-#: ../src/gfire.c:1028
+#: ../src/gfire.c:1031
 msgid "Interests"
 msgstr "Intérêts"
 
-#: ../src/gfire.c:1037
+#: ../src/gfire.c:1040
 msgid "Friends"
 msgstr "Amis"
 
-#: ../src/gfire.c:1046
+#: ../src/gfire.c:1049
 msgid "Join Date"
 msgstr "Membre depuis"
 
-#: ../src/gfire.c:1108
+#: ../src/gfire.c:1111
 msgid "Nickname"
 msgstr "Pseudo"
 
-#: ../src/gfire.c:1126
+#: ../src/gfire.c:1129
 msgid "Offline"
 msgstr "Hors ligne"
 
-#: ../src/gfire.c:1182
+#: ../src/gfire.c:1185
 msgid "Additional game info:"
 msgstr "Informations de jeu additionnelles:"
 
-#: ../src/gfire.c:1198
+#: ../src/gfire.c:1201
 #, c-format
 msgid "%ss Clans:"
 msgstr "Clans de %s:"
 
-#: ../src/gfire.c:1282
+#: ../src/gfire.c:1285
 msgid "Connection timed out"
 msgstr "La connexion a expiré"
 
-#: ../src/gfire.c:1385
+#: ../src/gfire.c:1388
 msgid "Ingame status"
 msgstr "Statut en jeu"
 
-#: ../src/gfire.c:1386
+#: ../src/gfire.c:1389
 msgid "Your status has been changed."
 msgstr "Votre statut a été changé."
 
@@ -1129,6 +1130,15 @@ msgstr "Wiki"
 #: ../src/gf_p2p_session.c:412
 msgid "Please wait until a connection with your buddy has been established!"
 msgstr "Veuillez attendre qu'une connexion avec votre contact soit établie!"
+
+#: ../src/gf_p2p_dl_proto.c:320
+#, fuzzy, c-format
+msgid "File Description: %s"
+msgstr "Gfire:\t\t%s"
+
+#: ../src/gf_p2p_dl_proto.c:320
+msgid "No description entered"
+msgstr ""
 
 #~ msgid "Not Removing %s"
 #~ msgstr "Ne peut supprimer %s"

@@ -7,12 +7,12 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Gfire 0.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-03-08 02:26+0100\n"
-"PO-Revision-Date: 2009-08-24 18:47+0100\n"
-"Last-Translator: Rizzly/Erynhenwe <rockrobban@gmail.com>\n"
+"POT-Creation-Date: 2010-03-10 23:14+0100\n"
+"PO-Revision-Date: 2010-03-08 19:19+0100\n"
+"Last-Translator: Rizzly <Rockrobban@gmail.com>\n"
 "Language-Team: Swedish <rockrobban@gmail.com>\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Poedit-Language: Swedish\n"
 "X-Poedit-Country: SWEDEN\n"
@@ -56,16 +56,15 @@ msgstr "Hantera Spel"
 
 #: ../data/games.glade.h:10
 msgid "Use same file"
-msgstr ""
+msgstr "Använd samma fil"
 
 #: ../data/servers.glade.h:1
 msgid "IP Address:"
-msgstr ""
+msgstr "IP-adress:"
 
 #: ../data/servers.glade.h:2
-#, fuzzy
 msgid "Port:"
-msgstr "Port"
+msgstr "Port:"
 
 #. Server browser
 #: ../data/servers.glade.h:3 ../src/gf_purple.c:735
@@ -74,11 +73,11 @@ msgstr "Serverbläddrare"
 
 #: ../data/servers.glade.h:4
 msgid "gtk-add"
-msgstr ""
+msgstr "gtk-lägg till"
 
 #: ../src/gf_base.h:113
 msgid "Xfire - Friends of Friends playing games"
-msgstr "Xfire - Vänner till vänner som spelar"
+msgstr "Xfire - Kompisar till kompisar som spelar"
 
 #: ../src/gf_buddies.c:520
 #, c-format
@@ -90,13 +89,13 @@ msgstr ""
 "%s"
 
 #: ../src/gf_buddies.c:801
-#, fuzzy, c-format
+#, c-format
 msgid "Playing <b>%s</b> now!"
-msgstr "Spelar %s"
+msgstr "Spelar <b>%s</b> nu!"
 
 #: ../src/gf_buddies.c:808
 msgid "Stopped playing!"
-msgstr ""
+msgstr "Slutade spela!"
 
 #: ../src/gf_buddies.c:1086 ../src/gf_game_detection.c:81
 #, c-format
@@ -105,54 +104,54 @@ msgstr "Spelar %s"
 
 #: ../src/gf_buddies.c:1477
 msgid "P2P Connection not possible"
-msgstr ""
+msgstr "P2P-anslutning misslyckades."
 
 #: ../src/gf_buddies.c:1477
 msgid ""
 "We're not able to establish a connection to your buddy. File transfer and "
 "P2P messaging will not be possible."
 msgstr ""
+"Kan inte etablera en anslutning med din kompis. Filöverföring och P2P-"
+"meddelanden kommer inte att fungera."
 
 #: ../src/gf_chat.c:226 ../src/gf_chat.c:424 ../src/gf_chat.c:559
 msgid "Permissionless (muted)"
-msgstr ""
+msgstr "Privilegielös (tystad)"
 
 #: ../src/gf_chat.c:231 ../src/gf_chat.c:429 ../src/gf_chat.c:563
 msgid "Normal"
-msgstr ""
+msgstr "Normalanvändare"
 
 #: ../src/gf_chat.c:236 ../src/gf_chat.c:434 ../src/gf_chat.c:567
 msgid "Power-User"
-msgstr ""
+msgstr "Superanvändare"
 
 #: ../src/gf_chat.c:241 ../src/gf_chat.c:439 ../src/gf_chat.c:571
-#, fuzzy
 msgid "Moderator"
-msgstr "Skärm"
+msgstr "Moderator"
 
 #: ../src/gf_chat.c:246 ../src/gf_chat.c:444 ../src/gf_chat.c:575
 msgid "Admin"
-msgstr ""
+msgstr "Administratör"
 
 #: ../src/gf_chat.c:251 ../src/gf_chat.c:449 ../src/gf_chat.c:579
 #: ../src/gf_chat.c:607 ../src/gf_games.c:217
-#, fuzzy
 msgid "Unknown"
-msgstr "okänd"
+msgstr "Okänd"
 
 #: ../src/gf_chat.c:260
 #, c-format
 msgid "You currently have the permission \"%s\"."
-msgstr ""
+msgstr "Du har för närvarande privilegiet \"%s\"."
 
 #: ../src/gf_chat.c:311
 msgid "Buddy has been kicked."
-msgstr ""
+msgstr "Kompisen har blivit utslängd."
 
 #: ../src/gf_chat.c:366
-#, fuzzy, c-format
+#, c-format
 msgid "This room's name has been changed to \"%s\"."
-msgstr "Din status har ändrats."
+msgstr "Det här rummets namn har ändrats till \"%s\"."
 
 #: ../src/gf_chat.c:401
 #, c-format
@@ -164,14 +163,14 @@ msgstr ""
 "%s"
 
 #: ../src/gf_chat.c:456
-#, fuzzy, c-format
+#, c-format
 msgid "Your permission has been changed to \"%s\"."
-msgstr "Din status har ändrats."
+msgstr "Dina privilegier har ändrats till \"%s\"."
 
 #: ../src/gf_chat.c:462
-#, fuzzy, c-format
+#, c-format
 msgid "%s's permission has been changed to \"%s\"."
-msgstr "Din status har ändrats."
+msgstr "%ss privilegier har ändrats till \"%s\"."
 
 #. Join message
 #: ../src/gf_chat.c:492
@@ -180,7 +179,7 @@ msgid "You are now chatting in %s."
 msgstr "Du chattar nu i %s."
 
 #: ../src/gf_chat.c:499
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Today's message:\n"
 "%s"
@@ -189,112 +188,114 @@ msgstr ""
 "%s."
 
 #: ../src/gf_chat.c:582
-#, fuzzy, c-format
+#, c-format
 msgid "This room's default permission has been changed to \"%s\"."
-msgstr "Din status har ändrats."
+msgstr "Det här rummets privilegier har ändrats till \"%s\"."
 
 #: ../src/gf_chat.c:601
 msgid "Public"
-msgstr ""
+msgstr "Publikt"
 
 #: ../src/gf_chat.c:604
-#, fuzzy
 msgid "Friends only"
-msgstr "Vänner"
+msgstr "Endast kompisar"
 
 #: ../src/gf_chat.c:610
-#, fuzzy, c-format
+#, c-format
 msgid "This room's visibility has been changed to \"%s\"."
-msgstr "Din status har ändrats."
+msgstr "Det här rummets synlighet har ändrats till \"%s\"."
 
 #: ../src/gf_chat.c:625
 #, c-format
 msgid "This room is now password protected."
-msgstr ""
+msgstr "Rummet är nu lösenordsskyddat."
 
 #: ../src/gf_chat.c:627
 #, c-format
 msgid "This room is no longer password protected."
-msgstr ""
+msgstr "Rummet är inte längre lösenordsskyddat."
 
 #: ../src/gf_chat.c:629
-#, fuzzy, c-format
+#, c-format
 msgid "This room's password has been changed."
-msgstr "Din status har ändrats."
+msgstr "Lösenordet till det här rummet har ändrats."
 
 #: ../src/gf_chat.c:649
 #, c-format
 msgid "This room is now silenced."
-msgstr ""
+msgstr "Rummet är nu tystat."
 
 #: ../src/gf_chat.c:651
 #, c-format
 msgid "This room is no longer silenced."
-msgstr ""
+msgstr "Rummet är inte längre tystat."
 
 #: ../src/gf_chat.c:671
 #, c-format
 msgid "Buddy join-/leave-messages will be displayed now."
 msgstr ""
+"Meddelanden när kompisar deltar/lämnar kommer att visas i fortsättningen."
 
 #: ../src/gf_chat.c:673
 #, c-format
 msgid "Buddy join-/leave-messages will no longer be displayed."
-msgstr ""
+msgstr "Meddelanden när kompisar deltar/lämnar kommer inte att visas längre."
 
 #: ../src/gf_chat.c:725 ../src/gf_chat.c:789 ../src/gf_chat.c:810
 #, c-format
 msgid "Unknown argument: %s"
-msgstr ""
+msgstr "Okänt argument: %s"
 
 #: ../src/gf_chat.c:734
 msgid ""
 "New and old name are identical. Please note that chat room names have no "
 "case."
 msgstr ""
+"Det nya och det gamla namnet är identiska. Kom ihåg att rum kan inte ha "
+"versaler."
 
 #: ../src/gf_chat.c:768
 #, c-format
 msgid "Unknown visibility: %s"
-msgstr ""
+msgstr "Okänd synlighet: %s"
 
 #: ../src/gf_chat.c:819
 msgid "You are not allowed to grant/revoke any permissions."
-msgstr ""
+msgstr "Du har inte tillåtelse att lägga till/ta bort privilegier."
 
 #: ../src/gf_chat.c:838 ../src/gf_chat.c:907
 #, c-format
 msgid "Unknown buddy: %s"
-msgstr ""
+msgstr "Okänd kompis: %s"
 
 #: ../src/gf_chat.c:844
 msgid "You can't change your own permission!"
-msgstr ""
+msgstr "Du kan inte ändra dina egna privilegier!"
 
 #: ../src/gf_chat.c:859 ../src/gf_chat.c:868
 msgid "You are not allowed to grant this permission."
-msgstr ""
+msgstr "Du har inte tillåtelse att lägga till det här privilegiet. "
 
 #: ../src/gf_chat.c:875 ../src/gf_chat.c:957
 #, c-format
 msgid "Unknown permission: %s"
-msgstr ""
+msgstr "Okänt privilegie: %s"
 
 #: ../src/gf_chat.c:888
 msgid "You are not allowed to kick buddies."
-msgstr ""
+msgstr "Du har inte tillåtelse att slänga ut dina kompisar."
 
 #: ../src/gf_chat.c:913
 msgid "You can't kick yourself!"
-msgstr ""
+msgstr "Du kan inte slänga ut dig själv!"
 
 #: ../src/gf_chat.c:926
 msgid "You are not allowed to change the default permission."
-msgstr ""
+msgstr "Du har inte tillåtelse att ändra standardprivilegierna"
 
 #: ../src/gf_chat.c:941 ../src/gf_chat.c:950
 msgid "You are not allowed to set this default permission."
-msgstr ""
+msgstr "Du har inte tillåtelse att verkställa standardprivilegiet."
 
 #: ../src/gf_chat.c:983
 msgid ""
@@ -303,12 +304,18 @@ msgid ""
 "you will be asked to save the chat room to your buddy list if it is not "
 "already there. If you decline this request the save will NOT be performed."
 msgstr ""
+"save <yes|no>:<br />Spara det nuvarande rummet på Xfire. Det här bevarar "
+"alla rummets inställningar och privilegier. Om du väljer \"Ja\", kommer du "
+"att bli tillfrågad att spara rummet i din kompislista om det inte redan "
+"finns där. Om du avböjer kommer ditt rum INTE att sparas."
 
 #: ../src/gf_chat.c:992
 msgid ""
 "rename &lt;new-chat-name&gt;:<br />Changes the current name for this room."
 "<br/><br />Requires &quot;Admin&quot; permission."
 msgstr ""
+"rename <nytt rumnamn>:<br />Ändrar namnet på det här rummet.<br/><br /"
+">Kräver \"Administratör\"-privilegier."
 
 #: ../src/gf_chat.c:998
 msgid ""
@@ -316,28 +323,39 @@ msgid ""
 "room. &quot;/password&quot; results in removing the current password.<br /"
 "><br />Requires &quot;Admin&quot; permission."
 msgstr ""
+"password [<nytt lösenord>]:<br />Ändrar det nuvarande lösenordet till det "
+"här rummet. \"/Password\" tar bort det nuvarande lösenordet.<br /><br /"
+">Kräver \"Administratör\"-privilegier."
 
 #: ../src/gf_chat.c:1005
 msgid ""
-"password &lt;public|friends&gt;:<br />Changes the current visibility for "
+"visibilty &lt;public|friends&gt;:<br />Changes the current visibility for "
 "this room.<br /><br />Requires &quot;Admin&quot; permission."
 msgstr ""
+"visibility <public|friends>:<br />Ändrar synligheten för rummet.<br /><br /"
+">Kräver \"Administratör\"-privilegier."
 
-#: ../src/gf_chat.c:1011
+#: ../src/gf_chat.c:1012
 msgid ""
 "silence &lt;on|off&gt;:<br />Sets whether non-Moderators and non-Admins "
 "should not be able to talk in this room.<br /><br />Requires &quot;"
 "Moderator&quot; or higher permission."
 msgstr ""
+"silence <on|off>:<br />Välj om icke-moderatorer och icke-administratörer ska "
+"kunna prata i det här rummet.<br /><br />Kräver \"Moderator\" eller högre "
+"privilegie."
 
-#: ../src/gf_chat.c:1018
+#: ../src/gf_chat.c:1019
 msgid ""
 "userjoinmsg &lt;on|off&gt;:<br />Set whether &quot;&lt;User&gt; joined&quot; "
 "and &quot;&lt;User&gt; left&quot; messages should be displayed in this room."
 "<br /><br />Requires &quot;Moderator&quot; or higher permission."
 msgstr ""
+"userjoinmsg <on|off>:<br />Välj om \"<User> deltar\"- eller \"<User> lämnade"
+"\" -meddelanden ska visas.<br /><br />Kräver \"Moderator\" eller högre "
+"privilegie."
 
-#: ../src/gf_chat.c:1026
+#: ../src/gf_chat.c:1027
 msgid ""
 "permission &lt;username&gt; &lt;muted|normal|power|moderator|admin&gt;:<br /"
 ">Set <i>username</i>'s permission. Only admins may give other users the "
@@ -345,67 +363,77 @@ msgid ""
 "own permission.<br /><br />Requires &quot;Moderator&quot; or higher "
 "permission."
 msgstr ""
+"permission <användarnamn> <muted|normal|power|moderator|admin>:<br />Ändra "
+"<i>användarnamn</i>s privilegier. Endast administratörer kan ge användare "
+"\"Administratör\"s-privilegier.<br />Notera att du inte kan ändra din egna "
+"privilegier.<br /><br />Kräver \"Moderator\" eller högre privilegie."
 
-#: ../src/gf_chat.c:1035
+#: ../src/gf_chat.c:1036
 msgid ""
 "kick &lt;username&gt;:<br />Kicks <i>username</i> from the channel.<br /"
 "><br />Requires &quot;Moderator&quot; or higher permission."
 msgstr ""
+"kick <användarnamn>:<br />Slänger ut <i>användarnamn</i> från rummet.<br /"
+"><br />Kräver \"Moderator\" eller högre privilegie."
 
-#: ../src/gf_chat.c:1042
+#: ../src/gf_chat.c:1043
 msgid ""
 "def_permission &lt;muted|normal|power|moderator|admin&gt;:<br />Set this "
 "room's default permission. New buddies who join this room will have this "
 "permission<br /><br />Requires &quot;Moderator&quot; or higher permission."
 msgstr ""
+"def_permission <muted|normal|power|moderator|admin>:<br />Ändra det här "
+"rummets standardprivilegier. Nya kompisar som deltar i det här rummet får "
+"den här privilegienivån<br /><br />Kräver \"Moderator\" eller högre "
+"privilegie."
 
-#: ../src/gf_chat.c:1116
+#: ../src/gf_chat.c:1117
 msgid ""
 "You attempted to join a chat room using an invalid password. Please try "
 "again."
-msgstr ""
+msgstr "Du försökte att delta i ett rum som är lösenordsskyddat, försök igen."
 
-#: ../src/gf_chat.c:1117
+#: ../src/gf_chat.c:1118
 msgid "Invalid password"
-msgstr ""
+msgstr "Felaktigt lösenord."
 
-#: ../src/gf_chat.c:1121
+#: ../src/gf_chat.c:1122
 msgid ""
 "You attempted to join a chat room that is password protected. Please try "
 "again."
-msgstr ""
+msgstr "Du försökte att delta i ett rum som är lösenordsskyddat, försök igen."
 
-#: ../src/gf_chat.c:1122
+#: ../src/gf_chat.c:1123
 msgid "Password required"
-msgstr ""
+msgstr "Lösenord krävs"
 
-#: ../src/gf_chat.c:1130
-#, fuzzy
+#: ../src/gf_chat.c:1131
 msgid "Join"
-msgstr "Registreringsdatum"
+msgstr "Delta"
 
-#: ../src/gf_chat.c:1131 ../src/gf_friend_search.c:66 ../src/gf_menus.c:123
+#: ../src/gf_chat.c:1132 ../src/gf_friend_search.c:66 ../src/gf_menus.c:123
 msgid "Cancel"
 msgstr "Avbryt"
 
 #: ../src/gf_chat_proto.c:517
 msgid "Chat room join error"
-msgstr ""
+msgstr "Rumdeltagningsfel"
 
 #: ../src/gf_chat_proto.c:517
-#, fuzzy
 msgid "Unknown error"
-msgstr "okänd"
+msgstr "Okänt fel"
 
 #: ../src/gf_chat_proto.c:518
 msgid ""
 "Unknown join error. You might be blocked from this chat room or are already "
 "in 5 rooms."
 msgstr ""
+"Okänt deltagningsfel. Du kan var blockerad från det här rummet, eller så är "
+"du redan i 5 rum."
 
 #: ../src/gf_friend_search.c:64 ../src/gf_friend_search.c:106
 msgid "Xfire Friend Search"
-msgstr "Xfire-vänsökning"
+msgstr "Xfire-kompissökning"
 
 #: ../src/gf_friend_search.c:64
 msgid "Please enter a Xfire username, name or e-Mail address here:"
@@ -413,7 +441,7 @@ msgstr "Var vänlig mata in Xfire-användarnamnm, namn eller e-postadress här:"
 
 #: ../src/gf_friend_search.c:65
 msgid "For example: gill123, Gill Bates or gill@bates.net"
-msgstr "T.ex: gill123, Gill Bates or gill@bates.net"
+msgstr "T.ex: gill123, Gill Bates eller gill@bates.net"
 
 #: ../src/gf_friend_search.c:66
 msgid "Search"
@@ -436,12 +464,11 @@ msgid "Search results"
 msgstr "Sökresultat"
 
 #: ../src/gf_games.c:43
-#, fuzzy, c-format
+#, c-format
 msgid "The Games List has been updated to version: %s."
-msgstr "Spelet har blivit redigerat"
+msgstr "Spellistan har blivit uppdaterad till version: %s."
 
 #: ../src/gf_games.c:47 ../src/gf_games.c:50 ../src/gf_games.c:51
-#, fuzzy
 msgid "New Gfire Game List Version"
 msgstr "Ny version av spellista: %s"
 
@@ -456,7 +483,7 @@ msgstr "Kunde inte lägga till spel"
 
 #: ../src/gf_games.c:1216
 msgid "There's no such game, please try again."
-msgstr ""
+msgstr "Spelet finns inte, var vänlig försök igen!"
 
 #: ../src/gf_games.c:1232
 msgid "Manage Games: game added"
@@ -513,7 +540,7 @@ msgstr "Kunde inte ta bort spelet"
 
 #: ../src/gf_games.c:1354
 msgid "No such game, please try again!"
-msgstr ""
+msgstr "Spelet finns inte, var vänlig försök igen!"
 
 #: ../src/gf_games.c:1378
 msgid "Manage Games: game removed"
@@ -557,27 +584,27 @@ msgstr "Du har loggat in från någon annanstans."
 #. Community site
 #: ../src/gf_purple.c:156
 msgid "Xfire Community Site"
-msgstr ""
+msgstr "Xfires communitysida"
 
-#: ../src/gf_purple.c:256 ../src/gfire.c:1134
+#: ../src/gf_purple.c:256 ../src/gfire.c:1137
 msgid "Game"
 msgstr "Spel"
 
-#: ../src/gf_purple.c:262 ../src/gf_purple.c:1214 ../src/gfire.c:1140
+#: ../src/gf_purple.c:262 ../src/gf_purple.c:1214 ../src/gfire.c:1143
 msgid "Server"
 msgstr "Server"
 
-#: ../src/gf_purple.c:292 ../src/gfire.c:1159
+#: ../src/gf_purple.c:292 ../src/gfire.c:1162
 msgid "unknown"
 msgstr "okänd"
 
-#: ../src/gf_purple.c:307 ../src/gfire.c:1123 ../src/gfire.c:1126
+#: ../src/gf_purple.c:307 ../src/gfire.c:1126 ../src/gfire.c:1129
 msgid "Status"
 msgstr "Status"
 
-#: ../src/gf_purple.c:317 ../src/gfire.c:1172
+#: ../src/gf_purple.c:317 ../src/gfire.c:1175
 msgid "Common Friends"
-msgstr "Gemensamma vänner"
+msgstr "Gemensamma kompisar"
 
 #: ../src/gf_purple.c:380
 msgid "Protocol initialization failed."
@@ -593,40 +620,42 @@ msgstr "Meddelandet kunde inte skickas. Kontakten är frånkopplad"
 
 #. Request the invitation message
 #: ../src/gf_purple.c:532
-#, fuzzy
 msgid "Xfire Invitation Message"
-msgstr "Systemmeddelande från Xfire:"
+msgstr "Xfire-inbjudningsmeddelande"
 
 #: ../src/gf_purple.c:533
 msgid "Please enter the message you want to send your buddy with this invite:"
 msgstr ""
+"Mata in det meddelande du vill skicka till din kompis tillsammans med din "
+"inbjudan:"
 
 #: ../src/gf_purple.c:534
 msgid "Please add me to your friends list!"
-msgstr ""
+msgstr "Snälla, lägg till mig i din kompislista!"
 
 #: ../src/gf_purple.c:535
 msgid "Invite with a message"
-msgstr ""
+msgstr "Bjud in med meddelande"
 
 #: ../src/gf_purple.c:536
 msgid "Invite without a message"
-msgstr ""
+msgstr "Bjud in utan meddelande"
 
 #: ../src/gf_purple.c:564
-#, fuzzy
 msgid "Xfire Buddy Removal"
-msgstr "Borttagning av kontakt är inte tillåten"
+msgstr "Borttagning av Xfire-kompis"
 
 #: ../src/gf_purple.c:565
 msgid ""
 "You have removed a buddy which is not on your friends list, it will be "
 "restored on the next login."
 msgstr ""
+"Du har försökt att ta bort en kompis som inte är i din kompislista, "
+"kontakten kommer att återställas vid nästa inloggning."
 
 #: ../src/gf_purple.c:620
 msgid "Add as friend"
-msgstr "Lägg till som vän"
+msgstr "Lägg till som kompis"
 
 #: ../src/gf_purple.c:635
 msgid "Join Game ..."
@@ -641,9 +670,9 @@ msgid "Xfire Profile"
 msgstr "Xfire-profil"
 
 #: ../src/gf_purple.c:693
-#, fuzzy, c-format
+#, c-format
 msgid "Launch %s"
-msgstr "Startargument:"
+msgstr "Starta %s"
 
 #. General things
 #: ../src/gf_purple.c:712
@@ -656,7 +685,7 @@ msgstr "Min profilsida"
 
 #: ../src/gf_purple.c:719
 msgid "Friend Search"
-msgstr "Vänsökning"
+msgstr "Kompissökning"
 
 #. Game configuration
 #: ../src/gf_purple.c:724
@@ -670,11 +699,11 @@ msgstr "Om"
 
 #: ../src/gf_purple.c:801
 msgid "_Room:"
-msgstr ""
+msgstr "_Rum:"
 
 #: ../src/gf_purple.c:807
 msgid "_Password:"
-msgstr ""
+msgstr "_Lösenord:"
 
 #: ../src/gf_purple.c:896
 msgid "Xfire Groupchat"
@@ -689,30 +718,32 @@ msgid "The MotD contains more than 200 characters."
 msgstr "Ditt dagsmeddelande innehåller mer än 200 tecken."
 
 #: ../src/gf_purple.c:983
-#, fuzzy
 msgid "Friends of friends group name restored"
-msgstr "Xfire - Vänner till vänner som spelar"
+msgstr "\"Kompisar till kompisar\"-gruppnamn återställt"
 
 #: ../src/gf_purple.c:983 ../src/gf_purple.c:1001
-#, fuzzy
 msgid "Group name restored"
-msgstr "Spel borttaget"
+msgstr "Gruppnamnet återställt"
 
 #: ../src/gf_purple.c:983
 msgid ""
 "You have renamed Xfire's FoF group name. Unfortunately we had to restore "
 "this groups name."
 msgstr ""
+"Du har ändrat Xfires \"kompisar till kompisar\"-gruppnamn. Tyvärr var vi "
+"tvungna att återställa gruppens namn."
 
 #: ../src/gf_purple.c:1001
 msgid "Clan's group name restored"
-msgstr ""
+msgstr "Klanens gruppnamn är återställt"
 
 #: ../src/gf_purple.c:1001
 msgid ""
 "You have renamed the group name of a Xfire clan. Unfortunately we had to "
 "restore this groups name."
 msgstr ""
+"Du har ändrat gruppnamnet för Xfire-klanen. Tyvärr var vi tvungna att "
+"återställa gruppens namn."
 
 #: ../src/gf_purple.c:1217
 msgid "Port"
@@ -732,29 +763,27 @@ msgstr "Automatisk igenkänning för spelstatus"
 
 #: ../src/gf_purple.c:1229
 msgid "Change my status for other protocols as well"
-msgstr ""
+msgstr "Ändra min status även för andra protokoll "
 
 #: ../src/gf_purple.c:1232
 msgid "Notify me when my status is ingame"
 msgstr "Notifiera mig när min spelstatus ändras"
 
 #: ../src/gf_purple.c:1235
-#, fuzzy
 msgid "Enable server detection"
 msgstr "Använd serverigenkänning"
 
 #: ../src/gf_purple.c:1238
 msgid "Use Xfires P2P features"
-msgstr ""
+msgstr "Använder Xfires p2p-funktioner"
 
 #: ../src/gf_purple.c:1242
 msgid "Display notifications for certain events"
-msgstr ""
+msgstr "Visa notifieringar för vissa händelser"
 
 #: ../src/gf_purple.c:1246
-#, fuzzy
 msgid "Show Friends of Friends"
-msgstr "Xfire - Vänner till vänner som spelar"
+msgstr "Visa kompisar till kompisar"
 
 #: ../src/gf_purple.c:1249
 msgid "Xfire"
@@ -770,11 +799,12 @@ msgid ""
 "Gfire <b>%u.%u.%u%s%s</b> is now available.\n"
 "Visit the Gfire website for more information!"
 msgstr ""
+"Gfire <b>%u.%u.%u%s%s</b> är nu tillgänglig.\n"
+"Besök Gfires webbplats för mer information!"
 
 #: ../src/gfire.c:176 ../src/gfire.c:187
-#, fuzzy
 msgid "New Gfire Version"
-msgstr "Gfire-version: %s"
+msgstr "Ny Gfire-version"
 
 #. FIXME: implement a way to disable this notification
 #: ../src/gfire.c:182
@@ -783,194 +813,196 @@ msgid ""
 "Gfire %u.%u.%u%s%s is now available.\n"
 "Visit the Gfire website for more information!"
 msgstr ""
+"Gfire %u.%u.%u%s%s är nu tillgänglig.\n"
+"Besök Gfires webbplats för mer information!"
 
-#: ../src/gfire.c:295
+#: ../src/gfire.c:298
 msgid "Connecting"
 msgstr "Ansluter"
 
-#: ../src/gfire.c:301
+#: ../src/gfire.c:304
 msgid "Couldn't create socket."
 msgstr "Kunde skapa anslutning."
 
-#: ../src/gfire.c:448
+#: ../src/gfire.c:451
 msgid "Login sent"
 msgstr "Inloggningsinformation skickad"
 
 #. TRANSLATORS: Keep "(AFK)" as is!
 #. Suggestion: Use Xfires original AFK message here
-#: ../src/gfire.c:474
+#: ../src/gfire.c:477
 msgid "(AFK) Away From Keyboard"
 msgstr "(AFK) Borta från tangenbordet"
 
 #. TRANSLATORS: Keep "(Busy)" as is!
-#: ../src/gfire.c:481
+#: ../src/gfire.c:484
 msgid "(Busy) I'm busy!"
 msgstr "(Busy) Jag är upptagen!"
 
-#: ../src/gfire.c:752 ../src/gfire.c:761 ../src/gfire.c:931 ../src/gfire.c:940
+#: ../src/gfire.c:755 ../src/gfire.c:764 ../src/gfire.c:934 ../src/gfire.c:943
 msgid "Error"
 msgstr "Fel"
 
-#: ../src/gfire.c:752
+#: ../src/gfire.c:755
 msgid "Retrieving gamerig data failed!"
 msgstr "Hämtning av data om speldator misslyckades!"
 
-#: ../src/gfire.c:761
+#: ../src/gfire.c:764
 msgid "Invalid gamerig data received!"
 msgstr "Felaktig data om speldator mottogs!"
 
-#: ../src/gfire.c:776
+#: ../src/gfire.c:779
 #, c-format
 msgid "%ss Gaming Rig:"
 msgstr "%ss speldator:"
 
-#: ../src/gfire.c:786
+#: ../src/gfire.c:789
 msgid "Manufacturer"
 msgstr "Tillverkare"
 
-#: ../src/gfire.c:795
+#: ../src/gfire.c:798
 msgid "Processor"
 msgstr "Processor"
 
-#: ../src/gfire.c:804
+#: ../src/gfire.c:807
 msgid "Memory"
 msgstr "Minne"
 
-#: ../src/gfire.c:813
+#: ../src/gfire.c:816
 msgid "Video Card"
 msgstr "Grafikkort"
 
-#: ../src/gfire.c:822
+#: ../src/gfire.c:825
 msgid "Sound Card"
 msgstr "Ljudkort"
 
-#: ../src/gfire.c:831
+#: ../src/gfire.c:834
 msgid "Mainboard"
 msgstr "Moderkort"
 
-#: ../src/gfire.c:840
+#: ../src/gfire.c:843
 msgid "Hard Drive"
 msgstr "Hårddisk"
 
-#: ../src/gfire.c:849
+#: ../src/gfire.c:852
 msgid "Monitor"
 msgstr "Skärm"
 
-#: ../src/gfire.c:858
+#: ../src/gfire.c:861
 msgid "Keyboard"
 msgstr "Tangentbord"
 
-#: ../src/gfire.c:867
+#: ../src/gfire.c:870
 msgid "Mouse"
 msgstr "Mus"
 
-#: ../src/gfire.c:876
+#: ../src/gfire.c:879
 msgid "Mouse Surface"
 msgstr "Musmatta"
 
-#: ../src/gfire.c:885
+#: ../src/gfire.c:888
 msgid "Speakers"
 msgstr "Högtalare"
 
-#: ../src/gfire.c:894
+#: ../src/gfire.c:897
 msgid "Computer Case"
 msgstr "Datorchassi"
 
-#: ../src/gfire.c:903
+#: ../src/gfire.c:906
 msgid "Operating System"
 msgstr "Operativsystem"
 
-#: ../src/gfire.c:931
+#: ../src/gfire.c:934
 msgid "Retrieving profile data failed!"
 msgstr "Hämtning av profildata misslyckades!"
 
-#: ../src/gfire.c:940
+#: ../src/gfire.c:943
 msgid "Invalid profile data received!"
 msgstr "Felaktig profildata mottogs!"
 
-#: ../src/gfire.c:945
+#: ../src/gfire.c:948
 msgid "Profile"
 msgstr "Profil"
 
-#: ../src/gfire.c:955
+#: ../src/gfire.c:958
 #, c-format
 msgid "%ss Profile:"
 msgstr "%ss profil:"
 
-#: ../src/gfire.c:965
+#: ../src/gfire.c:968
 msgid "Real Name"
 msgstr "Riktigt namn"
 
-#: ../src/gfire.c:974
+#: ../src/gfire.c:977
 msgid "Age"
 msgstr "Ålder"
 
-#: ../src/gfire.c:983
+#: ../src/gfire.c:986
 msgid "Gender"
 msgstr "Kön"
 
-#: ../src/gfire.c:983
+#: ../src/gfire.c:986
 msgid "Male"
 msgstr "Man"
 
-#: ../src/gfire.c:983
+#: ../src/gfire.c:986
 msgid "Female"
 msgstr "Kvinna"
 
-#: ../src/gfire.c:992
+#: ../src/gfire.c:995
 msgid "Occupation"
 msgstr "Sysselsättning"
 
-#: ../src/gfire.c:1001
+#: ../src/gfire.c:1004
 msgid "Country"
 msgstr "Land"
 
-#: ../src/gfire.c:1010
+#: ../src/gfire.c:1013
 msgid "Location"
 msgstr "Område"
 
-#: ../src/gfire.c:1019
+#: ../src/gfire.c:1022
 msgid "Gaming Style"
 msgstr "Spelstil"
 
-#: ../src/gfire.c:1028
+#: ../src/gfire.c:1031
 msgid "Interests"
 msgstr "Intressen"
 
-#: ../src/gfire.c:1037
+#: ../src/gfire.c:1040
 msgid "Friends"
-msgstr "Vänner"
+msgstr "Kompisar"
 
-#: ../src/gfire.c:1046
+#: ../src/gfire.c:1049
 msgid "Join Date"
 msgstr "Registreringsdatum"
 
-#: ../src/gfire.c:1108
+#: ../src/gfire.c:1111
 msgid "Nickname"
 msgstr "Smeknamn"
 
-#: ../src/gfire.c:1126
+#: ../src/gfire.c:1129
 msgid "Offline"
 msgstr "Frånkopplad"
 
-#: ../src/gfire.c:1182
+#: ../src/gfire.c:1185
 msgid "Additional game info:"
-msgstr ""
+msgstr "Ytterligare information om spelet:"
 
-#: ../src/gfire.c:1198
+#: ../src/gfire.c:1201
 #, c-format
 msgid "%ss Clans:"
 msgstr "%ss klaner:"
 
-#: ../src/gfire.c:1282
+#: ../src/gfire.c:1285
 msgid "Connection timed out"
 msgstr "Anslutningstidsfrist har gått ut"
 
-#: ../src/gfire.c:1385
+#: ../src/gfire.c:1388
 msgid "Ingame status"
 msgstr "Spelstatus"
 
-#: ../src/gfire.c:1386
+#: ../src/gfire.c:1389
 msgid "Your status has been changed."
 msgstr "Din status har ändrats."
 
@@ -988,47 +1020,49 @@ msgstr "Systemmeddelande från Xfire:"
 
 #: ../src/gf_server_browser.c:43
 msgid "Recent servers"
-msgstr ""
+msgstr "Nyligen besökta servrar"
 
 #: ../src/gf_server_browser.c:46
 msgid "Favorite servers"
-msgstr ""
+msgstr "Favoritservrar"
 
 #: ../src/gf_server_browser.c:49
 msgid "Friends' favorite servers"
-msgstr ""
+msgstr "Kompisars favoritservrar"
 
 #: ../src/gf_server_browser.c:52
 msgid "All servers"
-msgstr ""
+msgstr "Alla servrar"
 
 #: ../src/gf_server_browser.c:75
 msgid "N/A"
 msgstr "N/A"
 
 #: ../src/gf_server_browser.c:118 ../src/gf_server_browser.c:261
-#, fuzzy
 msgid "Server Browser: error"
-msgstr "Serverbläddrare"
+msgstr "Serverbläddrare: fel"
 
 #: ../src/gf_server_browser.c:118
 msgid "Can't add favorite server"
-msgstr ""
+msgstr "Kan inte lägga till favoritserver"
 
 #: ../src/gf_server_browser.c:119
 msgid ""
 "You've reached the limit of favorite servers, you can however still remove "
 "favorite servers in order to add new ones."
 msgstr ""
+"Du har nått gränsen för antalet tillåtna favoritservrar, du kan dock ta bort "
+"gamla favoritservrar för att skapa nya."
 
 #: ../src/gf_server_browser.c:261
 msgid "Can't remove favorite server"
-msgstr ""
+msgstr "Kan inte ta bort favoritserver"
 
 #: ../src/gf_server_browser.c:262
 msgid ""
 "The selected server is not a favorite server and thereby can't be removed."
 msgstr ""
+"Den valda servern är inte en favoritserver och kan därför inte tas bort."
 
 #: ../src/gf_menus.c:122
 msgid "Change Xfire nickname"
@@ -1061,16 +1095,16 @@ msgid "Reloading was successful."
 msgstr "Omladdningen lyckades."
 
 #: ../src/gf_menus.c:152
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Gfire Version: %s\n"
 "Game List Version: %s"
 msgstr ""
-"Gfire-version:\t\t%s\n"
-"Version av spellista:\t%s"
+"Gfire-version: %s\n"
+"Version av spellista:%s"
 
 #: ../src/gf_menus.c:157
-#, fuzzy, c-format
+#, c-format
 msgid "Gfire Version: %s"
 msgstr "Gfire-version: %s"
 
@@ -1096,7 +1130,16 @@ msgstr "Wiki"
 
 #: ../src/gf_p2p_session.c:412
 msgid "Please wait until a connection with your buddy has been established!"
-msgstr ""
+msgstr "Vänta medan anslutningen med din vän etableras"
+
+#: ../src/gf_p2p_dl_proto.c:320
+#, c-format
+msgid "File Description: %s"
+msgstr "Filbeskrivning: %s"
+
+#: ../src/gf_p2p_dl_proto.c:320
+msgid "No description entered"
+msgstr "Ingen beskrivning specifierad"
 
 #~ msgid "Not Removing %s"
 #~ msgstr "Tar inte bort %s"
@@ -1157,10 +1200,6 @@ msgstr ""
 #~ msgstr ""
 #~ "Din nuvarande spelkonfiguration är inte kompatibel med den här versionen "
 #~ "av Gfire. Var vänlig radera den och försök igen."
-
-#, fuzzy
-#~ msgid "File Description: %s"
-#~ msgstr "Gfire-version: %s"
 
 #~ msgid "Reload Game ID List"
 #~ msgstr "Ladda om listan för spel-ID"

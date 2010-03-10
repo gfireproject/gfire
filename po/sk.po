@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Gfire 0.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-03-08 02:26+0100\n"
-"PO-Revision-Date: 2009-08-28 16:31+0100\n"
+"POT-Creation-Date: 2010-03-10 23:14+0100\n"
+"PO-Revision-Date: 2010-03-09 00:43+0100\n"
 "Last-Translator: Marek Niklíček <mareknik@gmail.com>\n"
 "Language-Team: none\n"
 "MIME-Version: 1.0\n"
@@ -53,16 +53,15 @@ msgstr "Spravovať hry:"
 
 #: ../data/games.glade.h:10
 msgid "Use same file"
-msgstr ""
+msgstr "Použiť ten istý súbor"
 
 #: ../data/servers.glade.h:1
 msgid "IP Address:"
-msgstr ""
+msgstr "IP adresa:"
 
 #: ../data/servers.glade.h:2
-#, fuzzy
 msgid "Port:"
-msgstr "Port"
+msgstr "Port:"
 
 #. Server browser
 #: ../data/servers.glade.h:3 ../src/gf_purple.c:735
@@ -71,7 +70,7 @@ msgstr "Serverový prehliadač"
 
 #: ../data/servers.glade.h:4
 msgid "gtk-add"
-msgstr ""
+msgstr "gtk-add"
 
 #: ../src/gf_base.h:113
 msgid "Xfire - Friends of Friends playing games"
@@ -87,13 +86,13 @@ msgstr ""
 "%s"
 
 #: ../src/gf_buddies.c:801
-#, fuzzy, c-format
+#, c-format
 msgid "Playing <b>%s</b> now!"
-msgstr "Hrá %s"
+msgstr "Hrá <b>%s</b> teraz!"
 
 #: ../src/gf_buddies.c:808
 msgid "Stopped playing!"
-msgstr ""
+msgstr "Prestal hrať!"
 
 #: ../src/gf_buddies.c:1086 ../src/gf_game_detection.c:81
 #, c-format
@@ -102,54 +101,54 @@ msgstr "Hrá %s"
 
 #: ../src/gf_buddies.c:1477
 msgid "P2P Connection not possible"
-msgstr ""
+msgstr "P2P spojenie nie je možné"
 
 #: ../src/gf_buddies.c:1477
 msgid ""
 "We're not able to establish a connection to your buddy. File transfer and "
 "P2P messaging will not be possible."
 msgstr ""
+"Nie je možné nadviazať spojenie s vaším kamarátom. Prenos súborov a P2P "
+"doručovanie správ nie je možné."
 
 #: ../src/gf_chat.c:226 ../src/gf_chat.c:424 ../src/gf_chat.c:559
 msgid "Permissionless (muted)"
-msgstr ""
+msgstr "Bez oprávnení (umlčaný)"
 
 #: ../src/gf_chat.c:231 ../src/gf_chat.c:429 ../src/gf_chat.c:563
 msgid "Normal"
-msgstr ""
+msgstr "Normálny"
 
 #: ../src/gf_chat.c:236 ../src/gf_chat.c:434 ../src/gf_chat.c:567
 msgid "Power-User"
-msgstr ""
+msgstr "Pokročilý používateľ"
 
 #: ../src/gf_chat.c:241 ../src/gf_chat.c:439 ../src/gf_chat.c:571
-#, fuzzy
 msgid "Moderator"
-msgstr "Monitor"
+msgstr "Moderátor"
 
 #: ../src/gf_chat.c:246 ../src/gf_chat.c:444 ../src/gf_chat.c:575
 msgid "Admin"
-msgstr ""
+msgstr "Správca"
 
 #: ../src/gf_chat.c:251 ../src/gf_chat.c:449 ../src/gf_chat.c:579
 #: ../src/gf_chat.c:607 ../src/gf_games.c:217
-#, fuzzy
 msgid "Unknown"
-msgstr "neznámy"
+msgstr "Neznámy"
 
 #: ../src/gf_chat.c:260
 #, c-format
 msgid "You currently have the permission \"%s\"."
-msgstr ""
+msgstr "Vaše súčasné oprávnenia \"%s\"."
 
 #: ../src/gf_chat.c:311
 msgid "Buddy has been kicked."
-msgstr ""
+msgstr "Kamarát bol vyhodený."
 
 #: ../src/gf_chat.c:366
-#, fuzzy, c-format
+#, c-format
 msgid "This room's name has been changed to \"%s\"."
-msgstr "Váš stav sa zmenil."
+msgstr "Názov tejto miestnosti sa zmenil na \"%s\"."
 
 #: ../src/gf_chat.c:401
 #, c-format
@@ -161,14 +160,14 @@ msgstr ""
 "%s"
 
 #: ../src/gf_chat.c:456
-#, fuzzy, c-format
+#, c-format
 msgid "Your permission has been changed to \"%s\"."
-msgstr "Váš stav sa zmenil."
+msgstr "Vaše oprávnenia sa zmenili na \"%s\"."
 
 #: ../src/gf_chat.c:462
-#, fuzzy, c-format
+#, c-format
 msgid "%s's permission has been changed to \"%s\"."
-msgstr "Váš stav sa zmenil."
+msgstr "%s's oprávnenia sa zmenili na \"%s\"."
 
 #. Join message
 #: ../src/gf_chat.c:492
@@ -177,121 +176,122 @@ msgid "You are now chatting in %s."
 msgstr "Práve chatujete v %s."
 
 #: ../src/gf_chat.c:499
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Today's message:\n"
 "%s"
 msgstr ""
 "Dnešná správa:\n"
-"%s."
+"%s"
 
 #: ../src/gf_chat.c:582
-#, fuzzy, c-format
+#, c-format
 msgid "This room's default permission has been changed to \"%s\"."
-msgstr "Váš stav sa zmenil."
+msgstr "Východiskové oprávnenia tejto miestnosti sa zmenili na \"%s\"."
 
 #: ../src/gf_chat.c:601
 msgid "Public"
-msgstr ""
+msgstr "Verejná"
 
 #: ../src/gf_chat.c:604
-#, fuzzy
 msgid "Friends only"
-msgstr "Priatelia"
+msgstr "Priatelia iba"
 
 #: ../src/gf_chat.c:610
-#, fuzzy, c-format
+#, c-format
 msgid "This room's visibility has been changed to \"%s\"."
-msgstr "Váš stav sa zmenil."
+msgstr "Viditeľnosť tejto miestnosti na zmenila na \"%s\"."
 
 #: ../src/gf_chat.c:625
 #, c-format
 msgid "This room is now password protected."
-msgstr ""
+msgstr "Táto miestnosť je odteraz chránená heslom."
 
 #: ../src/gf_chat.c:627
 #, c-format
 msgid "This room is no longer password protected."
-msgstr ""
+msgstr "Táto miestnosť odteraz už nie je chránená heslom."
 
 #: ../src/gf_chat.c:629
-#, fuzzy, c-format
+#, c-format
 msgid "This room's password has been changed."
-msgstr "Váš stav sa zmenil."
+msgstr "Heslo tejto miestnosti sa zmenilo."
 
 #: ../src/gf_chat.c:649
 #, c-format
 msgid "This room is now silenced."
-msgstr ""
+msgstr "Táto miestnosť je odteraz umlčaná."
 
 #: ../src/gf_chat.c:651
 #, c-format
 msgid "This room is no longer silenced."
-msgstr ""
+msgstr "Táto miestnosť odteraz už nie je umlčaná."
 
 #: ../src/gf_chat.c:671
 #, c-format
 msgid "Buddy join-/leave-messages will be displayed now."
-msgstr ""
+msgstr "Odteraz sa zobrazia správy kamaráta o pripojení / odpojení."
 
 #: ../src/gf_chat.c:673
 #, c-format
 msgid "Buddy join-/leave-messages will no longer be displayed."
-msgstr ""
+msgstr "Odteraz sa nezobrazia správy kamaráta o pripojení / odpojení."
 
 #: ../src/gf_chat.c:725 ../src/gf_chat.c:789 ../src/gf_chat.c:810
 #, c-format
 msgid "Unknown argument: %s"
-msgstr ""
+msgstr "Neznámy argument: %s"
 
 #: ../src/gf_chat.c:734
 msgid ""
 "New and old name are identical. Please note that chat room names have no "
 "case."
 msgstr ""
+"Nové a staré meno je rovnaké. Prosím, uvedomte si, že názvy miestností "
+"nerozlišujú veľkosť písma."
 
 #: ../src/gf_chat.c:768
 #, c-format
 msgid "Unknown visibility: %s"
-msgstr ""
+msgstr "Neznáma viditeľnosť: %s"
 
 #: ../src/gf_chat.c:819
 msgid "You are not allowed to grant/revoke any permissions."
-msgstr ""
+msgstr "Nie ste oprávnený udeľovať / odobierať akékoľvek oprávnenia."
 
 #: ../src/gf_chat.c:838 ../src/gf_chat.c:907
 #, c-format
 msgid "Unknown buddy: %s"
-msgstr ""
+msgstr "Neznámy kamarát: %s"
 
 #: ../src/gf_chat.c:844
 msgid "You can't change your own permission!"
-msgstr ""
+msgstr "Nemôžete zmeniť vlastné oprávnenia!"
 
 #: ../src/gf_chat.c:859 ../src/gf_chat.c:868
 msgid "You are not allowed to grant this permission."
-msgstr ""
+msgstr "Nie ste oprávnený udeliť toto oprávnenie."
 
 #: ../src/gf_chat.c:875 ../src/gf_chat.c:957
 #, c-format
 msgid "Unknown permission: %s"
-msgstr ""
+msgstr "Neznáme oprávnenie: %s"
 
 #: ../src/gf_chat.c:888
 msgid "You are not allowed to kick buddies."
-msgstr ""
+msgstr "Nie ste oprávnený vyhodzovať kamarátov."
 
 #: ../src/gf_chat.c:913
 msgid "You can't kick yourself!"
-msgstr ""
+msgstr "Nemôžete vyhodiť sám seba!"
 
 #: ../src/gf_chat.c:926
 msgid "You are not allowed to change the default permission."
-msgstr ""
+msgstr "Nie ste oprávnený zmeniť východiskové oprávnenie."
 
 #: ../src/gf_chat.c:941 ../src/gf_chat.c:950
 msgid "You are not allowed to set this default permission."
-msgstr ""
+msgstr "Nie ste oprávnený zmeniť toto východiskové oprávnenie."
 
 #: ../src/gf_chat.c:983
 msgid ""
@@ -300,12 +300,18 @@ msgid ""
 "you will be asked to save the chat room to your buddy list if it is not "
 "already there. If you decline this request the save will NOT be performed."
 msgstr ""
+"save &lt;yes|no&gt;:<br />Uložiť súčasnú miestnosť na Xfire. Toto ponechá "
+"všetky nastavenia a privilégia miestností. On &quot;yes&quot;, Budete "
+"požiadaný uložiť miesnosť do vášho zoznamu, ak tam už nie je. Ak túto "
+"žiadosť odmietnete, miestnosť sa neuloží."
 
 #: ../src/gf_chat.c:992
 msgid ""
 "rename &lt;new-chat-name&gt;:<br />Changes the current name for this room."
 "<br/><br />Requires &quot;Admin&quot; permission."
 msgstr ""
+"rename &lt;new-chat-name&gt;:<br />Zmení súčasné meno pre túto miestnosť.<br/"
+"><br />Vyžaduje &quot;Admin&quot; oprávnenie."
 
 #: ../src/gf_chat.c:998
 msgid ""
@@ -313,28 +319,39 @@ msgid ""
 "room. &quot;/password&quot; results in removing the current password.<br /"
 "><br />Requires &quot;Admin&quot; permission."
 msgstr ""
+"password [&lt;new-password&gt;]:<br />Zmení súčasné heslo pre túto "
+"miestnosť. &quot;/password&quot; odstráni súčasné heslo.<br /><br />Vyžaduje "
+"&quot;Admin&quot; oprávnenie."
 
 #: ../src/gf_chat.c:1005
 msgid ""
-"password &lt;public|friends&gt;:<br />Changes the current visibility for "
+"visibilty &lt;public|friends&gt;:<br />Changes the current visibility for "
 "this room.<br /><br />Requires &quot;Admin&quot; permission."
 msgstr ""
+"visibilty &lt;public|friends&gt;:<br />Zmení súčasnú viditeľnosť tejto "
+"miestnosti.<br /><br />Vyžaduje &quot;Admin&quot; oprávnenie."
 
-#: ../src/gf_chat.c:1011
+#: ../src/gf_chat.c:1012
 msgid ""
 "silence &lt;on|off&gt;:<br />Sets whether non-Moderators and non-Admins "
 "should not be able to talk in this room.<br /><br />Requires &quot;"
 "Moderator&quot; or higher permission."
 msgstr ""
+"silence &lt;on|off&gt;:<br />Nastaví, či ne-moderátori a ne-správcovia by "
+"nemohli rozprávať v miestnosti.<br /><br />Vyžaduje &quot;Moderator&quot; "
+"alebo vyššie oprávnenie."
 
-#: ../src/gf_chat.c:1018
+#: ../src/gf_chat.c:1019
 msgid ""
 "userjoinmsg &lt;on|off&gt;:<br />Set whether &quot;&lt;User&gt; joined&quot; "
 "and &quot;&lt;User&gt; left&quot; messages should be displayed in this room."
 "<br /><br />Requires &quot;Moderator&quot; or higher permission."
 msgstr ""
+"userjoinmsg &lt;on|off&gt;:<br />Nastaví, či &quot;&lt;User&gt; joined&quot; "
+"a &quot;&lt;User&gt; left&quot; správy by sa mali v miestnosti zobrazovať."
+"<br /><br />Vyžaduje &quot;Moderator&quot; alebo vyššie oprávnenie."
 
-#: ../src/gf_chat.c:1026
+#: ../src/gf_chat.c:1027
 msgid ""
 "permission &lt;username&gt; &lt;muted|normal|power|moderator|admin&gt;:<br /"
 ">Set <i>username</i>'s permission. Only admins may give other users the "
@@ -342,63 +359,78 @@ msgid ""
 "own permission.<br /><br />Requires &quot;Moderator&quot; or higher "
 "permission."
 msgstr ""
+"permission &lt;username&gt; &lt;muted|normal|power|moderator|admin&gt;:<br /"
+">Nastaví <i>username</i>'s oprávnenie. Iba správcovia môžu udeliť ostatným "
+"používateľom &quot;Admin&quot; oprávnenie.<br />Prosím, uvedomte si, že "
+"nemôžete zmeniť svoje vlastné oprávnenie.<br /><br />Vyžaduje &quot;"
+"Moderator&quot; alebo vyššie oprávnenie."
 
-#: ../src/gf_chat.c:1035
+#: ../src/gf_chat.c:1036
 msgid ""
 "kick &lt;username&gt;:<br />Kicks <i>username</i> from the channel.<br /"
 "><br />Requires &quot;Moderator&quot; or higher permission."
 msgstr ""
+"kick &lt;username&gt;:<br />Vyhodí <i>username</i> z kanalá.<br /><br /"
+">Vyžaduje &quot;Moderator&quot; alebo vyššie oprávnenie."
 
-#: ../src/gf_chat.c:1042
+#: ../src/gf_chat.c:1043
 msgid ""
 "def_permission &lt;muted|normal|power|moderator|admin&gt;:<br />Set this "
 "room's default permission. New buddies who join this room will have this "
 "permission<br /><br />Requires &quot;Moderator&quot; or higher permission."
 msgstr ""
+"def_permission &lt;muted|normal|power|moderator|admin&gt;:<br />Nastaví "
+"východiskové oprávnenie tejto miestnosti. Noví kamaráti, ktorí sa pripoja do "
+"miestnosti, budú mať toto oprávnenie.<br /><br />Vyžaduje &quot;"
+"Moderator&quot; alebo vyššie oprávnenie."
 
-#: ../src/gf_chat.c:1116
+#: ../src/gf_chat.c:1117
 msgid ""
 "You attempted to join a chat room using an invalid password. Please try "
 "again."
 msgstr ""
+"Pokúsili ste sa pripojiť do miestnosti pomocou neplatného hesla. Prosim, "
+"skúste to znovu."
 
-#: ../src/gf_chat.c:1117
+#: ../src/gf_chat.c:1118
 msgid "Invalid password"
-msgstr ""
+msgstr "Neplatné heslo"
 
-#: ../src/gf_chat.c:1121
+#: ../src/gf_chat.c:1122
 msgid ""
 "You attempted to join a chat room that is password protected. Please try "
 "again."
 msgstr ""
+"Pokúsili ste sa pripojiť do miestnosti, ktorá je chránená heslom. Prosím, "
+"skúste to znovu."
 
-#: ../src/gf_chat.c:1122
+#: ../src/gf_chat.c:1123
 msgid "Password required"
-msgstr ""
+msgstr "Vyžadované heslo"
 
-#: ../src/gf_chat.c:1130
-#, fuzzy
+#: ../src/gf_chat.c:1131
 msgid "Join"
-msgstr "Dátum zaregistrovania"
+msgstr "Pridať sa"
 
-#: ../src/gf_chat.c:1131 ../src/gf_friend_search.c:66 ../src/gf_menus.c:123
+#: ../src/gf_chat.c:1132 ../src/gf_friend_search.c:66 ../src/gf_menus.c:123
 msgid "Cancel"
 msgstr "Zrušiť"
 
 #: ../src/gf_chat_proto.c:517
 msgid "Chat room join error"
-msgstr ""
+msgstr "Chyba pripojenia do miestnosti"
 
 #: ../src/gf_chat_proto.c:517
-#, fuzzy
 msgid "Unknown error"
-msgstr "neznámy"
+msgstr "Neznáma chyba"
 
 #: ../src/gf_chat_proto.c:518
 msgid ""
 "Unknown join error. You might be blocked from this chat room or are already "
 "in 5 rooms."
 msgstr ""
+"Neznáma chyba pripojenia. Prístup do tejto miestnosti môže byť blokovaný, "
+"alebo ste už v 5 miestnostiach."
 
 #: ../src/gf_friend_search.c:64 ../src/gf_friend_search.c:106
 msgid "Xfire Friend Search"
@@ -406,7 +438,7 @@ msgstr "Xfire Hľadanie priateľov"
 
 #: ../src/gf_friend_search.c:64
 msgid "Please enter a Xfire username, name or e-Mail address here:"
-msgstr "Prosím, napíšte Xfire používateľské meno alebo e-Mail adresu sem:"
+msgstr "Prosím, napíšte sem Xfire používateľské meno alebo e-Mail adresu:"
 
 #: ../src/gf_friend_search.c:65
 msgid "For example: gill123, Gill Bates or gill@bates.net"
@@ -433,14 +465,13 @@ msgid "Search results"
 msgstr "Výsledky hľadania"
 
 #: ../src/gf_games.c:43
-#, fuzzy, c-format
+#, c-format
 msgid "The Games List has been updated to version: %s."
-msgstr "Hra bola úspešne upravená."
+msgstr "Zoznam hier bol aktualizovaný na verziu: %s."
 
 #: ../src/gf_games.c:47 ../src/gf_games.c:50 ../src/gf_games.c:51
-#, fuzzy
 msgid "New Gfire Game List Version"
-msgstr "Nová verzia zoznamu hier: %s"
+msgstr "Nová verzia zoznamu hier"
 
 #: ../src/gf_games.c:1215 ../src/gf_games.c:1251 ../src/gf_games.c:1327
 #: ../src/gf_games.c:1353 ../src/gf_games.c:1368 ../src/gf_games.c:1382
@@ -453,7 +484,7 @@ msgstr "Nemôžem pridať hru"
 
 #: ../src/gf_games.c:1216
 msgid "There's no such game, please try again."
-msgstr ""
+msgstr "Taká hra neexistuje, prosím skúste to znovu."
 
 #: ../src/gf_games.c:1232
 msgid "Manage Games: game added"
@@ -465,7 +496,7 @@ msgstr "Hra bola úspešne pridaná."
 
 #: ../src/gf_games.c:1237 ../src/gf_games.c:1308
 msgid "Manage Games: warning"
-msgstr "Spravovať hry: upozornenie"
+msgstr "Spravovať hry: varovanie"
 
 #: ../src/gf_games.c:1237
 msgid "Game already added"
@@ -510,7 +541,7 @@ msgstr "Nemôžem odstrániť hru"
 
 #: ../src/gf_games.c:1354
 msgid "No such game, please try again!"
-msgstr ""
+msgstr "Taká hra neexistuje, prosím skúste to znovu."
 
 #: ../src/gf_games.c:1378
 msgid "Manage Games: game removed"
@@ -554,25 +585,25 @@ msgstr "Prihlásili ste sa z iného miesta."
 #. Community site
 #: ../src/gf_purple.c:156
 msgid "Xfire Community Site"
-msgstr ""
+msgstr "Xfire Stránka komunity"
 
-#: ../src/gf_purple.c:256 ../src/gfire.c:1134
+#: ../src/gf_purple.c:256 ../src/gfire.c:1137
 msgid "Game"
 msgstr "Hra"
 
-#: ../src/gf_purple.c:262 ../src/gf_purple.c:1214 ../src/gfire.c:1140
+#: ../src/gf_purple.c:262 ../src/gf_purple.c:1214 ../src/gfire.c:1143
 msgid "Server"
 msgstr "Server"
 
-#: ../src/gf_purple.c:292 ../src/gfire.c:1159
+#: ../src/gf_purple.c:292 ../src/gfire.c:1162
 msgid "unknown"
 msgstr "neznámy"
 
-#: ../src/gf_purple.c:307 ../src/gfire.c:1123 ../src/gfire.c:1126
+#: ../src/gf_purple.c:307 ../src/gfire.c:1126 ../src/gfire.c:1129
 msgid "Status"
 msgstr "Stav"
 
-#: ../src/gf_purple.c:317 ../src/gfire.c:1172
+#: ../src/gf_purple.c:317 ../src/gfire.c:1175
 msgid "Common Friends"
 msgstr "Priatelia"
 
@@ -590,36 +621,38 @@ msgstr "Správa nemohla byť odoslaná. Kamarát je offline"
 
 #. Request the invitation message
 #: ../src/gf_purple.c:532
-#, fuzzy
 msgid "Xfire Invitation Message"
-msgstr "Xfire správa systémového rozhlasu:"
+msgstr "Xfire Pozvánka"
 
 #: ../src/gf_purple.c:533
 msgid "Please enter the message you want to send your buddy with this invite:"
 msgstr ""
+"Prosím, napíšte správu, ktorú chcete poslať vášmu kamarátovi s touto "
+"pozvánkou:"
 
 #: ../src/gf_purple.c:534
 msgid "Please add me to your friends list!"
-msgstr ""
+msgstr "Prosím, pridaj si ma do zoznamu priateľov!"
 
 #: ../src/gf_purple.c:535
 msgid "Invite with a message"
-msgstr ""
+msgstr "Pozvať so správou"
 
 #: ../src/gf_purple.c:536
 msgid "Invite without a message"
-msgstr ""
+msgstr "Pozvať bez správy"
 
 #: ../src/gf_purple.c:564
-#, fuzzy
 msgid "Xfire Buddy Removal"
-msgstr "Xfire odstránenie kamaráta odmietnuté"
+msgstr "Xfire odstránenie kamaráta"
 
 #: ../src/gf_purple.c:565
 msgid ""
 "You have removed a buddy which is not on your friends list, it will be "
 "restored on the next login."
 msgstr ""
+"Odstránili ste kamaráta, ktorý nie je vo vašom zozname priateľov. Bude "
+"obnovený po ďalšom prihlásení."
 
 #: ../src/gf_purple.c:620
 msgid "Add as friend"
@@ -638,9 +671,9 @@ msgid "Xfire Profile"
 msgstr "Xfire profil"
 
 #: ../src/gf_purple.c:693
-#, fuzzy, c-format
+#, c-format
 msgid "Launch %s"
-msgstr "Parametre pri spustení:"
+msgstr "Spustiť %s"
 
 #. General things
 #: ../src/gf_purple.c:712
@@ -667,11 +700,11 @@ msgstr "O Gfire"
 
 #: ../src/gf_purple.c:801
 msgid "_Room:"
-msgstr ""
+msgstr "_Room:"
 
 #: ../src/gf_purple.c:807
 msgid "_Password:"
-msgstr ""
+msgstr "_Password:"
 
 #: ../src/gf_purple.c:896
 msgid "Xfire Groupchat"
@@ -686,30 +719,32 @@ msgid "The MotD contains more than 200 characters."
 msgstr "MotD obsahuje viac než 200 znakov."
 
 #: ../src/gf_purple.c:983
-#, fuzzy
 msgid "Friends of friends group name restored"
-msgstr "Xfire - Priatelia priateľov hrajú hry"
+msgstr "Názov skupiny Priatelia priateľov obnovený"
 
 #: ../src/gf_purple.c:983 ../src/gf_purple.c:1001
-#, fuzzy
 msgid "Group name restored"
-msgstr "Hra bola odstránená"
+msgstr "Názov skupiny obnovený"
 
 #: ../src/gf_purple.c:983
 msgid ""
 "You have renamed Xfire's FoF group name. Unfortunately we had to restore "
 "this groups name."
 msgstr ""
+"Premenovali ste názov Xfire skupiny FoF. Bohužiaľ, museli sme obnoviť názov "
+"tejto skupiny."
 
 #: ../src/gf_purple.c:1001
 msgid "Clan's group name restored"
-msgstr ""
+msgstr "Názov skupiny klanu obnovený"
 
 #: ../src/gf_purple.c:1001
 msgid ""
 "You have renamed the group name of a Xfire clan. Unfortunately we had to "
 "restore this groups name."
 msgstr ""
+"Premenovali ste názov Xfire skupiny klanu. Bohužiaľ, museli sme obnoviť "
+"názov tejto skupiny."
 
 #: ../src/gf_purple.c:1217
 msgid "Port"
@@ -729,29 +764,27 @@ msgstr "Automatická detekcia pre herný stav (ingame)"
 
 #: ../src/gf_purple.c:1229
 msgid "Change my status for other protocols as well"
-msgstr ""
+msgstr "Zmeniť môj stav tiež pre iné protokoly"
 
 #: ../src/gf_purple.c:1232
 msgid "Notify me when my status is ingame"
 msgstr "Upozorni ma, keď môj stav je herný (ingame)"
 
 #: ../src/gf_purple.c:1235
-#, fuzzy
 msgid "Enable server detection"
-msgstr "Použiť serverovú detekciu"
+msgstr "Povoliť serverovú detekciu"
 
 #: ../src/gf_purple.c:1238
 msgid "Use Xfires P2P features"
-msgstr ""
+msgstr "Použiť Xfire P2P funkcie"
 
 #: ../src/gf_purple.c:1242
 msgid "Display notifications for certain events"
-msgstr ""
+msgstr "Zobrazovať upozornenia pre určité udalosti"
 
 #: ../src/gf_purple.c:1246
-#, fuzzy
 msgid "Show Friends of Friends"
-msgstr "Xfire - Priatelia priateľov hrajú hry"
+msgstr "Zobraziť Priatelia priateľov"
 
 #: ../src/gf_purple.c:1249
 msgid "Xfire"
@@ -767,11 +800,12 @@ msgid ""
 "Gfire <b>%u.%u.%u%s%s</b> is now available.\n"
 "Visit the Gfire website for more information!"
 msgstr ""
+"Gfire <b>%u.%u.%u%s%s</b> je teraz dostupný.\n"
+"Navštívte webstránku Gfire pre viac informácií!"
 
 #: ../src/gfire.c:176 ../src/gfire.c:187
-#, fuzzy
 msgid "New Gfire Version"
-msgstr "Gfire verzia: %s"
+msgstr "Nová Gfire verzia: %s"
 
 #. FIXME: implement a way to disable this notification
 #: ../src/gfire.c:182
@@ -780,194 +814,196 @@ msgid ""
 "Gfire %u.%u.%u%s%s is now available.\n"
 "Visit the Gfire website for more information!"
 msgstr ""
+"Gfire %u.%u.%u%s%s je teraz dostupný.\n"
+"Navštívte webstránku Gfire pre viac informácií!"
 
-#: ../src/gfire.c:295
+#: ../src/gfire.c:298
 msgid "Connecting"
 msgstr "Pripájam sa"
 
-#: ../src/gfire.c:301
+#: ../src/gfire.c:304
 msgid "Couldn't create socket."
 msgstr "Nemôžem vytvoriť socket."
 
-#: ../src/gfire.c:448
+#: ../src/gfire.c:451
 msgid "Login sent"
 msgstr "Login poslaný"
 
 #. TRANSLATORS: Keep "(AFK)" as is!
 #. Suggestion: Use Xfires original AFK message here
-#: ../src/gfire.c:474
+#: ../src/gfire.c:477
 msgid "(AFK) Away From Keyboard"
 msgstr "(AFK) Som mimo počítača"
 
 #. TRANSLATORS: Keep "(Busy)" as is!
-#: ../src/gfire.c:481
+#: ../src/gfire.c:484
 msgid "(Busy) I'm busy!"
 msgstr "(Busy) Som zaneprázdnený!"
 
-#: ../src/gfire.c:752 ../src/gfire.c:761 ../src/gfire.c:931 ../src/gfire.c:940
+#: ../src/gfire.c:755 ../src/gfire.c:764 ../src/gfire.c:934 ../src/gfire.c:943
 msgid "Error"
 msgstr "Chyba"
 
-#: ../src/gfire.c:752
+#: ../src/gfire.c:755
 msgid "Retrieving gamerig data failed!"
 msgstr "Získavanie dát o hernej zostave zlyhalo!"
 
-#: ../src/gfire.c:761
+#: ../src/gfire.c:764
 msgid "Invalid gamerig data received!"
 msgstr "Prijaté dáta hernej zostavy sú neplatné!"
 
-#: ../src/gfire.c:776
+#: ../src/gfire.c:779
 #, c-format
 msgid "%ss Gaming Rig:"
 msgstr "%ss Herná zostava:"
 
-#: ../src/gfire.c:786
+#: ../src/gfire.c:789
 msgid "Manufacturer"
 msgstr "Výrobca"
 
-#: ../src/gfire.c:795
+#: ../src/gfire.c:798
 msgid "Processor"
 msgstr "Procesor"
 
-#: ../src/gfire.c:804
+#: ../src/gfire.c:807
 msgid "Memory"
 msgstr "Pamäť"
 
-#: ../src/gfire.c:813
+#: ../src/gfire.c:816
 msgid "Video Card"
 msgstr "Grafická karta"
 
-#: ../src/gfire.c:822
+#: ../src/gfire.c:825
 msgid "Sound Card"
 msgstr "Zvuková karta"
 
-#: ../src/gfire.c:831
+#: ../src/gfire.c:834
 msgid "Mainboard"
 msgstr "Základná doska"
 
-#: ../src/gfire.c:840
+#: ../src/gfire.c:843
 msgid "Hard Drive"
 msgstr "Pevný disk"
 
-#: ../src/gfire.c:849
+#: ../src/gfire.c:852
 msgid "Monitor"
 msgstr "Monitor"
 
-#: ../src/gfire.c:858
+#: ../src/gfire.c:861
 msgid "Keyboard"
 msgstr "Klávesnica"
 
-#: ../src/gfire.c:867
+#: ../src/gfire.c:870
 msgid "Mouse"
 msgstr "Myš"
 
-#: ../src/gfire.c:876
+#: ../src/gfire.c:879
 msgid "Mouse Surface"
 msgstr "Podložka pod myš"
 
-#: ../src/gfire.c:885
+#: ../src/gfire.c:888
 msgid "Speakers"
 msgstr "Reproduktory"
 
-#: ../src/gfire.c:894
+#: ../src/gfire.c:897
 msgid "Computer Case"
 msgstr "Počítačová skrinka"
 
-#: ../src/gfire.c:903
+#: ../src/gfire.c:906
 msgid "Operating System"
 msgstr "Operačný systém"
 
-#: ../src/gfire.c:931
+#: ../src/gfire.c:934
 msgid "Retrieving profile data failed!"
 msgstr "Získavanie dát o profile zlyhalo!"
 
-#: ../src/gfire.c:940
+#: ../src/gfire.c:943
 msgid "Invalid profile data received!"
 msgstr "Prijaté dáta o profile sú neplatné!"
 
-#: ../src/gfire.c:945
+#: ../src/gfire.c:948
 msgid "Profile"
 msgstr "Profil"
 
-#: ../src/gfire.c:955
+#: ../src/gfire.c:958
 #, c-format
 msgid "%ss Profile:"
 msgstr "%ss Profil:"
 
-#: ../src/gfire.c:965
+#: ../src/gfire.c:968
 msgid "Real Name"
 msgstr "Skutočné meno"
 
-#: ../src/gfire.c:974
+#: ../src/gfire.c:977
 msgid "Age"
 msgstr "Vek"
 
-#: ../src/gfire.c:983
+#: ../src/gfire.c:986
 msgid "Gender"
 msgstr "Pohlavie"
 
-#: ../src/gfire.c:983
+#: ../src/gfire.c:986
 msgid "Male"
 msgstr "Muž"
 
-#: ../src/gfire.c:983
+#: ../src/gfire.c:986
 msgid "Female"
 msgstr "Žena"
 
-#: ../src/gfire.c:992
+#: ../src/gfire.c:995
 msgid "Occupation"
 msgstr "Zamestnanie"
 
-#: ../src/gfire.c:1001
+#: ../src/gfire.c:1004
 msgid "Country"
 msgstr "Krajina"
 
-#: ../src/gfire.c:1010
+#: ../src/gfire.c:1013
 msgid "Location"
 msgstr "Miesto"
 
-#: ../src/gfire.c:1019
+#: ../src/gfire.c:1022
 msgid "Gaming Style"
 msgstr "Štýl hrania"
 
-#: ../src/gfire.c:1028
+#: ../src/gfire.c:1031
 msgid "Interests"
 msgstr "Záujmy"
 
-#: ../src/gfire.c:1037
+#: ../src/gfire.c:1040
 msgid "Friends"
 msgstr "Priatelia"
 
-#: ../src/gfire.c:1046
+#: ../src/gfire.c:1049
 msgid "Join Date"
 msgstr "Dátum zaregistrovania"
 
-#: ../src/gfire.c:1108
+#: ../src/gfire.c:1111
 msgid "Nickname"
 msgstr "Prezývka"
 
-#: ../src/gfire.c:1126
+#: ../src/gfire.c:1129
 msgid "Offline"
 msgstr "Offline"
 
-#: ../src/gfire.c:1182
+#: ../src/gfire.c:1185
 msgid "Additional game info:"
 msgstr "Dodatočné informácie o hre:"
 
-#: ../src/gfire.c:1198
+#: ../src/gfire.c:1201
 #, c-format
 msgid "%ss Clans:"
 msgstr "%ss Klany:"
 
-#: ../src/gfire.c:1282
+#: ../src/gfire.c:1285
 msgid "Connection timed out"
 msgstr "Čas spojenia vypršal"
 
-#: ../src/gfire.c:1385
+#: ../src/gfire.c:1388
 msgid "Ingame status"
 msgstr "Herný stav"
 
-#: ../src/gfire.c:1386
+#: ../src/gfire.c:1389
 msgid "Your status has been changed."
 msgstr "Váš stav sa zmenil."
 
@@ -977,55 +1013,56 @@ msgstr "Prijatá neplatná informácia o prihlásení!"
 
 #: ../src/gfire_proto.c:712
 msgid "Xfire System Broadcast"
-msgstr "Xfire systémový rozhlas"
+msgstr "Xfire Systémový rozhlas"
 
 #: ../src/gfire_proto.c:712
 msgid "Xfire System Broadcast Message:"
-msgstr "Xfire správa systémového rozhlasu:"
+msgstr "Xfire Správa systémového rozhlasu:"
 
 #: ../src/gf_server_browser.c:43
 msgid "Recent servers"
-msgstr ""
+msgstr "Nedávne servery"
 
 #: ../src/gf_server_browser.c:46
 msgid "Favorite servers"
-msgstr ""
+msgstr "Obľúbené servery"
 
 #: ../src/gf_server_browser.c:49
 msgid "Friends' favorite servers"
-msgstr ""
+msgstr "Obľúbené servery priateľov"
 
 #: ../src/gf_server_browser.c:52
 msgid "All servers"
-msgstr ""
+msgstr "Všetky servery"
 
 #: ../src/gf_server_browser.c:75
 msgid "N/A"
 msgstr "N/A"
 
 #: ../src/gf_server_browser.c:118 ../src/gf_server_browser.c:261
-#, fuzzy
 msgid "Server Browser: error"
-msgstr "Serverový prehliadač"
+msgstr "Serverový prehliadač: chyba"
 
 #: ../src/gf_server_browser.c:118
 msgid "Can't add favorite server"
-msgstr ""
+msgstr "Nemôžem pridať obľúbený server"
 
 #: ../src/gf_server_browser.c:119
 msgid ""
 "You've reached the limit of favorite servers, you can however still remove "
 "favorite servers in order to add new ones."
 msgstr ""
+"Dosiahli ste limit obľúbených serverov. Avšak, stále môžete odstraniť "
+"obľúbené servery, aby ste mohli pridať nové."
 
 #: ../src/gf_server_browser.c:261
 msgid "Can't remove favorite server"
-msgstr ""
+msgstr "Nemôžem odstrániť obľúbený server"
 
 #: ../src/gf_server_browser.c:262
 msgid ""
 "The selected server is not a favorite server and thereby can't be removed."
-msgstr ""
+msgstr "Označený server nie je obľúbený a preto nemôže byť odstránený."
 
 #: ../src/gf_menus.c:122
 msgid "Change Xfire nickname"
@@ -1041,7 +1078,7 @@ msgstr "OK"
 
 #: ../src/gf_menus.c:129 ../src/gf_menus.c:131
 msgid "Gfire XML Reload"
-msgstr "Gfire XML znovu načítanie"
+msgstr "Znovu načitanie Gfire XML"
 
 #: ../src/gf_menus.c:129 ../src/gf_menus.c:131
 msgid "Reloading gfire_game_config.xml"
@@ -1056,18 +1093,18 @@ msgid "Reloading was successful."
 msgstr "Znovu načítanie bolo úspešné."
 
 #: ../src/gf_menus.c:152
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Gfire Version: %s\n"
 "Game List Version: %s"
 msgstr ""
-"Gfire verzia:\t\t%s\n"
-"Verzia zoznamu hier:\t%s"
+"Verzia Gfire: %s\n"
+"Verzia zoznamu hier: %s"
 
 #: ../src/gf_menus.c:157
-#, fuzzy, c-format
+#, c-format
 msgid "Gfire Version: %s"
-msgstr "Gfire verzia: %s"
+msgstr "Verzia Gfire: %s"
 
 #: ../src/gf_menus.c:160
 msgid "About Gfire"
@@ -1091,7 +1128,16 @@ msgstr "Wiki"
 
 #: ../src/gf_p2p_session.c:412
 msgid "Please wait until a connection with your buddy has been established!"
-msgstr ""
+msgstr "Prosím čakajte, kým sa nadviaže spojenie s vaším kamarátom!"
+
+#: ../src/gf_p2p_dl_proto.c:320
+#, c-format
+msgid "File Description: %s"
+msgstr "Popisovač súborov: %s"
+
+#: ../src/gf_p2p_dl_proto.c:320
+msgid "No description entered"
+msgstr "Nezadaný žiadny popis"
 
 #~ msgid "Not Removing %s"
 #~ msgstr "Nevymaže sa %s"
@@ -1152,10 +1198,6 @@ msgstr ""
 #~ msgstr ""
 #~ "Váša súčasná konfigurácia hier nie je kompatibilná s touto verziou Gfire. "
 #~ "Prosím, odstráňte ju a skúste to znovu."
-
-#, fuzzy
-#~ msgid "File Description: %s"
-#~ msgstr "Gfire verzia: %s"
 
 #~ msgid "Reload Game ID List"
 #~ msgstr "Znovu načítať ID zoznam hier"
