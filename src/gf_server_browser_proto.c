@@ -36,9 +36,9 @@ static gfire_server_browser *server_browser;
 #define GS_QUERY "\x5Cinfo\x5C"
 #define UT2K3_QUERY "\x5Cstatus\x5C\x00"
 
-static void gfire_server_browser_proto_parse_packet_q3a();
-static void gfire_server_browser_proto_parse_packet_source();
-static void gfire_server_browser_proto_parse_packet_gs();
+static void gfire_server_browser_proto_parse_packet_q3a(gint p_n_read, gchar p_buffer[1024], gfire_server_browser_server_info *p_server_info);
+static void gfire_server_browser_proto_parse_packet_source(gint p_n_read, gchar p_buffer[1024], gfire_server_browser_server_info *p_server_info);
+static void gfire_server_browser_proto_parse_packet_gs(gint p_n_read, gchar p_buffer[1024], gfire_server_browser_server_info *p_server_info);
 
 // Creation & freeing
 static gfire_server_browser *gfire_server_browser_new()
@@ -115,18 +115,83 @@ static void gfire_server_browser_proto_send_query(gfire_server_browser_server *p
 		gfire_server_browser_send_packet(p_server->ip, p_server->port + 10, UT2K3_QUERY);
 }
 
+static void gfire_server_browser_proto_calculate_ping(gfire_server_browser_server_info *p_server)
+{
+	if(!p_server)
+		return;
+
+	GList *queried = server_browser->queried_list;
+	GTimeVal start, now;
+
+	start.tv_sec = 0;
+	start.tv_usec = 0;
+
+	for(; queried; queried = g_list_next(queried))
+	{
+		gfire_server_browser_server *server = (gfire_server_browser_server *)queried->data;
+
+		if((p_server->ip == server->ip) && (p_server->port == server->port))
+		{
+			start.tv_usec = server->time.tv_usec;
+			start.tv_sec = server->time.tv_sec;
+
+			break;
+		}
+	}
+
+	// Calculate ping & set it
+	g_get_current_time(&now);
+	p_server->ping = ((now.tv_usec + now.tv_sec * 1000000) - (start.tv_usec + start.tv_sec * 1000000)) / 1000;
+}
+
 static void gfire_server_brower_proto_input_cb(gpointer p_unused, PurpleInputCondition p_condition)
 {
+	gchar buffer[1024];
+	gint n_read;
+
+	struct sockaddr_in server;
+	socklen_t server_len = sizeof(server);
+
+	n_read = recvfrom(server_browser->fd, buffer, sizeof(buffer), 0, (struct sockaddr *)&server, &server_len);
+	if(n_read <= 0)
+		return;
+
+	// Get IP and port
+	gchar ip[INET_ADDRSTRLEN];
+	guint16 port;
+
+	inet_ntop(AF_INET, &(server.sin_addr), ip, INET_ADDRSTRLEN);
+	port = ntohs(server.sin_port);
+
+	// Create server struct
+	gfire_server_browser_server_info *server_info = gfire_server_browser_server_info_new();
+
+	// Fill raw info
+	g_strchomp(buffer);
+	server_info->raw_info = g_strdup(buffer);
+	server_info->ip_full = g_strdup_printf("%s:%u", ip, port);
+
+	// IP & port
+	gfire_game_data game;
+	gfire_game_data_ip_from_str(&game, ip);
+
+	server_info->ip = game.ip.value;
+	server_info->port = port;
+
+	// Calculate ping
+	gfire_server_browser_proto_calculate_ping(server_info);
+
+	// Determine protocol parser
 	const gchar *protocol = gfire_game_server_query_type(server_browser->gameid);
 
 	if(!g_strcmp0(protocol, "WOLFET"))
-		gfire_server_browser_proto_parse_packet_q3a();
+		gfire_server_browser_proto_parse_packet_q3a(n_read, buffer, server_info);
 	else if(!g_strcmp0(protocol, "SOURCE"))
-		gfire_server_browser_proto_parse_packet_source();
+		gfire_server_browser_proto_parse_packet_source(n_read, buffer, server_info);
 	else if(!g_strcmp0(protocol, "GS"))
-		gfire_server_browser_proto_parse_packet_gs();
+		gfire_server_browser_proto_parse_packet_gs(n_read, buffer, server_info);
 	else if(!g_strcmp0(protocol, "UT2K3"))
-		 gfire_server_browser_proto_parse_packet_gs();
+		 gfire_server_browser_proto_parse_packet_gs(n_read, buffer, server_info);
 }
 
 static gboolean gfire_server_browser_proto_timeout_cb(gpointer p_unused)
@@ -615,72 +680,10 @@ void gfire_server_browser_proto_push_server(gfire_server_browser_server *p_serve
 
 
 // Packet parsers (per protocol)
-static void gfire_server_browser_proto_calculate_ping(gfire_server_browser_server_info *p_server)
+static void gfire_server_browser_proto_parse_packet_q3a(gint p_n_read, gchar p_buffer[1024], gfire_server_browser_server_info *p_server_info)
 {
-	if(!p_server)
-		return;
-
-	GList *queried = server_browser->queried_list;
-	GTimeVal start, now;
-
-	start.tv_sec = 0;
-	start.tv_usec = 0;
-
-	for(; queried; queried = g_list_next(queried))
-	{
-		gfire_server_browser_server *server = (gfire_server_browser_server *)queried->data;
-
-		if((p_server->ip == server->ip) && (p_server->port == server->port))
-		{
-			start.tv_usec = server->time.tv_usec;
-			start.tv_sec = server->time.tv_sec;
-
-			break;
-		}
-	}
-
-	// Calculate ping & set it
-	g_get_current_time(&now);
-	p_server->ping = ((now.tv_usec + now.tv_sec * 1000000) - (start.tv_usec + start.tv_sec * 1000000)) / 1000;
-}
-
-static void gfire_server_browser_proto_parse_packet_q3a()
-{
-	gchar server_response[1024];
-
-	struct sockaddr_in server;
-	socklen_t server_len = sizeof(server);
-
-	if(recvfrom(server_browser->fd, server_response, sizeof(server_response), 0, (struct sockaddr *)&server, &server_len) <= 0)
-		return;
-
-	// Get IP & port
-	gchar ip[INET_ADDRSTRLEN];
-	guint16 port;
-
-	inet_ntop(AF_INET, &(server.sin_addr), ip, INET_ADDRSTRLEN);
-	port = ntohs(server.sin_port);
-
-	// Create server struct
-	gfire_server_browser_server_info *server_info = gfire_server_browser_server_info_new();
-
-	// IP & port
-	gfire_game_data game;
-	gfire_game_data_ip_from_str(&game, ip);
-
-	server_info->ip = game.ip.value;
-	server_info->port = port;
-
-	// Calculate ping
-	gfire_server_browser_proto_calculate_ping(server_info);
-
-	// Fill raw info
-	g_strchomp(server_response);
-	server_info->raw_info = g_strdup(server_response);
-	server_info->ip_full = g_strdup_printf("%s:%u", ip, port);
-
 	// Split response in 3 parts (message, server information, players)
-	gchar **server_response_parts = g_strsplit(server_response, "\n", 0);
+	gchar **server_response_parts = g_strsplit(p_buffer, "\n", 0);
 	if(g_strv_length(server_response_parts) < 3)
 	{
 		if(server_response_parts)
@@ -697,20 +700,20 @@ static void gfire_server_browser_proto_parse_packet_q3a()
 		{
 			// Server name
 			if(!g_strcmp0("sv_hostname", server_response_split[i]))
-				server_info->name = g_strdup(server_response_split[i + 1]);
+				p_server_info->name = g_strdup(server_response_split[i + 1]);
 
 			// Server map
 			if(!g_strcmp0("mapname", server_response_split[i]))
-				server_info->map = g_strdup(server_response_split[i + 1]);
+				p_server_info->map = g_strdup(server_response_split[i + 1]);
 
 			// Max. players
 			if(!g_strcmp0("sv_maxclients", server_response_split[i]))
-				server_info->max_players = atoi(server_response_split[i + 1]);
+				p_server_info->max_players = atoi(server_response_split[i + 1]);
 		}
 
 		// Count players
 		guint32 players = g_strv_length(server_response_parts) - 2;
-		server_info->players = players;
+		p_server_info->players = players;
 
 		g_strfreev(server_response_split);
 	}
@@ -718,48 +721,31 @@ static void gfire_server_browser_proto_parse_packet_q3a()
 	g_strfreev(server_response_parts);
 
 	// Add server to tree strore
-	gfire_server_browser_add_server(server_info);
+	gfire_server_browser_add_server(p_server_info);
 }
 
-static void gfire_server_browser_proto_parse_packet_source()
+static void gfire_server_browser_proto_parse_packet_source(gint p_n_read, gchar p_buffer[1024], gfire_server_browser_server_info *p_server_info)
 {
-	gchar buffer[1024];
-
-	struct sockaddr_in server;
-	socklen_t server_len;
-	server_len = sizeof(server);
-
-	gint n_received;
 	gint index, str_len;
 
-	if((n_received = recvfrom(server_browser->fd, buffer, sizeof(buffer), 0, (struct sockaddr *)&server, &server_len)) <= 0)
-		return;
-
-	// Get IP & port
-	gchar ip[INET_ADDRSTRLEN];
-	guint16 port;
-
-	inet_ntop(AF_INET, &(server.sin_addr), ip, INET_ADDRSTRLEN);
-	port = ntohs(server.sin_port);
-
 	// Verify packet
-	if(buffer[4] != 0x49)
+	if(p_buffer[4] != 0x49)
 		return;
 
 	// Directly skip version for server name
 	gchar hostname[256];
 	index = 6;
 
-	if((str_len = strlen(&buffer[index])) > (sizeof(hostname) - 1))
+	if((str_len = strlen(&p_buffer[index])) > (sizeof(hostname) - 1))
 	{
-		if(g_strlcpy(hostname, &buffer[index], sizeof(hostname) - 1) == 0)
+		if(g_strlcpy(hostname, &p_buffer[index], sizeof(hostname) - 1) == 0)
 			return;
 
-		buffer[index + (sizeof(hostname) - 1)] = 0;
+		p_buffer[index + (sizeof(hostname) - 1)] = 0;
 	}
-	else if(buffer[index] != 0)
+	else if(p_buffer[index] != 0)
 	{
-		if(g_strlcpy(hostname, &buffer[index], str_len + 1) == 0)
+		if(g_strlcpy(hostname, &p_buffer[index], str_len + 1) == 0)
 			return;
 	}
 	else
@@ -769,29 +755,29 @@ static void gfire_server_browser_proto_parse_packet_source()
 
 	// Map
 	gchar map[256];
-	sscanf(&buffer[index], "%s", map);
+	sscanf(&p_buffer[index], "%s", map);
 
 	index += strlen(map) + 1;
 
 	// Game dir
 	gchar game_dir[256];
-	sscanf(&buffer[index], "%s", game_dir);
+	sscanf(&p_buffer[index], "%s", game_dir);
 
 	index += strlen(game_dir) + 1;
 
 	// Game description
 	gchar game_description[256];
 
-	if((str_len = strlen(&buffer[index])) > (sizeof(game_description) -1))
+	if((str_len = strlen(&p_buffer[index])) > (sizeof(game_description) -1))
 	{
-		if(g_strlcpy(game_description, &buffer[index], sizeof(game_description) -1) == 0)
+		if(g_strlcpy(game_description, &p_buffer[index], sizeof(game_description) -1) == 0)
 			return;
 
-		buffer[index + (sizeof(game_description) - 1)] = 0;
+		p_buffer[index + (sizeof(game_description) - 1)] = 0;
 	}
-	else if(buffer[index] != 0)
+	else if(p_buffer[index] != 0)
 	{
-		if(g_strlcpy(game_description, &buffer[index], str_len + 1) == 0)
+		if(g_strlcpy(game_description, &p_buffer[index], str_len + 1) == 0)
 			return;
 	}
 	else
@@ -803,8 +789,8 @@ static void gfire_server_browser_proto_parse_packet_source()
 	// short appid = *(short *)&buffer[index];
 
 	// Players
-	gchar num_players = buffer[index + 2];
-	gchar max_players = buffer[index + 3];
+	gchar num_players = p_buffer[index + 2];
+	gchar max_players = p_buffer[index + 3];
 	// gchar num_bots = buffer[index + 4];
 
 	/* Other vital information (not needed yet)
@@ -813,69 +799,24 @@ static void gfire_server_browser_proto_parse_packet_source()
 	gchar password = buffer[index + 7];
 	gchar secure = buffer[index + 8]; */
 
-	// Create server info struct
-	gfire_server_browser_server_info *server_info = gfire_server_browser_server_info_new();
-
-	gfire_game_data game;
-	gfire_game_data_ip_from_str(&game, ip);
-
-	server_info->ip = game.ip.value;
-	server_info->port = port;
-
-	server_info->ip_full = g_strdup_printf("%s:%u", ip, port);
-	server_info->players = num_players;
-	server_info->max_players = max_players;
-	server_info->map = map;
-	server_info->name = hostname;
-
-	// Calculate ping
-	gfire_server_browser_proto_calculate_ping(server_info);
+	// server_info->ip_full = g_strdup_printf("%s:%u", ip, port);
+	p_server_info->players = num_players;
+	p_server_info->max_players = max_players;
+	p_server_info->map = map;
+	p_server_info->name = hostname;
 
 	// Add server to tree strore
-	gfire_server_browser_add_server(server_info);
+	gfire_server_browser_add_server(p_server_info);
 }
 
-static void gfire_server_browser_proto_parse_packet_gs()
+static void gfire_server_browser_proto_parse_packet_gs(gint p_n_read, gchar p_buffer[1024], gfire_server_browser_server_info *p_server_info)
 {
-	gchar server_response[1024];
-
-	struct sockaddr_in server;
-	socklen_t server_len = sizeof(server);
-
-	if(recvfrom(server_browser->fd, server_response, sizeof(server_response), 0, (struct sockaddr *)&server, &server_len) <= 0)
-		return;
-
-	// Get IP & port
-	gchar ip[INET_ADDRSTRLEN];
-	guint16 port;
-
-	inet_ntop(AF_INET, &(server.sin_addr), ip, INET_ADDRSTRLEN);
-	port = ntohs(server.sin_port);
-
-	// Create server struct
-	gfire_server_browser_server_info *server_info = gfire_server_browser_server_info_new();
-
-	// IP & port
-	gfire_game_data game;
-	gfire_game_data_ip_from_str(&game, ip);
-
-	server_info->ip = game.ip.value;
-	server_info->port = port;
-
 	// UT2K3 support
 	if(!g_strcmp0(gfire_game_server_query_type(server_browser->gameid), "UT2K3"))
-		server_info->port = port - 10;
-
-	// Calculate ping
-	gfire_server_browser_proto_calculate_ping(server_info);
-
-	// Fill raw info
-	g_strchomp(server_response);
-	server_info->raw_info = g_strdup(server_response);
-	server_info->ip_full = g_strdup_printf("%s:%u", ip, port);
+		p_server_info->port = p_server_info->port - 10;
 
 	// Split response & get information
-	gchar **server_response_split = g_strsplit(server_response, "\\", 0);
+	gchar **server_response_split = g_strsplit(p_buffer, "\\", 0);
 	if(server_response_split)
 	{
 		int i;
@@ -883,25 +824,25 @@ static void gfire_server_browser_proto_parse_packet_gs()
 		{
 			// Server name
 			if(!g_strcmp0("hostname", server_response_split[i]))
-				server_info->name = g_strdup(server_response_split[i + 1]);
+				p_server_info->name = g_strdup(server_response_split[i + 1]);
 
 			// Server map
 			if(!g_strcmp0("mapname", server_response_split[i]))
-				server_info->map = g_strdup(server_response_split[i + 1]);
+				p_server_info->map = g_strdup(server_response_split[i + 1]);
 
 			// Players
 			if(!g_strcmp0("numplayers", server_response_split[i]))
-				server_info->players = atoi(server_response_split[i + 1]);
+				p_server_info->players = atoi(server_response_split[i + 1]);
 
 			// Max. players
 			if(!g_strcmp0("maxplayers", server_response_split[i]))
-				server_info->max_players = atoi(server_response_split[i + 1]);
+				p_server_info->max_players = atoi(server_response_split[i + 1]);
 		}
 
 		g_strfreev(server_response_split);
 	}
 
 	// Add server to tree strore
-	gfire_server_browser_add_server(server_info);
+	gfire_server_browser_add_server(p_server_info);
 }
 #endif // HAVE_GTK
