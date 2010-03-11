@@ -974,9 +974,9 @@ guint32 gfire_process_list_contains(const gfire_process_list *p_list, const gcha
 
 #ifdef _WIN32
 		// Windows handles file names case-insensitive in contrast to most other OSes
-		if(!purple_utf8_strcasecmp(info->exe, p_exe))
+		if(purple_utf8_strcasecmp(info->exe, p_exe) == 0)
 #else
-		if(!g_strcmp0(info->exe, p_exe) == 0)
+		if(g_strcmp0(info->exe, p_exe) == 0)
 #endif // _WIN32
 		{
 			// First check invalid arguments
