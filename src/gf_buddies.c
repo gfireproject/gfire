@@ -799,14 +799,14 @@ void gfire_buddy_set_game_status(gfire_buddy *p_buddy, guint32 p_gameid, guint32
 		{
 			gchar *game_name = gfire_game_name(p_gameid);
 			gchar *msg = g_strdup_printf(_("Playing <b>%s</b> now!"), game_name);
-			gfire_notify_buddy(p_buddy->prpl_buddy, gfire_buddy_get_alias(p_buddy), msg);
+			gfire_notify_buddy(p_buddy->prpl_buddy, purple_buddy_get_contact_alias(p_buddy->prpl_buddy), msg);
 			g_free(game_name);
 			g_free(msg);
 		}
 		else
 		{
 			gchar *msg = g_strdup(_("Stopped playing!"));
-			gfire_notify_buddy(p_buddy->prpl_buddy, gfire_buddy_get_alias(p_buddy), msg);
+			gfire_notify_buddy(p_buddy->prpl_buddy, purple_buddy_get_contact_alias(p_buddy->prpl_buddy), msg);
 			g_free(msg);
 		}
 	}
