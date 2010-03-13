@@ -4,7 +4,7 @@ include ../mingw.mak
 
 SUBDIRS = sdk
 
-LIBPURPLE_CFLAGS = -I${WIN32_PIDGIN_DIR}/libpurple -I${WIN32_PIDGIN_DIR}/libpurple/win32 -DPURPLE_PLUGINS -DENABLE_NLS -DNO_ZLIB
+LIBPURPLE_CFLAGS = -I${WIN32_PIDGIN_DIR}/libpurple -I${WIN32_PIDGIN_DIR}/libpurple/win32 -DPURPLE_PLUGINS -DNO_ZLIB
 WIN32_CFLAGS = \
 	-DPSAPI_VERSION=1 \
 	-I${WIN32_GTK_DIR}/include/glib-2.0 \
@@ -25,7 +25,7 @@ WIN32_LIBS = -L${WIN32_GTK_DIR}/lib -L${WIN32_PIDGIN_DIR}/libpurple -lgobject-2.
 GFIRE_SRC_DIR = .
 
 CFLAGS = -O2 -pipe -mno-cygwin -Wall -I. -I${GFIRE_DIR} -I${GFIRE_SRC_DIR} ${WIN32_CFLAGS} ${LIBPURPLE_CFLAGS}
-LFLAGS = -shared -Wl,--strip-all,--enable-auto-image-base
+LDFLAGS = -mno-cygwin -shared -Wl,--dll,--strip-debug
 
 GFIRE_SOURCES = \
 	${GFIRE_SRC_DIR}/gfire.c \
@@ -96,4 +96,4 @@ install: all
 	${WIN32_WINDRES} -i $^ -o $@
 
 libxfire.dll: ${GFIRE_OBJECTS}
-	${WIN32_COMPILER} $^ ${WIN32_LIBS} ${LFLAGS} -o libxfire.dll
+	${WIN32_COMPILER} $^ ${WIN32_LIBS} ${LDFLAGS} -o libxfire.dll
