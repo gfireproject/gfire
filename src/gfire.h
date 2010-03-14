@@ -35,6 +35,7 @@ typedef struct _gfire_data gfire_data;
 #include "gf_games.h"
 #include "gf_p2p.h"
 #include "gf_groups.h"
+#include "gf_server_browser_proto.h"
 
 // gfire_find_buddy modes
 typedef enum _gfire_find_buddy_mode
@@ -97,8 +98,8 @@ struct _gfire_data
 
 	GList *chats;				/* glist of _gfire_chat structs */
 
-	// Timer callbacks
-	guint server_browser_pool;
+    // Server browser
+    gfire_server_browser *server_browser;
 
 	// Client preferences
 	gboolean show_fofs;

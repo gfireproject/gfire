@@ -329,11 +329,8 @@ void gfire_close(gfire_data *p_gfire)
 		purple_input_remove(gc->inpa);
 	}
 
-	if(p_gfire->server_browser_pool > 0)
-	{
-		purple_debug_misc("gfire", "CONN: removing server browser pool callback\n");
-		g_source_remove(p_gfire->server_browser_pool);
-	}
+    // Server browser clean-up code
+    gfire_server_browser_proto_free(p_gfire->server_browser);
 
 	if(p_gfire->fd >= 0)
 	{

@@ -30,7 +30,7 @@
 
 #ifdef HAVE_GTK
 void gfire_server_browser_show(PurplePluginAction *p_action);
-void gfire_server_browser_add_server(gfire_server_browser_server_info *p_server);
+void gfire_server_browser_add_server(gfire_server_browser *server_browser, gfire_server_browser_server_info *p_server);
 #endif // HAVE_GTK
 
 #endif // _GF_SERVER_BROWSER_H
