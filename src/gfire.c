@@ -30,6 +30,9 @@
 #include "gf_ipc_server.h"
 #include "gfire.h"
 
+static guint gfire_update_count = 0;
+static PurpleUtilFetchUrlData *gfire_update_data = NULL;
+
 gfire_data *gfire_create(PurpleConnection *p_gc)
 {
 	if(!p_gc)
@@ -137,6 +140,8 @@ const gchar *gfire_get_nick(const gfire_data *p_gfire)
 
 static void gfire_update_cb(PurpleUtilFetchUrlData *p_url_data, gpointer p_data, const gchar *p_buf, gsize p_len, const gchar *p_error_message)
 {
+	gfire_update_data = NULL;
+
 	if (!p_data || !p_buf || !p_len)
 		purple_debug_error("gfire", "Unable to query latest Gfire and games list version. Website down?\n");
 	else
@@ -216,17 +221,28 @@ static void gfire_update_cb(PurpleUtilFetchUrlData *p_url_data, gpointer p_data,
 
 static void gfire_update(gfire_data *p_gfire)
 {
-	static gboolean updated = FALSE;
-
-	if(!updated)
+	if(!gfire_update_count)
 	{
 		gfire_game_load_games_xml();
 
 		// Load game xml from user dir; these don't need to work unless we are connected
 		gfire_game_load_config_xml(FALSE);
 
-		purple_util_fetch_url(GFIRE_CURRENT_VERSION_XML_URL, TRUE, "purple-xfire", TRUE, gfire_update_cb, gfire_get_connection(p_gfire));
-		updated = TRUE;
+		gfire_update_data = purple_util_fetch_url(GFIRE_CURRENT_VERSION_XML_URL, TRUE, "purple-xfire", TRUE,
+												  gfire_update_cb, gfire_get_connection(p_gfire));
+	}
+
+	gfire_update_count++;
+}
+
+static void gfire_update_abort()
+{
+	gfire_update_count--;
+
+	if(!gfire_update_count && gfire_update_data)
+	{
+		purple_util_fetch_url_cancel(gfire_update_data);
+		gfire_update_data = NULL;
 	}
 }
 
@@ -311,6 +327,8 @@ void gfire_close(gfire_data *p_gfire)
 	if(!p_gfire)
 		return;
 
+	gfire_update_abort();
+
 	PurpleConnection *gc = gfire_get_connection(p_gfire);
 
 	// Save client preferences
@@ -329,8 +347,8 @@ void gfire_close(gfire_data *p_gfire)
 		purple_input_remove(gc->inpa);
 	}
 
-    // Server browser clean-up code
-    gfire_server_browser_proto_free(p_gfire->server_browser);
+	// Server browser clean-up code
+	gfire_server_browser_proto_free(p_gfire->server_browser);
 
 	if(p_gfire->fd >= 0)
 	{

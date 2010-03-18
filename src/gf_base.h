@@ -27,7 +27,9 @@
 
 // Globally required headers ////////////////////////////////////////
 #ifdef _WIN32
-#	define _WIN32_WINNT 0x0501 // XP SP2
+#	include <w32api.h>
+#	define _WIN32_WINNT WindowsXP
+#	define WINVER WindowsXP
 #	include "gfire_config_win.h"
 #	include "internal.h"
 #	undef _

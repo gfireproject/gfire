@@ -1065,7 +1065,9 @@ void gfire_join_game(const gfire_game_data *p_game_data)
 	GString *command = g_string_new(game_launch_command);
 	g_free(game_launch_command);
 
-	// Set environment variable if needed
+	// Set environment if needed
+	gchar **env = NULL;
+	gint env_len = 0;
 	if(gconf->launch_prefix)
 	{
 		gchar *prefix = NULL;
@@ -1077,19 +1079,49 @@ void gfire_join_game(const gfire_game_data *p_game_data)
 		{
 			g_string_prepend_c(command, ' ');
 			g_string_prepend(command, prefix);
+			g_free(prefix);
 		}
 
 		if(env_keys)
 		{
+			gchar **cur_env = g_listenv();
+			gint i = 0;
+			for(; i < g_strv_length(cur_env); i++)
+			{
+				env_len++;
+				env = (gchar**)g_realloc(env, sizeof(gchar*) * (env_len + 1));
+				env[env_len - 1] = g_strdup_printf("%s=%s", cur_env[i], g_getenv(cur_env[i]));
+				env[env_len] = NULL;
+			}
+
 			GList *cur_key = env_keys;
 			GList *cur_value = env_values;
 			while(cur_key)
 			{
-				g_setenv((gchar*)cur_key->data, (gchar*)cur_value->data, TRUE);
+				for(i = 0; i < g_strv_length(cur_env); i++)
+				{
+					if(g_strcmp0(cur_env[i], (gchar*)cur_key->data) == 0)
+						break;
+				}
+
+				if(i == g_strv_length(cur_env))
+				{
+					env_len++;
+					env = (gchar**)g_realloc(env, sizeof(gchar*) * (env_len + 1));
+					env[env_len - 1] = g_strdup_printf("%s=%s", (gchar*)cur_key->data, (gchar*)cur_value->data);
+					env[env_len] = NULL;
+				}
+				else
+				{
+					g_free(env[i]);
+					env[i] = g_strdup_printf("%s=%s", (gchar*)cur_key->data, (gchar*)cur_value->data);
+				}
 
 				cur_key = g_list_next(cur_key);
 				cur_value = g_list_next(cur_value);
 			}
+
+			g_strfreev(cur_env);
 
 			gfire_list_clear(env_keys);
 			gfire_list_clear(env_values);
@@ -1097,9 +1129,26 @@ void gfire_join_game(const gfire_game_data *p_game_data)
 	}
 
 	// Launch command
+	gchar **argv = NULL;
+	if(!g_shell_parse_argv(command->str, NULL, &argv, NULL))
+	{
+		purple_debug_error("gfire", "g_shell_parse_argv failed!");
+		g_string_free(command, TRUE);
+		g_strfreev(env);
+		return;
+	}
+
 	purple_debug_misc("gfire", "Launching game and joining server: %s\n", command->str);
-	g_spawn_command_line_async(command->str, NULL);
 	g_string_free(command, TRUE);
+
+	// Get working directory
+	gchar *wd = g_path_get_dirname(argv[0]);
+
+	// Launch
+	g_spawn_async(wd, argv, env, G_SPAWN_SEARCH_PATH, NULL, NULL, NULL, NULL);
+	g_free(wd);
+	g_strfreev(argv);
+	g_strfreev(env);
 }
 
 #ifdef HAVE_GTK
