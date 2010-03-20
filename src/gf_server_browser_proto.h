@@ -25,88 +25,13 @@
 #ifndef _GF_SERVER_BROWSER_PROTO_H
 #define _GF_SERVER_BROWSER_PROTO_H
 
-typedef struct _gfire_server_browser gfire_server_browser;
-typedef struct _gfire_server_browser_server gfire_server_browser_server;
-typedef struct _gfire_server_browser_server_info gfire_server_browser_server_info;
-
 #include "gf_base.h"
 #include "gf_server_browser.h"
 
 #ifdef HAVE_GTK
-#include <sys/time.h>
-#include <fcntl.h>
-
 #include "gf_network.h"
 #include "gf_protocol.h"
 #include "gfire.h"
-
-struct _gfire_server_browser
-{
-    // GUI-related
-    GtkBuilder *builder;
-    GtkTreeStore *tree_store;
-
-    GtkTreeIter recent_serverlist_iter;
-    GtkTreeIter fav_serverlist_iter;
-    GtkTreeIter friends_fav_serverlist_iter;
-    GtkTreeIter serverlist_iter;
-
-	// General
-    gfire_data *gfire;
-
-	guint32 gameid;
-	guint32 max_favs;
-	GList *fav_servers;
-
-	// Socket
-	int fd;
-	guint fd_handler;
-	guint timeout_src;
-
-	// Queues
-	GQueue *queue;
-	GList *queried_list;
-};
-
-struct _gfire_server_browser_server
-{
-	const gchar *protocol;
-	guint32 gameid;
-
-	guint32 ip;
-	guint16 port;
-
-	gint parent;
-	GTimeVal time;
-};
-
-struct _gfire_server_browser_server_info
-{
-	const gchar *protocol;
-	guint32 gameid;
-
-	gchar *raw_info;
-	gchar *ip_full;
-
-	gchar *name;
-
-	guint32 ip;
-	guint16 port;
-	guint16 ping;
-
-	guint32 players;
-	guint32 max_players;
-
-	gchar *map;
-	gchar *game_type;
-};
-
-// Creation & freeing
-gfire_server_browser_server *gfire_server_browser_server_new();
-gfire_server_browser_server_info *gfire_server_browser_server_info_new();
-
-// Server query functions
-void gfire_server_browser_proto_free();
 
 // Serverlist requests
 void gfire_server_browser_proto_fav_serverlist_request(gfire_server_browser *p_server_browser, guint32 p_gameid);
@@ -121,19 +46,6 @@ void gfire_server_browser_proto_serverlist(gfire_data *p_gfire, guint16 p_packet
 // Remote fav serverlist functions (requests)
 guint16 gfire_server_browser_proto_request_add_fav_server(guint32 p_gameid, guint32 p_ip, guint32 p_port);
 guint16 gfire_server_browser_proto_request_remove_fav_server(guint32 p_gameid, guint32 p_ip, guint32 p_port);
-
-// Local fav serverlist functions
-void gfire_server_browser_add_fav_server_local(gfire_data *p_gfire, guint32 p_gameid, guint32 p_ip, guint16 p_port);
-void gfire_server_browser_remove_fav_server_local(gfire_data *p_gfire, guint32 p_gameid, guint32 p_ip, guint16 p_port);
-gboolean gfire_server_browser_proto_can_add_fav_server();
-void gfire_server_browser_proto_add_fav_server(gfire_data *p_gfire, guint32 p_gameid, const gchar *p_ip, const gchar *p_port);
-void gfire_server_browser_proto_remove_fav_server(gfire_data *p_gfire, guint32 p_gameid, const gchar *p_ip, const gchar *p_port);
-gboolean gfire_server_browser_proto_is_fav_server(gfire_server_browser *p_server_browser, guint32 p_ip, guint16 p_port);
-
-// Misc.
-void gfire_server_browser_proto_set_curr_gameid(gfire_server_browser *p_server_browser, guint32 p_gameid);
-gint gfire_server_brower_proto_get_parent(gfire_server_browser *p_server_browser, gfire_server_browser_server_info *p_server);
-void gfire_server_browser_proto_push_server(gfire_server_browser *p_server_browser, gfire_server_browser_server *p_server);
 #endif // HAVE_GTK
 
 #endif // _GF_SERVER_BROWSER_PROTO_H
