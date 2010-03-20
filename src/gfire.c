@@ -283,6 +283,9 @@ static void gfire_login_cb(gpointer p_data, gint p_source, const gchar *p_error_
 
 	gfire->clans = gfire_clan_get_existing();
 
+	// Setup server browser
+	gfire_server_browser_proto_init(gfire);
+
 	// Get preferences
 	gfire->show_fofs = purple_account_get_bool(purple_connection_get_account(gfire->gc), "show_fofs", TRUE);
 
