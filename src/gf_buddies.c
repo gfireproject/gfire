@@ -1536,9 +1536,7 @@ static void gfire_clan_create_group(gfire_clan *p_clan)
 	if(!clan_group_name)
 		return;
 
-	gchar *escaped = gfire_escape_html(clan_group_name);
-	p_clan->prpl_group = purple_group_new(escaped);
-	g_free(escaped);
+	p_clan->prpl_group = purple_group_new(clan_group_name);
 	g_free(clan_group_name);
 
 	purple_blist_add_group(p_clan->prpl_group, NULL);
@@ -1632,9 +1630,7 @@ void gfire_clan_set_names(gfire_clan *p_clan, const gchar *p_longName, const gch
 		if(!clan_group_name)
 			return;
 
-		gchar *escaped = gfire_escape_html(clan_group_name);
-		purple_blist_rename_group(p_clan->prpl_group, escaped);
-		g_free(escaped);
+		purple_blist_rename_group(p_clan->prpl_group, clan_group_name);
 		g_free(clan_group_name);
 
 		gfire_clan_download_avatar(p_clan);
