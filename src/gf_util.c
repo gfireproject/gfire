@@ -497,11 +497,10 @@ gboolean gfire_bitlist_get(const gfire_bitlist *p_list, guint32 p_index)
 	if(!p_list)
 		return FALSE;
 
-	guint32 byte_pos = p_index / 8;
-	if(byte_pos >= p_list->size)
+	if((p_index >> 3) >= p_list->size)
 		return FALSE;
 
-	return (p_list->data[byte_pos] & (0x01 << (p_index % 8)));
+	return (*(p_list->data + (p_index >> 3)) & (1 << (p_index & 7)));
 }
 
 void gfire_bitlist_set(gfire_bitlist *p_list, guint32 p_index, gboolean p_isset)
@@ -556,7 +555,7 @@ void gfire_bitlist_clear(gfire_bitlist *p_list)
 		return;
 
 	p_list->data = g_realloc(p_list->data, 10);
-	p_list->size = 0;
+	p_list->size = 10;
 	memset(p_list->data, 0, 10);
 
 	p_list->bits_set = 0;
