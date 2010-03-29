@@ -202,7 +202,7 @@ void gfire_parse_packet(gfire_data *p_gfire, guint16 p_packet_len, guint16 p_pac
 {
 	guint16 ob_len = 0;
 	guint32 newver = 0;
-	char tmp[100] = "";
+	gchar *tmp = NULL;
 	PurpleAccount *account = NULL;
 
 	switch(p_packet_id)
@@ -252,11 +252,12 @@ void gfire_parse_packet(gfire_data *p_gfire, guint16 p_packet_len, guint16 p_pac
 			/* autoset NEW VERSION :) */
 			memcpy(&newver, p_gfire->buff_in + 17, sizeof(newver));
 			newver = GUINT32_FROM_LE(newver);
-			g_sprintf(tmp, _("Protocol version mismatch, needs to be %d. Auto set to new value."), newver);
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "login ok, but version too old, needs to be = %d\n", newver);
 			account = purple_connection_get_account(gfire_get_connection(p_gfire));
 			purple_account_set_int(account, "version", newver);
+			tmp = g_strdup_printf(_("Protocol version mismatch, needs to be %d. Auto set to new value."), newver);
 			purple_connection_error_reason(gfire_get_connection(p_gfire), PURPLE_CONNECTION_ERROR_NETWORK_ERROR, tmp);
+			g_free(tmp);
 		break;
 
 		case 135:
