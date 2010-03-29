@@ -98,8 +98,8 @@ struct _gfire_data
 
 	GList *chats;				/* glist of _gfire_chat structs */
 
-    // Server browser
-    gfire_server_browser *server_browser;
+	// Server browser
+	gfire_server_browser *server_browser;
 
 	// Client preferences
 	gboolean show_fofs;
@@ -184,5 +184,8 @@ void gfire_set_show_fofs(gfire_data *p_gfire, gboolean p_show);
 gboolean gfire_wants_fofs(const gfire_data *p_gfire);
 gboolean gfire_wants_server_detection(const gfire_data *p_gfire);
 gboolean gfire_wants_global_status_change(const gfire_data *p_gfire);
+
+// Internal
+void gfire_games_update_done();
 
 #endif // _GFIRE_H

@@ -23,6 +23,7 @@
 */
 
 #include "gf_games.h"
+#include "gfire.h"
 #include <time.h>
 
 // Static game data & configuration for game handling (shared by all Gfire instances)
@@ -33,6 +34,8 @@ static GList *gfire_games_config = NULL;
 
 void gfire_update_games_list_cb(PurpleUtilFetchUrlData *p_url_data, gpointer p_data, const gchar *p_buf, gsize p_len, const gchar *p_error_message)
 {
+	gfire_games_update_done();
+
 	if (!p_data || !p_buf || !p_len)
 		purple_debug_error("gfire", "An error occured while updating the games list. Website down?\n");
 	else if(purple_util_write_data_to_file("gfire_games.xml", p_buf, p_len))

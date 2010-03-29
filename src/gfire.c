@@ -211,7 +211,8 @@ static void gfire_update_cb(PurpleUtilFetchUrlData *p_url_data, gpointer p_data,
 			if (update_games_list)
 			{
 				purple_debug_info("gfire", "Updating games list to version %u\n", games_list_version);
-				purple_util_fetch_url(GFIRE_GAMES_XML_URL, TRUE, "purple-xfire", TRUE, gfire_update_games_list_cb, p_data);
+				gfire_update_data = purple_util_fetch_url(GFIRE_GAMES_XML_URL, TRUE, "purple-xfire", TRUE,
+														  gfire_update_games_list_cb, p_data);
 			}
 		}
 
@@ -244,6 +245,12 @@ static void gfire_update_abort()
 		purple_util_fetch_url_cancel(gfire_update_data);
 		gfire_update_data = NULL;
 	}
+}
+
+// Called by gfire_update_games_list_cb() in gf_games.c
+void gfire_games_update_done()
+{
+	gfire_update_data = NULL;
 }
 
 static void gfire_login_cb(gpointer p_data, gint p_source, const gchar *p_error_message)
