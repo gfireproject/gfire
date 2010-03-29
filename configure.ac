@@ -81,9 +81,9 @@ AC_ARG_ENABLE(gtk, [  --disable-gtk           Don't compile with GTK+ support. (
 AC_ARG_ENABLE(libnotify, [  --enable-libnotify      Compile with libnotify support. (depends on GTK flag)],, enable_libnotify=no)
 
 if test $enable_gtk = "yes"; then
-	PKG_CHECK_MODULES(GTK, gtk+-2.0, AC_DEFINE(HAVE_GTK, 1, [Define if we've support for GTK+]), AC_MSG_ERROR([
+	PKG_CHECK_MODULES(GTK, gtk+-2.0 >= 2.14.0, AC_DEFINE(HAVE_GTK, 1, [Define if we've support for GTK+]), AC_MSG_ERROR([
 *** GTK+ 2.0 is required to build Gfire; please make sure you have
-*** the GLib development headers installed. The latest version of GLib is
+*** the GTK+ development headers installed. The latest version of GTK is
 *** always available at http://www.gtk.org]))
 	AC_SUBST(GTK_CFLAGS)
 	AC_SUBST(GTK_LIBS)
@@ -98,8 +98,18 @@ if test $enable_gtk = "yes"; then
 	fi
 fi
 
+AC_ARG_ENABLE(dbus-status, [  --enable-dbus-status    Enable status change for other IM clients (currently only kmess).],, enable_dbus_status=no)
+if test $enable_dbus_status = "yes"; then
+	PKG_CHECK_MODULES(DBUS_GLIB, dbus-glib-1, AC_DEFINE(HAVE_DBUS_GLIB, 1, [Define if we've support for dbus-glib]), AC_MSG_ERROR([
+*** Glib DBus bindings are required to build Gfire with your current configure flags;
+*** please make sure you have the GLib DBus development headers installed.
+*** The latest version of GLib is always available at http://www.gtk.org]))
+	AC_SUBST(DBUS_GLIB_CFLAGS)
+	AC_SUBST(DBUS_GLIB_LIBS)
+	AC_DEFINE([USE_DBUS_STATUS_CHANGE], [1], [Use DBus status change if defined])
+fi
 
-AM_PATH_GLIB_2_0(2.16.0,, AC_MSG_ERROR([
+AM_PATH_GLIB_2_0(2.18.0,, AC_MSG_ERROR([
 *** GLib 2.0 is required to build Gfire; please make sure you have
 *** the GLib development headers installed. The latest version of GLib is
 *** always available at http://www.gtk.org]), gthread)
@@ -138,10 +148,16 @@ echo;
 echo "Configuration complete."
 echo;
 
+echo "Debugging enabled.............: $enable_debug"
+echo "GTK enabled...................: $enable_gtk"
+echo "libnotify enabled.............: $enable_libnotify"
+echo "DBus status change enabled....: $enable_dbus_status"
+
+echo;
+
 purplelibdir=$(pkg-config purple --variable=libdir)
 purplepfxdir=$(pkg-config purple --variable=prefix)
 
-echo "Debugging enabled.............: $enable_debug"
 echo "Libpurple package prefix......: $purplepfxdir"
 echo "Libpurple package libdir......: $purplelibdir"
 echo "Install prefix................: $prefix"

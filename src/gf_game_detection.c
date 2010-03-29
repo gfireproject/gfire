@@ -33,6 +33,72 @@
 	#include <netinet/in.h>
 #endif // _WIN32
 
+#if defined(USE_DBUS_STATUS_CHANGE) && !defined(_WIN32)
+#	include <dbus/dbus-glib.h>
+
+// KMess status updates
+static void setKMessInstanceStatus(DBusGConnection *p_connection, const gchar *p_instance, const gchar *p_message)
+{
+	if(!p_connection || !p_instance || !p_message)
+		return;
+
+	DBusGProxy *proxy = dbus_g_proxy_new_for_name(p_connection, p_instance, "/remoteControl", "org.kmess.remoteControl");
+	if(!proxy)
+		return;
+
+	dbus_g_proxy_call_no_reply(proxy, "setPersonalMessage", G_TYPE_STRING, p_message, G_TYPE_INVALID);
+
+	purple_debug_info("gfire", "kmess status: changed to \"%s\" for instance \"%s\"\n", p_message,
+					  p_instance);
+
+	g_object_unref(proxy);
+}
+
+static void setKMessStatus(const gchar *p_message)
+{
+	if(!p_message)
+		return;
+
+	GError *error = NULL;
+
+	DBusGConnection *connection = dbus_g_bus_get(DBUS_BUS_SESSION, &error);
+	if(!connection)
+	{
+		purple_debug_error("gfire", "kmess status: dbus_g_bus_get: %s\n", error->message);
+		g_error_free(error);
+		return;
+	}
+
+	DBusGProxy *proxy = dbus_g_proxy_new_for_name(connection, DBUS_SERVICE_DBUS, DBUS_PATH_DBUS, DBUS_INTERFACE_DBUS);
+	if(!proxy)
+		return;
+
+	gchar **names = NULL;
+	if(!dbus_g_proxy_call(proxy, "ListNames", &error, G_TYPE_INVALID, G_TYPE_STRV, &names, G_TYPE_INVALID))
+	{
+		purple_debug_error("gfire", "kmess status: dbus_g_proxy_call: %s\n", error->message);
+		g_error_free(error);
+
+		g_object_unref(proxy);
+		return;
+	}
+
+	g_object_unref(proxy);
+
+	if(names)
+	{
+		int i = 0;
+		for(; names[i]; i++)
+		{
+			if(strncmp(names[i], "org.kmess.kmess-", 16) == 0)
+				setKMessInstanceStatus(connection, names[i], p_message);
+		}
+
+		g_strfreev(names);
+	}
+}
+#endif // USE_DBUS_STATUS_CHANGE && !_WIN32
+
 static gfire_game_detector *gfire_detector = NULL;
 
 static void gfire_game_detector_inform_instances_game()
@@ -144,6 +210,20 @@ static void gfire_game_detector_inform_instances_game()
 		}
 
 		g_list_free(accounts);
+
+		// Set external gaming status
+#if defined(USE_DBUS_STATUS_CHANGE) && !defined(_WIN32)
+		if(gfire_detector->game_data.id != 0)
+		{
+			gchar *msg = g_strdup_printf(_("Playing %s"), game_name);
+			// KMess
+			setKMessStatus(msg);
+			g_free(msg);
+		}
+		else
+			// KMess
+			setKMessStatus("");
+#endif // USE_DBUS_STATUS_CHANGE && !_WIN32
 	}
 
 	g_free(game_name);

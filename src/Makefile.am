@@ -79,7 +79,7 @@ libxfire_la_SOURCES = \
 	gf_groups_proto.c
 
 libxfire_la_LIBADD = \
-	$(PURPLE_LIBS) $(GLIB_LIBS) $(GTK_LIBS) $(LIBNOTIFY_LIBS)
+	$(PURPLE_LIBS) $(GLIB_LIBS) $(GTK_LIBS) $(LIBNOTIFY_LIBS) $(DBUS_GLIB_LIBS)
 endif
 
 AM_CPPFLAGS = \
@@ -88,6 +88,7 @@ AM_CPPFLAGS = \
 	$(GLIB_CFLAGS) \
 	$(GTK_CFLAGS) \
 	$(LIBNOTIFY_CFLAGS) \
+	$(DBUS_GLIB_CFLAGS) \
 	$(PURPLE_CFLAGS) \
 	$(DEBUG_CFLAGS)
 
