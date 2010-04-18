@@ -97,7 +97,7 @@ gboolean gfire_game_have_list();
 guint32 gfire_game_get_version();
 gchar *gfire_game_get_version_str();
 guint32 gfire_game_id(const gchar *p_name);
-gchar *gfire_game_name(guint32 p_gameid);
+gchar *gfire_game_name(guint32 p_gameid, gboolean p_html);
 gchar *gfire_game_short_name(guint32 p_gameid);
 void gfire_update_version_cb(PurpleUtilFetchUrlData *p_url_data, gpointer p_data, const gchar *p_buf, gsize p_len, const gchar *p_error_message);
 void gfire_update_games_list_cb(PurpleUtilFetchUrlData *p_url_data, gpointer p_data, const gchar *p_buf, gsize p_len, const gchar *p_error_message);

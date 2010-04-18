@@ -103,7 +103,7 @@ static gfire_game_detector *gfire_detector = NULL;
 
 static void gfire_game_detector_inform_instances_game()
 {
-	gchar *game_name = gfire_game_name(gfire_detector->game_data.id);
+	gchar *game_name = gfire_game_name(gfire_detector->game_data.id, TRUE);
 
 	if(gfire_detector->game_data.id != 0)
 	{
@@ -233,7 +233,7 @@ static void gfire_game_detector_inform_instances_voip()
 {
 	if(gfire_detector->voip_data.id != 0)
 	{
-		gchar *voip_name = gfire_game_name(gfire_detector->voip_data.id);
+		gchar *voip_name = gfire_game_name(gfire_detector->voip_data.id, FALSE);
 		gchar *addr = gfire_game_data_addr_str(&gfire_detector->voip_data);
 		purple_debug_info("gfire", "%s is running, sending VoIP status. (%s)\n", voip_name, addr);
 		g_free(addr);
@@ -661,7 +661,7 @@ static void gfire_game_detector_web_http_input_cb(gpointer p_con, gint p_fd, Pur
 				}
 			}
 
-			gchar *game_name = gfire_game_name(gfire_detector->game_data.id);
+			gchar *game_name = gfire_game_name(gfire_detector->game_data.id, TRUE);
 			gchar *game_short_name = gfire_game_short_name(gfire_detector->game_data.id);
 			g_sprintf(content, "var result = {};\n"
 					  "result[\"gameid\"] = \"%u\";\n"

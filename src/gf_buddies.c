@@ -723,9 +723,21 @@ static void gfire_buddy_update_status(gfire_buddy *p_buddy)
 		return;
 
 	if(gfire_buddy_is_online(p_buddy))
-		purple_prpl_got_user_status(purple_buddy_get_account(p_buddy->prpl_buddy), gfire_buddy_get_name(p_buddy), purple_primitive_get_id_from_type(p_buddy->status), "message", gfire_buddy_get_status_text(p_buddy, FALSE), NULL);
+	{
+		gchar *status_msg = gfire_buddy_get_status_text(p_buddy, FALSE);
+		if(status_msg)
+		{
+			purple_prpl_got_user_status(purple_buddy_get_account(p_buddy->prpl_buddy), gfire_buddy_get_name(p_buddy),
+										purple_primitive_get_id_from_type(p_buddy->status), "message", status_msg, NULL);
+			g_free(status_msg);
+		}
+		else
+			purple_prpl_got_user_status(purple_buddy_get_account(p_buddy->prpl_buddy), gfire_buddy_get_name(p_buddy),
+										purple_primitive_get_id_from_type(p_buddy->status), NULL);
+	}
 	else
-		purple_prpl_got_user_status(purple_buddy_get_account(p_buddy->prpl_buddy), gfire_buddy_get_name(p_buddy), "offline", NULL);
+		purple_prpl_got_user_status(purple_buddy_get_account(p_buddy->prpl_buddy), gfire_buddy_get_name(p_buddy),
+									"offline", NULL);
 }
 
 void gfire_buddy_set_session_id(gfire_buddy *p_buddy, const guint8 *p_sessionid)
@@ -797,7 +809,7 @@ void gfire_buddy_set_game_status(gfire_buddy *p_buddy, guint32 p_gameid, guint32
 	{
 		if(p_gameid != 0)
 		{
-			gchar *game_name = gfire_game_name(p_gameid);
+			gchar *game_name = gfire_game_name(p_gameid, TRUE);
 			gchar *msg = g_strdup_printf(_("Playing <b>%s</b> now!"), game_name);
 			gfire_notify_buddy(p_buddy->prpl_buddy, purple_buddy_get_contact_alias(p_buddy->prpl_buddy), msg);
 			g_free(game_name);
@@ -828,7 +840,7 @@ void gfire_buddy_set_game_status(gfire_buddy *p_buddy, guint32 p_gameid, guint32
 
 	gfire_buddy_update_status(p_buddy);
 
-	purple_debug(PURPLE_DEBUG_INFO, "gfire", "%s is playing %d on %d.%d.%d.%d:%d\n",
+	purple_debug(PURPLE_DEBUG_INFO, "gfire", "%s is playing %u on %d.%d.%d.%d:%d\n",
 					 gfire_buddy_get_name(p_buddy), p_buddy->game_data.id, p_buddy->game_data.ip.octets[3],
 					 p_buddy->game_data.ip.octets[2], p_buddy->game_data.ip.octets[1],
 					 p_buddy->game_data.ip.octets[0], p_buddy->game_data.port);
@@ -1040,24 +1052,25 @@ void gfire_buddy_set_status(gfire_buddy *p_buddy, const gchar *p_status_msg)
 	if(p_buddy->status_msg) g_free(p_buddy->status_msg);
 	if(p_status_msg)
 	{
-		p_buddy->status_msg = g_strdup(p_status_msg);
-		gfire_strip_invalid_utf8(p_buddy->status_msg);
+		gchar *status_msg = g_strdup(p_status_msg);
+		gfire_strip_invalid_utf8(status_msg);
 
-		if((strncmp(p_status_msg, "(AFK) ", 6) == 0) || (strncmp(p_status_msg, "(ABS) ", 6) == 0))
+		if((strncmp(status_msg, "(AFK) ", 6) == 0) || (strncmp(status_msg, "(ABS) ", 6) == 0))
 		{
 			p_buddy->status = PURPLE_STATUS_AWAY;
-			p_buddy->status_msg = g_strdup(p_status_msg + 6);
+			p_buddy->status_msg = g_strdup(status_msg + 6);
 		}
-		else if(strncmp(p_status_msg, "(Busy) ", 7) == 0)
+		else if(strncmp(status_msg, "(Busy) ", 7) == 0)
 		{
 			p_buddy->status = PURPLE_STATUS_UNAVAILABLE;
-			p_buddy->status_msg = g_strdup(p_status_msg + 7);
+			p_buddy->status_msg = g_strdup(status_msg + 7);
 		}
 		else
 		{
 			p_buddy->status = PURPLE_STATUS_AVAILABLE;
-			p_buddy->status_msg = g_strdup(p_status_msg);
+			p_buddy->status_msg = g_strdup(status_msg);
 		}
+		g_free(status_msg);
 
 		g_strchomp(g_strchug(p_buddy->status_msg));
 		if(strlen(p_buddy->status_msg) == 0)
@@ -1082,7 +1095,7 @@ gchar *gfire_buddy_get_status_text(const gfire_buddy *p_buddy, gboolean p_nogame
 
 	if(gfire_buddy_is_playing(p_buddy) && !p_nogame)
 	{
-		gchar *tmp = purple_unescape_html(gfire_game_name(p_buddy->game_data.id));
+		gchar *tmp = gfire_game_name(p_buddy->game_data.id, FALSE);
 		gchar *ret = g_strdup_printf(_("Playing %s"), tmp);
 		g_free(tmp);
 		return ret;
@@ -1487,7 +1500,6 @@ void gfire_buddy_p2p_ft_init(PurpleXfer *p_xfer)
 	if(!gf_buddy->p2p)
 	{
 		purple_xfer_cancel_local(p_xfer);
-		purple_xfer_unref(p_xfer);
 		return;
 	}
 

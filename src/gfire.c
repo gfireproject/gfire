@@ -1158,7 +1158,7 @@ static gboolean gfire_show_buddy_info_cb(gfire_buddy_info_args *p_args)
 	{
 		const gfire_game_data *game_data = gfire_buddy_get_game_data(gf_buddy);
 
-		gchar *tmp = gfire_game_name(game_data->id);
+		gchar *tmp = gfire_game_name(game_data->id, TRUE);
 		purple_notify_user_info_add_pair(user_info, _("Game"), tmp);
 		if(tmp) g_free(tmp);
 
@@ -1175,7 +1175,7 @@ static gboolean gfire_show_buddy_info_cb(gfire_buddy_info_args *p_args)
 	{
 		const gfire_game_data *voip_data = gfire_buddy_get_voip_data(gf_buddy);
 
-		gchar *voip_name = gfire_game_name(voip_data->id);
+		gchar *voip_name = gfire_game_name(voip_data->id, TRUE);
 
 		if(gfire_game_data_has_addr(voip_data))
 		{
@@ -1409,7 +1409,7 @@ void gfire_set_game_status(gfire_data *p_gfire, const gfire_game_data *p_data)
 											  "ingamenotificationnorm", FALSE);
 	if (notify)
 	{
-		gchar *game_name = gfire_game_name(p_data->id);
+		gchar *game_name = gfire_game_name(p_data->id, TRUE);
 		purple_notify_message(NULL, PURPLE_NOTIFY_MSG_INFO, _("Ingame status"),
 							  NN(game_name), _("Your status has been changed."), NULL, NULL);
 		g_free(game_name);

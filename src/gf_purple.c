@@ -252,7 +252,7 @@ static void gfire_purple_blist_tooltip_text(PurpleBuddy *p_buddy, PurpleNotifyUs
 		{
 			const gfire_game_data *game_data = gfire_buddy_get_game_data(gf_buddy);
 
-			gchar *game_name = gfire_game_name(game_data->id);
+			gchar *game_name = gfire_game_name(game_data->id, TRUE);
 			purple_notify_user_info_add_pair(p_user_info, _("Game"), NN(game_name));
 			if(game_name) g_free(game_name);
 
@@ -280,7 +280,7 @@ static void gfire_purple_blist_tooltip_text(PurpleBuddy *p_buddy, PurpleNotifyUs
 		{
 			const gfire_game_data *voip_data = gfire_buddy_get_voip_data(gf_buddy);
 
-			gchar *voip_name = gfire_game_name(voip_data->id);
+			gchar *voip_name = gfire_game_name(voip_data->id, TRUE);
 
 			if(gfire_game_data_has_addr(voip_data))
 			{

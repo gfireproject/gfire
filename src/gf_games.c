@@ -231,13 +231,16 @@ guint32 gfire_game_id(const gchar *p_name)
 	return game->id;
 }
 
-gchar *gfire_game_name(guint32 p_gameid)
+gchar *gfire_game_name(guint32 p_gameid, gboolean p_html)
 {
 	const gfire_game *game = gfire_game_by_id(p_gameid);
 	if(!game)
 		return g_strdup_printf("%u", p_gameid);
 
-	return gfire_escape_html(game->name);
+	if(p_html)
+		return gfire_escape_html(game->name);
+	else
+		return g_strdup(game->name);
 }
 
 gchar *gfire_game_short_name(guint32 p_gameid)
