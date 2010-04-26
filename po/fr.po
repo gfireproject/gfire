@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Gfire 0.9.0 Beta\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-03-10 23:14+0100\n"
+"POT-Creation-Date: 2010-04-26 21:42+0200\n"
 "PO-Revision-Date: 2010-03-07 14:43+0100\n"
 "Last-Translator: Warren Dumortier <nwarrenfl@gmail.com>\n"
 "Language-Team: French\n"
@@ -49,7 +49,7 @@ msgstr "Exécutable de lancement:"
 msgid "Launch prefix:"
 msgstr "Préfixe de lancement:"
 
-#: ../data/games.glade.h:9 ../src/gf_purple.c:731
+#: ../data/games.glade.h:9 ../src/gf_purple.c:754
 msgid "Manage Games"
 msgstr "Gérer les jeux"
 
@@ -66,7 +66,7 @@ msgid "Port:"
 msgstr "Port:"
 
 #. Server browser
-#: ../data/servers.glade.h:3 ../src/gf_purple.c:735
+#: ../data/servers.glade.h:3 ../src/gf_purple.c:758
 msgid "Server Browser"
 msgstr "Serveurs"
 
@@ -74,7 +74,7 @@ msgstr "Serveurs"
 msgid "gtk-add"
 msgstr "gtk-add"
 
-#: ../src/gf_base.h:113
+#: ../src/gf_base.h:115
 msgid "Xfire - Friends of Friends playing games"
 msgstr "Amis d'amis en train de jouer"
 
@@ -87,25 +87,31 @@ msgstr ""
 "%s n'a probablement pas reçu ce message:\n"
 "%s"
 
-#: ../src/gf_buddies.c:801
+#: ../src/gf_buddies.c:813
 #, c-format
 msgid "Playing <b>%s</b> now!"
 msgstr "Joue à <b>%s</b>!"
 
-#: ../src/gf_buddies.c:808
+#: ../src/gf_buddies.c:820
 msgid "Stopped playing!"
 msgstr "A arrêté de jouer!"
 
-#: ../src/gf_buddies.c:1086 ../src/gf_game_detection.c:81
+#: ../src/gf_buddies.c:1099
+#, fuzzy, c-format
+msgid "Playing %s - %s"
+msgstr "Joue à %s"
+
+#: ../src/gf_buddies.c:1100 ../src/gf_game_detection.c:147
+#: ../src/gf_game_detection.c:218
 #, c-format
 msgid "Playing %s"
 msgstr "Joue à %s"
 
-#: ../src/gf_buddies.c:1477
+#: ../src/gf_buddies.c:1491
 msgid "P2P Connection not possible"
 msgstr "Connexion P2P impossible"
 
-#: ../src/gf_buddies.c:1477
+#: ../src/gf_buddies.c:1491
 msgid ""
 "We're not able to establish a connection to your buddy. File transfer and "
 "P2P messaging will not be possible."
@@ -134,7 +140,7 @@ msgid "Admin"
 msgstr "Admin"
 
 #: ../src/gf_chat.c:251 ../src/gf_chat.c:449 ../src/gf_chat.c:579
-#: ../src/gf_chat.c:607 ../src/gf_games.c:217
+#: ../src/gf_chat.c:607 ../src/gf_games.c:220
 msgid "Unknown"
 msgstr "Inconnu"
 
@@ -465,97 +471,97 @@ msgstr "Nom"
 msgid "Search results"
 msgstr "Résultats de la recherche"
 
-#: ../src/gf_games.c:43
+#: ../src/gf_games.c:46
 #, c-format
 msgid "The Games List has been updated to version: %s."
 msgstr "La liste des jeux a été mise à jour: %s."
 
-#: ../src/gf_games.c:47 ../src/gf_games.c:50 ../src/gf_games.c:51
+#: ../src/gf_games.c:50 ../src/gf_games.c:53 ../src/gf_games.c:54
 msgid "New Gfire Game List Version"
 msgstr "Nouvelle liste des jeux Gfire"
 
-#: ../src/gf_games.c:1215 ../src/gf_games.c:1251 ../src/gf_games.c:1327
-#: ../src/gf_games.c:1353 ../src/gf_games.c:1368 ../src/gf_games.c:1382
+#: ../src/gf_games.c:1270 ../src/gf_games.c:1306 ../src/gf_games.c:1382
+#: ../src/gf_games.c:1408 ../src/gf_games.c:1423 ../src/gf_games.c:1437
 msgid "Manage Games: error"
 msgstr "Gérer les jeux: erreur"
 
-#: ../src/gf_games.c:1215 ../src/gf_games.c:1252
+#: ../src/gf_games.c:1270 ../src/gf_games.c:1307
 msgid "Couldn't add game"
 msgstr "Impossible d'ajouter le jeu"
 
-#: ../src/gf_games.c:1216
+#: ../src/gf_games.c:1271
 msgid "There's no such game, please try again."
 msgstr "Ce jeu n'existe pas, veuillez réessayer."
 
-#: ../src/gf_games.c:1232
+#: ../src/gf_games.c:1287
 msgid "Manage Games: game added"
 msgstr "Gérer les jeux: jeu ajouté"
 
-#: ../src/gf_games.c:1233
+#: ../src/gf_games.c:1288
 msgid "The game has been successfully added."
 msgstr "Le jeu a été ajouté avec succès."
 
-#: ../src/gf_games.c:1237 ../src/gf_games.c:1308
+#: ../src/gf_games.c:1292 ../src/gf_games.c:1363
 msgid "Manage Games: warning"
 msgstr "Gérer les jeux: avertissement"
 
-#: ../src/gf_games.c:1237
+#: ../src/gf_games.c:1292
 msgid "Game already added"
 msgstr "Jeu déjà ajouté"
 
-#: ../src/gf_games.c:1238
+#: ../src/gf_games.c:1293
 msgid "This game is already added, you can configure it if you want."
 msgstr "Ce jeu est déjà ajouté, vous pouvez le modifier si vous voulez."
 
-#: ../src/gf_games.c:1252 ../src/gf_games.c:1328
+#: ../src/gf_games.c:1307 ../src/gf_games.c:1383
 msgid "Please try again. Make sure you fill in all fields."
 msgstr "Veuillez réessayer. Contrôlez que vous remplissez tous les champs."
 
-#: ../src/gf_games.c:1308
+#: ../src/gf_games.c:1363
 msgid "Game launch data not found"
 msgstr "Données de lancement du jeu introuvables"
 
-#: ../src/gf_games.c:1309 ../src/gf_games.c:1369
+#: ../src/gf_games.c:1364 ../src/gf_games.c:1424
 msgid "This game is not yet added as it seems, please add it first!"
 msgstr "Ce jeu ne semble pas être ajouté, veuillez l'ajouter d'abord!"
 
-#: ../src/gf_games.c:1323
+#: ../src/gf_games.c:1378
 msgid "Manage Games: game edited"
 msgstr "Gérer les jeux: jeu modifié"
 
-#: ../src/gf_games.c:1323
+#: ../src/gf_games.c:1378
 msgid "Game edited"
 msgstr "Jeu modifié"
 
-#: ../src/gf_games.c:1323
+#: ../src/gf_games.c:1378
 msgid "The game has been successfully edited."
 msgstr "Le jeu a été modifié avec succès."
 
-#: ../src/gf_games.c:1328
+#: ../src/gf_games.c:1383
 msgid "Couldn't edit game"
 msgstr "Impossible de modifier le jeu"
 
-#: ../src/gf_games.c:1354 ../src/gf_games.c:1369 ../src/gf_games.c:1383
+#: ../src/gf_games.c:1409 ../src/gf_games.c:1424 ../src/gf_games.c:1438
 msgid "Couldn't remove game"
 msgstr "Impossible d'enlever le jeu"
 
-#: ../src/gf_games.c:1354
+#: ../src/gf_games.c:1409
 msgid "No such game, please try again!"
 msgstr "Ce jeu est introuvable, veuillez réessayer!"
 
-#: ../src/gf_games.c:1378
+#: ../src/gf_games.c:1433
 msgid "Manage Games: game removed"
 msgstr "Gérer les jeux: jeu supprimé"
 
-#: ../src/gf_games.c:1379
+#: ../src/gf_games.c:1434
 msgid "Game removed"
 msgstr "Jeu enlevé"
 
-#: ../src/gf_games.c:1379
+#: ../src/gf_games.c:1434
 msgid "The game has been successfully removed."
 msgstr "Le jeu a été enlevé avec succès."
 
-#: ../src/gf_games.c:1383
+#: ../src/gf_games.c:1438
 msgid "Please try again. Make sure you select a game to remove."
 msgstr "Veuillez réessayer. Contrôlez que vous sélectionnez un jeu à enlever."
 
@@ -571,14 +577,14 @@ msgstr "Errur de lecture sur le socket."
 msgid "Password or Username Incorrect."
 msgstr "Mot de passe ou nom d'utilisateur incorrect."
 
-#: ../src/gf_network.c:255
+#: ../src/gf_network.c:258
 #, c-format
 msgid "Protocol version mismatch, needs to be %d. Auto set to new value."
 msgstr ""
 "Mauvaise version du protocol détectée (devrait être %d). La nouvelle version "
 "a été changée automatiquement."
 
-#: ../src/gf_network.c:302
+#: ../src/gf_network.c:303
 msgid "You have signed on from another location."
 msgstr "Vous vous êtes connecté depuis un autre emplacement."
 
@@ -587,144 +593,144 @@ msgstr "Vous vous êtes connecté depuis un autre emplacement."
 msgid "Xfire Community Site"
 msgstr "Communauté Xfire"
 
-#: ../src/gf_purple.c:256 ../src/gfire.c:1137
+#: ../src/gf_purple.c:279 ../src/gfire.c:1162
 msgid "Game"
 msgstr "Jeu"
 
-#: ../src/gf_purple.c:262 ../src/gf_purple.c:1214 ../src/gfire.c:1143
+#: ../src/gf_purple.c:285 ../src/gf_purple.c:1237 ../src/gfire.c:1168
 msgid "Server"
 msgstr "Serveur"
 
-#: ../src/gf_purple.c:292 ../src/gfire.c:1162
+#: ../src/gf_purple.c:315 ../src/gfire.c:1187
 msgid "unknown"
 msgstr "inconnu"
 
-#: ../src/gf_purple.c:307 ../src/gfire.c:1126 ../src/gfire.c:1129
+#: ../src/gf_purple.c:330 ../src/gfire.c:1151 ../src/gfire.c:1154
 msgid "Status"
 msgstr "Statut"
 
-#: ../src/gf_purple.c:317 ../src/gfire.c:1175
+#: ../src/gf_purple.c:340 ../src/gfire.c:1200
 msgid "Common Friends"
 msgstr "Amis communs"
 
-#: ../src/gf_purple.c:380
+#: ../src/gf_purple.c:403
 msgid "Protocol initialization failed."
 msgstr "Echec de l'initialisation du protocol."
 
-#: ../src/gf_purple.c:413
+#: ../src/gf_purple.c:436
 msgid "Message could not be sent. Buddy not in contact list"
 msgstr "Le message n'a pas pu être envoyé. Le contact n'est pas dans la liste"
 
-#: ../src/gf_purple.c:426
+#: ../src/gf_purple.c:449
 msgid "Message could not be sent. Buddy offline"
 msgstr "Le message n'a pas pu être envoyé. Le contact est hors ligne"
 
 #. Request the invitation message
-#: ../src/gf_purple.c:532
+#: ../src/gf_purple.c:555
 msgid "Xfire Invitation Message"
 msgstr "Message d'invitation Xfire"
 
-#: ../src/gf_purple.c:533
+#: ../src/gf_purple.c:556
 msgid "Please enter the message you want to send your buddy with this invite:"
 msgstr ""
 "Veuillez entrer le message que vous souhaitez ajouter à l'invitation du "
 "contact:"
 
-#: ../src/gf_purple.c:534
+#: ../src/gf_purple.c:557
 msgid "Please add me to your friends list!"
 msgstr "Ajoutez-moi à votre liste d'amis!"
 
-#: ../src/gf_purple.c:535
+#: ../src/gf_purple.c:558
 msgid "Invite with a message"
 msgstr "Inviter avec message"
 
-#: ../src/gf_purple.c:536
+#: ../src/gf_purple.c:559
 msgid "Invite without a message"
 msgstr "Inviter sans message"
 
-#: ../src/gf_purple.c:564
+#: ../src/gf_purple.c:587
 msgid "Xfire Buddy Removal"
 msgstr "Suppression de contact refusée"
 
-#: ../src/gf_purple.c:565
+#: ../src/gf_purple.c:588
 msgid ""
 "You have removed a buddy which is not on your friends list, it will be "
 "restored on the next login."
 msgstr ""
 
-#: ../src/gf_purple.c:620
+#: ../src/gf_purple.c:643
 msgid "Add as friend"
 msgstr "Ajouter comme ami"
 
-#: ../src/gf_purple.c:635
+#: ../src/gf_purple.c:658
 msgid "Join Game ..."
 msgstr "Rejoindre le jeu..."
 
-#: ../src/gf_purple.c:651
+#: ../src/gf_purple.c:674
 msgid "Join VoIP ..."
 msgstr "Rejoindre le VoIP ..."
 
-#: ../src/gf_purple.c:661
+#: ../src/gf_purple.c:684
 msgid "Xfire Profile"
 msgstr "Profil Xfire"
 
-#: ../src/gf_purple.c:693
+#: ../src/gf_purple.c:716
 #, c-format
 msgid "Launch %s"
 msgstr "Lancer %s"
 
 #. General things
-#: ../src/gf_purple.c:712
+#: ../src/gf_purple.c:735
 msgid "Change Nickname"
 msgstr "Modifier pseudo"
 
-#: ../src/gf_purple.c:715
+#: ../src/gf_purple.c:738
 msgid "My Profile Page"
 msgstr "Mon profil"
 
-#: ../src/gf_purple.c:719
+#: ../src/gf_purple.c:742
 msgid "Friend Search"
 msgstr "Recherche d'amis"
 
 #. Game configuration
-#: ../src/gf_purple.c:724
+#: ../src/gf_purple.c:747
 msgid "Reload Game Config"
 msgstr "Actualiser la configuration des jeux"
 
 #. About
-#: ../src/gf_purple.c:747
+#: ../src/gf_purple.c:770
 msgid "About"
 msgstr "A propos"
 
-#: ../src/gf_purple.c:801
+#: ../src/gf_purple.c:824
 msgid "_Room:"
 msgstr "_Salle:"
 
-#: ../src/gf_purple.c:807
+#: ../src/gf_purple.c:830
 msgid "_Password:"
 msgstr "_Mot de passe:"
 
-#: ../src/gf_purple.c:896
+#: ../src/gf_purple.c:919
 msgid "Xfire Groupchat"
 msgstr "Salle de tchat Xfire"
 
-#: ../src/gf_purple.c:896
+#: ../src/gf_purple.c:919
 msgid "MotD change failed"
 msgstr "Echec lors du changement du message du jour"
 
-#: ../src/gf_purple.c:897
+#: ../src/gf_purple.c:920
 msgid "The MotD contains more than 200 characters."
 msgstr "Le message du jour contient plus de 200 caractères."
 
-#: ../src/gf_purple.c:983
+#: ../src/gf_purple.c:1006
 msgid "Friends of friends group name restored"
 msgstr "Nom de groupe des amis d'amis rétabli"
 
-#: ../src/gf_purple.c:983 ../src/gf_purple.c:1001
+#: ../src/gf_purple.c:1006 ../src/gf_purple.c:1024
 msgid "Group name restored"
 msgstr "Nom de groupe rétabli"
 
-#: ../src/gf_purple.c:983
+#: ../src/gf_purple.c:1006
 msgid ""
 "You have renamed Xfire's FoF group name. Unfortunately we had to restore "
 "this groups name."
@@ -732,11 +738,11 @@ msgstr ""
 "Vous avez renommé le nom de groupe des amis d'amis. Malheureusement nous "
 "avons du retéblir le nom du groupe."
 
-#: ../src/gf_purple.c:1001
+#: ../src/gf_purple.c:1024
 msgid "Clan's group name restored"
 msgstr "Nom de groupe du clan rétabli"
 
-#: ../src/gf_purple.c:1001
+#: ../src/gf_purple.c:1024
 msgid ""
 "You have renamed the group name of a Xfire clan. Unfortunately we had to "
 "restore this groups name."
@@ -744,55 +750,55 @@ msgstr ""
 "Vous avez renommé le nom de groupe d'un clan Xfire. Malheureusement nous "
 "avons du rétablir le nom du groupe."
 
-#: ../src/gf_purple.c:1217
+#: ../src/gf_purple.c:1240
 msgid "Port"
 msgstr "Port"
 
-#: ../src/gf_purple.c:1220
+#: ../src/gf_purple.c:1243
 msgid "Version"
 msgstr "Version"
 
-#: ../src/gf_purple.c:1223
+#: ../src/gf_purple.c:1246
 msgid "Buddies can see if I'm typing"
 msgstr "Mes contacts peuvent voir quand j'écris un message"
 
-#: ../src/gf_purple.c:1226
+#: ../src/gf_purple.c:1249
 msgid "Auto detect for ingame status"
 msgstr "Activer la détection des jeux"
 
-#: ../src/gf_purple.c:1229
+#: ../src/gf_purple.c:1252
 msgid "Change my status for other protocols as well"
 msgstr "Changer mon état également pour les autres protocoles"
 
-#: ../src/gf_purple.c:1232
+#: ../src/gf_purple.c:1255
 msgid "Notify me when my status is ingame"
 msgstr "Notifier quand mon statut est en jeu"
 
-#: ../src/gf_purple.c:1235
+#: ../src/gf_purple.c:1258
 msgid "Enable server detection"
 msgstr "Activer la détection des serveurs"
 
-#: ../src/gf_purple.c:1238
+#: ../src/gf_purple.c:1261
 msgid "Use Xfires P2P features"
 msgstr "Activer les fonctions P2P de Xfire"
 
-#: ../src/gf_purple.c:1242
+#: ../src/gf_purple.c:1265
 msgid "Display notifications for certain events"
 msgstr "Activer les notifications"
 
-#: ../src/gf_purple.c:1246
+#: ../src/gf_purple.c:1269
 msgid "Show Friends of Friends"
 msgstr "Afficher les amis d'amis"
 
-#: ../src/gf_purple.c:1249
+#: ../src/gf_purple.c:1272
 msgid "Xfire"
 msgstr "Xfire"
 
-#: ../src/gf_purple.c:1250 ../src/gf_purple.c:1251
+#: ../src/gf_purple.c:1273 ../src/gf_purple.c:1274
 msgid "Xfire Protocol Plugin"
 msgstr "Plugin pour le protocol Xfire"
 
-#: ../src/gfire.c:171
+#: ../src/gfire.c:176
 #, c-format
 msgid ""
 "Gfire <b>%u.%u.%u%s%s</b> is now available.\n"
@@ -801,12 +807,12 @@ msgstr ""
 "Gfire <b>%u.%u.%u</b> est maintenant disponible.\n"
 "Visitez le site web de Gfire pour plus d'informations!"
 
-#: ../src/gfire.c:176 ../src/gfire.c:187
+#: ../src/gfire.c:181 ../src/gfire.c:192
 msgid "New Gfire Version"
 msgstr "Nouvelle version de Gfire"
 
 #. FIXME: implement a way to disable this notification
-#: ../src/gfire.c:182
+#: ../src/gfire.c:187
 #, c-format
 msgid ""
 "Gfire %u.%u.%u%s%s is now available.\n"
@@ -815,193 +821,193 @@ msgstr ""
 "Gfire %u.%u.%u est maintenant disponible.\n"
 "Visitez le site web de Gfire pour plus d'informations!"
 
-#: ../src/gfire.c:298
+#: ../src/gfire.c:324
 msgid "Connecting"
 msgstr "Connexion en cours"
 
-#: ../src/gfire.c:304
+#: ../src/gfire.c:330
 msgid "Couldn't create socket."
 msgstr "Impossible de créer le socket."
 
-#: ../src/gfire.c:451
+#: ../src/gfire.c:476
 msgid "Login sent"
 msgstr "Connexion: envoyée"
 
 #. TRANSLATORS: Keep "(AFK)" as is!
 #. Suggestion: Use Xfires original AFK message here
-#: ../src/gfire.c:477
+#: ../src/gfire.c:502
 msgid "(AFK) Away From Keyboard"
 msgstr "(AFK) Absent(e)"
 
 #. TRANSLATORS: Keep "(Busy)" as is!
-#: ../src/gfire.c:484
+#: ../src/gfire.c:509
 msgid "(Busy) I'm busy!"
 msgstr "(Busy) Occupé!"
 
-#: ../src/gfire.c:755 ../src/gfire.c:764 ../src/gfire.c:934 ../src/gfire.c:943
+#: ../src/gfire.c:780 ../src/gfire.c:789 ../src/gfire.c:959 ../src/gfire.c:968
 msgid "Error"
 msgstr "Erreur"
 
-#: ../src/gfire.c:755
+#: ../src/gfire.c:780
 msgid "Retrieving gamerig data failed!"
 msgstr "Echer lors de la réception de la gaming rig!"
 
-#: ../src/gfire.c:764
+#: ../src/gfire.c:789
 msgid "Invalid gamerig data received!"
 msgstr "Données de gaming rig invalides reçues!"
 
-#: ../src/gfire.c:779
+#: ../src/gfire.c:804
 #, c-format
 msgid "%ss Gaming Rig:"
 msgstr "Gaming rig de %s:"
 
-#: ../src/gfire.c:789
+#: ../src/gfire.c:814
 msgid "Manufacturer"
 msgstr "Fabricant"
 
-#: ../src/gfire.c:798
+#: ../src/gfire.c:823
 msgid "Processor"
 msgstr "Processeur"
 
-#: ../src/gfire.c:807
+#: ../src/gfire.c:832
 msgid "Memory"
 msgstr "Mémoire"
 
-#: ../src/gfire.c:816
+#: ../src/gfire.c:841
 msgid "Video Card"
 msgstr "Carte graphique"
 
-#: ../src/gfire.c:825
+#: ../src/gfire.c:850
 msgid "Sound Card"
 msgstr "Carte son"
 
-#: ../src/gfire.c:834
+#: ../src/gfire.c:859
 msgid "Mainboard"
 msgstr "Carte mère"
 
-#: ../src/gfire.c:843
+#: ../src/gfire.c:868
 msgid "Hard Drive"
 msgstr "Disque dur"
 
-#: ../src/gfire.c:852
+#: ../src/gfire.c:877
 msgid "Monitor"
 msgstr "Moniteur"
 
-#: ../src/gfire.c:861
+#: ../src/gfire.c:886
 msgid "Keyboard"
 msgstr "Clavier"
 
-#: ../src/gfire.c:870
+#: ../src/gfire.c:895
 msgid "Mouse"
 msgstr "Souris"
 
-#: ../src/gfire.c:879
+#: ../src/gfire.c:904
 msgid "Mouse Surface"
 msgstr "Tapis de souris"
 
-#: ../src/gfire.c:888
+#: ../src/gfire.c:913
 msgid "Speakers"
 msgstr "Haut-parleurs"
 
-#: ../src/gfire.c:897
+#: ../src/gfire.c:922
 msgid "Computer Case"
 msgstr "Boîtier PC"
 
-#: ../src/gfire.c:906
+#: ../src/gfire.c:931
 msgid "Operating System"
 msgstr "Système d'exploitation"
 
-#: ../src/gfire.c:934
+#: ../src/gfire.c:959
 msgid "Retrieving profile data failed!"
 msgstr "Echec lors de la réception des données de profil!"
 
-#: ../src/gfire.c:943
+#: ../src/gfire.c:968
 msgid "Invalid profile data received!"
 msgstr "Données de profil invalides reçues!"
 
-#: ../src/gfire.c:948
+#: ../src/gfire.c:973
 msgid "Profile"
 msgstr "Profil"
 
-#: ../src/gfire.c:958
+#: ../src/gfire.c:983
 #, c-format
 msgid "%ss Profile:"
 msgstr "Profil de %s"
 
-#: ../src/gfire.c:968
+#: ../src/gfire.c:993
 msgid "Real Name"
 msgstr "Nom réel"
 
-#: ../src/gfire.c:977
+#: ../src/gfire.c:1002
 msgid "Age"
 msgstr "Age"
 
-#: ../src/gfire.c:986
+#: ../src/gfire.c:1011
 msgid "Gender"
 msgstr "Sexe"
 
-#: ../src/gfire.c:986
+#: ../src/gfire.c:1011
 msgid "Male"
 msgstr "Homme"
 
-#: ../src/gfire.c:986
+#: ../src/gfire.c:1011
 msgid "Female"
 msgstr "Femme"
 
-#: ../src/gfire.c:995
+#: ../src/gfire.c:1020
 msgid "Occupation"
 msgstr "Occupation"
 
-#: ../src/gfire.c:1004
+#: ../src/gfire.c:1029
 msgid "Country"
 msgstr "Pays"
 
-#: ../src/gfire.c:1013
+#: ../src/gfire.c:1038
 msgid "Location"
 msgstr "Location"
 
-#: ../src/gfire.c:1022
+#: ../src/gfire.c:1047
 msgid "Gaming Style"
 msgstr "Style de jeu"
 
-#: ../src/gfire.c:1031
+#: ../src/gfire.c:1056
 msgid "Interests"
 msgstr "Intérêts"
 
-#: ../src/gfire.c:1040
+#: ../src/gfire.c:1065
 msgid "Friends"
 msgstr "Amis"
 
-#: ../src/gfire.c:1049
+#: ../src/gfire.c:1074
 msgid "Join Date"
 msgstr "Membre depuis"
 
-#: ../src/gfire.c:1111
+#: ../src/gfire.c:1136
 msgid "Nickname"
 msgstr "Pseudo"
 
-#: ../src/gfire.c:1129
+#: ../src/gfire.c:1154
 msgid "Offline"
 msgstr "Hors ligne"
 
-#: ../src/gfire.c:1185
+#: ../src/gfire.c:1210
 msgid "Additional game info:"
 msgstr "Informations de jeu additionnelles:"
 
-#: ../src/gfire.c:1201
+#: ../src/gfire.c:1226
 #, c-format
 msgid "%ss Clans:"
 msgstr "Clans de %s:"
 
-#: ../src/gfire.c:1285
+#: ../src/gfire.c:1310
 msgid "Connection timed out"
 msgstr "La connexion a expiré"
 
-#: ../src/gfire.c:1388
+#: ../src/gfire.c:1413
 msgid "Ingame status"
 msgstr "Statut en jeu"
 
-#: ../src/gfire.c:1389
+#: ../src/gfire.c:1414
 msgid "Your status has been changed."
 msgstr "Votre statut a été changé."
 
@@ -1017,35 +1023,35 @@ msgstr "Système de broadcast Xfire"
 msgid "Xfire System Broadcast Message:"
 msgstr "Message de système de broadcast Xfire:"
 
-#: ../src/gf_server_browser.c:43
+#: ../src/gf_server_browser.c:575
 msgid "Recent servers"
 msgstr "Serveurs récents"
 
-#: ../src/gf_server_browser.c:46
+#: ../src/gf_server_browser.c:578
 msgid "Favorite servers"
 msgstr "Serveurs favoris"
 
-#: ../src/gf_server_browser.c:49
+#: ../src/gf_server_browser.c:581
 msgid "Friends' favorite servers"
 msgstr "Serveurs favoris des amis"
 
-#: ../src/gf_server_browser.c:52
+#: ../src/gf_server_browser.c:584
 msgid "All servers"
 msgstr "Tous les serveurs"
 
-#: ../src/gf_server_browser.c:75
+#: ../src/gf_server_browser.c:606
 msgid "N/A"
 msgstr "N/A"
 
-#: ../src/gf_server_browser.c:118 ../src/gf_server_browser.c:261
+#: ../src/gf_server_browser.c:650 ../src/gf_server_browser.c:793
 msgid "Server Browser: error"
 msgstr "Serveurs: erreur"
 
-#: ../src/gf_server_browser.c:118
+#: ../src/gf_server_browser.c:650
 msgid "Can't add favorite server"
 msgstr "Impossible d'ajouteur le serveur favori"
 
-#: ../src/gf_server_browser.c:119
+#: ../src/gf_server_browser.c:651
 msgid ""
 "You've reached the limit of favorite servers, you can however still remove "
 "favorite servers in order to add new ones."
@@ -1053,11 +1059,11 @@ msgstr ""
 "Vous avez atteint la limite des serveurs favoris, vous pouvez encore enlever "
 "d'autres serveurs favoris pour en ajouter de nouveaux."
 
-#: ../src/gf_server_browser.c:261
+#: ../src/gf_server_browser.c:793
 msgid "Can't remove favorite server"
 msgstr "Impossible de supprimer le serveur favori"
 
-#: ../src/gf_server_browser.c:262
+#: ../src/gf_server_browser.c:794
 msgid ""
 "The selected server is not a favorite server and thereby can't be removed."
 msgstr ""

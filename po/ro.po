@@ -5,11 +5,11 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: Gfire 0.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-03-08 18:48+0100\n"
-"PO-Revision-Date: 2010-03-12 17:23+0200\n"
-"Last-Translator: \n"
+"POT-Creation-Date: 2010-04-26 21:42+0200\n"
+"PO-Revision-Date: 2010-04-26 21:43+0100\n"
+"Last-Translator: Oliver Ney <oliver@dryder.de>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -47,8 +47,7 @@ msgstr "Executabil de lansare:"
 msgid "Launch prefix:"
 msgstr "Prefix lansare:"
 
-#: ../data/games.glade.h:9
-#: ../src/gf_purple.c:731
+#: ../data/games.glade.h:9 ../src/gf_purple.c:754
 msgid "Manage Games"
 msgstr "Administreaza Jocuri"
 
@@ -65,8 +64,7 @@ msgid "Port:"
 msgstr "Port:"
 
 #. Server browser
-#: ../data/servers.glade.h:3
-#: ../src/gf_purple.c:735
+#: ../data/servers.glade.h:3 ../src/gf_purple.c:758
 msgid "Server Browser"
 msgstr "Explorator de servere"
 
@@ -74,7 +72,7 @@ msgstr "Explorator de servere"
 msgid "gtk-add"
 msgstr "gtk-add"
 
-#: ../src/gf_base.h:113
+#: ../src/gf_base.h:115
 msgid "Xfire - Friends of Friends playing games"
 msgstr "Xfire - Prietenii Prietenilor care se joaca"
 
@@ -87,64 +85,60 @@ msgstr ""
 "Este posibil ca %s sa nu fi receptionat mesajul:\n"
 "%s"
 
-#: ../src/gf_buddies.c:801
+#: ../src/gf_buddies.c:813
 #, c-format
 msgid "Playing <b>%s</b> now!"
 msgstr "Joaca <b>%s</b> acum!"
 
-#: ../src/gf_buddies.c:808
+#: ../src/gf_buddies.c:820
 msgid "Stopped playing!"
 msgstr "S-a oprit din jucat!"
 
-#: ../src/gf_buddies.c:1086
-#: ../src/gf_game_detection.c:81
+#: ../src/gf_buddies.c:1099
+#, c-format
+msgid "Playing %s - %s"
+msgstr "Joaca %s - %s"
+
+#: ../src/gf_buddies.c:1100 ../src/gf_game_detection.c:147
+#: ../src/gf_game_detection.c:218
 #, c-format
 msgid "Playing %s"
 msgstr "Joaca %s"
 
-#: ../src/gf_buddies.c:1477
+#: ../src/gf_buddies.c:1491
 msgid "P2P Connection not possible"
 msgstr "Conexiune P2P imposibila"
 
-#: ../src/gf_buddies.c:1477
-msgid "We're not able to establish a connection to your buddy. File transfer and P2P messaging will not be possible."
-msgstr "Nu am putut stabili o conexiune cu prietenul tau. Transferul de fisiere si mesageria P2P nu vor fi posibile."
+#: ../src/gf_buddies.c:1491
+msgid ""
+"We're not able to establish a connection to your buddy. File transfer and "
+"P2P messaging will not be possible."
+msgstr ""
+"Nu am putut stabili o conexiune cu prietenul tau. Transferul de fisiere si "
+"mesageria P2P nu vor fi posibile."
 
-#: ../src/gf_chat.c:226
-#: ../src/gf_chat.c:424
-#: ../src/gf_chat.c:559
+#: ../src/gf_chat.c:226 ../src/gf_chat.c:424 ../src/gf_chat.c:559
 msgid "Permissionless (muted)"
 msgstr "Fara permisiune (mut)"
 
-#: ../src/gf_chat.c:231
-#: ../src/gf_chat.c:429
-#: ../src/gf_chat.c:563
+#: ../src/gf_chat.c:231 ../src/gf_chat.c:429 ../src/gf_chat.c:563
 msgid "Normal"
 msgstr "Normal"
 
-#: ../src/gf_chat.c:236
-#: ../src/gf_chat.c:434
-#: ../src/gf_chat.c:567
+#: ../src/gf_chat.c:236 ../src/gf_chat.c:434 ../src/gf_chat.c:567
 msgid "Power-User"
 msgstr "Power-User"
 
-#: ../src/gf_chat.c:241
-#: ../src/gf_chat.c:439
-#: ../src/gf_chat.c:571
+#: ../src/gf_chat.c:241 ../src/gf_chat.c:439 ../src/gf_chat.c:571
 msgid "Moderator"
 msgstr "Moderator"
 
-#: ../src/gf_chat.c:246
-#: ../src/gf_chat.c:444
-#: ../src/gf_chat.c:575
+#: ../src/gf_chat.c:246 ../src/gf_chat.c:444 ../src/gf_chat.c:575
 msgid "Admin"
 msgstr "Admin"
 
-#: ../src/gf_chat.c:251
-#: ../src/gf_chat.c:449
-#: ../src/gf_chat.c:579
-#: ../src/gf_chat.c:607
-#: ../src/gf_games.c:217
+#: ../src/gf_chat.c:251 ../src/gf_chat.c:449 ../src/gf_chat.c:579
+#: ../src/gf_chat.c:607 ../src/gf_games.c:220
 msgid "Unknown"
 msgstr "Necunoscut"
 
@@ -249,16 +243,18 @@ msgstr "Notificarile despre prietenii care intra/ies vor fi afisate de acum."
 msgid "Buddy join-/leave-messages will no longer be displayed."
 msgstr "Notificarile despre prietenii care intra/ies nu vor mai fi afisate."
 
-#: ../src/gf_chat.c:725
-#: ../src/gf_chat.c:789
-#: ../src/gf_chat.c:810
+#: ../src/gf_chat.c:725 ../src/gf_chat.c:789 ../src/gf_chat.c:810
 #, c-format
 msgid "Unknown argument: %s"
 msgstr "Argument necunoscut: %s"
 
 #: ../src/gf_chat.c:734
-msgid "New and old name are identical. Please note that chat room names have no case."
-msgstr "Numele nou si cel vechi sunt identice. Retine, numele camerelor de chat nu fac diferenta intre minuscule si majuscule."
+msgid ""
+"New and old name are identical. Please note that chat room names have no "
+"case."
+msgstr ""
+"Numele nou si cel vechi sunt identice. Retine, numele camerelor de chat nu "
+"fac diferenta intre minuscule si majuscule."
 
 #: ../src/gf_chat.c:768
 #, c-format
@@ -269,8 +265,7 @@ msgstr "Vizibilitate necunoscuta: %s"
 msgid "You are not allowed to grant/revoke any permissions."
 msgstr "Nu ai dreptul sa atribui/revoci nicio permisiune."
 
-#: ../src/gf_chat.c:838
-#: ../src/gf_chat.c:907
+#: ../src/gf_chat.c:838 ../src/gf_chat.c:907
 #, c-format
 msgid "Unknown buddy: %s"
 msgstr "Prieten necunoscut: %s"
@@ -279,13 +274,11 @@ msgstr "Prieten necunoscut: %s"
 msgid "You can't change your own permission!"
 msgstr "Nu iti poti schimba propria permisiune!"
 
-#: ../src/gf_chat.c:859
-#: ../src/gf_chat.c:868
+#: ../src/gf_chat.c:859 ../src/gf_chat.c:868
 msgid "You are not allowed to grant this permission."
 msgstr "Nu ai dreptul sa atribui aceasta permisiune."
 
-#: ../src/gf_chat.c:875
-#: ../src/gf_chat.c:957
+#: ../src/gf_chat.c:875 ../src/gf_chat.c:957
 #, c-format
 msgid "Unknown permission: %s"
 msgstr "Permisiune necunoscuta: %s"
@@ -302,58 +295,121 @@ msgstr "Nu ai dreptul sa te auto-inlaturi!"
 msgid "You are not allowed to change the default permission."
 msgstr "Nu ai dreptul sa schimbi permisiunea implicita."
 
-#: ../src/gf_chat.c:941
-#: ../src/gf_chat.c:950
+#: ../src/gf_chat.c:941 ../src/gf_chat.c:950
 msgid "You are not allowed to set this default permission."
 msgstr "Nu ai dreptul sa setezi permisiunea implicita."
 
 #: ../src/gf_chat.c:983
-msgid "save &lt;yes|no&gt;:<br />Save the current chat room on Xfire. This preserves all of the chat rooms settings and privileges. On &quot;yes&quot;, you will be asked to save the chat room to your buddy list if it is not already there. If you decline this request the save will NOT be performed."
-msgstr "save &lt;yes|no&gt;:<br />Salveaza camera de chat in Xfire. Astfel, vor fi memorate toate setarile si privilegiile camerei de chat. Daca alegi &quot;yes&quot;, vei fi rugat sa salvezi camera de chat in lista ta de prieteni, daca nu e salvata deja. Daca alegi sa nu salvezi, setarile nu vor fi memorate."
+msgid ""
+"save &lt;yes|no&gt;:<br />Save the current chat room on Xfire. This "
+"preserves all of the chat rooms settings and privileges. On &quot;yes&quot;, "
+"you will be asked to save the chat room to your buddy list if it is not "
+"already there. If you decline this request the save will NOT be performed."
+msgstr ""
+"save &lt;yes|no&gt;:<br />Salveaza camera de chat in Xfire. Astfel, vor fi "
+"memorate toate setarile si privilegiile camerei de chat. Daca alegi &quot;"
+"yes&quot;, vei fi rugat sa salvezi camera de chat in lista ta de prieteni, "
+"daca nu e salvata deja. Daca alegi sa nu salvezi, setarile nu vor fi "
+"memorate."
 
 #: ../src/gf_chat.c:992
-msgid "rename &lt;new-chat-name&gt;:<br />Changes the current name for this room.<br/><br />Requires &quot;Admin&quot; permission."
-msgstr "rename &lt;nume-nou-camera&gt;:<br />Schimba numele curent al camerei de chat.<br/><br />Necesita permisiunea &quot;Admin&quot;."
+msgid ""
+"rename &lt;new-chat-name&gt;:<br />Changes the current name for this room."
+"<br/><br />Requires &quot;Admin&quot; permission."
+msgstr ""
+"rename &lt;nume-nou-camera&gt;:<br />Schimba numele curent al camerei de "
+"chat.<br/><br />Necesita permisiunea &quot;Admin&quot;."
 
 #: ../src/gf_chat.c:998
-msgid "password [&lt;new-password&gt;]:<br />Changes the current password for this room. &quot;/password&quot; results in removing the current password.<br /><br />Requires &quot;Admin&quot; permission."
-msgstr "password [&lt;parola-noua&gt;]:<br />Schimba parola curenta pentru camera.&quot;/password&quot; rezulta in stergerea parolei curente.<br /><br />Necesita permisiunea &quot;Admin&quot;."
+msgid ""
+"password [&lt;new-password&gt;]:<br />Changes the current password for this "
+"room. &quot;/password&quot; results in removing the current password.<br /"
+"><br />Requires &quot;Admin&quot; permission."
+msgstr ""
+"password [&lt;parola-noua&gt;]:<br />Schimba parola curenta pentru camera."
+"&quot;/password&quot; rezulta in stergerea parolei curente.<br /><br /"
+">Necesita permisiunea &quot;Admin&quot;."
 
 #: ../src/gf_chat.c:1005
-msgid "visibilty &lt;public|friends&gt;:<br />Changes the current visibility for this room.<br /><br />Requires &quot;Admin&quot; permission."
-msgstr "visibilty &lt;public|friends&gt;:<br />Schimba vizibilitatea curenta a camerei de chat.<br /><br />Necesita permisiunea de &quot;Admin&quot;"
+msgid ""
+"visibilty &lt;public|friends&gt;:<br />Changes the current visibility for "
+"this room.<br /><br />Requires &quot;Admin&quot; permission."
+msgstr ""
+"visibilty &lt;public|friends&gt;:<br />Schimba vizibilitatea curenta a "
+"camerei de chat.<br /><br />Necesita permisiunea de &quot;Admin&quot;"
 
 #: ../src/gf_chat.c:1012
-msgid "silence &lt;on|off&gt;:<br />Sets whether non-Moderators and non-Admins should not be able to talk in this room.<br /><br />Requires &quot;Moderator&quot; or higher permission."
-msgstr "silence &lt;on|off&gt;:<br />Seteaza daca non-Moderatorii si non-Adminii pot sa vorbeasca in camera de chat.<br /><br />Necesita permisiunea &quot;Moderator&quot; sau mai mare."
+msgid ""
+"silence &lt;on|off&gt;:<br />Sets whether non-Moderators and non-Admins "
+"should not be able to talk in this room.<br /><br />Requires &quot;"
+"Moderator&quot; or higher permission."
+msgstr ""
+"silence &lt;on|off&gt;:<br />Seteaza daca non-Moderatorii si non-Adminii pot "
+"sa vorbeasca in camera de chat.<br /><br />Necesita permisiunea &quot;"
+"Moderator&quot; sau mai mare."
 
 #: ../src/gf_chat.c:1019
-msgid "userjoinmsg &lt;on|off&gt;:<br />Set whether &quot;&lt;User&gt; joined&quot; and &quot;&lt;User&gt; left&quot; messages should be displayed in this room.<br /><br />Requires &quot;Moderator&quot; or higher permission."
-msgstr "userjoinmsg &lt;on|off&gt;:<br />Seteaza daca mesajele &quot;&lt;User&gt; joined&quot; and &quot;&lt;User&gt; left&quot; vor fi afisate in camera.<br /><br />Necesita permisiunea &quot;Moderator&quot; sau mai mare."
+msgid ""
+"userjoinmsg &lt;on|off&gt;:<br />Set whether &quot;&lt;User&gt; joined&quot; "
+"and &quot;&lt;User&gt; left&quot; messages should be displayed in this room."
+"<br /><br />Requires &quot;Moderator&quot; or higher permission."
+msgstr ""
+"userjoinmsg &lt;on|off&gt;:<br />Seteaza daca mesajele &quot;&lt;User&gt; "
+"joined&quot; and &quot;&lt;User&gt; left&quot; vor fi afisate in camera.<br /"
+"><br />Necesita permisiunea &quot;Moderator&quot; sau mai mare."
 
 #: ../src/gf_chat.c:1027
-msgid "permission &lt;username&gt; &lt;muted|normal|power|moderator|admin&gt;:<br />Set <i>username</i>'s permission. Only admins may give other users the &quot;Admin&quot; permission.<br />Please note, that you can't change your own permission.<br /><br />Requires &quot;Moderator&quot; or higher permission."
-msgstr "permission &lt;utilizator&gt; &lt;muted|normal|power|moderator|admin&gt;:<br />Seteaza permisiunea <i>utilizator</i>ului. Doar adminii pot acorda altor utilizatori permisiunea &quot;Admin&quot;.<br />Retine, nu iti poti schimba propria permisiune.<br /><br />Necesita permisiunea &quot;Moderator&quot; sau mai mare."
+msgid ""
+"permission &lt;username&gt; &lt;muted|normal|power|moderator|admin&gt;:<br /"
+">Set <i>username</i>'s permission. Only admins may give other users the "
+"&quot;Admin&quot; permission.<br />Please note, that you can't change your "
+"own permission.<br /><br />Requires &quot;Moderator&quot; or higher "
+"permission."
+msgstr ""
+"permission &lt;utilizator&gt; &lt;muted|normal|power|moderator|admin&gt;:"
+"<br />Seteaza permisiunea <i>utilizator</i>ului. Doar adminii pot acorda "
+"altor utilizatori permisiunea &quot;Admin&quot;.<br />Retine, nu iti poti "
+"schimba propria permisiune.<br /><br />Necesita permisiunea &quot;"
+"Moderator&quot; sau mai mare."
 
 #: ../src/gf_chat.c:1036
-msgid "kick &lt;username&gt;:<br />Kicks <i>username</i> from the channel.<br /><br />Requires &quot;Moderator&quot; or higher permission."
-msgstr "kick &lt;utilizator&gt;:<br />Inlatura <i>utilizator</i>ul din camera.<br /><br />Necesita permisiunea &quot;Moderator&quot; sau mai mare."
+msgid ""
+"kick &lt;username&gt;:<br />Kicks <i>username</i> from the channel.<br /"
+"><br />Requires &quot;Moderator&quot; or higher permission."
+msgstr ""
+"kick &lt;utilizator&gt;:<br />Inlatura <i>utilizator</i>ul din camera.<br /"
+"><br />Necesita permisiunea &quot;Moderator&quot; sau mai mare."
 
 #: ../src/gf_chat.c:1043
-msgid "def_permission &lt;muted|normal|power|moderator|admin&gt;:<br />Set this room's default permission. New buddies who join this room will have this permission<br /><br />Requires &quot;Moderator&quot; or higher permission."
-msgstr "def_permission &lt;muted|normal|power|moderator|admin&gt;:<br />Seteaza permisiunea implicita a acestei camere. Noii prieteni care acceseaza camera vor avea aceasta permisiune<br /><br />Necesita permisiunea &quot;Moderator&quot; sau mai mare."
+msgid ""
+"def_permission &lt;muted|normal|power|moderator|admin&gt;:<br />Set this "
+"room's default permission. New buddies who join this room will have this "
+"permission<br /><br />Requires &quot;Moderator&quot; or higher permission."
+msgstr ""
+"def_permission &lt;muted|normal|power|moderator|admin&gt;:<br />Seteaza "
+"permisiunea implicita a acestei camere. Noii prieteni care acceseaza camera "
+"vor avea aceasta permisiune<br /><br />Necesita permisiunea &quot;"
+"Moderator&quot; sau mai mare."
 
 #: ../src/gf_chat.c:1117
-msgid "You attempted to join a chat room using an invalid password. Please try again."
-msgstr "Ai incercat sa accesezi o camera de chat folosind o parola incorecta. Incearca din nou."
+msgid ""
+"You attempted to join a chat room using an invalid password. Please try "
+"again."
+msgstr ""
+"Ai incercat sa accesezi o camera de chat folosind o parola incorecta. "
+"Incearca din nou."
 
 #: ../src/gf_chat.c:1118
 msgid "Invalid password"
 msgstr "Parola gresita"
 
 #: ../src/gf_chat.c:1122
-msgid "You attempted to join a chat room that is password protected. Please try again."
-msgstr "Ai incercat sa accesezi o camera de chat protejata prin parola. Incearca din nou."
+msgid ""
+"You attempted to join a chat room that is password protected. Please try "
+"again."
+msgstr ""
+"Ai incercat sa accesezi o camera de chat protejata prin parola. Incearca din "
+"nou."
 
 #: ../src/gf_chat.c:1123
 msgid "Password required"
@@ -363,9 +419,7 @@ msgstr "Parola necesara"
 msgid "Join"
 msgstr "Intra"
 
-#: ../src/gf_chat.c:1132
-#: ../src/gf_friend_search.c:66
-#: ../src/gf_menus.c:123
+#: ../src/gf_chat.c:1132 ../src/gf_friend_search.c:66 ../src/gf_menus.c:123
 msgid "Cancel"
 msgstr "Anuleaza"
 
@@ -378,11 +432,14 @@ msgid "Unknown error"
 msgstr "Eroare necunoscuta"
 
 #: ../src/gf_chat_proto.c:518
-msgid "Unknown join error. You might be blocked from this chat room or are already in 5 rooms."
-msgstr "Eroare necunoscuta la accesarea camerei. Este posibil sa ai accesul blocat la aceasta camera sau te afli deja in 5 camere de chat."
+msgid ""
+"Unknown join error. You might be blocked from this chat room or are already "
+"in 5 rooms."
+msgstr ""
+"Eroare necunoscuta la accesarea camerei. Este posibil sa ai accesul blocat "
+"la aceasta camera sau te afli deja in 5 camere de chat."
 
-#: ../src/gf_friend_search.c:64
-#: ../src/gf_friend_search.c:106
+#: ../src/gf_friend_search.c:64 ../src/gf_friend_search.c:106
 msgid "Xfire Friend Search"
 msgstr "Cauta prieten Xfire"
 
@@ -414,119 +471,107 @@ msgstr "Nume"
 msgid "Search results"
 msgstr "Rezultatele cautarii"
 
-#: ../src/gf_games.c:43
+#: ../src/gf_games.c:46
 #, c-format
 msgid "The Games List has been updated to version: %s."
 msgstr "Lista de jocuri a fost actualizata la versiunea: %s."
 
-#: ../src/gf_games.c:47
-#: ../src/gf_games.c:50
-#: ../src/gf_games.c:51
+#: ../src/gf_games.c:50 ../src/gf_games.c:53 ../src/gf_games.c:54
 msgid "New Gfire Game List Version"
 msgstr "Versiune noua a Gfire Game List"
 
-#: ../src/gf_games.c:1215
-#: ../src/gf_games.c:1251
-#: ../src/gf_games.c:1327
-#: ../src/gf_games.c:1353
-#: ../src/gf_games.c:1368
-#: ../src/gf_games.c:1382
+#: ../src/gf_games.c:1270 ../src/gf_games.c:1306 ../src/gf_games.c:1382
+#: ../src/gf_games.c:1408 ../src/gf_games.c:1423 ../src/gf_games.c:1437
 msgid "Manage Games: error"
 msgstr "Administreaza Jocuri: eroare"
 
-#: ../src/gf_games.c:1215
-#: ../src/gf_games.c:1252
+#: ../src/gf_games.c:1270 ../src/gf_games.c:1307
 msgid "Couldn't add game"
 msgstr "Nu am putut adauga jocul"
 
-#: ../src/gf_games.c:1216
+#: ../src/gf_games.c:1271
 msgid "There's no such game, please try again."
 msgstr "Acest joc nu exista, incearca din nou."
 
-#: ../src/gf_games.c:1232
+#: ../src/gf_games.c:1287
 msgid "Manage Games: game added"
 msgstr "Administreaza Jocuri: jocul a fost adaugat"
 
-#: ../src/gf_games.c:1233
+#: ../src/gf_games.c:1288
 msgid "The game has been successfully added."
 msgstr "Jocul a fost adaugat cu succes."
 
-#: ../src/gf_games.c:1237
-#: ../src/gf_games.c:1308
+#: ../src/gf_games.c:1292 ../src/gf_games.c:1363
 msgid "Manage Games: warning"
 msgstr "Administreaza Jocuri: atentie"
 
-#: ../src/gf_games.c:1237
+#: ../src/gf_games.c:1292
 msgid "Game already added"
 msgstr "Jocul e deja in lista"
 
-#: ../src/gf_games.c:1238
+#: ../src/gf_games.c:1293
 msgid "This game is already added, you can configure it if you want."
 msgstr "Jocul a fost adaugat deja, il poti configura daca doresti."
 
-#: ../src/gf_games.c:1252
-#: ../src/gf_games.c:1328
+#: ../src/gf_games.c:1307 ../src/gf_games.c:1383
 msgid "Please try again. Make sure you fill in all fields."
 msgstr "Incearca din nou. Ai grija sa completezi toate campurile."
 
-#: ../src/gf_games.c:1308
+#: ../src/gf_games.c:1363
 msgid "Game launch data not found"
 msgstr "Setarile necesare lansarii jocului nu au fost gasite"
 
-#: ../src/gf_games.c:1309
-#: ../src/gf_games.c:1369
+#: ../src/gf_games.c:1364 ../src/gf_games.c:1424
 msgid "This game is not yet added as it seems, please add it first!"
 msgstr "Se pare ca acest joc nu e in lista, te rugam sa-l adaugi intai!"
 
-#: ../src/gf_games.c:1323
+#: ../src/gf_games.c:1378
 msgid "Manage Games: game edited"
 msgstr "Administreaza Jocuri: jocul a fost editat"
 
-#: ../src/gf_games.c:1323
+#: ../src/gf_games.c:1378
 msgid "Game edited"
 msgstr "Jocul a fost editat"
 
-#: ../src/gf_games.c:1323
+#: ../src/gf_games.c:1378
 msgid "The game has been successfully edited."
 msgstr "Jocul a fost editat cu succes."
 
-#: ../src/gf_games.c:1328
+#: ../src/gf_games.c:1383
 msgid "Couldn't edit game"
 msgstr "Nu am putut edita jocul"
 
-#: ../src/gf_games.c:1354
-#: ../src/gf_games.c:1369
-#: ../src/gf_games.c:1383
+#: ../src/gf_games.c:1409 ../src/gf_games.c:1424 ../src/gf_games.c:1438
 msgid "Couldn't remove game"
 msgstr "Nu am putut sterge jocul"
 
-#: ../src/gf_games.c:1354
+#: ../src/gf_games.c:1409
 msgid "No such game, please try again!"
 msgstr "Acest joc nu exista, incearca din nou!"
 
-#: ../src/gf_games.c:1378
+#: ../src/gf_games.c:1433
 msgid "Manage Games: game removed"
 msgstr "Administreaza Jocuri: jocul a fost sters"
 
-#: ../src/gf_games.c:1379
+#: ../src/gf_games.c:1434
 msgid "Game removed"
 msgstr "Jocul a fost sters"
 
-#: ../src/gf_games.c:1379
+#: ../src/gf_games.c:1434
 msgid "The game has been successfully removed."
 msgstr "Jocul a fost sters cu succes."
 
-#: ../src/gf_games.c:1383
+#: ../src/gf_games.c:1438
 msgid "Please try again. Make sure you select a game to remove."
-msgstr "Incearca din nou. Verifica daca ai selectat un joc pe care doresti sa-l stergi."
+msgstr ""
+"Incearca din nou. Verifica daca ai selectat un joc pe care doresti sa-l "
+"stergi."
 
-#: ../src/gf_network.c:132
-#: ../src/gf_network.c:166
+#: ../src/gf_network.c:132 ../src/gf_network.c:166
 msgid "Connection closed by peer."
 msgstr "Conexiunea a fost inchisa de peer."
 
-#: ../src/gf_network.c:141
-#: ../src/gf_network.c:175
+#: ../src/gf_network.c:141 ../src/gf_network.c:175
 msgid "Socket read failure."
 msgstr "Eroare la citirea socket-ului."
 
@@ -534,12 +579,14 @@ msgstr "Eroare la citirea socket-ului."
 msgid "Password or Username Incorrect."
 msgstr "Parola sau Username incorect."
 
-#: ../src/gf_network.c:255
+#: ../src/gf_network.c:258
 #, c-format
 msgid "Protocol version mismatch, needs to be %d. Auto set to new value."
-msgstr "Versiunea protocolului e eronata, trebuie sa fie %d. O noua valoare a fost setata."
+msgstr ""
+"Versiunea protocolului e eronata, trebuie sa fie %d. O noua valoare a fost "
+"setata."
 
-#: ../src/gf_network.c:302
+#: ../src/gf_network.c:303
 msgid "You have signed on from another location."
 msgstr "Te-ai logat din alta locatie."
 
@@ -548,209 +595,215 @@ msgstr "Te-ai logat din alta locatie."
 msgid "Xfire Community Site"
 msgstr "Site-ul comunitatii Xfire"
 
-#: ../src/gf_purple.c:256
-#: ../src/gfire.c:1134
+#: ../src/gf_purple.c:279 ../src/gfire.c:1162
 msgid "Game"
 msgstr "Joc"
 
-#: ../src/gf_purple.c:262
-#: ../src/gf_purple.c:1214
-#: ../src/gfire.c:1140
+#: ../src/gf_purple.c:285 ../src/gf_purple.c:1237 ../src/gfire.c:1168
 msgid "Server"
 msgstr "Server"
 
-#: ../src/gf_purple.c:292
-#: ../src/gfire.c:1159
+#: ../src/gf_purple.c:315 ../src/gfire.c:1187
 msgid "unknown"
 msgstr "necunoscut"
 
-#: ../src/gf_purple.c:307
-#: ../src/gfire.c:1123
-#: ../src/gfire.c:1126
+#: ../src/gf_purple.c:330 ../src/gfire.c:1151 ../src/gfire.c:1154
 msgid "Status"
 msgstr "Status"
 
-#: ../src/gf_purple.c:317
-#: ../src/gfire.c:1172
+#: ../src/gf_purple.c:340 ../src/gfire.c:1200
 msgid "Common Friends"
 msgstr "Prieteni Comuni"
 
-#: ../src/gf_purple.c:380
+#: ../src/gf_purple.c:403
 msgid "Protocol initialization failed."
 msgstr "Initializarea protocolului a esuat."
 
-#: ../src/gf_purple.c:413
+#: ../src/gf_purple.c:436
 msgid "Message could not be sent. Buddy not in contact list"
-msgstr "Mesajul nu a putut fi transmis. Prietenul nu se afla in lista de contacte."
+msgstr ""
+"Mesajul nu a putut fi transmis. Prietenul nu se afla in lista de contacte."
 
-#: ../src/gf_purple.c:426
+#: ../src/gf_purple.c:449
 msgid "Message could not be sent. Buddy offline"
 msgstr "Mesajul nu a putut fi transmis. Prietenul e deconectat"
 
 #. Request the invitation message
-#: ../src/gf_purple.c:532
+#: ../src/gf_purple.c:555
 msgid "Xfire Invitation Message"
 msgstr "Mesajul invitatiei Xfire"
 
-#: ../src/gf_purple.c:533
+#: ../src/gf_purple.c:556
 msgid "Please enter the message you want to send your buddy with this invite:"
-msgstr "Introdu mesajul pe care doresti sa-l trimiti prietenului tau odata cu aceasta invitatie:"
+msgstr ""
+"Introdu mesajul pe care doresti sa-l trimiti prietenului tau odata cu "
+"aceasta invitatie:"
 
-#: ../src/gf_purple.c:534
+#: ../src/gf_purple.c:557
 msgid "Please add me to your friends list!"
 msgstr "Te rog sa ma adaugi la lista ta de prieteni!"
 
-#: ../src/gf_purple.c:535
+#: ../src/gf_purple.c:558
 msgid "Invite with a message"
 msgstr "Invita cu mesaj"
 
-#: ../src/gf_purple.c:536
+#: ../src/gf_purple.c:559
 msgid "Invite without a message"
 msgstr "Invita fara mesaj"
 
-#: ../src/gf_purple.c:564
+#: ../src/gf_purple.c:587
 msgid "Xfire Buddy Removal"
 msgstr "Sterge prieten Xfire"
 
-#: ../src/gf_purple.c:565
-msgid "You have removed a buddy which is not on your friends list, it will be restored on the next login."
-msgstr "Ai sters un prieten care nu exista in lista ta de prieteni, va fi restaurat la urmatoarea logare."
+#: ../src/gf_purple.c:588
+msgid ""
+"You have removed a buddy which is not on your friends list, it will be "
+"restored on the next login."
+msgstr ""
+"Ai sters un prieten care nu exista in lista ta de prieteni, va fi restaurat "
+"la urmatoarea logare."
 
-#: ../src/gf_purple.c:620
+#: ../src/gf_purple.c:643
 msgid "Add as friend"
 msgstr "Adauga la prieteni"
 
-#: ../src/gf_purple.c:635
+#: ../src/gf_purple.c:658
 msgid "Join Game ..."
 msgstr "Intra in joc ..."
 
-#: ../src/gf_purple.c:651
+#: ../src/gf_purple.c:674
 msgid "Join VoIP ..."
 msgstr "Intra in VoIP ..."
 
-#: ../src/gf_purple.c:661
+#: ../src/gf_purple.c:684
 msgid "Xfire Profile"
 msgstr "Profil Xfire"
 
-#: ../src/gf_purple.c:693
+#: ../src/gf_purple.c:716
 #, c-format
 msgid "Launch %s"
 msgstr "Deschide %s"
 
 #. General things
-#: ../src/gf_purple.c:712
+#: ../src/gf_purple.c:735
 msgid "Change Nickname"
 msgstr "Schimba Nickname"
 
-#: ../src/gf_purple.c:715
+#: ../src/gf_purple.c:738
 msgid "My Profile Page"
 msgstr "Pagina Profilului Meu"
 
-#: ../src/gf_purple.c:719
+#: ../src/gf_purple.c:742
 msgid "Friend Search"
 msgstr "Cauta prieten"
 
 #. Game configuration
-#: ../src/gf_purple.c:724
+#: ../src/gf_purple.c:747
 msgid "Reload Game Config"
 msgstr "Reincarca configuratiile de jocuri"
 
 #. About
-#: ../src/gf_purple.c:747
+#: ../src/gf_purple.c:770
 msgid "About"
 msgstr "Despre"
 
-#: ../src/gf_purple.c:801
+#: ../src/gf_purple.c:824
 msgid "_Room:"
 msgstr "_Camera:"
 
-#: ../src/gf_purple.c:807
+#: ../src/gf_purple.c:830
 msgid "_Password:"
 msgstr "_Parola:"
 
-#: ../src/gf_purple.c:896
+#: ../src/gf_purple.c:919
 msgid "Xfire Groupchat"
 msgstr "Chat in grupul Xfire"
 
-#: ../src/gf_purple.c:896
+#: ../src/gf_purple.c:919
 msgid "MotD change failed"
 msgstr "Schimbarea MotD a esuat"
 
-#: ../src/gf_purple.c:897
+#: ../src/gf_purple.c:920
 msgid "The MotD contains more than 200 characters."
 msgstr "MotD contine mai mult de 200 de caractere."
 
-#: ../src/gf_purple.c:983
+#: ../src/gf_purple.c:1006
 msgid "Friends of friends group name restored"
 msgstr "Numele grupului Prietenii Prietenilor a fost restaurat"
 
-#: ../src/gf_purple.c:983
-#: ../src/gf_purple.c:1001
+#: ../src/gf_purple.c:1006 ../src/gf_purple.c:1024
 msgid "Group name restored"
 msgstr "Numele grupului a fost restaurat"
 
-#: ../src/gf_purple.c:983
-msgid "You have renamed Xfire's FoF group name. Unfortunately we had to restore this groups name."
-msgstr "Ai schimbat numele grupului Prietenii Prietenilor. Din pacate, a trebuit sa restauram numele acestui grup."
+#: ../src/gf_purple.c:1006
+msgid ""
+"You have renamed Xfire's FoF group name. Unfortunately we had to restore "
+"this groups name."
+msgstr ""
+"Ai schimbat numele grupului Prietenii Prietenilor. Din pacate, a trebuit sa "
+"restauram numele acestui grup."
 
-#: ../src/gf_purple.c:1001
+#: ../src/gf_purple.c:1024
 msgid "Clan's group name restored"
 msgstr "Numele grupului Clanului a fost restaurat"
 
-#: ../src/gf_purple.c:1001
-msgid "You have renamed the group name of a Xfire clan. Unfortunately we had to restore this groups name."
-msgstr "Ai schimbat numele grupului unui clan Xfire. Din pacate, a trebuit sa restauram numele acestui grup."
+#: ../src/gf_purple.c:1024
+msgid ""
+"You have renamed the group name of a Xfire clan. Unfortunately we had to "
+"restore this groups name."
+msgstr ""
+"Ai schimbat numele grupului unui clan Xfire. Din pacate, a trebuit sa "
+"restauram numele acestui grup."
 
-#: ../src/gf_purple.c:1217
+#: ../src/gf_purple.c:1240
 msgid "Port"
 msgstr "Port"
 
-#: ../src/gf_purple.c:1220
+#: ../src/gf_purple.c:1243
 msgid "Version"
 msgstr "Versiune"
 
-#: ../src/gf_purple.c:1223
+#: ../src/gf_purple.c:1246
 msgid "Buddies can see if I'm typing"
 msgstr "Prietenii pot sa vada daca tastez"
 
-#: ../src/gf_purple.c:1226
+#: ../src/gf_purple.c:1249
 msgid "Auto detect for ingame status"
 msgstr "Detecteaza automat cand sunt in joc"
 
-#: ../src/gf_purple.c:1229
+#: ../src/gf_purple.c:1252
 msgid "Change my status for other protocols as well"
 msgstr "Schimba-mi statusul si pentru alte protocoale, de asemenea."
 
-#: ../src/gf_purple.c:1232
+#: ../src/gf_purple.c:1255
 msgid "Notify me when my status is ingame"
 msgstr "Anunta-ma cand statusul meu e \"In Joc\""
 
-#: ../src/gf_purple.c:1235
+#: ../src/gf_purple.c:1258
 msgid "Enable server detection"
 msgstr "Activeaza detectia serverelor"
 
-#: ../src/gf_purple.c:1238
+#: ../src/gf_purple.c:1261
 msgid "Use Xfires P2P features"
 msgstr "Utilizeaza facilitatile P2P ale Xfire"
 
-#: ../src/gf_purple.c:1242
+#: ../src/gf_purple.c:1265
 msgid "Display notifications for certain events"
 msgstr "Afiseaza notificari pentru anumite evenimente"
 
-#: ../src/gf_purple.c:1246
+#: ../src/gf_purple.c:1269
 msgid "Show Friends of Friends"
 msgstr "Arata Prietenii Prietenilor"
 
-#: ../src/gf_purple.c:1249
+#: ../src/gf_purple.c:1272
 msgid "Xfire"
 msgstr "Xfire"
 
-#: ../src/gf_purple.c:1250
-#: ../src/gf_purple.c:1251
+#: ../src/gf_purple.c:1273 ../src/gf_purple.c:1274
 msgid "Xfire Protocol Plugin"
 msgstr "Plugin pentru protocolul Xfire"
 
-#: ../src/gfire.c:171
+#: ../src/gfire.c:176
 #, c-format
 msgid ""
 "Gfire <b>%u.%u.%u%s%s</b> is now available.\n"
@@ -759,13 +812,12 @@ msgstr ""
 "Gfire <b>%u.%u.%u%s%s</b> e acum disponibil.\n"
 "Viziteaza website-ul Gfire pentru mai multe informatii!"
 
-#: ../src/gfire.c:176
-#: ../src/gfire.c:187
+#: ../src/gfire.c:181 ../src/gfire.c:192
 msgid "New Gfire Version"
 msgstr "Versiune noua de Gfire"
 
 #. FIXME: implement a way to disable this notification
-#: ../src/gfire.c:182
+#: ../src/gfire.c:187
 #, c-format
 msgid ""
 "Gfire %u.%u.%u%s%s is now available.\n"
@@ -774,196 +826,193 @@ msgstr ""
 "Gfire %u.%u.%u%s%s e acum disponibil.\n"
 "Viziteaza website-ul Gfire pentru mai multe informatii!"
 
-#: ../src/gfire.c:295
+#: ../src/gfire.c:324
 msgid "Connecting"
 msgstr "Se conecteaza"
 
-#: ../src/gfire.c:301
+#: ../src/gfire.c:330
 msgid "Couldn't create socket."
 msgstr "Nu am putut crea socket-ul."
 
-#: ../src/gfire.c:448
+#: ../src/gfire.c:476
 msgid "Login sent"
 msgstr "Login trimis"
 
 #. TRANSLATORS: Keep "(AFK)" as is!
 #. Suggestion: Use Xfires original AFK message here
-#: ../src/gfire.c:474
+#: ../src/gfire.c:502
 msgid "(AFK) Away From Keyboard"
 msgstr "(AFK) Plecat de la tastatura"
 
 #. TRANSLATORS: Keep "(Busy)" as is!
-#: ../src/gfire.c:481
+#: ../src/gfire.c:509
 msgid "(Busy) I'm busy!"
 msgstr "(Busy) Sunt ocupat!"
 
-#: ../src/gfire.c:752
-#: ../src/gfire.c:761
-#: ../src/gfire.c:931
-#: ../src/gfire.c:940
+#: ../src/gfire.c:780 ../src/gfire.c:789 ../src/gfire.c:959 ../src/gfire.c:968
 msgid "Error"
 msgstr "Eroare"
 
-#: ../src/gfire.c:752
+#: ../src/gfire.c:780
 msgid "Retrieving gamerig data failed!"
 msgstr "Accesarea detaliilor computerului a esuat!"
 
-#: ../src/gfire.c:761
+#: ../src/gfire.c:789
 msgid "Invalid gamerig data received!"
 msgstr "Au fost receptionate detalii eronate despre computer!"
 
-#: ../src/gfire.c:776
+#: ../src/gfire.c:804
 #, c-format
 msgid "%ss Gaming Rig:"
 msgstr "%ss Computer:"
 
-#: ../src/gfire.c:786
+#: ../src/gfire.c:814
 msgid "Manufacturer"
 msgstr "Producator"
 
-#: ../src/gfire.c:795
+#: ../src/gfire.c:823
 msgid "Processor"
 msgstr "Procesor"
 
-#: ../src/gfire.c:804
+#: ../src/gfire.c:832
 msgid "Memory"
 msgstr "Memorie"
 
-#: ../src/gfire.c:813
+#: ../src/gfire.c:841
 msgid "Video Card"
 msgstr "Placa Video"
 
-#: ../src/gfire.c:822
+#: ../src/gfire.c:850
 msgid "Sound Card"
 msgstr "Placa de Sunet"
 
-#: ../src/gfire.c:831
+#: ../src/gfire.c:859
 msgid "Mainboard"
 msgstr "Placa de baza"
 
-#: ../src/gfire.c:840
+#: ../src/gfire.c:868
 msgid "Hard Drive"
 msgstr "Hard Disk"
 
-#: ../src/gfire.c:849
+#: ../src/gfire.c:877
 msgid "Monitor"
 msgstr "Monitor"
 
-#: ../src/gfire.c:858
+#: ../src/gfire.c:886
 msgid "Keyboard"
 msgstr "Tastatura"
 
-#: ../src/gfire.c:867
+#: ../src/gfire.c:895
 msgid "Mouse"
 msgstr "Mouse"
 
-#: ../src/gfire.c:876
+#: ../src/gfire.c:904
 msgid "Mouse Surface"
 msgstr "Mousepad"
 
-#: ../src/gfire.c:885
+#: ../src/gfire.c:913
 msgid "Speakers"
 msgstr "Boxe"
 
-#: ../src/gfire.c:894
+#: ../src/gfire.c:922
 msgid "Computer Case"
 msgstr "Carcasa"
 
-#: ../src/gfire.c:903
+#: ../src/gfire.c:931
 msgid "Operating System"
 msgstr "Sistem de operare"
 
-#: ../src/gfire.c:931
+#: ../src/gfire.c:959
 msgid "Retrieving profile data failed!"
 msgstr "Accesarea datelor profilului a esuat!"
 
-#: ../src/gfire.c:940
+#: ../src/gfire.c:968
 msgid "Invalid profile data received!"
 msgstr "Au fost receptionate date eronate despre profil!"
 
-#: ../src/gfire.c:945
+#: ../src/gfire.c:973
 msgid "Profile"
 msgstr "Profil"
 
-#: ../src/gfire.c:955
+#: ../src/gfire.c:983
 #, c-format
 msgid "%ss Profile:"
 msgstr "%ss Profil:"
 
-#: ../src/gfire.c:965
+#: ../src/gfire.c:993
 msgid "Real Name"
 msgstr "Nume Real"
 
-#: ../src/gfire.c:974
+#: ../src/gfire.c:1002
 msgid "Age"
 msgstr "Varsta"
 
-#: ../src/gfire.c:983
+#: ../src/gfire.c:1011
 msgid "Gender"
 msgstr "Gen"
 
-#: ../src/gfire.c:983
+#: ../src/gfire.c:1011
 msgid "Male"
 msgstr "Barbat"
 
-#: ../src/gfire.c:983
+#: ../src/gfire.c:1011
 msgid "Female"
 msgstr "Femeie"
 
-#: ../src/gfire.c:992
+#: ../src/gfire.c:1020
 msgid "Occupation"
 msgstr "Ocupatie"
 
-#: ../src/gfire.c:1001
+#: ../src/gfire.c:1029
 msgid "Country"
 msgstr "Tara"
 
-#: ../src/gfire.c:1010
+#: ../src/gfire.c:1038
 msgid "Location"
 msgstr "Locatie"
 
-#: ../src/gfire.c:1019
+#: ../src/gfire.c:1047
 msgid "Gaming Style"
 msgstr "Stilul de joc"
 
-#: ../src/gfire.c:1028
+#: ../src/gfire.c:1056
 msgid "Interests"
 msgstr "Interese"
 
-#: ../src/gfire.c:1037
+#: ../src/gfire.c:1065
 msgid "Friends"
 msgstr "Prieteni"
 
-#: ../src/gfire.c:1046
+#: ../src/gfire.c:1074
 msgid "Join Date"
 msgstr "Data inregistrarii"
 
-#: ../src/gfire.c:1108
+#: ../src/gfire.c:1136
 msgid "Nickname"
 msgstr "Nickname"
 
-#: ../src/gfire.c:1126
+#: ../src/gfire.c:1154
 msgid "Offline"
 msgstr "Offline"
 
-#: ../src/gfire.c:1182
+#: ../src/gfire.c:1210
 msgid "Additional game info:"
 msgstr "Informatii aditionale joc:"
 
-#: ../src/gfire.c:1198
+#: ../src/gfire.c:1226
 #, c-format
 msgid "%ss Clans:"
 msgstr "%ss Clanuri:"
 
-#: ../src/gfire.c:1282
+#: ../src/gfire.c:1310
 msgid "Connection timed out"
 msgstr "Timpul alocat conexiunii a expirat"
 
-#: ../src/gfire.c:1385
+#: ../src/gfire.c:1413
 msgid "Ingame status"
 msgstr "Status \"In Joc\""
 
-#: ../src/gfire.c:1386
+#: ../src/gfire.c:1414
 msgid "Your status has been changed."
 msgstr "Statusul tau a fost schimbat."
 
@@ -979,46 +1028,52 @@ msgstr "Sistemul de emisie Xfire"
 msgid "Xfire System Broadcast Message:"
 msgstr "Mesaj de la sistemul de emisie Xfire:"
 
-#: ../src/gf_server_browser.c:43
+#: ../src/gf_server_browser.c:575
 msgid "Recent servers"
 msgstr "Servere recente"
 
-#: ../src/gf_server_browser.c:46
+#: ../src/gf_server_browser.c:578
 msgid "Favorite servers"
 msgstr "Servere favorite"
 
-#: ../src/gf_server_browser.c:49
+#: ../src/gf_server_browser.c:581
 msgid "Friends' favorite servers"
 msgstr "Serverele favorite ale prietenilor"
 
-#: ../src/gf_server_browser.c:52
+#: ../src/gf_server_browser.c:584
 msgid "All servers"
 msgstr "Toate serverele"
 
-#: ../src/gf_server_browser.c:75
+#: ../src/gf_server_browser.c:606
 msgid "N/A"
 msgstr "N/A"
 
-#: ../src/gf_server_browser.c:118
-#: ../src/gf_server_browser.c:261
+#: ../src/gf_server_browser.c:650 ../src/gf_server_browser.c:793
 msgid "Server Browser: error"
 msgstr "Explorator de servere: eroare"
 
-#: ../src/gf_server_browser.c:118
+#: ../src/gf_server_browser.c:650
 msgid "Can't add favorite server"
 msgstr "Nu am putut sa adaug serverul"
 
-#: ../src/gf_server_browser.c:119
-msgid "You've reached the limit of favorite servers, you can however still remove favorite servers in order to add new ones."
-msgstr "Ai atins limita de servere favorite, insa poti sterge alte servere deja existente, pentru a putea adauga altele noi."
+#: ../src/gf_server_browser.c:651
+msgid ""
+"You've reached the limit of favorite servers, you can however still remove "
+"favorite servers in order to add new ones."
+msgstr ""
+"Ai atins limita de servere favorite, insa poti sterge alte servere deja "
+"existente, pentru a putea adauga altele noi."
 
-#: ../src/gf_server_browser.c:261
+#: ../src/gf_server_browser.c:793
 msgid "Can't remove favorite server"
 msgstr "Nu am putut sterge serverul favorit"
 
-#: ../src/gf_server_browser.c:262
-msgid "The selected server is not a favorite server and thereby can't be removed."
-msgstr "Serverul selectat nu se regaseste in lista de servere favorite, astfel ca nu poate fi sters."
+#: ../src/gf_server_browser.c:794
+msgid ""
+"The selected server is not a favorite server and thereby can't be removed."
+msgstr ""
+"Serverul selectat nu se regaseste in lista de servere favorite, astfel ca nu "
+"poate fi sters."
 
 #: ../src/gf_menus.c:122
 msgid "Change Xfire nickname"
@@ -1032,13 +1087,11 @@ msgstr "Necompletarea campului va stergere nickname-ul actual."
 msgid "OK"
 msgstr "OK"
 
-#: ../src/gf_menus.c:129
-#: ../src/gf_menus.c:131
+#: ../src/gf_menus.c:129 ../src/gf_menus.c:131
 msgid "Gfire XML Reload"
 msgstr "Reincarca Gfire XML"
 
-#: ../src/gf_menus.c:129
-#: ../src/gf_menus.c:131
+#: ../src/gf_menus.c:129 ../src/gf_menus.c:131
 msgid "Reloading gfire_game_config.xml"
 msgstr "Reincarc gfire_game_config.xml"
 
@@ -1088,12 +1141,11 @@ msgstr "Wiki"
 msgid "Please wait until a connection with your buddy has been established!"
 msgstr "Asteapta pana cand este stabilita o conexiune cu prietenul tau!"
 
-#: ../src/gf_p2p_dl_proto.c:319
+#: ../src/gf_p2p_dl_proto.c:320
 #, c-format
 msgid "File Description: %s"
 msgstr "Descrierea fisierului: %s"
 
-#: ../src/gf_p2p_dl_proto.c:319
+#: ../src/gf_p2p_dl_proto.c:320
 msgid "No description entered"
 msgstr "Nicio descriere disponibila"
-
