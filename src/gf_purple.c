@@ -173,6 +173,7 @@ static const gchar *gfire_purple_blist_emblems(PurpleBuddy *p_b)
 	gfire_buddy *gf_buddy = NULL;
 	PurplePresence *p = NULL;
 	PurpleConnection *gc = NULL;
+	static gchar emblem[100];
 
 	if (!p_b || (NULL == p_b->account) || !(gc = purple_account_get_connection(p_b->account)) ||
 						 !(gfire = (gfire_data *) gc->proto_data))
@@ -185,7 +186,29 @@ static const gchar *gfire_purple_blist_emblems(PurpleBuddy *p_b)
 	if(purple_presence_is_online(p) == TRUE)
 	{
 		if(gfire_buddy_is_playing(gf_buddy) && !gfire_buddy_is_talking(gf_buddy))
+		{
+			const gfire_game_data *game = gfire_buddy_get_game_data(gf_buddy);
+			gchar *game_name = gfire_game_short_name(game->id);
+			if(game_name)
+			{
+				g_snprintf(emblem, 100, "game_%s", game_name);
+				g_free(game_name);
+				gchar *file = g_strdup_printf("%s.png", emblem);
+				// See Pidgins gtkblist.c for the following line
+				gchar *path = g_build_filename(DATADIR, "pixmaps", "pidgin", "emblems", "16", file, NULL);
+				g_free(file);
+
+				if(g_file_test(path, G_FILE_TEST_EXISTS))
+				{
+					g_free(path);
+					return emblem;
+				}
+
+				g_free(path);
+			}
+
 			return "game";
+		}
 		else if(!gfire_buddy_is_playing(gf_buddy) && gfire_buddy_is_talking(gf_buddy))
 			return "voip";
 		else if (gfire_buddy_is_playing(gf_buddy) && gfire_buddy_is_talking(gf_buddy))

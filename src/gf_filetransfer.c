@@ -114,7 +114,7 @@ static void gfire_filetransfer_request_accepted(PurpleXfer *p_xfer)
 
 #ifdef _WIN32
 	if((ft->file = _sopen(purple_xfer_get_local_filename(p_xfer), _O_CREAT | _O_WRONLY | _O_TRUNC | _O_BINARY,
-						  _SH_DENYWR, _S_IREAD | _S_IWRITE)) == -1)
+						  _SH_DENYNO, _S_IREAD | _S_IWRITE)) == -1)
 #else
 	if((ft->file = open64(purple_xfer_get_local_filename(p_xfer), O_CREAT | O_WRONLY | O_TRUNC, S_IREAD | S_IWRITE)) == -1)
 #endif // _WIN32
@@ -131,7 +131,7 @@ static void gfire_filetransfer_request_accepted(PurpleXfer *p_xfer)
 	ft->chunk_size = XFIRE_P2P_FT_CHUNK_SIZE;
 	ft->size = purple_xfer_get_size(p_xfer);
 
-	purple_xfer_start(p_xfer, 0, NULL, 0);
+	purple_xfer_start(p_xfer, -1, NULL, 0);
 
 	gfire_p2p_dl_proto_send_file_request_reply(ft->session, ft->fileid, TRUE);
 	gfire_p2p_dl_proto_send_file_transfer_info(ft->session, ft->fileid, 0, XFIRE_P2P_FT_CHUNK_SIZE,
@@ -174,22 +174,18 @@ gfire_filetransfer *gfire_filetransfer_create(gfire_p2p_session *p_session, Purp
 		return NULL;
 	}
 
-	purple_xfer_ref(p_xfer);
-
 	ret->session = p_session;
 	ret->xfer = p_xfer;
 	p_xfer->data = ret;
 
 	purple_xfer_set_start_fnc(p_xfer, gfire_filetransfer_start_xfer);
-	purple_xfer_set_cancel_recv_fnc(p_xfer, gfire_filetransfer_cancel);
-	purple_xfer_set_cancel_send_fnc(p_xfer, gfire_filetransfer_cancel);
 
 	// Sending
 	if(purple_xfer_get_type(p_xfer) == PURPLE_XFER_SEND)
 	{
 #ifdef _WIN32
 		if((ret->file = _sopen(purple_xfer_get_local_filename(p_xfer), _O_RDONLY | _O_BINARY,
-							   _SH_DENYWR, _S_IREAD | _S_IWRITE)) == -1)
+							   _SH_DENYNO, _S_IREAD | _S_IWRITE)) == -1)
 #else
 		if((ret->file = open64(purple_xfer_get_local_filename(p_xfer), O_RDONLY)) == -1)
 #endif // _WIN32
@@ -197,13 +193,13 @@ gfire_filetransfer *gfire_filetransfer_create(gfire_p2p_session *p_session, Purp
 			purple_debug_error("gfire", "gfire_filetransfer_init: Couldn't open file for reading\n");
 			ret->aborted = TRUE;
 			purple_xfer_cancel_local(p_xfer);
-			purple_xfer_unref(p_xfer);
 			g_free(ret);
 			return NULL;
 		}
 
 		ret->fileid = XFIRE_P2P_FT_PRIVATE_FILEID_START + ++gfire_transfer_count;
 		ret->size = purple_xfer_get_size(p_xfer);
+		purple_xfer_set_cancel_send_fnc(p_xfer, gfire_filetransfer_cancel);
 	}
 	// Receiving
 	else
@@ -212,6 +208,7 @@ gfire_filetransfer *gfire_filetransfer_create(gfire_p2p_session *p_session, Purp
 
 		purple_xfer_set_init_fnc(p_xfer, gfire_filetransfer_request_accepted);
 		purple_xfer_set_request_denied_fnc(p_xfer, gfire_filetransfer_request_denied);
+		purple_xfer_set_cancel_recv_fnc(p_xfer, gfire_filetransfer_cancel);
 	}
 
 	return ret;
@@ -258,14 +255,19 @@ void gfire_filetransfer_free(gfire_filetransfer *p_transfer, gboolean p_local_re
 
 		if(!purple_xfer_is_canceled(p_transfer->xfer))
 		{
+			purple_xfer_set_cancel_recv_fnc(p_transfer->xfer, NULL);
+			purple_xfer_set_cancel_send_fnc(p_transfer->xfer, NULL);
+
 			if(p_local_reason)
 				purple_xfer_cancel_local(p_transfer->xfer);
 			else
 				purple_xfer_cancel_remote(p_transfer->xfer);
 		}
+		else
+			purple_xfer_unref(p_transfer->xfer);
 	}
-
-	purple_xfer_unref(p_transfer->xfer);
+	else
+		purple_xfer_unref(p_transfer->xfer);
 
 	g_free(p_transfer);
 }

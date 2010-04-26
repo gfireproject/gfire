@@ -62,23 +62,68 @@ typedef NTSTATUS (NTAPI *_NtQueryInformationProcess)(
 
 static _NtQueryInformationProcess NtQueryInformationProcess = NULL;
 
+static gboolean acquirePrivileges()
+{
+	HANDLE token;
+	TOKEN_PRIVILEGES tkp = {0};
+
+	if(!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &token))
+	{
+		purple_debug_error("gfire", "acquirePrivileges: couldn't open process token\n");
+		return FALSE;
+	}
+
+	if(LookupPrivilegeValue(NULL, SE_DEBUG_NAME, &tkp.Privileges[0].Luid))
+	{
+		tkp.PrivilegeCount = 1;
+		tkp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+
+		AdjustTokenPrivileges(token, FALSE, &tkp, 0, NULL, 0);
+		CloseHandle(token);
+
+		if(GetLastError() != ERROR_SUCCESS)
+		{
+			purple_debug_error("gfire", "acquirePrivileges: couldn't set debug privilege\n");
+			return FALSE;
+		}
+
+		return TRUE;
+	}
+
+	purple_debug_error("gfire", "acquirePrivileges: no debug privilege available\n");
+
+	CloseHandle(token);
+	return FALSE;
+}
+
 static PVOID get_peb_address(HANDLE p_process_handle)
 {
 	if(!NtQueryInformationProcess)
 	{
 		NtQueryInformationProcess = (_NtQueryInformationProcess)GetProcAddress(GetModuleHandleA("ntdll.dll"), "NtQueryInformationProcess");
 		if(!NtQueryInformationProcess)
+		{
+			purple_debug_error("gfire", "get_peb_address: No NtQueryInformationProcess available!\n");
 			return NULL;
+		}
 	}
 
 	PROCESS_BASIC_INFORMATION pbi;
 
-	NtQueryInformationProcess(p_process_handle, 0, &pbi, sizeof(pbi), NULL);
+	if(NtQueryInformationProcess(p_process_handle, 0, &pbi, sizeof(pbi), NULL) < 0)
+	{
+		purple_debug_error("gfire", "NtQueryInformationProcess: failed\n");
+		return NULL;
+	}
 	return pbi.PebBaseAddress;
 }
 
 static gboolean get_process_cmdline(gint p_pid, gchar **p_exe, gchar **p_cmd_line)
 {
+#ifdef DEBUG
+	purple_debug_info("gfire", "trace: get_process_cmdline(%d)\n", p_pid);
+#endif // DEBUG
+
 	HANDLE process;
 	PVOID peb;
 	PVOID rtlUserProcParamsAddress;
@@ -94,13 +139,22 @@ static gboolean get_process_cmdline(gint p_pid, gchar **p_exe, gchar **p_cmd_lin
 			FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, GetLastError(), 0, tmpError, 1024, NULL);
 			purple_debug_error("gfire", "get_process_cmdline: Could not open process for reading:\n(%u) %s", (guint)GetLastError(), tmpError);
 		}
+#ifdef DEBUG
+		else
+			purple_debug_error("gfire", "get_process_cmdline: Could not open process for reading:\n Access denied\n");
+#endif // DEBUG
 
 		return FALSE;
 	}
 
 	peb = get_peb_address(process);
 	if(!peb)
+	{
+#ifdef DEBUG
+		purple_debug_error("gfire", "get_process_cmdline: bad peb address!\n");
+#endif // DEBUG
 		return FALSE;
+	}
 
 	if(!ReadProcessMemory(process, (PCHAR)peb + 0x10, &rtlUserProcParamsAddress, sizeof(PVOID), NULL))
 	{
@@ -110,6 +164,10 @@ static gboolean get_process_cmdline(gint p_pid, gchar **p_exe, gchar **p_cmd_lin
 			FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, GetLastError(), 0, tmpError, 1024, NULL);
 			purple_debug_error("gfire", "get_process_cmdline: Could not read the address of ProcessParameters:\n(%u) %s", (guint)GetLastError(), tmpError);
 		}
+#ifdef DEBUG
+		else
+			purple_debug_error("gfire", "get_process_cmdline: Could not read the address of ProcessParameters:\n Access denied/Partial Read\n");
+#endif // DEBUG
 
 		CloseHandle(process);
 		return FALSE;
@@ -123,6 +181,10 @@ static gboolean get_process_cmdline(gint p_pid, gchar **p_exe, gchar **p_cmd_lin
 			FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, GetLastError(), 0, tmpError, 1024, NULL);
 			purple_debug_error("gfire", "get_process_cmdline: Could not read CommandLine:\n(%u) %s", (guint)GetLastError(), tmpError);
 		}
+#ifdef DEBUG
+		else
+			purple_debug_error("gfire", "get_process_cmdline: Could not read CommandLine:\n Access denied/Partial Read\n");
+#endif // DEBUG
 
 		CloseHandle(process);
 		return FALSE;
@@ -137,6 +199,10 @@ static gboolean get_process_cmdline(gint p_pid, gchar **p_exe, gchar **p_cmd_lin
 			FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, GetLastError(), 0, tmpError, 1024, NULL);
 			purple_debug_error("gfire", "get_process_cmdline: Could not read the command line string:\n(%u) %s", (guint)GetLastError(), tmpError);
 		}
+#ifdef DEBUG
+		else
+			purple_debug_error("gfire", "get_process_cmdline: Could not read the command line string:\n Access denied/Partial Read\n");
+#endif // DEBUG
 
 		g_free(cmdline_buff);
 		CloseHandle(process);
@@ -145,6 +211,11 @@ static gboolean get_process_cmdline(gint p_pid, gchar **p_exe, gchar **p_cmd_lin
 
 	*p_cmd_line = g_utf16_to_utf8((gunichar2*)cmdline_buff, cmdline.Length / 2, NULL, NULL, NULL);
 	g_free(cmdline_buff);
+
+#ifdef DEBUG
+	if(!*p_cmd_line)
+		purple_debug_error("gfire", "get_process_cmdline: g_utf16_to_utf8 failed on cmdline\n");
+#endif // DEBUG
 
 	// Get process executable
 	cmdline_buff = (WCHAR*)g_malloc(2048);
@@ -157,6 +228,10 @@ static gboolean get_process_cmdline(gint p_pid, gchar **p_exe, gchar **p_cmd_lin
 			FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, GetLastError(), 0, tmpError, 1024, NULL);
 			purple_debug_error("gfire", "get_process_cmdline: Could not read the executable filename string:\n(%u) %s", (guint)GetLastError(), tmpError);
 		}
+#ifdef DEBUG
+		else
+			purple_debug_error("gfire", "get_process_cmdline: Could not read the executable filename string:\n Access denied\n");
+#endif // DEBUG
 
 		g_free(cmdline_buff);
 		g_free(*p_cmd_line);
@@ -167,6 +242,11 @@ static gboolean get_process_cmdline(gint p_pid, gchar **p_exe, gchar **p_cmd_lin
 
 	*p_exe = g_utf16_to_utf8((gunichar2*)cmdline_buff, len, NULL, NULL, NULL);
 	g_free(cmdline_buff);
+
+#ifdef DEBUG
+	if(!*p_exe)
+		purple_debug_error("gfire", "get_process_cmdline: g_utf16_to_utf8 failed on exe\n");
+#endif // DEBUG
 
 	CloseHandle(process);
 
@@ -179,6 +259,8 @@ void gfire_process_list_update(gfire_process_list *p_list)
 		return;
 
 	gfire_process_list_clear(p_list);
+
+	acquirePrivileges();
 
 	PROCESSENTRY32 pe;
 	memset(&pe, 0, sizeof(pe));
@@ -199,6 +281,10 @@ void gfire_process_list_update(gfire_process_list *p_list)
 	{
 		if(pe.th32ProcessID > 0)
 		{
+#ifdef DEBUG
+			purple_debug_info("gfire", "detection: probing %s\n", pe.szExeFile);
+#endif // DEBUG
+
 			gchar *cmdline = NULL;
 			gchar *executable_file = NULL;
 			if(!get_process_cmdline(pe.th32ProcessID, &executable_file, &cmdline))
@@ -219,8 +305,17 @@ void gfire_process_list_update(gfire_process_list *p_list)
 						args = NULL;
 				}
 			}
+#ifdef DEBUG
+			purple_debug_info("gfire", "executable file: %s\n", executable_file);
+			purple_debug_info("gfire", "cmdline: %s\n", cmdline);
+#endif // DEBUG
 			if(args)
+			{
 				g_strstrip(args);
+#ifdef DEBUG
+				purple_debug_info("gfire", "args: %s\n", args);
+#endif // DEBUG
+			}
 
 			// Add the process
 			process_info *info = gfire_process_info_new(executable_file, pe.th32ProcessID, args);

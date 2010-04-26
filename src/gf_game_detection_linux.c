@@ -193,21 +193,6 @@ static const gchar *get_proc_cwd(GHashTable *p_environ, const gchar *p_proc_path
 {
 	static gchar cwd[PATH_MAX];
 
-	/* DISABLED FOR DEBUGGING PURPOSES
-#ifdef DEBUG
-	purple_debug_misc("gfire", "get_proc_cwd: Checking for CWD from environment\n");
-#endif // DEBUG
-
-	const gchar *env_cwd = g_hash_table_lookup(p_environ, "PWD");
-	if(env_cwd)
-	{
-#ifdef DEBUG
-		purple_debug_misc("gfire", "get_proc_cwd: Found CWD in env: \"%s\"\n", env_cwd);
-#endif // DEBUG
-		strncpy(cwd, env_cwd, PATH_MAX);
-		return cwd;
-	}*/
-
 	gchar *proc_cwd = g_strdup_printf("%s/cwd", p_proc_path);
 #ifdef DEBUG
 	purple_debug_misc("gfire", "get_proc_cwd: No match, resolving symlink \"%s\"\n", proc_cwd);

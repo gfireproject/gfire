@@ -1096,7 +1096,8 @@ gchar *gfire_buddy_get_status_text(const gfire_buddy *p_buddy, gboolean p_nogame
 	if(gfire_buddy_is_playing(p_buddy) && !p_nogame)
 	{
 		gchar *tmp = gfire_game_name(p_buddy->game_data.id, FALSE);
-		gchar *ret = g_strdup_printf(_("Playing %s"), tmp);
+		gchar *ret = p_buddy->status_msg ? g_strdup_printf(_("Playing %s - %s"), tmp, p_buddy->status_msg) :
+					 g_strdup_printf(_("Playing %s"), tmp);
 		g_free(tmp);
 		return ret;
 	}

@@ -281,7 +281,7 @@ static gboolean gfire_game_detector_detect_game_dset_cb(const gfire_game *p_game
 	// VoIP app
 	if(p_game->is_voice)
 	{
-		if(gfire_detector->voip_data.id == p_game->id)
+		if((gfire_detector->voip_data.id == p_game->id) && !data->v_old_running)
 		{
 			data->v_checked_old = TRUE;
 			data->v_old_running = (pid != 0);
@@ -301,7 +301,7 @@ static gboolean gfire_game_detector_detect_game_dset_cb(const gfire_game *p_game
 	// Game
 	else
 	{
-		if(gfire_detector->game_data.id == p_game->id)
+		if((gfire_detector->game_data.id == p_game->id) && !data->g_old_running)
 		{
 			data->g_checked_old = TRUE;
 			data->g_old_running = (pid != 0);
