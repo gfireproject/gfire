@@ -1549,6 +1549,7 @@ void gfire_game_manager_show(PurplePluginAction *p_action)
 
 	gtk_file_filter_add_mime_type(filter, "application/x-ms-dos-executable");
 	gtk_file_filter_add_mime_type(filter, "application/x-executable");
+	gtk_file_filter_add_mime_type(filter, "application/x-msdownload");
 
 	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(add_detection_button), filter);
 	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(add_launch_button), filter);
