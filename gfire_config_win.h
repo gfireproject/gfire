@@ -33,16 +33,16 @@
 #define GETTEXT_PACKAGE "gfire"
 
 /* Gfire major version */
-#define GFIRE_VERSION_MAJOR 0
+#define GFIRE_VERSION_MAJOR 1
 
 /* Gfire minor version */
-#define GFIRE_VERSION_MINOR 9
+#define GFIRE_VERSION_MINOR 0
 
 /* Gfire patch version */
 #define GFIRE_VERSION_PATCH 0
 
 /* Gfire version string */
-#define GFIRE_VERSION_STRING "0.9.0-svn"
+#define GFIRE_VERSION_STRING "1.0.0-svn"
 
 /* Gfire version suffix */
 #define GFIRE_VERSION_SUFFIX "svn"
@@ -93,13 +93,13 @@
 #define PACKAGE_NAME "Gfire"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "Gfire 0.9.0-svn"
+#define PACKAGE_STRING "Gfire 1.0.0-svn"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "gfire"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "0.9.0-svn"
+#define PACKAGE_VERSION "1.0.0-svn"
 
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
