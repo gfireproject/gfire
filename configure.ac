@@ -23,6 +23,9 @@ AC_CONFIG_MACRO_DIR([m4])
 #
 # Internationalisation support
 #
+AC_ARG_ENABLE(nls, AS_HELP_STRING([--disable-nls], [disable native language support]), enable_nls="$enableval", enable_nls=yes)
+AM_CONDITIONAL(INSTALL_NLS, test "x$enable_nls" = "xyes")
+
 AC_PROG_INTLTOOL
 GETTEXT_PACKAGE="$PACKAGE"
 AC_SUBST(GETTEXT_PACKAGE)
@@ -52,7 +55,7 @@ CFLAGS_save="$CFLAGS"
 AC_PROG_CC
 CFLAGS="$CFLAGS_save"
 
-AC_ARG_ENABLE(debug, [  --enable-debug          Compile with debugging support.],, enable_debug=no)
+AC_ARG_ENABLE(debug, AS_HELP_STRING([--enable-debug], [Compile with debugging support.]),, enable_debug=no)
 
 if test $enable_debug = "yes"; then
 	DEBUG_CFLAGS="$DEBUG_CFLAGS -DG_DISABLE_DEPRECATED -DGDK_DISABLE_DEPRECATED -DGDK_PIXBUF_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED"
@@ -77,8 +80,8 @@ AC_SUBST(PURPLE_LIBS)
 #
 # Check for GTK+ and other dependencies
 #
-AC_ARG_ENABLE(gtk, [  --disable-gtk           Don't compile with GTK+ support. (no server browser, no game manager)],, enable_gtk=yes)
-AC_ARG_ENABLE(libnotify, [  --enable-libnotify      Compile with libnotify support. (depends on GTK flag)],, enable_libnotify=no)
+AC_ARG_ENABLE(gtk, AS_HELP_STRING([--disable-gtk], [Don't compile with GTK+ support. (no server browser, no game manager)]),, enable_gtk=yes)
+AC_ARG_ENABLE(libnotify, AS_HELP_STRING([--enable-libnotify], [Compile with libnotify support. (depends on GTK flag)]),, enable_libnotify=no)
 
 if test $enable_gtk = "yes"; then
 	PKG_CHECK_MODULES(GTK, gtk+-2.0 >= 2.14.0, AC_DEFINE(HAVE_GTK, 1, [Define if we've support for GTK+]), AC_MSG_ERROR([
@@ -98,7 +101,7 @@ if test $enable_gtk = "yes"; then
 	fi
 fi
 
-AC_ARG_ENABLE(dbus-status, [  --enable-dbus-status    Enable status change for other IM clients (currently only kmess).],, enable_dbus_status=no)
+AC_ARG_ENABLE(dbus-status, AS_HELP_STRING([--enable-dbus-status], [Enable status change for other IM clients (currently only kmess).]),, enable_dbus_status=no)
 if test $enable_dbus_status = "yes"; then
 	PKG_CHECK_MODULES(DBUS_GLIB, dbus-glib-1, AC_DEFINE(HAVE_DBUS_GLIB, 1, [Define if we've support for dbus-glib]), AC_MSG_ERROR([
 *** Glib DBus bindings are required to build Gfire with your current configure flags;
@@ -135,11 +138,11 @@ LIBTOOL="$LIBTOOL --silent"
 AM_CONFIG_HEADER(gfire_config.h)
 
 AC_CONFIG_FILES([
-Makefile
-src/Makefile
-data/Makefile
-po/Makefile.in
-pixmaps/Makefile
+	Makefile
+	src/Makefile
+	data/Makefile
+	pixmaps/Makefile
+	po/Makefile.in
 ])
 
 AC_OUTPUT
@@ -152,6 +155,7 @@ echo "Debugging enabled.............: $enable_debug"
 echo "GTK enabled...................: $enable_gtk"
 echo "libnotify enabled.............: $enable_libnotify"
 echo "DBus status change enabled....: $enable_dbus_status"
+echo "NLS enabled...................: $enable_nls"
 
 echo;
 
