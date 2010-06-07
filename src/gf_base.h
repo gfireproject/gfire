@@ -128,7 +128,7 @@
 #define XFIRE_PORT 25999
 #define XFIRE_PROTO_VERSION 112
 #define XFIRE_CONNECT_STEPS 3
-#define XFIRE_KEEPALIVE_TIME 180  // See gfire_keep_alive for more info
+#define XFIRE_TIMEOUT_TIME 240  // See gfire_keep_alive for more info
 #define XFIRE_PROFILE_URL "http://www.xfire.com/profile/"
 #define XFIRE_COMMUNITY_URL "http://www.xfire.com/communities/%s/" // community tag
 #define XFIRE_XML_INFO_URL "http://www.xfire.com/xml/%s/%s/" // username, info-type

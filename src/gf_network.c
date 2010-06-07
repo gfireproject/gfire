@@ -85,7 +85,6 @@ void gfire_send(PurpleConnection *p_gc, guint16 p_size)
 	if(!gfire)
 		return;
 
-	GTimeVal gtv;
 	int tmp = 0;
 
 	if (gfire->fd >= 0)
@@ -104,8 +103,6 @@ void gfire_send(PurpleConnection *p_gc, guint16 p_size)
 	}
 
 	memset((void *)gfire_buffout, 0x00, GFIRE_BUFFOUT_SIZE);
-	g_get_current_time(&gtv);
-	gfire->last_packet = gtv.tv_sec;
 }
 
 void gfire_input_cb(gpointer p_data, gint p_source, PurpleInputCondition p_condition)
@@ -188,10 +185,6 @@ void gfire_input_cb(gpointer p_data, gint p_source, PurpleInputCondition p_condi
 	//		Get packet id
 	memcpy(&pkt_id, gfire->buff_in + 2, sizeof(pkt_id));
 	pkt_id = GUINT16_FROM_LE(pkt_id);
-
-	GTimeVal gtv;
-	g_get_current_time(&gtv);
-	gfire->last_response = gtv.tv_sec;
 
 	gfire->bytes_read = 0;
 	gfire_parse_packet(gfire, packet_len, pkt_id);
@@ -296,6 +289,7 @@ void gfire_parse_packet(gfire_data *p_gfire, guint16 p_packet_len, guint16 p_pac
 
 		case 144:
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "received keep alive response (PONG)\n");
+			gfire_keep_alive_response(p_gfire);
 		break;
 
 		case 145:

@@ -276,6 +276,12 @@ static void gfire_login_cb(gpointer p_data, gint p_source, const gchar *p_error_
 
 	gfire->fd = p_source;
 
+	// Initiate the keep-alive mechanism
+	GTimeVal gtv;
+	g_get_current_time(&gtv);
+
+	gfire->last_pong = gtv.tv_sec;
+
 	// Update the login progress status display
 	purple_connection_update_progress(gfire_get_connection(gfire), "Login", 1, XFIRE_CONNECT_STEPS);
 
@@ -1305,18 +1311,26 @@ void gfire_keep_alive(gfire_data *p_gfire)
 	GTimeVal gtv;
 	g_get_current_time(&gtv);
 
-	if((gtv.tv_sec - p_gfire->last_response) > (XFIRE_KEEPALIVE_TIME + 60))
+	if((gtv.tv_sec - p_gfire->last_pong) > XFIRE_TIMEOUT_TIME)
 	{
 		purple_connection_error_reason(gfire_get_connection(p_gfire), PURPLE_CONNECTION_ERROR_NETWORK_ERROR, _("Connection timed out"));
 		return;
 	}
 
-	if((gtv.tv_sec - p_gfire->last_packet) > XFIRE_KEEPALIVE_TIME)
-	{
-		purple_debug(PURPLE_DEBUG_MISC, "gfire", "sending keep_alive packet (PING)\n");
-		guint16 packet_len = gfire_proto_create_keep_alive();
-		if(packet_len > 0) gfire_send(gfire_get_connection(p_gfire), packet_len);
-	}
+	purple_debug(PURPLE_DEBUG_MISC, "gfire", "sending keep_alive packet (PING)\n");
+	guint16 packet_len = gfire_proto_create_keep_alive();
+	if(packet_len > 0) gfire_send(gfire_get_connection(p_gfire), packet_len);
+}
+
+void gfire_keep_alive_response(gfire_data *p_gfire)
+{
+	if(!p_gfire)
+		return;
+
+	GTimeVal gtv;
+	g_get_current_time(&gtv);
+
+	p_gfire->last_pong = gtv.tv_sec;
 }
 
 gfire_chat *gfire_find_chat(gfire_data *p_gfire, const void *p_data, gfire_find_chat_mode p_mode)

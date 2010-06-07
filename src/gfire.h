@@ -76,8 +76,7 @@ struct _gfire_data
 	int fd;
 	guint8 *buff_in;
 	guint16 bytes_read;
-	gulong last_packet;	/* time (in seconds) of our last packet */
-	gulong last_response;	/* time (in seconds) of the last packet from server */
+	glong last_pong;
 	PurpleConnection *gc;
 
 	// Xfire session
@@ -129,6 +128,7 @@ void gfire_login(gfire_data *p_gfire);
 void gfire_close(gfire_data *p_gfire);
 void gfire_authenticate(gfire_data *p_gfire, const gchar *p_salt);
 void gfire_keep_alive(gfire_data *p_gfire);
+void gfire_keep_alive_response(gfire_data *p_gfire);
 
 // Session
 void gfire_set_userid(gfire_data *p_gfire, guint32 p_userid);
