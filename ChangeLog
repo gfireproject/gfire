@@ -1,9 +1,22 @@
 # Changelog for Gfire
 # Copyright 2006-2010 Wolf Beat, Keith Geffert, Laurent De Marez, Warren Dumortier, Oliver Ney
 # Distributed under the GPLv3
-# $Id: CHANGELOG, v0.9.0
+# $Id: CHANGELOG, v0.9.2
 
 Gfire:
+
+0.9.2
+- Fixed file transfer completion issues
+- Fixed bad loading of the game list when started without a working internet connection
+- Fixed timeout issues
+
+0.9.1
+- Fixed file transfer on Windows
+- Fixed game detection issues on Linux and Windows
+- Fixed MIME-type bug in the game manager on Windows
+- Added display of a buddys status message while he's playing
+- Added support for game icons
+
 0.9.0
 - Added File Transfer
 - Added Server Browser
@@ -13,7 +26,7 @@ Gfire:
 - Added Friends of Friends
 - Added Improvements to Game Manager
 - Added Windows Game Detection
-- Added Internationlisation of Languages
+- Added Internationlization Support
 - Added Advanced Status Handling
 - Added Web Game Detection
 - Added New Icons
@@ -25,15 +38,15 @@ Gfire:
 - Better organisation of code
 - 'Get Info' Fully Working!
 - Completed network data handling issues
-- Preventing a user logging in, with their username containing uppercase characters
+- Fixed a bug preventing a user logging in, with their username containing uppercase characters
 - Status did not change if you logged off and logged back in
 - Reversed IP address in contact listings
 - In some Linux distros, the buddy list was not being displayed
-- Messages recieved came with html tags
-- HTML tags in Status, if contained a URL link
-- Fixed a crash when Status receiver "Playing"
+- Messages received came with html tags
+- Fixed HTML tags in status messages, if they contained an URL
+- Fixed a crash when a "Playing" status was received
 - Fixed a crash when sending an offline message
-- Fixed severual bugs with the games list and game manager
+- Fixed several bugs with the games list and game manager
 - Updated Web Links
 - Now useable with Finch again
 
