@@ -143,7 +143,10 @@ static void gfire_update_cb(PurpleUtilFetchUrlData *p_url_data, gpointer p_data,
 	gfire_update_data = NULL;
 
 	if (!p_data || !p_buf || !p_len)
+	{
 		purple_debug_error("gfire", "Unable to query latest Gfire and games list version. Website down?\n");
+		gfire_update_count--;
+	}
 	else
 	{
 		xmlnode *version_node = xmlnode_from_str(p_buf, p_len);
@@ -238,6 +241,9 @@ static void gfire_update(gfire_data *p_gfire)
 
 static void gfire_update_abort()
 {
+	if(gfire_update_count == 0)
+		return;
+
 	gfire_update_count--;
 
 	if(!gfire_update_count && gfire_update_data)

@@ -249,10 +249,6 @@ void gfire_filetransfer_free(gfire_filetransfer *p_transfer, gboolean p_local_re
 
 	if(!purple_xfer_is_completed(p_transfer->xfer))
 	{
-		// Remove incomplete file for now
-		if(purple_xfer_get_type(p_transfer->xfer) == PURPLE_XFER_RECEIVE)
-			remove(purple_xfer_get_local_filename(p_transfer->xfer));
-
 		if(!purple_xfer_is_canceled(p_transfer->xfer))
 		{
 			purple_xfer_set_cancel_recv_fnc(p_transfer->xfer, NULL);
@@ -263,11 +259,13 @@ void gfire_filetransfer_free(gfire_filetransfer *p_transfer, gboolean p_local_re
 			else
 				purple_xfer_cancel_remote(p_transfer->xfer);
 		}
-		else
-			purple_xfer_unref(p_transfer->xfer);
+
+		// Remove incomplete file for now
+		if(purple_xfer_get_type(p_transfer->xfer) == PURPLE_XFER_RECEIVE)
+			remove(purple_xfer_get_local_filename(p_transfer->xfer));
 	}
 	else
-		purple_xfer_unref(p_transfer->xfer);
+		purple_xfer_end(p_transfer->xfer);
 
 	g_free(p_transfer);
 }
