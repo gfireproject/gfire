@@ -90,7 +90,7 @@ static GList *get_local_ips()
 	for(; i < iptable->dwNumEntries; i++)
 	{
 		// Only connected devices
-		if(!(iptable->table[i].unused2 & 0x0008))
+		if(!(iptable->table[i].wType & 0x0008))
 		{
 			guint32 *ip = g_malloc(sizeof(guint32));
 			*ip = ntohl(iptable->table[i].dwAddr);
