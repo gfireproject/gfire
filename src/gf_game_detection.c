@@ -1045,12 +1045,20 @@ guint32 gfire_process_list_contains(const gfire_process_list *p_list, const gcha
 	if(!p_list || !p_list->processes || !p_exe)
 		return FALSE;
 
+#ifdef DEBUG
+	purple_debug_info("gfire", "gfire_process_list_contains: checking for \"%s\"\n", p_exe);
+#endif // DEBUG
+
 	GList *cur = p_list->processes;
 	while(cur)
 	{
 		process_info *info = cur->data;
 		if(!info)
 			continue;
+
+#ifdef DEBUG
+		purple_debug_info("gfire", "gfire_process_list_contains: comparing with \"%s\"\n", info->exe);
+#endif // DEBUG
 
 #ifdef _WIN32
 		// Windows handles file names case-insensitive in contrast to most other OSes
@@ -1124,13 +1132,26 @@ guint32 gfire_process_list_contains(const gfire_process_list *p_list, const gcha
 #endif // _WIN32*/
 
 			// Return as found if valid
-			if (process_invalid_args == FALSE && process_required_args == TRUE /*&& process_required_libraries == TRUE*/)
+			if ((process_invalid_args == FALSE) && (process_required_args == TRUE) /*&& process_required_libraries == TRUE*/)
+			{
+#ifdef DEBUG
+				purple_debug_info("gfire", "gfire_process_list_contains: MATCH!\n");
+#endif // DEBUG
 				return info->pid;
+			}
+#ifdef DEBUG
+			else
+				purple_debug_info("gfire", "gfire_process_list_contains: failed args test: %d/%d\n", process_invalid_args, process_required_args);
+#endif // DEBUG
+
 		}
 
 		cur = g_list_next(cur);
 	}
 
+#ifdef DEBUG
+	purple_debug_info("gfire", "gfire_process_list_contains: no match!\n");
+#endif // DEBUG
 	return 0;
 }
 
