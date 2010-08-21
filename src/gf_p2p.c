@@ -520,6 +520,12 @@ static void gfire_p2p_connection_input_cb(gpointer p_data, gint p_fd, PurpleInpu
 			size = GUINT32_FROM_LE(size);
 			offset += 4;
 
+			if(length < (68 + size))
+			{
+				purple_debug_warning("gfire", "P2P: Received too short packet\n");
+				break;
+			}
+
 			guint32 crc_offset = offset + 4;
 			guint8 *crc_data = p2p->buff_in + crc_offset;
 
