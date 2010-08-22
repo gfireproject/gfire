@@ -42,9 +42,9 @@ static const gchar *get_winepath(const gchar *p_wine_prefix, const gchar *p_comm
 	else
 		cmd = g_strdup_printf("WINEPREFIX='%s' winepath -u '%s'", p_wine_prefix, p_command);
 
-#ifdef DEBUG
+#ifdef DEBUG_VERBOSE
 	purple_debug_misc("gfire", "get_winepath: Executing \"%s\"\n", cmd);
-#endif // DEBUG
+#endif // DEBUG_VERBOSE
 
 	FILE *winepath = popen(cmd, "r");
 	g_free(cmd);
@@ -69,9 +69,9 @@ static const gchar *get_winepath(const gchar *p_wine_prefix, const gchar *p_comm
 
 	pclose(winepath);
 
-#ifdef DEBUG
+#ifdef DEBUG_VERBOSE
 	purple_debug_misc("gfire", "get_winepath: Result \"%s\"\n", cmd_out);
-#endif // DEBUG
+#endif // DEBUG_VERBOSE
 
 	// Remove trailing spaces and return
 	return g_strstrip(cmd_out);
@@ -82,9 +82,9 @@ static const gchar *get_proc_exe(const gchar *p_proc_path)
 	static gchar exe[PATH_MAX];
 
 	gchar *proc_exe = g_strdup_printf("%s/exe", p_proc_path);
-#ifdef DEBUG
+#ifdef DEBUG_VERBOSE
 	purple_debug_misc("gfire", "get_proc_exe: Resolving symlink \"%s\"\n", proc_exe);
-#endif // DEBUG
+#endif // DEBUG_VERBOSE
 
 	int len = readlink(proc_exe, exe, PATH_MAX - 1);
 	if(len == -1)
@@ -97,9 +97,9 @@ static const gchar *get_proc_exe(const gchar *p_proc_path)
 	}
 
 	exe[len] = 0;
-#ifdef DEBUG
+#ifdef DEBUG_VERBOSE
 	purple_debug_misc("gfire", "get_proc_exe: \"%s\" -> \"%s\"\n", proc_exe, exe);
-#endif // DEBUG
+#endif // DEBUG_VERBOSE
 	g_free(proc_exe);
 
 	return exe;
@@ -109,9 +109,9 @@ static void get_proc_cmdline(gchar **p_command, gchar **p_args, const gchar *p_p
 {
 	// Get process cmdline
 	gchar *proc_cmdline = g_strdup_printf("%s/cmdline", p_proc_path);
-#ifdef DEBUG
+#ifdef DEBUG_VERBOSE
 	purple_debug_misc("gfire", "get_proc_cmdline: Reading command line from \"%s\"\n", proc_cmdline);
-#endif // DEBUG
+#endif // DEBUG_VERBOSE
 
 	FILE *fcmdline = fopen(proc_cmdline, "r");
 	g_free(proc_cmdline);
@@ -144,18 +144,18 @@ static void get_proc_cmdline(gchar **p_command, gchar **p_args, const gchar *p_p
 	fclose(fcmdline);
 
 	*p_args = g_strstrip(g_string_free(arg_str, FALSE));
-#ifdef DEBUG
+#ifdef DEBUG_VERBOSE
 	purple_debug_misc("gfire", "get_proc_cmdline: Command \"%s\"; Args: \"%s\"\n", *p_command, *p_args);
-#endif // DEBUG
+#endif // DEBUG_VERBOSE
 }
 
 static GHashTable *get_environ(const gchar *p_proc_path)
 {
 	// Get process environment
 	gchar *proc_environ = g_strdup_printf("%s/environ", p_proc_path);
-#ifdef DEBUG
+#ifdef DEBUG_VERBOSE
 	purple_debug_misc("gfire", "get_environ: Reading environment from \"%s\"\n", proc_environ);
-#endif // DEBUG
+#endif // DEBUG_VERBOSE
 
 	FILE *fenviron = fopen(proc_environ, "r");
 	g_free(proc_environ);
@@ -184,9 +184,9 @@ static GHashTable *get_environ(const gchar *p_proc_path)
 	fclose(fenviron);
 	g_free(line);
 
-#ifdef DEBUG
+#ifdef DEBUG_VERBOSE
 	purple_debug_misc("gfire", "get_environ: saved %u values\n", g_hash_table_size(ret));
-#endif // DEBUG
+#endif // DEBUG_VERBOSE
 	return ret;
 }
 
@@ -195,9 +195,9 @@ static const gchar *get_proc_cwd(GHashTable *p_environ, const gchar *p_proc_path
 	static gchar cwd[PATH_MAX];
 
 	gchar *proc_cwd = g_strdup_printf("%s/cwd", p_proc_path);
-#ifdef DEBUG
+#ifdef DEBUG_VERBOSE
 	purple_debug_misc("gfire", "get_proc_cwd: No match, resolving symlink \"%s\"\n", proc_cwd);
-#endif // DEBUG
+#endif // DEBUG_VERBOSE
 
 	if(readlink(proc_cwd, cwd, PATH_MAX) == -1)
 	{
@@ -208,9 +208,9 @@ static const gchar *get_proc_cwd(GHashTable *p_environ, const gchar *p_proc_path
 		return NULL;
 	}
 
-#ifdef DEBUG
+#ifdef DEBUG_VERBOSE
 	purple_debug_misc("gfire", "get_proc_cwd: \"%s\" -> \"%s\"\n", proc_cwd, cwd);
-#endif // DEBUG
+#endif // DEBUG_VERBOSE
 	g_free(proc_cwd);
 	return cwd;
 }
@@ -220,9 +220,9 @@ void gfire_process_list_update(gfire_process_list *p_list)
 	if(!p_list)
 		return;
 
-#ifdef DEBUG
+#ifdef DEBUG_VERBOSE
 	purple_debug_info("gfire", "gfire_process_list_update: TRACE\n");
-#endif // DEBUG
+#endif // DEBUG_VERBOSE
 
 	gfire_process_list_clear(p_list);
 
@@ -237,9 +237,9 @@ void gfire_process_list_update(gfire_process_list *p_list)
 
 	while((proc_dirent = readdir(proc)))
 	{
-#ifdef DEBUG
+#ifdef DEBUG_VERBOSE
 		purple_debug_info("gfire", "gfire_process_list_update: checking: \"%s\"\n", proc_dirent->d_name);
-#endif // DEBUG
+#endif // DEBUG_VERBOSE
 
 		// Check if we got a valid process dir
 		gboolean dir_valid = TRUE;
@@ -254,10 +254,10 @@ void gfire_process_list_update(gfire_process_list *p_list)
 		}
 		if(!dir_valid)
 		{
-#ifdef DEBUG
+#ifdef DEBUG_VERBOSE
 			purple_debug_error("gfire", "gfire_process_list_update: \"%s\" is no valid process directory\n",
 							   proc_dirent->d_name);
-#endif // DEBUG
+#endif // DEBUG_VERBOSE
 			continue;
 		}
 
@@ -277,10 +277,10 @@ void gfire_process_list_update(gfire_process_list *p_list)
 		// Don't check current process if not owned
 		if(geteuid() != process_stat.st_uid || !S_ISDIR(process_stat.st_mode))
 		{
-#ifdef DEBUG
+#ifdef DEBUG_VERBOSE
 			purple_debug_error("gfire", "gfire_process_list_update: \"%s\" is not owned by current user\n",
 							   proc_dirent->d_name);
-#endif // DEBUG
+#endif // DEBUG_VERBOSE
 			g_free(proc_path);
 			continue;
 		}
@@ -306,9 +306,9 @@ void gfire_process_list_update(gfire_process_list *p_list)
 		// Different behaviour for Wine processes
 		if(strstr(process_exe, "wine-preloader"))
 		{
-#ifdef DEBUG
+#ifdef DEBUG_VERBOSE
 			purple_debug_misc("gfire", "gfire_process_list_update: WINE game! Starting WINE based detection...\n");
-#endif // DEBUG
+#endif // DEBUG_VERBOSE
 
 			// Get Wine prefix for winepath
 			GHashTable *environ = get_environ(proc_path);
@@ -316,12 +316,12 @@ void gfire_process_list_update(gfire_process_list *p_list)
 			if(environ)
 				prefix = g_hash_table_lookup(environ, "WINEPREFIX");
 
-#ifdef DEBUG
+#ifdef DEBUG_VERBOSE
 			if(prefix)
 				purple_debug_misc("gfire", "gfire_process_list_update: WINEPREFIX=\"%s\"\n", prefix);
 			else
 				purple_debug_misc("gfire", "gfire_process_list_update: no WINEPREFIX set\n");
-#endif // DEBUG
+#endif // DEBUG_VERBOSE
 
 			// Get process name using winepath
 			const gchar *real_path = get_winepath(prefix, process_cmd);
@@ -336,9 +336,9 @@ void gfire_process_list_update(gfire_process_list *p_list)
 				continue;
 			}
 
-#ifdef DEBUG
+#ifdef DEBUG_VERBOSE
 			purple_debug_misc("gfire", "gfire_process_list_update: Canonicalizing path: \"%s\"\n", real_path);
-#endif // DEBUG
+#endif // DEBUG_VERBOSE
 
 			// Get the physical path
 #ifdef GF_OS_BSD
@@ -351,9 +351,9 @@ void gfire_process_list_update(gfire_process_list *p_list)
 			// We might have only the executables name, try with adding the CWD
 			if(!phys_path)
 			{
-#ifdef DEBUG
+#ifdef DEBUG_VERBOSE
 				purple_debug_misc("gfire", "gfire_process_list_update: No such file :'( Trying to prepend the CWD...\n");
-#endif // DEBUG
+#endif // DEBUG_VERBOSE
 				const gchar *cwd = get_proc_cwd(environ, proc_path);
 				// Okay, we really can't do anything about it
 				if(!cwd)
@@ -368,9 +368,9 @@ void gfire_process_list_update(gfire_process_list *p_list)
 				gchar *full_cmd = g_strdup_printf("%s/%s", cwd, process_cmd);
 				g_free(process_cmd);
 
-#ifdef DEBUG
+#ifdef DEBUG_VERBOSE
 				purple_debug_misc("gfire", "gfire_process_list_update: Trying the following path: \"%s\"\n", full_cmd);
-#endif // DEBUG
+#endif // DEBUG_VERBOSE
 
 				real_path = get_winepath(prefix, full_cmd);
 				g_free(full_cmd);
@@ -384,9 +384,9 @@ void gfire_process_list_update(gfire_process_list *p_list)
 					continue;
 				}
 
-#ifdef DEBUG
+#ifdef DEBUG_VERBOSE
 			purple_debug_misc("gfire", "gfire_process_list_update: Canonicalizing path: \"%s\"\n", real_path);
-#endif // DEBUG
+#endif // DEBUG_VERBOSE
 
 				// Try again
 #ifdef GF_OS_BSD
@@ -398,9 +398,9 @@ void gfire_process_list_update(gfire_process_list *p_list)
 				// Okay...we lost
 				if(!phys_path)
 				{
-#ifdef DEBUG
+#ifdef DEBUG_VERBOSE
 					purple_debug_error("gfire", "gfire_process_list_update: No such file, we give up...\n");
-#endif // DEBUG
+#endif // DEBUG_VERBOSE
 					g_free(process_args);
 					g_free(proc_path);
 					continue;
@@ -422,10 +422,10 @@ void gfire_process_list_update(gfire_process_list *p_list)
 
 		// Add process to list
 		process_info *info = gfire_process_info_new(process_real_exe, process_id, process_args);
-#ifdef DEBUG
+#ifdef DEBUG_VERBOSE
 		purple_debug_info("gfire", "gfire_process_list_update: added process: pid=%u exe=\"%s\" args=\"%s\"\n",
 						  process_id, process_real_exe, process_args);
-#endif // DEBUG
+#endif // DEBUG_VERBOSE
 		p_list->processes = g_list_append(p_list->processes, info);
 
 #ifndef GF_OS_BSD

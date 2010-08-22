@@ -31,9 +31,9 @@ gboolean gfire_p2p_im_handler_handle(gfire_p2p_session *p_session, guint8 *p_dat
 	if(!p_session || !p_data || !p_len)
 		return FALSE;
 
-#ifdef DEBUG
-	purple_debug_error("gfire", "handling IM packet\n");
-#endif // DEBUG
+#ifdef DEBUG_VERBOSE
+	purple_debug_misc("gfire", "handling IM packet\n");
+#endif // DEBUG_VERBOSE
 
 	guint32 offset = 2;
 	guint16 type;

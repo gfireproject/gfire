@@ -358,9 +358,9 @@ gboolean gfire_p2p_session_handle_data(gfire_p2p_session *p_session, guint32 p_t
 	// Data 32bit size
 	if(p_type == GFIRE_P2P_TYPE_DATA32)
 	{
-#ifdef DEBUG
+#ifdef DEBUG_VERBOSE
 		purple_debug_misc("gfire", "P2P: Received 32bit data packet\n");
-#endif // DEBUG
+#endif // DEBUG_VERBOSE
 
 		if(g_utf8_collate(p_category, "DL") == 0)
 		{
@@ -375,9 +375,9 @@ gboolean gfire_p2p_session_handle_data(gfire_p2p_session *p_session, guint32 p_t
 	// Data 16bit size
 	else if(p_type == GFIRE_P2P_TYPE_DATA16)
 	{
-#ifdef DEBUG
+#ifdef DEBUG_VERBOSE
 		purple_debug_misc("gfire", "P2P: Received 16bit data packet\n");
-#endif // DEBUG
+#endif // DEBUG_VERBOSE
 
 		if(g_utf8_collate(p_category, "IM") == 0)
 		{

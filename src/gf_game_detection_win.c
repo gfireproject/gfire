@@ -120,9 +120,9 @@ static PVOID get_peb_address(HANDLE p_process_handle)
 
 static gboolean get_process_cmdline(gint p_pid, gchar **p_exe, gchar **p_cmd_line)
 {
-#ifdef DEBUG
+#ifdef DEBUG_VERBOSE
 	purple_debug_info("gfire", "trace: get_process_cmdline(%d)\n", p_pid);
-#endif // DEBUG
+#endif // DEBUG_VERBOSE
 
 	HANDLE process;
 	PVOID peb;

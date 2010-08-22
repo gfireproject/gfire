@@ -455,7 +455,7 @@ static void gfire_p2p_connection_input_cb(gpointer p_data, gint p_fd, PurpleInpu
 	offset += 4;
 
 #ifdef DEBUG
-	purple_debug_error("gfire", "P2P: Packet: Type = %u; MsgID = %u; SeqID = %u\n", type, msgid, seqid);
+	purple_debug_misc("gfire", "P2P: Packet: Type = %u; MsgID = %u; SeqID = %u\n", type, msgid, seqid);
 #endif // DEBUG
 
 	switch(type)
@@ -533,7 +533,7 @@ static void gfire_p2p_connection_input_cb(gpointer p_data, gint p_fd, PurpleInpu
 			if(encoding != 0x00)
 			{
 #ifdef DEBUG
-				purple_debug_misc("gfire", "Decoding encoded packet with value %u\n", encoding);
+				purple_debug_misc("gfire", "P2P: Decoding encoded packet with value %u\n", encoding);
 #endif // DEBUG
 				guint32 i = 0;
 				for(; i < (4 + size + 16  + 4/* unknown + data + category + crc32 */); i++)
@@ -552,9 +552,9 @@ static void gfire_p2p_connection_input_cb(gpointer p_data, gint p_fd, PurpleInpu
 			memcpy(category, p2p->buff_in + offset, 16);
 			offset += 16;
 
-#ifdef DEBUG
-			purple_debug_error("gfire", "Category: %s\n", category);
-#endif // DEBUG
+#ifdef DEBUG_VERBOSE
+			purple_debug_misc("gfire", "P2P: Category: %s\n", category);
+#endif // DEBUG_VERBOSE
 
 			guint32 crc32;
 			memcpy(&crc32, p2p->buff_in + offset, 4);

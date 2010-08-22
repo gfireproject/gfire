@@ -30,9 +30,9 @@ gboolean gfire_p2p_dl_handler_handle(gfire_p2p_session *p_session, const guint8 
 	if(!p_session || !p_data || !p_len)
 		return FALSE;
 
-#ifdef DEBUG
-	purple_debug_error("gfire", "handling DL packet\n");
-#endif // DEBUG
+#ifdef DEBUG_VERBOSE
+	purple_debug_misc("gfire", "handling DL packet\n");
+#endif // DEBUG_VERBOSE
 
 	guint32 offset = 4;
 	guint16 type;

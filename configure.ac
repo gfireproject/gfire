@@ -57,9 +57,12 @@ CFLAGS="$CFLAGS_save"
 
 AC_ARG_ENABLE(debug, AS_HELP_STRING([--enable-debug], [Compile with debugging support.]),, enable_debug=no)
 
-if test $enable_debug = "yes"; then
+if test $enable_debug != "no"; then
 	DEBUG_CFLAGS="$DEBUG_CFLAGS -DG_DISABLE_DEPRECATED -DGDK_DISABLE_DEPRECATED -DGDK_PIXBUF_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED"
 	AC_DEFINE(DEBUG, 1, [Define if debugging is enabled.])
+	if test $enable_debug = "verbose"; then
+		AC_DEFINE(DEBUG_VERBOSE, 1, [Define if verbose debugging is enabled.])
+	fi
 fi
 
 AC_SUBST(DEBUG_CFLAGS)

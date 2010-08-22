@@ -562,7 +562,9 @@ static void gfire_game_detector_web_http_input_cb(gpointer p_con, gint p_fd, Pur
 		if(node)
 			gfire_detector->connections = g_list_delete_link(gfire_detector->connections, node);
 
-		purple_debug_info("gfire", "detection: http: client connection closed\n");
+#ifdef DEBUG
+		purple_debug_misc("gfire", "detection: http: client connection closed\n");
+#endif // DEBUG
 
 		return;
 	}
@@ -764,7 +766,9 @@ static void gfire_game_detector_web_http_accept_cb(gpointer p_unused, gint p_fd,
 		return;
 	}
 
-	purple_debug_info("gfire", "detection: http: new client connection\n");
+#ifdef DEBUG
+	purple_debug_misc("gfire", "detection: http: new client connection\n");
+#endif // DEBUG
 
 	gfire_game_detection_http_connection *connection = g_malloc0(sizeof(gfire_game_detection_http_connection));
 	connection->socket = client;
@@ -1045,9 +1049,9 @@ guint32 gfire_process_list_contains(const gfire_process_list *p_list, const gcha
 	if(!p_list || !p_list->processes || !p_exe)
 		return FALSE;
 
-#ifdef DEBUG
+#ifdef DEBUG_VERBOSE
 	purple_debug_info("gfire", "gfire_process_list_contains: checking for \"%s\"\n", p_exe);
-#endif // DEBUG
+#endif // DEBUG_VERBOSE
 
 	GList *cur = p_list->processes;
 	while(cur)
@@ -1056,9 +1060,9 @@ guint32 gfire_process_list_contains(const gfire_process_list *p_list, const gcha
 		if(!info)
 			continue;
 
-#ifdef DEBUG
+#ifdef DEBUG_VERBOSE
 		purple_debug_info("gfire", "gfire_process_list_contains: comparing with \"%s\"\n", info->exe);
-#endif // DEBUG
+#endif // DEBUG_VERBOSE
 
 #ifdef _WIN32
 		// Windows handles file names case-insensitive in contrast to most other OSes
@@ -1134,24 +1138,24 @@ guint32 gfire_process_list_contains(const gfire_process_list *p_list, const gcha
 			// Return as found if valid
 			if ((process_invalid_args == FALSE) && (process_required_args == TRUE) /*&& process_required_libraries == TRUE*/)
 			{
-#ifdef DEBUG
+#ifdef DEBUG_VERBOSE
 				purple_debug_info("gfire", "gfire_process_list_contains: MATCH!\n");
-#endif // DEBUG
+#endif // DEBUG_VERBOSE
 				return info->pid;
 			}
-#ifdef DEBUG
+#ifdef DEBUG_VERBOSE
 			else
 				purple_debug_info("gfire", "gfire_process_list_contains: failed args test: %d/%d\n", process_invalid_args, process_required_args);
-#endif // DEBUG
+#endif // DEBUG_VERBOSE
 
 		}
 
 		cur = g_list_next(cur);
 	}
 
-#ifdef DEBUG
+#ifdef DEBUG_VERBOSE
 	purple_debug_info("gfire", "gfire_process_list_contains: no match!\n");
-#endif // DEBUG
+#endif // DEBUG_VERBOSE
 	return 0;
 }
 
