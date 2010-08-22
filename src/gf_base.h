@@ -25,6 +25,11 @@
 #ifndef _GF_BASE_H
 #define _GF_BASE_H
 
+// Check for a BSD-type OS
+#if defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__) || defined(__bsdi__) || defined(__APPLE__)
+#	define GF_OS_BSD
+#endif
+
 // Globally required headers ////////////////////////////////////////
 #ifdef _WIN32
 #	include <w32api.h>

@@ -115,7 +115,7 @@ static void gfire_filetransfer_request_accepted(PurpleXfer *p_xfer)
 #ifdef _WIN32
 	if((ft->file = _sopen(purple_xfer_get_local_filename(p_xfer), _O_CREAT | _O_WRONLY | _O_TRUNC | _O_BINARY,
 						  _SH_DENYNO, _S_IREAD | _S_IWRITE)) == -1)
-#elif defined(BSD)
+#elif defined(GF_OS_BSD)
 	if((ft->file = open(purple_xfer_get_local_filename(p_xfer), O_CREAT | O_WRONLY | O_TRUNC, S_IREAD | S_IWRITE)) == -1)
 #else
 	if((ft->file = open64(purple_xfer_get_local_filename(p_xfer), O_CREAT | O_WRONLY | O_TRUNC, S_IREAD | S_IWRITE)) == -1)
@@ -188,7 +188,7 @@ gfire_filetransfer *gfire_filetransfer_create(gfire_p2p_session *p_session, Purp
 #ifdef _WIN32
 		if((ret->file = _sopen(purple_xfer_get_local_filename(p_xfer), _O_RDONLY | _O_BINARY,
 							   _SH_DENYNO, _S_IREAD | _S_IWRITE)) == -1)
-#elif defined(BSD)
+#elif defined(GF_OS_BSD)
 		if((ret->file = open(purple_xfer_get_local_filename(p_xfer), O_RDONLY)) == -1)
 #else
 		if((ret->file = open64(purple_xfer_get_local_filename(p_xfer), O_RDONLY)) == -1)

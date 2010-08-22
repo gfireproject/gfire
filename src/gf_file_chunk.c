@@ -34,6 +34,11 @@
 #include "gf_file_chunk.h"
 #include "gf_p2p_dl_proto.h"
 
+// BSD offers no 64bit functions, so just alias it
+#ifdef GF_OS_BSD
+#	define lseek64 lseek
+#endif // GF_OS_BSD
+
 void gfire_file_chunk_init(gfire_file_chunk *p_chunk, gfire_filetransfer *p_transfer, gfire_file_chunk_type p_type,
 						   guint64 p_offset, guint32 p_size)
 {

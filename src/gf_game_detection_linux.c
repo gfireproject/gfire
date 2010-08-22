@@ -341,12 +341,12 @@ void gfire_process_list_update(gfire_process_list *p_list)
 #endif // DEBUG
 
 			// Get the physical path
-#ifndef __GNU_LIBRARY__
+#ifdef GF_OS_BSD
 			gchar phys_path_buf[PATH_MAX];
 			gchar *phys_path = realpath(real_path, phys_path_buf);
 #else
 			gchar *phys_path = canonicalize_file_name(real_path);
-#endif // !__GNU_LIBRARY__
+#endif // GF_OS_BSD
 
 			// We might have only the executables name, try with adding the CWD
 			if(!phys_path)
@@ -389,11 +389,11 @@ void gfire_process_list_update(gfire_process_list *p_list)
 #endif // DEBUG
 
 				// Try again
-#ifndef __GNU_LIBRARY__
+#ifdef GF_OS_BSD
 				phys_path = realpath(real_path, phys_path_buf);
 #else
 				phys_path = canonicalize_file_name(real_path);
-#endif // !__GNU_LIBRARY__
+#endif // GF_OS_BSD
 
 				// Okay...we lost
 				if(!phys_path)
@@ -428,9 +428,9 @@ void gfire_process_list_update(gfire_process_list *p_list)
 #endif // DEBUG
 		p_list->processes = g_list_append(p_list->processes, info);
 
-#ifdef __GNU_LIBRARY__
+#ifndef GF_OS_BSD
 		g_free(process_real_exe);
-#endif // __GNU_LIBRARY__
+#endif // !GF_OS_BSD
 		g_free(process_args);
 		g_free(proc_path);
 	}
