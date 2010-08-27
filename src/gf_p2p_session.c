@@ -201,7 +201,7 @@ void gfire_p2p_session_bind(gfire_p2p_session *p_session, gfire_p2p_connection *
 		p_session->con = p_p2p;
 }
 
-void gfire_p2p_session_set_addr(gfire_p2p_session *p_session, guint32 p_ip, guint16 p_port)
+void gfire_p2p_session_set_addr(gfire_p2p_session *p_session, guint32 p_ip, guint16 p_port, gboolean p_need_handshake)
 {
 	if(!p_session)
 		return;
@@ -222,8 +222,26 @@ void gfire_p2p_session_set_addr(gfire_p2p_session *p_session, guint32 p_ip, guin
 	}
 
 	// Send our own handshake
-	gfire_p2p_session_send_ping(p_session);
-	purple_debug_misc("gfire", "P2P: Handshake sent\n");
+	if(p_need_handshake)
+	{
+		gfire_p2p_session_send_ping(p_session);
+		purple_debug_misc("gfire", "P2P: Handshake sent\n");
+	}
+	else
+	{
+		if(!p_session->connected)
+		{
+			// Start queued filetransfers now
+			GList *cur = p_session->transfers;
+			while(cur)
+			{
+				gfire_filetransfer_start(cur->data);
+				cur = g_list_next(cur);
+			}
+		}
+
+		p_session->connected = TRUE;
+	}
 
 	p_session->check_timer = g_timeout_add_seconds(1, (GSourceFunc)gfire_p2p_session_check_cb, p_session);
 }

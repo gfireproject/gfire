@@ -90,6 +90,8 @@
 #include "privacy.h"
 #include "cmds.h"
 #include "savedstatuses.h"
+#include "dnsquery.h"
+#include "network.h"
 
 // Gfire debugging macros
 #include "gf_debug.h"
@@ -112,7 +114,7 @@
 #	endif /* __GNUC__ >= 4 */
 #endif // G_GNUC_NULL_TERMINATED
 
-// Global defintions ////////////////////////////////////////////////
+// Global definitions ////////////////////////////////////////////////
 #define GFIRE_PRPL_ID "prpl-xfire"
 #define GFIRE_WEBSITE "http://gfireproject.org"
 #define GFIRE_WIKI "http://my-trac.assembla.com/gfire/wiki"
@@ -143,5 +145,9 @@
 #define XFIRE_SEND_TYPING_TIMEOUT 10
 #define XFIRE_SEND_ACK_TIMEOUT 15
 #define XFIRE_SEND_ACK_P2P_TIMEOUT 2
+#define XFIRE_NAT_SERVER1 "nat1.xfire.com"
+#define XFIRE_NAT_SERVER2 "nat2.xfire.com"
+#define XFIRE_NAT_SERVER3 "nat3.xfire.com"
+#define XFIRE_NAT_PORT 9856
 
 #endif // _GF_BASE_H

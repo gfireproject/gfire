@@ -394,25 +394,22 @@ gfire_buddy *gfire_find_buddy(gfire_data *p_gfire, const void *p_data, gfire_fin
 	GList *buddy = p_gfire->buddies;
 	for(; buddy; buddy = g_list_next(buddy))
 	{
+		b = (gfire_buddy *)buddy->data;
 		switch(p_mode)
 		{
 			case GFFB_NAME:
-				b = (gfire_buddy *)buddy->data;
 				if(0 == g_ascii_strcasecmp((const gchar*)p_data, gfire_buddy_get_name(b)))
 					return b;
 			break;
 			case GFFB_ALIAS:
-				b = (gfire_buddy *)buddy->data;
 				if(0 == g_ascii_strcasecmp((const gchar*)p_data, gfire_buddy_get_alias(b)))
 					return b;
 			break;
 			case GFFB_USERID:
-				b = (gfire_buddy *)buddy->data;
 				if(gfire_buddy_is_by_userid(b, *(const guint32*)p_data))
 					return b;
 			break;
 			case GFFB_SID:
-				b = (gfire_buddy *)buddy->data;
 				if(gfire_buddy_is_by_sid(b, (const guint8*)p_data))
 					return b;
 			break;
@@ -451,13 +448,13 @@ void gfire_remove_buddy(gfire_data *p_gfire, gfire_buddy *p_buddy, gboolean p_fr
 		gfire_send(gfire_get_connection(p_gfire), packet_len);
 	}
 
+	if(p_force) gfire_buddy_prpl_remove(p_buddy);
+	gfire_buddy_free(p_buddy);
+
 	// Delete from list
 	GList *entry = g_list_find(p_gfire->buddies, p_buddy);
 	if(!entry)
 		return;
-
-	if(p_force) gfire_buddy_prpl_remove((gfire_buddy*)entry->data);
-	gfire_buddy_free((gfire_buddy*)entry->data);
 	p_gfire->buddies = g_list_delete_link(p_gfire->buddies, entry);
 }
 

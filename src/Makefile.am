@@ -26,6 +26,7 @@ EXTRA_DIST = \
 	gfire_ipc.h \
 	gf_ipc_proto.h \
 	gf_p2p.h \
+	gf_p2p_natcheck.h \
 	gf_p2p_session.h \
 	gf_p2p_im_handler.h \
 	gf_p2p_dl_handler.h \
@@ -69,6 +70,7 @@ libxfire_la_SOURCES = \
 	gf_ipc_server.c \
 	gf_ipc_proto.c \
 	gf_p2p.c \
+	gf_p2p_natcheck.c \
 	gf_p2p_session.c \
 	gf_p2p_im_handler.c \
 	gf_p2p_dl_handler.c \

@@ -30,6 +30,7 @@ typedef struct _gfire_p2p_connection gfire_p2p_connection;
 
 #include "gf_base.h"
 #include "network.h"
+#include "gf_p2p_natcheck.h"
 #include "gf_p2p_session.h"
 
 #define GFIRE_P2P_BUFFER_LEN 131072 // 128 KB
@@ -68,11 +69,20 @@ struct _gfire_p2p_connection
 {
 	// Input callback
 	gint prpl_inpa;
+
 	// Resend timeout
 	guint resend_source;
+
 	// Socket
 	PurpleNetworkListenData *listen_data;
 	int socket;
+
+	// NAT Type Check
+	gfire_p2p_natcheck *nat_check;
+	int natType;
+	guint32 ext_ip;
+	guint16 ext_port;
+
 	// Buffers
 	guint8 *buff_out;
 	guint8 *buff_in;
@@ -92,8 +102,10 @@ gfire_p2p_connection *gfire_p2p_connection_create();
 void gfire_p2p_connection_close(gfire_p2p_connection *p_p2p);
 
 // Status
+int gfire_p2p_connection_natType(const gfire_p2p_connection *p_p2p);
 gboolean gfire_p2p_connection_running(const gfire_p2p_connection *p_p2p);
 guint32 gfire_p2p_connection_local_ip(const gfire_p2p_connection *p_p2p);
+guint16 gfire_p2p_connection_local_port(const gfire_p2p_connection *p_p2p);
 guint16 gfire_p2p_connection_port(const gfire_p2p_connection *p_p2p);
 guint32 gfire_p2p_connection_ip(const gfire_p2p_connection *p_p2p);
 

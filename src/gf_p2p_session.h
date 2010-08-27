@@ -77,7 +77,7 @@ gfire_p2p_session *gfire_p2p_session_create(gfire_buddy *p_buddy, const gchar *p
 void gfire_p2p_session_free(gfire_p2p_session *p_session, gboolean p_local_reason);
 
 void gfire_p2p_session_bind(gfire_p2p_session *p_session, gfire_p2p_connection *p_p2p);
-void gfire_p2p_session_set_addr(gfire_p2p_session *p_session, guint32 p_ip, guint16 p_port);
+void gfire_p2p_session_set_addr(gfire_p2p_session *p_session, guint32 p_ip, guint16 p_port, gboolean p_need_handshake);
 
 // Getting information
 const guint8 *gfire_p2p_session_get_moniker_peer(const gfire_p2p_session *p_session);

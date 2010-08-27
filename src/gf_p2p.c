@@ -580,6 +580,36 @@ static void gfire_p2p_connection_input_cb(gpointer p_data, gint p_fd, PurpleInpu
 	}
 }
 
+static void gfire_p2p_connection_nat_cb(int p_type, guint32 p_ip, guint16 p_port, gpointer p_data)
+{
+	if(!p_data)
+		return;
+
+	gfire_p2p_connection *p2p = (gfire_p2p_connection*)p_data;
+
+	gfire_p2p_natcheck_destroy(p2p->nat_check);
+	p2p->nat_check = NULL;
+
+	p2p->natType = p_type;
+	p2p->ext_ip = p_ip;
+	p2p->ext_port = p_port;
+
+	// Check successfull, start listening
+	if(p2p->natType > 0)
+	{
+		p2p->prpl_inpa = purple_input_add(p2p->socket, PURPLE_INPUT_READ, gfire_p2p_connection_input_cb, p2p);
+
+		p2p->resend_source = g_timeout_add_seconds(GFIRE_P2P_PACKET_TIMEOUT,
+												   (GSourceFunc)gfire_p2p_connection_resend, p2p);
+	}
+	// Check unsuccessfull -> no P2P possible -> close the socket, we don't need it anyway
+	else
+	{
+		close(p2p->socket);
+		p2p->socket = -1;
+	}
+}
+
 static void gfire_p2p_connection_listen_cb(int p_fd, gpointer p_data)
 {
 	if(!p_data)
@@ -591,12 +621,11 @@ static void gfire_p2p_connection_listen_cb(int p_fd, gpointer p_data)
 
 	p2p->socket = p_fd;
 
-	p2p->prpl_inpa = purple_input_add(p_fd, PURPLE_INPUT_READ, gfire_p2p_connection_input_cb, p2p);
-
-	p2p->resend_source = g_timeout_add_seconds(GFIRE_P2P_PACKET_TIMEOUT,
-											   (GSourceFunc)gfire_p2p_connection_resend, p2p);
-
 	purple_debug_info("gfire", "P2P: Connection created on port %u\n", purple_network_get_port_from_fd(p_fd));
+
+	// Start NAT Type check
+	p2p->nat_check = gfire_p2p_natcheck_create();
+	gfire_p2p_natcheck_start(p2p->nat_check, p_fd, gfire_p2p_connection_nat_cb, p2p);
 }
 
 gfire_p2p_connection *gfire_p2p_connection_create()
@@ -643,6 +672,8 @@ void gfire_p2p_connection_close(gfire_p2p_connection *p_p2p)
 	if(p_p2p->listen_data)
 		purple_network_listen_cancel(p_p2p->listen_data);
 
+	gfire_p2p_natcheck_destroy(p_p2p->nat_check);
+
 	if(p_p2p->prpl_inpa > 0)
 		purple_input_remove(p_p2p->prpl_inpa);
 
@@ -669,12 +700,20 @@ void gfire_p2p_connection_close(gfire_p2p_connection *p_p2p)
 	purple_debug_info("gfire", "P2P: Connection closed\n");
 }
 
+int gfire_p2p_connection_natType(const gfire_p2p_connection *p_p2p)
+{
+	if(!p_p2p)
+		return 0;
+
+	return p_p2p->natType;
+}
+
 gboolean gfire_p2p_connection_running(const gfire_p2p_connection *p_p2p)
 {
 	if(!p_p2p)
 		return FALSE;
 
-	return (p_p2p->socket >= 0);
+	return (p_p2p->socket >= 0 && p_p2p->natType > 0);
 }
 
 guint32 gfire_p2p_connection_local_ip(const gfire_p2p_connection *p_p2p)
@@ -686,12 +725,10 @@ guint32 gfire_p2p_connection_local_ip(const gfire_p2p_connection *p_p2p)
 
 	guint32 ip = 0;
 	memcpy(&ip, purple_network_ip_atoi(ip_str), 4);
-	ip = GUINT32_FROM_BE(ip);
-
 	return ip;
 }
 
-guint16 gfire_p2p_connection_port(const gfire_p2p_connection *p_p2p)
+guint16 gfire_p2p_connection_local_port(const gfire_p2p_connection *p_p2p)
 {
 	if(!p_p2p)
 		return 0;
@@ -699,18 +736,20 @@ guint16 gfire_p2p_connection_port(const gfire_p2p_connection *p_p2p)
 	return purple_network_get_port_from_fd(p_p2p->socket);
 }
 
+guint16 gfire_p2p_connection_port(const gfire_p2p_connection *p_p2p)
+{
+	if(!p_p2p)
+		return 0;
+
+	return p_p2p->ext_port;
+}
+
 guint32 gfire_p2p_connection_ip(const gfire_p2p_connection *p_p2p)
 {
 	if(!p_p2p)
 		return 0;
 
-	const char *ip_str = purple_network_get_my_ip(p_p2p->socket);
-
-	guint32 ip = 0;
-	memcpy(&ip, purple_network_ip_atoi(ip_str), 4);
-	ip = GUINT32_FROM_BE(ip);
-
-	return ip;
+	return p_p2p->ext_ip;
 }
 
 void gfire_p2p_connection_add_session(gfire_p2p_connection *p_p2p, gfire_p2p_session *p_session)

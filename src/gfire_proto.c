@@ -305,12 +305,16 @@ void gfire_proto_buddy_list(gfire_data *p_gfire, guint16 p_packet_len)
 	offset = gfire_proto_read_attr_list_ss(p_gfire->buff_in, &friends, "friends", offset);
 	// Parsing error or empty list -> skip further handling
 	if(offset == -1 || !friends)
+	{
+		purple_debug_error("gfire", "empty list or error!\n");
 		return;
+	}
 
 	offset = gfire_proto_read_attr_list_ss(p_gfire->buff_in, &nicks, "nick", offset);
 	// Parsing error -> free other lists and skip further handling
 	if(offset == -1)
 	{
+		purple_debug_error("gfire", "empty list or error!\n");
 		g_list_free(friends);
 		return;
 	}
@@ -319,6 +323,7 @@ void gfire_proto_buddy_list(gfire_data *p_gfire, guint16 p_packet_len)
 	// Parsing error -> free other lists and skip further handling
 	if(offset == -1)
 	{
+		purple_debug_error("gfire", "empty list or error!\n");
 		g_list_free(friends);
 		g_list_free(nicks);
 		return;

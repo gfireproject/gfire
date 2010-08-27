@@ -1395,7 +1395,8 @@ void gfire_buddy_request_p2p(gfire_buddy *p_buddy, gboolean p_notify)
 	guint16 len = gfire_buddy_proto_create_p2p(p_buddy->sid, gfire_p2p_connection_ip(p2p_con),
 											   gfire_p2p_connection_port(p2p_con),
 											   gfire_p2p_connection_local_ip(p2p_con),
-											   gfire_p2p_connection_port(p2p_con), 4, salt);
+											   gfire_p2p_connection_local_port(p2p_con),
+											   gfire_p2p_connection_natType(p2p_con), salt);
 	if(len > 0)
 	{
 		gfire_send(p_buddy->gc, len);
@@ -1412,10 +1413,12 @@ void gfire_buddy_request_p2p(gfire_buddy *p_buddy, gboolean p_notify)
 	g_free(random_str);
 }
 
-void gfire_buddy_got_p2p_data(gfire_buddy *p_buddy, guint32 p_ip, guint16 p_port, const gchar *p_salt)
+void gfire_buddy_got_p2p_data(gfire_buddy *p_buddy, guint32 p_ip, guint16 p_port, guint32 p_natType, const gchar *p_salt)
 {
 	if(!p_buddy || !p_salt)
 		return;
+
+	GString *debug_str = g_string_new("Received P2P information, ");
 
 	p_buddy->p2p_notify = FALSE;
 
@@ -1423,40 +1426,58 @@ void gfire_buddy_got_p2p_data(gfire_buddy *p_buddy, guint32 p_ip, guint16 p_port
 	{
 		gfire_p2p_connection *p2p_con = gfire_get_p2p(p_buddy->gc->proto_data);
 
-		if(!p_buddy->p2p)
+		if(p_natType == 1 ||
+		   ((p_natType == 2 || p_natType == 3) && gfire_p2p_connection_natType(p2p_con) == 1) ||
+		   (p_natType == 4 && (gfire_p2p_connection_natType(p2p_con) == 1 || gfire_p2p_connection_natType(p2p_con) == 4)))
 		{
-			p_buddy->p2p = gfire_p2p_session_create(p_buddy, p_salt);
-			gfire_p2p_connection_add_session(p2p_con, p_buddy->p2p);
-		}
+			if(!p_buddy->p2p)
+			{
+				p_buddy->p2p = gfire_p2p_session_create(p_buddy, p_salt);
+				gfire_p2p_connection_add_session(p2p_con, p_buddy->p2p);
+			}
+			p_buddy->hasP2P = GFP2P_YES;
 
-		gfire_p2p_session_set_addr(p_buddy->p2p, p_ip, p_port);
+			gfire_p2p_session_set_addr(p_buddy->p2p, p_ip, p_port, (p_natType != 1 || gfire_p2p_connection_natType(p2p_con) != 1));
+
+			g_string_append(debug_str, "compatible buddy");
+		}
+		else
+		{
+			if(p_buddy->p2p)
+			{
+				gfire_p2p_connection_remove_session(p2p_con, p_buddy->p2p);
+				gfire_p2p_session_free(p_buddy->p2p, FALSE);
+				p_buddy->p2p = FALSE;
+			}
+			p_buddy->hasP2P = GFP2P_NO;
+
+			g_string_append(debug_str, "incompatible buddy");
+		}
 
 		if(p_buddy->p2p_requested)
 		{
 			p_buddy->p2p_requested = FALSE;
-			purple_debug_misc("gfire", "Received P2P information, sent handshake\n");
 		}
 		else
 		{
 			guint16 len = gfire_buddy_proto_create_p2p(p_buddy->sid, gfire_p2p_connection_ip(p2p_con),
 												   gfire_p2p_connection_port(p2p_con),
 												   gfire_p2p_connection_local_ip(p2p_con),
-												   gfire_p2p_connection_port(p2p_con), 4, p_salt);
+												   gfire_p2p_connection_local_port(p2p_con),
+												   gfire_p2p_connection_natType(p2p_con), p_salt);
 			if(len > 0) gfire_send(p_buddy->gc, len);
-
-			purple_debug_misc("gfire", "Received P2P request, sent our own data\n");
 		}
 	}
 	else
 	{
-		guint16 len = gfire_buddy_proto_create_p2p(p_buddy->sid, 0,
-												   0,
-												   0,
-												   0, 0, p_salt);
+		guint16 len = gfire_buddy_proto_create_p2p(p_buddy->sid, 0, 0, 0, 0, 0, p_salt);
 		if(len > 0) gfire_send(p_buddy->gc, len);
 
-		purple_debug_misc("gfire", "Received P2P request, denied!\n");
+		g_string_append(debug_str, "request denied");
 	}
+
+	purple_debug_misc("gfire", g_string_append(debug_str, "\n")->str);
+	g_string_free(debug_str, TRUE);
 }
 
 void gfire_buddy_p2p_timedout(gfire_buddy *p_buddy)
