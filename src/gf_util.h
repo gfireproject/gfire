@@ -1,7 +1,7 @@
 /*
  * purple - Xfire Protocol Plugin
  *
- * Copyright (C) 2000-2001, Beat Wolf <asraniel@fryx.ch>
+ * Copyright (C) 2005-2006, Beat Wolf <asraniel@fryx.ch>
  * Copyright (C) 2006,      Keith Geffert <keith@penguingurus.com>
  * Copyright (C) 2008-2009	Laurent De Marez <laurentdemarez@gmail.com>
  * Copyright (C) 2009-2010  Warren Dumortier <nwarrenfl@gmail.com>
