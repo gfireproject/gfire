@@ -47,6 +47,7 @@ struct _gfire_p2p_natcheck
 	guint prpl_inpa;
 
 	int stage, server;
+	guint timeout, retries;
 	gboolean multiple_ports;
 	guint32 ips[3];
 	guint16 ports[3];

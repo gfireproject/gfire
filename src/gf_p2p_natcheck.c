@@ -35,6 +35,9 @@ void gfire_p2p_natcheck_destroy(gfire_p2p_natcheck *p_nat)
 	if(!p_nat)
 		return;
 
+	if(p_nat->timeout)
+		g_source_remove(p_nat->timeout);
+
 	if(p_nat->dnsdata)
 		purple_dnsquery_destroy(p_nat->dnsdata);
 
@@ -60,6 +63,24 @@ static void gfire_p2p_natcheck_query(gfire_p2p_natcheck *p_nat, int p_server, in
 
 	purple_debug_misc("gfire", "P2P: NAT Check: Sending IP request to server %d...\n", p_server + 1);
 	sendto(p_nat->socket, packet, 18, 0, (struct sockaddr*)&p_nat->nat_servers[p_server], sizeof(struct sockaddr_in));
+}
+
+static gboolean gfire_p2p_natcheck_timeout(gpointer p_data)
+{
+	gfire_p2p_natcheck *nat = (gfire_p2p_natcheck*)p_data;
+	// Check whether the server really timed out...
+	if(++nat->retries == 5)
+	{
+		purple_debug_error("gfire", "P2P: NAT Check: Server %d timed out...check failed!\n", nat->server);
+		purple_input_remove(nat->prpl_inpa);
+		nat->state = GF_NATCHECK_DONE;
+		if(nat->callback) nat->callback(0, 0, 0, nat->callback_data);
+		return FALSE;
+	}
+	// Query the server once again
+	gfire_p2p_natcheck_query(nat, nat->server, nat->stage);
+
+	return TRUE;
 }
 
 static void gfire_p2p_natcheck_udpread(gpointer p_data, gint p_fd, PurpleInputCondition p_condition)
@@ -128,6 +149,10 @@ static void gfire_p2p_natcheck_udpread(gpointer p_data, gint p_fd, PurpleInputCo
 						  port);
 	}
 
+	// Some packet we do not need? (delay etc.)
+	if(server != nat->server)
+		return;
+
 	if(server != 2)
 	{
 		nat->server++;
@@ -170,12 +195,18 @@ static void gfire_p2p_natcheck_udpread(gpointer p_data, gint p_fd, PurpleInputCo
 				purple_debug_info("gfire", "P2P: NAT Check: check finished; Your Xfire NAT Type is %d - %s\n", nat->type,
 								  typeNames[nat->type]);
 
+				g_source_remove(nat->timeout);
+				nat->timeout = 0;
 				nat->state = GF_NATCHECK_DONE;
 				if(nat->callback) nat->callback(nat->type, nat->ips[0], nat->ports[0], nat->callback_data);
 				return;
 			}
 		}
 
+		// Query the next server
+		nat->retries = 0;
+		g_source_remove(nat->timeout);
+		nat->timeout = g_timeout_add_seconds(2, gfire_p2p_natcheck_timeout, nat);
 		gfire_p2p_natcheck_query(nat, nat->server, nat->stage);
 	}
 }
@@ -189,6 +220,7 @@ static void gfire_p2p_natcheck_start_query(gfire_p2p_natcheck *p_nat)
 	p_nat->prpl_inpa = purple_input_add(p_nat->socket, PURPLE_INPUT_READ, gfire_p2p_natcheck_udpread, p_nat);
 
 	purple_debug_misc("gfire", "P2P: NAT Check: Starting IP requests...\n");
+	p_nat->timeout = g_timeout_add_seconds(2, gfire_p2p_natcheck_timeout, p_nat);
 	gfire_p2p_natcheck_query(p_nat, p_nat->server, p_nat->stage);
 }
 
@@ -202,6 +234,7 @@ static void gfire_p2p_natcheck_dnsquery(GSList *p_hosts, gpointer p_data, const 
 	{
 		purple_debug_error("gfire", "P2P: NAT Check: Hostname lookup failed for \"%s\"\n", purple_dnsquery_get_host(nat->dnsdata));
 		nat->state = GF_NATCHECK_DONE;
+		nat->type = 0;
 		if(nat->callback) nat->callback(0, 0, 0, nat->callback_data);
 		return;
 	}
@@ -274,6 +307,13 @@ gboolean gfire_p2p_natcheck_start(gfire_p2p_natcheck *p_nat, int p_socket, gfire
 
 	// Socket to use
 	p_nat->socket = p_socket;
+
+	// Restore default state
+	p_nat->retries = 0;
+	p_nat->type = 0;
+	p_nat->multiple_ports = FALSE;
+	memset(p_nat->ips, 0, 3 * sizeof(guint32));
+	memset(p_nat->ports, 0, 3 * sizeof(guint16));
 
 	// Start by resolving the DNS names of Xfires NAT test servers
 	purple_debug_info("gfire", "P2P: NAT Check: Starting NAT type check...\n");
