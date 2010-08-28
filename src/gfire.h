@@ -36,6 +36,7 @@ typedef struct _gfire_data gfire_data;
 #include "gf_p2p.h"
 #include "gf_groups.h"
 #include "gf_server_browser_proto.h"
+#include "gf_preferences.h"
 
 // gfire_find_buddy modes
 typedef enum _gfire_find_buddy_mode
@@ -101,7 +102,7 @@ struct _gfire_data
 	gfire_server_browser *server_browser;
 
 	// Client preferences
-	gboolean show_fofs;
+	gfire_preferences *prefs;
 };
 
 typedef struct _invitation_callback_args
@@ -180,7 +181,7 @@ gboolean gfire_has_p2p(const gfire_data *p_gfire);
 gfire_p2p_connection *gfire_get_p2p(const gfire_data *p_gfire);
 
 // Account settings
-void gfire_set_show_fofs(gfire_data *p_gfire, gboolean p_show);
+void gfire_got_preferences(gfire_data *p_gfire);
 gboolean gfire_wants_fofs(const gfire_data *p_gfire);
 gboolean gfire_wants_server_detection(const gfire_data *p_gfire);
 gboolean gfire_wants_global_status_change(const gfire_data *p_gfire);

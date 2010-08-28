@@ -24,6 +24,7 @@
 
 #include "gf_network.h"
 #include "gfire_proto.h"
+#include "gf_preferences_proto.h"
 #include "gf_buddies_proto.h"
 #include "gf_chat_proto.h"
 #include "gf_friend_search_proto.h"
@@ -279,7 +280,7 @@ void gfire_parse_packet(gfire_data *p_gfire, guint16 p_packet_len, guint16 p_pac
 
 		case 141:
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "client preferences received\n");
-			gfire_proto_client_preferences(p_gfire, p_packet_len);
+			gfire_pref_proto_client_preferences(p_gfire, p_packet_len);
 		break;
 
 		case 143:

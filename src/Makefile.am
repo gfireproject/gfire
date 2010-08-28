@@ -34,7 +34,9 @@ EXTRA_DIST = \
 	gf_filetransfer.h \
 	gf_file_chunk.h \
 	gf_groups.h \
-	gf_groups_proto.h
+	gf_groups_proto.h \
+	gf_preferences.h \
+	gf_preferences_proto.h
 
 INCLUDES = \
 	-I$(top_srcdir) \
@@ -78,7 +80,9 @@ libxfire_la_SOURCES = \
 	gf_filetransfer.c \
 	gf_file_chunk.c \
 	gf_groups.c \
-	gf_groups_proto.c
+	gf_groups_proto.c \
+	gf_preferences.c \
+	gf_preferences_proto.c
 
 libxfire_la_LIBADD = \
 	$(PURPLE_LIBS) $(GLIB_LIBS) $(GTK_LIBS) $(LIBNOTIFY_LIBS) $(DBUS_GLIB_LIBS)

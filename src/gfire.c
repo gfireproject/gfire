@@ -52,6 +52,8 @@ gfire_data *gfire_create(PurpleConnection *p_gc)
 	if(!ret->buff_in)
 		goto error;
 
+	ret->prefs = gfire_preferences_create();
+
 	ret->fd = -1;
 
 	gfire_network_init();
@@ -108,6 +110,9 @@ void gfire_free(gfire_data *p_gfire)
 
 	// Unregister this Gfire session with the IPC server
 	gfire_ipc_server_unregister(p_gfire);
+
+	// Free client preferences
+	gfire_preferences_free(p_gfire->prefs);
 
 	g_free(p_gfire);
 
@@ -305,9 +310,6 @@ static void gfire_login_cb(gpointer p_data, gint p_source, const gchar *p_error_
 	// Setup server browser
 	gfire_server_browser_proto_init(gfire);
 
-	// Get preferences
-	gfire->show_fofs = purple_account_get_bool(purple_connection_get_account(gfire->gc), "show_fofs", TRUE);
-
 	// Register this Gfire session with the IPC server
 	gfire_ipc_server_register(gfire);
 
@@ -354,12 +356,9 @@ void gfire_close(gfire_data *p_gfire)
 	PurpleConnection *gc = gfire_get_connection(p_gfire);
 
 	// Save client preferences
-	if(p_gfire->show_fofs != purple_account_get_bool(purple_connection_get_account(gc), "show_fofs", TRUE))
-	{
-		guint16 len = gfire_proto_create_client_preferences(
-				purple_account_get_bool(purple_connection_get_account(gc), "show_fofs", TRUE));
-		if(len) gfire_send(gc, len);
-	}
+	if(gfire_preferences_get(p_gfire->prefs, 0x08) != purple_account_get_bool(purple_connection_get_account(gc), "show_fofs", TRUE))
+		gfire_preferences_set(p_gfire->prefs, 0x08, purple_account_get_bool(purple_connection_get_account(gc), "show_fofs", TRUE));
+	gfire_preferences_send(p_gfire->prefs, gc);
 
 	purple_debug(PURPLE_DEBUG_MISC, "gfire", "CONNECTION: close requested.\n");
 
@@ -1445,25 +1444,18 @@ void gfire_set_voip_status(gfire_data *p_gfire, const gfire_game_data *p_data)
 	if(len > 0) gfire_send(p_gfire->gc, len);
 }
 
-void gfire_set_show_fofs(gfire_data *p_gfire, gboolean p_show)
+void gfire_got_preferences(gfire_data *p_gfire)
 {
 	if(!p_gfire)
 		return;
 
-	if(p_show)
-		purple_debug_error("gfire", "should show fofs\n");
-	else
-		purple_debug_error("gfire", "should not show fofs\n");
+	gboolean fofs = gfire_preferences_get(p_gfire->prefs, 0x08);
 
-	if(purple_account_get_bool(purple_connection_get_account(p_gfire->gc), "show_fofs", TRUE) != p_show)
+	if(purple_account_get_bool(purple_connection_get_account(p_gfire->gc), "show_fofs", TRUE) != fofs)
 	{
-		p_show = purple_account_get_bool(purple_connection_get_account(p_gfire->gc), "show_fofs", TRUE);
-
-		guint16 len = gfire_proto_create_client_preferences(p_show);
-		if(len) gfire_send(p_gfire->gc, len);
+		gfire_preferences_set(p_gfire->prefs, 0x08, purple_account_get_bool(purple_connection_get_account(p_gfire->gc), "show_fofs", TRUE));
+		gfire_preferences_send(p_gfire->prefs, p_gfire->gc);
 	}
-
-	p_gfire->show_fofs = p_show;
 }
 
 gboolean gfire_wants_fofs(const gfire_data *p_gfire)

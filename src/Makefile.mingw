@@ -59,7 +59,9 @@ GFIRE_SOURCES = \
 	${GFIRE_SRC_DIR}/gf_filetransfer.c \
 	${GFIRE_SRC_DIR}/gf_file_chunk.c \
 	${GFIRE_SRC_DIR}/gf_groups.c \
-	${GFIRE_SRC_DIR}/gf_groups_proto.c
+	${GFIRE_SRC_DIR}/gf_groups_proto.c \
+	${GFIRE_SRC_DIR}/gf_preferences.c \
+	${GFIRE_SRC_DIR}/gf_preferences_proto.c
 
 GFIRE_RESOURCES = \
 	${GFIRE_SRC_DIR}/gfirerc.rc

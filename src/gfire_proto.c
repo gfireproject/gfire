@@ -266,21 +266,6 @@ guint16 gfire_proto_create_game_sdk(GList *p_keys, GList *p_values)
 	return offset;
 }
 
-guint16 gfire_proto_create_client_preferences(gboolean p_show_fofs)
-{
-	guint32 offset = XFIRE_HEADER_LEN;
-
-	// "prefs"
-	offset = gfire_proto_write_attr_ss("prefs", 0x09, NULL, 1, offset);
-
-	// 0x13 fofs
-	const gchar *show_fofs = p_show_fofs ? "1" : "0";
-	offset = gfire_proto_write_attr_bs(0x13, 0x01, show_fofs, 1, offset);
-
-	gfire_proto_write_header(offset, 0x0A, 1, 0);
-	return offset;
-}
-
 // reads buddy list from server and populates purple blist
 void gfire_proto_buddy_list(gfire_data *p_gfire, guint16 p_packet_len)
 {
@@ -733,51 +718,4 @@ void gfire_proto_external_game(gfire_data *p_gfire, guint16 p_packet_len)
 		return;
 
 	gfire_game_detector_set_external_game(gameid);
-}
-
-void gfire_proto_client_preferences(gfire_data *p_gfire, guint16 p_packet_len)
-{
-	if(!p_gfire || p_packet_len < 8)
-		return;
-
-	if((*(p_gfire->buff_in + 5) != 0x4C) || (*(p_gfire->buff_in + 6) != 0x09))
-		return;
-
-	guint8 attributes = *(p_gfire->buff_in + 7);
-	guint16 offset = XFIRE_HEADER_LEN + 3;
-	guint8 pos = 0;
-	for(; pos < attributes; pos++)
-	{
-		if(p_packet_len < (offset + 4))
-			return;
-
-		guint8 id = *(p_gfire->buff_in + offset);
-		offset++;
-		guint8 type = *(p_gfire->buff_in + offset);
-		offset++;
-
-		if(type != 0x01)
-			return;
-
-		guint16 len = *(guint16*)(p_gfire->buff_in + offset);
-		offset += 2;
-
-		if(p_packet_len < (offset + len))
-			return;
-
-		gchar *string = g_strndup((gchar*)p_gfire->buff_in + offset, len);
-		offset += len;
-
-		// Friends of friends
-		if(id == 0x13)
-		{
-			gfire_set_show_fofs(p_gfire, !g_strcmp0(string, "1"));
-			g_free(string);
-			return;
-		}
-
-		g_free(string);
-	}
-
-	gfire_set_show_fofs(p_gfire, TRUE);
 }
