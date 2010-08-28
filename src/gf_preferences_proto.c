@@ -28,9 +28,6 @@
 
 guint16 gfire_pref_proto_create_changed_preferences(const GList *p_prefs)
 {
-	if(!p_prefs)
-		return 0;
-
 	guint32 offset = XFIRE_HEADER_LEN;
 
 	// "prefs"
