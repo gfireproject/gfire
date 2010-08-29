@@ -71,7 +71,7 @@ static gboolean gfire_p2p_natcheck_timeout(gpointer p_data)
 	// Check whether the server really timed out...
 	if(++nat->retries == 5)
 	{
-		purple_debug_error("gfire", "P2P: NAT Check: Server %d timed out...check failed!\n", nat->server);
+		purple_debug_error("gfire", "P2P: NAT Check: Server %d timed out...check failed!\n", nat->server + 1);
 		purple_input_remove(nat->prpl_inpa);
 		nat->state = GF_NATCHECK_DONE;
 		if(nat->callback) nat->callback(0, 0, 0, nat->callback_data);
