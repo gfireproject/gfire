@@ -39,6 +39,7 @@ guint16 gfire_pref_proto_create_changed_preferences(const GList *p_prefs)
 		const gf_pref *pref = (gf_pref*)p_prefs->data;
 		const gchar *value = pref->set ? "1" : "0";
 		offset = gfire_proto_write_attr_bs(pref->id, 0x01, value, 1, offset);
+		p_prefs = g_list_next(p_prefs);
 	}
 
 	gfire_proto_write_header(offset, 0x0A, 1, 0);
