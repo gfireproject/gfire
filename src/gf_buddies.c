@@ -1476,7 +1476,7 @@ void gfire_buddy_got_p2p_data(gfire_buddy *p_buddy, guint32 p_ip, guint16 p_port
 		g_string_append(debug_str, "request denied");
 	}
 
-	purple_debug_misc("gfire", g_string_append(debug_str, "\n")->str);
+	purple_debug_misc("gfire", "%s\n", debug_str->str);
 	g_string_free(debug_str, TRUE);
 }
 
