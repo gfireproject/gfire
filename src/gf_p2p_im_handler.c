@@ -28,8 +28,14 @@
 
 gboolean gfire_p2p_im_handler_handle(gfire_p2p_session *p_session, guint8 *p_data, guint32 p_len)
 {
-	if(!p_session || !p_data || !p_len)
+	if(!p_session || !p_data)
 		return FALSE;
+
+	if(p_len < 60)
+	{
+		purple_debug_warning("gfire", "P2P: too small IM packet\n");
+		return FALSE;
+	}
 
 #ifdef DEBUG_VERBOSE
 	purple_debug_misc("gfire", "handling IM packet\n");
