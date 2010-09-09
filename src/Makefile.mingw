@@ -41,6 +41,8 @@ GFIRE_SOURCES = \
 	${GFIRE_SRC_DIR}/gf_purple.c \
 	${GFIRE_SRC_DIR}/gf_server_browser.c \
 	${GFIRE_SRC_DIR}/gf_server_browser_proto.c \
+	${GFIRE_SRC_DIR}/gf_server_query.c \
+	${GFIRE_SRC_DIR}/gf_server_query_quake.c \
 	${GFIRE_SRC_DIR}/gf_server_detection.c \
 	${GFIRE_SRC_DIR}/gf_server_detection_win.c \
 	${GFIRE_SRC_DIR}/gf_util.c \
