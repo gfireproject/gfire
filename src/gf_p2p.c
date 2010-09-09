@@ -384,7 +384,6 @@ static gboolean gfire_p2p_connection_resend(gfire_p2p_connection *p_p2p)
 		gfire_p2p_packet_resend *packet = (gfire_p2p_packet_resend*)cur->data;
 		if(gtv.tv_sec - GFIRE_P2P_PACKET_TIMEOUT >= packet->last_try)
 		{
-			gfire_p2p_packet_resend_send(packet, p_p2p, 0);
 			if(packet->retries == GFIRE_P2P_MAX_RETRIES)
 			{
 				gfire_p2p_packet_resend_free(packet);
@@ -393,6 +392,7 @@ static gboolean gfire_p2p_connection_resend(gfire_p2p_connection *p_p2p)
 
 				continue;
 			}
+			gfire_p2p_packet_resend_send(packet, p_p2p, 0x33 + packet->retries * 0x33);
 		}
 
 		cur = g_list_next(cur);
@@ -536,7 +536,7 @@ static void gfire_p2p_connection_input_cb(gpointer p_data, gint p_fd, PurpleInpu
 				purple_debug_misc("gfire", "P2P: Decoding encoded packet with value %u\n", encoding);
 #endif // DEBUG
 				guint32 i = 0;
-				for(; i < (4 + size + 16  + 4/* unknown + data + category + crc32 */); i++)
+				for(; i < (4 + size + 16 + 4/* unknown + data + category + crc32 */); i++)
 					*(crc_data + i) ^= encoding;
 			}
 
