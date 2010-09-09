@@ -92,8 +92,8 @@ static void gfire_p2p_natcheck_udpread(gpointer p_data, gint p_fd, PurpleInputCo
 	static unsigned char buffer[10];
 
 	struct sockaddr_in addr;
-	size_t addr_len = sizeof(addr);
-	int len = recvfrom(p_fd, buffer, 10, 0, (struct sockaddr*)&addr, (socklen_t*)&addr_len);
+	guint addr_len = sizeof(addr);
+	int len = recvfrom(p_fd, buffer, 10, 0, (struct sockaddr*)&addr, &addr_len);
 
 	if(len != 10)
 	{
