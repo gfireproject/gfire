@@ -16,6 +16,7 @@ AC_CONFIG_SRCDIR([src/gfire.c])
 
 
 AM_INIT_AUTOMAKE([gfire], [gfire_version], "")
+m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 AC_PATH_PROG(sedpath, sed)
 AC_CONFIG_MACRO_DIR([m4])
@@ -58,7 +59,7 @@ CFLAGS="$CFLAGS_save"
 AC_ARG_ENABLE(debug, AS_HELP_STRING([--enable-debug], [Compile with debugging support.]),, enable_debug=no)
 
 if test $enable_debug != "no"; then
-	DEBUG_CFLAGS="$DEBUG_CFLAGS -DG_DISABLE_DEPRECATED -DGDK_DISABLE_DEPRECATED -DGDK_PIXBUF_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED"
+	DEBUG_CFLAGS="$DEBUG_CFLAGS -g -DG_DISABLE_DEPRECATED -DGDK_DISABLE_DEPRECATED -DGDK_PIXBUF_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED"
 	AC_DEFINE(DEBUG, 1, [Define if debugging is enabled.])
 	if test $enable_debug = "verbose"; then
 		AC_DEFINE(DEBUG_VERBOSE, 1, [Define if verbose debugging is enabled.])
@@ -68,7 +69,7 @@ fi
 AC_SUBST(DEBUG_CFLAGS)
  
 if test "x$GCC"="xyes"; then
-	CFLAGS="$CFLAGS -Wall -g3"
+	CFLAGS="$CFLAGS -Wall"
 fi
 AC_SUBST(CFLAGS)
 
