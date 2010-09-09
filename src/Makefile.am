@@ -20,6 +20,7 @@ EXTRA_DIST = \
 	gf_game_detection_win.c \
 	gf_server_browser.h \
 	gf_server_browser_proto.h \
+	gf_server_query.h \
 	gf_buddies.h \
 	gf_buddies_proto.h \
 	gf_ipc_server.h \
@@ -63,6 +64,8 @@ libxfire_la_SOURCES = \
 	gfire_proto.c \
 	gf_server_browser.c \
 	gf_server_browser_proto.c \
+	gf_server_query.c \
+	gf_server_query_quake.c \
 	gf_menus.c \
 	gf_util.c \
 	gf_server_detection_linux.c \

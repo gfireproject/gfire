@@ -33,19 +33,17 @@
 #include "gf_protocol.h"
 #include "gfire.h"
 
-// Serverlist requests
-void gfire_server_browser_proto_fav_serverlist_request(gfire_server_browser *p_server_browser, guint32 p_gameid);
+// Packet creation
 guint16 gfire_server_browser_proto_create_friends_fav_serverlist_request(guint32 p_gameid);
 guint16 gfire_server_browser_proto_create_serverlist_request(guint32 p_gameid);
+guint16 gfire_server_browser_proto_create_add_fav_server(guint32 p_gameid, guint32 p_ip, guint32 p_port);
+guint16 gfire_server_browser_proto_create_remove_fav_server(guint32 p_gameid, guint32 p_ip, guint32 p_port);
 
-// Serverlist handlers
-void gfire_server_browser_proto_fav_serverlist(gfire_data *p_gfire, guint16 p_packet_len);
+// Packet parsing
 void gfire_server_browser_proto_friends_fav_serverlist(gfire_data *p_gfire, guint16 p_packet_len);
+void gfire_server_browser_proto_fav_serverlist(gfire_data *p_gfire, guint16 p_packet_len);
 void gfire_server_browser_proto_serverlist(gfire_data *p_gfire, guint16 p_packet_len);
 
-// Remote fav serverlist functions (requests)
-guint16 gfire_server_browser_proto_request_add_fav_server(guint32 p_gameid, guint32 p_ip, guint32 p_port);
-guint16 gfire_server_browser_proto_request_remove_fav_server(guint32 p_gameid, guint32 p_ip, guint32 p_port);
 #endif // HAVE_GTK
 
 #endif // _GF_SERVER_BROWSER_PROTO_H

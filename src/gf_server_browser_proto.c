@@ -26,54 +26,135 @@
 #include "gf_server_browser.h"
 
 #ifdef HAVE_GTK
+
 // Serverlist requests
 guint16 gfire_server_browser_proto_create_friends_fav_serverlist_request(guint32 p_gameid)
 {
 	guint32 offset = XFIRE_HEADER_LEN;
+
 	p_gameid = GUINT32_TO_LE(p_gameid);
-
 	offset = gfire_proto_write_attr_ss("gameid", 0x02, &p_gameid, sizeof(p_gameid), offset);
-	gfire_proto_write_header(offset, 0x15, 1, 0);
 
+	gfire_proto_write_header(offset, 0x15, 1, 0);
 	return offset;
 }
 
 guint16 gfire_server_browser_proto_create_serverlist_request(guint32 p_gameid)
 {
 	guint32 offset = XFIRE_HEADER_LEN;
+
 	p_gameid = GUINT32_TO_LE(p_gameid);
-
 	offset = gfire_proto_write_attr_bs(0x21, 0x02, &p_gameid, sizeof(p_gameid), offset);
-	gfire_proto_write_header(offset, 0x16, 1, 0);
 
+	gfire_proto_write_header(offset, 0x16, 1, 0);
 	return offset;
 }
 
-// Serverlist handlers
-void gfire_server_browser_proto_fav_serverlist_request(gfire_server_browser *p_server_browser, guint32 p_gameid)
+// Remote fav serverlist functions (requests)
+guint16 gfire_server_browser_proto_create_add_fav_server(guint32 p_gameid, guint32 p_ip, guint32 p_port)
 {
-	// Get fav serverlist (local)
-	GList *servers = p_server_browser->fav_servers;
+	guint32 offset = XFIRE_HEADER_LEN;
 
-	// Push servers to queue as structs
-	for(; servers; servers = g_list_next(servers))
+	p_gameid = GUINT32_TO_LE(p_gameid);
+	offset = gfire_proto_write_attr_ss("gameid", 0x02, &p_gameid, sizeof(p_gameid), offset);
+
+	p_ip = GUINT32_TO_LE(p_ip);
+	offset = gfire_proto_write_attr_ss("gip", 0x02, &p_ip, sizeof(p_ip), offset);
+
+	p_port = GUINT32_TO_LE(p_port);
+	offset = gfire_proto_write_attr_ss("gport", 0x02, &p_port, sizeof(p_port), offset);
+
+	gfire_proto_write_header(offset, 0x13, 3, 0);
+	return offset;
+}
+
+guint16 gfire_server_browser_proto_create_remove_fav_server(guint32 p_gameid, guint32 p_ip, guint32 p_port)
+{
+	guint32 offset = XFIRE_HEADER_LEN;
+
+	p_gameid = GUINT32_TO_LE(p_gameid);
+	offset = gfire_proto_write_attr_ss("gameid", 0x02, &p_gameid, sizeof(p_gameid), offset);
+
+	p_ip = GUINT32_TO_LE(p_ip);
+	offset = gfire_proto_write_attr_ss("gip", 0x02, &p_ip, sizeof(p_ip), offset);
+
+	p_port = GUINT32_TO_LE(p_port);
+	offset = gfire_proto_write_attr_ss("gport", 0x02, &p_port, sizeof(p_port), offset);
+
+	gfire_proto_write_header(offset, 0x14, 3, 0);
+	return offset;
+}
+
+void gfire_server_browser_proto_friends_fav_serverlist(gfire_data *p_gfire, guint16 p_packet_len)
+{
+	if(!p_gfire)
+		return;
+
+	// FIXME: What's the correct length in bytes?
+	if(p_packet_len < 16)
 	{
-		// Create struct
-		gfire_server_browser_server *server;
-		server = servers->data;
-
-		if(server->gameid == p_server_browser->gameid)
-		{
-			server->protocol = gfire_game_server_query_type(p_gameid);
-			server->parent = 1;
-
-			// Push server struct to queue
-			g_queue_push_head(p_server_browser->queue, server);
-		}
+		purple_debug_error("gfire", "Packet 149 received, but too short (%d bytes)\n", p_packet_len);
+		return;
 	}
 
-	// Only free the list, not the data
-	g_list_free(servers);
+	guint32 offset = XFIRE_HEADER_LEN;
+
+	guint32 gameid;
+	GList *ips = NULL;
+	GList *ports = NULL;
+	GList *userids = NULL;
+
+	offset = gfire_proto_read_attr_int32_ss(p_gfire->buff_in, &gameid, "gameid", offset);
+
+	offset = gfire_proto_read_attr_list_ss(p_gfire->buff_in, &ips, "gip", offset);
+	if(offset == -1)
+	{
+		if(ips) gfire_list_clear(ips);
+
+		return;
+	}
+
+	offset = gfire_proto_read_attr_list_ss(p_gfire->buff_in, &ports, "gport", offset);
+	if(offset == -1)
+	{
+		if(ips) gfire_list_clear(ips);
+		if(ports) gfire_list_clear(ports);
+
+		return;
+	}
+
+	offset = gfire_proto_read_attr_list_ss(p_gfire->buff_in, &userids, "friends", offset);
+	if(offset == -1)
+	{
+		if(ips) gfire_list_clear(ips);
+		if(ports) gfire_list_clear(ports);
+		if(userids) gfire_list_clear(userids);
+
+		return;
+	}
+
+	// FIXME: Not used yet, free...
+	while(userids)
+	{
+		gfire_list_clear(userids->data);
+		userids = g_list_delete_link(userids, userids);
+	}
+
+	GList *ip = ips, *port = ports;
+	for(; ip; ip = g_list_next(ip))
+	{
+		gfire_server_browser_add_server(p_gfire->server_browser, GFSBT_FFAVOURITE,
+										*((guint32*)ip->data), *((guint16*)port->data));
+
+		// Free data and go to next server
+		g_free(ip->data);
+		g_free(port->data);
+
+		port = g_list_next(port);
+	}
+
+	g_list_free(ips);
+	g_list_free(ports);
 }
 
 void gfire_server_browser_proto_fav_serverlist(gfire_data *p_gfire, guint16 p_packet_len)
@@ -101,137 +182,47 @@ void gfire_server_browser_proto_fav_serverlist(gfire_data *p_gfire, guint16 p_pa
 	offset = gfire_proto_read_attr_list_ss(p_gfire->buff_in, &gameids, "gameid", offset);
 	if(offset == -1)
 	{
-				if(gameids) g_list_free(gameids);
-
+		if(gameids) gfire_list_clear(gameids);
 		return;
 	}
 
 	offset = gfire_proto_read_attr_list_ss(p_gfire->buff_in, &ips, "gip", offset);
 	if(offset == -1)
 	{
-		if(gameids) g_list_free(gameids);
-		if(ips) g_list_free(ips);
-
+		if(gameids) gfire_list_clear(gameids);
+		if(ips) gfire_list_clear(ips);
 		return;
 	}
 
 	offset = gfire_proto_read_attr_list_ss(p_gfire->buff_in, &ports, "gport", offset);
 	if(offset == -1)
 	{
-		if(gameids) g_list_free(gameids);
-		if(ips) g_list_free(ips);
-		if(ports) g_list_free(ports);
-
+		if(gameids) gfire_list_clear(gameids);
+		if(ips) gfire_list_clear(ips);
+		if(ports) gfire_list_clear(ports);
 		return;
 	}
 
 	// Set max favs
-	gfire_server_browser *server_browser = p_gfire->server_browser;
-
-	// Set max favorites
-	server_browser->max_favs = max_favs;
+	gfire_server_browser_max_favs(p_gfire->server_browser, max_favs);
 
 	// Fill in favorite server list
-	for(; ips; ips = g_list_next(ips))
+	GList *id = gameids, *ip = ips, *port = ports;
+	for(; id; id = g_list_next(id))
 	{
-		// Create struct
-		gfire_server_browser_server *server;
-		server = gfire_server_browser_server_new();
+		gfire_server_browser_add_favourite(p_gfire->server_browser, *((guint32*)id->data),
+										   *((guint32*)ip->data), *((guint16*)port->data), FALSE);
 
-		server->gameid = *((guint32 *)gameids->data);
-		server->ip = *((guint32 *)ips->data);
-		server->port = *(guint32 *)ports->data & 0xFFFF;
+		// Free data and go to next server
+		g_free(id->data);
+		g_free(ip->data);
+		g_free(port->data);
 
-		// Add to fav serverlist
-		server_browser->fav_servers = g_list_append(server_browser->fav_servers, server);
-
-		// Get next server
-		g_free(gameids->data);
-		g_free(ips->data);
-		g_free(ports->data);
-
-		gameids = g_list_next(gameids);
-		ports = g_list_next(ports);
+		ip = g_list_next(ip);
+		port = g_list_next(port);
 	}
 
 	g_list_free(gameids);
-	g_list_free(ips);
-	g_list_free(ports);
-}
-
-void gfire_server_browser_proto_friends_fav_serverlist(gfire_data *p_gfire, guint16 p_packet_len)
-{
-	if(!p_gfire)
-		return;
-
-	// FIXME: What's the correct length in bytes?
-	if(p_packet_len < 16)
-	{
-		purple_debug_error("gfire", "Packet 149 received, but too short (%d bytes)\n", p_packet_len);
-		return;
-	}
-
-	guint32 offset = XFIRE_HEADER_LEN;
-
-	guint32 gameid;
-	GList *ips = NULL;
-	GList *ports = NULL;
-	GList *userids = NULL;
-
-	offset = gfire_proto_read_attr_int32_ss(p_gfire->buff_in, &gameid, "gameid", offset);
-
-	offset = gfire_proto_read_attr_list_ss(p_gfire->buff_in, &ips, "gip", offset);
-	if(offset == -1)
-	{
-		if(ips) g_list_free(ips);
-
-		return;
-	}
-
-	offset = gfire_proto_read_attr_list_ss(p_gfire->buff_in, &ports, "gport", offset);
-	if(offset == -1)
-	{
-		if(ips) g_list_free(ips);
-		if(ports) g_list_free(ports);
-
-		return;
-	}
-
-	offset = gfire_proto_read_attr_list_ss(p_gfire->buff_in, &userids, "friends", offset);
-	if(offset == -1)
-	{
-		if(ips) g_list_free(ips);
-		if(ports) g_list_free(ports);
-		if(userids) g_list_free(userids);
-
-		return;
-	}
-
-	// FIXME: Not used yet, free...
-	g_list_free(userids);
-
-	// Push servers to queue as structs
-	for(; ips; ips = g_list_next(ips))
-	{
-		// Create struct
-		gfire_server_browser_server *server;
-		server = gfire_server_browser_server_new();
-
-		server->protocol = gfire_game_server_query_type(gameid);
-		server->ip = *((guint32 *)ips->data);
-		server->port = *((guint16 *)ports->data);
-		server->parent = 2;
-
-		// Push server struct to queue
-		g_queue_push_head(p_gfire->server_browser->queue, server);
-
-		// Free data and go to next server
-		g_free(ips->data);
-		g_free(ports->data);
-
-		ports = g_list_next(ports);
-	}
-
 	g_list_free(ips);
 	g_list_free(ports);
 }
@@ -260,7 +251,7 @@ void gfire_server_browser_proto_serverlist(gfire_data *p_gfire, guint16 p_packet
 	offset = gfire_proto_read_attr_list_bs(p_gfire->buff_in, &ips, 0x22, offset);
 	if(offset == -1)
 	{
-		if(ips) g_list_free(ips);
+		if(ips) gfire_list_clear(ips);
 
 		return;
 	}
@@ -268,68 +259,27 @@ void gfire_server_browser_proto_serverlist(gfire_data *p_gfire, guint16 p_packet
 	offset = gfire_proto_read_attr_list_bs(p_gfire->buff_in, &ports, 0x23, offset);
 	if(offset == -1)
 	{
-		if(ips) g_list_free(ips);
-		if(ports) g_list_free(ports);
+		if(ips) gfire_list_clear(ips);
+		if(ports) gfire_list_clear(ports);
 
 		return;
 	}
 
-	// Push servers to queue as structs
-	for(; ips; ips = g_list_next(ips))
+	GList *ip = ips, *port = ports;
+	for(; ip; ip = g_list_next(ip))
 	{
-		// Create struct
-		gfire_server_browser_server *server;
-		server = gfire_server_browser_server_new();
-
-		server->protocol = gfire_game_server_query_type(gameid);
-		server->ip = *((guint32 *)ips->data);
-		server->port = *((guint16 *)ports->data);
-		server->parent = 3;
-
-		// Push server struct to queue
-		g_queue_push_head(p_gfire->server_browser->queue, server);
+		gfire_server_browser_add_server(p_gfire->server_browser, GFSBT_GENERAL, *((guint32*)ip->data),
+										*((guint16*)port->data));
 
 		// Free data and go to next server
-		g_free(ips->data);
-		g_free(ports->data);
+		g_free(ip->data);
+		g_free(port->data);
 
-		ports = g_list_next(ports);
+		port = g_list_next(port);
 	}
 
 	g_list_free(ips);
 	g_list_free(ports);
 }
 
-// Remote fav serverlist functions (requests)
-guint16 gfire_server_browser_proto_request_add_fav_server(guint32 p_gameid, guint32 p_ip, guint32 p_port)
-{
-	guint32 offset = XFIRE_HEADER_LEN;
-
-	p_gameid = GUINT32_TO_LE(p_gameid);
-	p_ip = GUINT32_TO_LE(p_ip);
-	p_port = GUINT32_TO_LE(p_port);
-
-	offset = gfire_proto_write_attr_ss("gameid", 0x02, &p_gameid, sizeof(p_gameid), offset);
-	offset = gfire_proto_write_attr_ss("gip", 0x02, &p_ip, sizeof(p_ip), offset);
-	offset = gfire_proto_write_attr_ss("gport", 0x02, &p_port, sizeof(p_port), offset);
-	gfire_proto_write_header(offset, 0x13, 3, 0);
-
-	return offset;
-}
-
-guint16 gfire_server_browser_proto_request_remove_fav_server(guint32 p_gameid, guint32 p_ip, guint32 p_port)
-{
-	guint32 offset = XFIRE_HEADER_LEN;
-
-	p_gameid = GUINT32_TO_LE(p_gameid);
-	p_ip = GUINT32_TO_LE(p_ip);
-	p_port = GUINT32_TO_LE(p_port);
-
-	offset = gfire_proto_write_attr_ss("gameid", 0x02, &p_gameid, sizeof(p_gameid), offset);
-	offset = gfire_proto_write_attr_ss("gip", 0x02, &p_ip, sizeof(p_ip), offset);
-	offset = gfire_proto_write_attr_ss("gport", 0x02, &p_port, sizeof(p_port), offset);
-	gfire_proto_write_header(offset, 0x14, 3, 0);
-
-	return offset;
-}
 #endif // HAVE_GTK

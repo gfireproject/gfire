@@ -26,7 +26,6 @@
 #include "gf_network.h"
 #include "gfire.h"
 #include "gf_menus.h"
-#include "gf_server_browser.h"
 #include "gf_games.h"
 #include "gf_friend_search.h"
 #include "gf_purple.h"
@@ -755,7 +754,7 @@ static GList *gfire_purple_actions(PurplePlugin *p_plugin, gpointer p_context)
 		m = g_list_append(m, act);
 
 		// Server browser
-		act = purple_plugin_action_new(_("Server Browser"), gfire_server_browser_show);
+		act = purple_plugin_action_new(_("Server Browser"), gfire_show_server_browser);
 		m = g_list_append(m, act);
 	}
 #endif // HAVE_GTK

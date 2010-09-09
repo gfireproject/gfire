@@ -180,6 +180,9 @@ gboolean gfire_is_self(const gfire_data *p_gfire, guint32 p_userid);
 gboolean gfire_has_p2p(const gfire_data *p_gfire);
 gfire_p2p_connection *gfire_get_p2p(const gfire_data *p_gfire);
 
+// Servers
+void gfire_show_server_browser(PurplePluginAction *p_action);
+
 // Account settings
 void gfire_got_preferences(gfire_data *p_gfire);
 gboolean gfire_wants_fofs(const gfire_data *p_gfire);

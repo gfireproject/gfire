@@ -308,7 +308,7 @@ static void gfire_login_cb(gpointer p_data, gint p_source, const gchar *p_error_
 	gfire->clans = gfire_clan_get_existing();
 
 	// Setup server browser
-	gfire_server_browser_proto_init(gfire);
+	gfire->server_browser = gfire_server_browser_create(gfire_get_connection(gfire));
 
 	// Register this Gfire session with the IPC server
 	gfire_ipc_server_register(gfire);
@@ -369,7 +369,7 @@ void gfire_close(gfire_data *p_gfire)
 	}
 
 	// Server browser clean-up code
-	gfire_server_browser_proto_free(p_gfire->server_browser);
+	gfire_server_browser_free(p_gfire->server_browser);
 
 	if(p_gfire->fd >= 0)
 	{
@@ -1431,6 +1431,9 @@ void gfire_set_game_status(gfire_data *p_gfire, const gfire_game_data *p_data)
 		g_free(game_name);
 	}
 
+	if(p_data->id && p_data->ip.value)
+		gfire_server_browser_add_recent(p_gfire->server_browser, p_data->id, p_data->ip.value, p_data->port);
+
 	guint16 len = gfire_proto_create_join_game(p_data);
 	if(len > 0) gfire_send(p_gfire->gc, len);
 }
@@ -1442,6 +1445,17 @@ void gfire_set_voip_status(gfire_data *p_gfire, const gfire_game_data *p_data)
 
 	guint16 len = gfire_proto_create_join_voip(p_data);
 	if(len > 0) gfire_send(p_gfire->gc, len);
+}
+
+void gfire_show_server_browser(PurplePluginAction *p_action)
+{
+	PurpleConnection *gc = (PurpleConnection*)p_action->context;
+	gfire_data *gfire = (gfire_data*)gc->proto_data;
+
+	if(!gfire || !gfire->server_browser)
+		return;
+
+	gfire_server_browser_show(gfire->server_browser);
 }
 
 void gfire_got_preferences(gfire_data *p_gfire)
