@@ -23,6 +23,7 @@
 */
 
 #include "gf_menus.h"
+#include "gf_server_browser.h"
 
 void gfire_clan_menu_site_cb(PurpleBlistNode *p_node, gpointer *p_data)
 {
@@ -87,6 +88,29 @@ void gfire_buddy_menu_joingame_cb(PurpleBlistNode *p_node, gpointer *p_data)
 	if (gfire_game_data_is_valid(game_data) && gfire_game_playable(game_data->id))
 		gfire_join_game(game_data);
 }
+
+#ifdef HAVE_GTK
+
+void gfire_buddy_menu_server_details_cb(PurpleBlistNode *p_node, gpointer *p_data)
+{
+	PurpleBuddy *b = (PurpleBuddy*)p_node;
+	PurpleConnection *gc = NULL;
+	gfire_data *gfire = NULL;
+	gfire_buddy *gf_buddy = NULL;
+
+	if (!b || !b->account || !(gc = purple_account_get_connection(b->account)) ||
+		!(gfire = (gfire_data*)gc->proto_data)) return;
+
+	gf_buddy = gfire_find_buddy(gfire, purple_buddy_get_name(b), GFFB_NAME);
+	if(!gf_buddy)
+		return;
+
+	const gfire_game_data *game_data = gfire_buddy_get_game_data(gf_buddy);
+	if(gfire_game_data_is_valid(game_data))
+		gfire_server_browser_show_single(game_data->id, game_data->ip.value, game_data->port);
+}
+
+#endif // HAVE_GTK
 
 /**
   * Callback function for pidgin buddy list right click menu.  This callback

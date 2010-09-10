@@ -41,6 +41,7 @@ gfire_server_query *gfire_server_query_create()
 {
 	gfire_server_query *ret = g_malloc0(sizeof(gfire_server_query));
 	ret->servers = g_queue_new();
+	ret->socket = -1;
 	return ret;
 }
 
@@ -287,6 +288,20 @@ gboolean gfire_server_query_start(gfire_server_query *p_query, const gchar *p_ty
 
 	p_query->prpl_data = purple_network_listen_range(0, 0, SOCK_DGRAM, gfire_server_query_listen, p_query);
 	return TRUE;
+}
+
+gboolean gfire_server_query_supports(const gchar *p_type)
+{
+	if(!p_type)
+		return FALSE;
+
+	int i = 0;
+	for(; registeredDrivers[i].proto; i++)
+	{
+		if(g_strcmp0(registeredDrivers[i].proto, p_type) == 0)
+			return TRUE;
+	}
+	return FALSE;
 }
 
 #endif // HAVE_GTK

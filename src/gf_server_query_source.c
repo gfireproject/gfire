@@ -249,7 +249,6 @@ static gboolean gfire_sq_source_parse_players(gfire_sq_source_data *p_sdata, con
 		return FALSE;
 
 	guint8 numPlayers = *(p_data + 5);
-	purple_debug_info("gfire", "Server Query: Source: Got Players (%u)\n", numPlayers);
 
 	guint16 offset = 6;
 	while(offset < (p_len - 10) && g_slist_length(p_sdata->players) < numPlayers)
@@ -290,7 +289,6 @@ static gboolean gfire_sq_source_parse_rules(gfire_sq_source_data *p_sdata, const
 		return FALSE;
 
 	guint16 numRules = GUINT16_FROM_LE(*(guint16*)(p_data + 5));
-	purple_debug_info("gfire", "Server Query: Source: Got Rules (%u)\n", numRules);
 
 	g_datalist_init(&p_sdata->rules);
 

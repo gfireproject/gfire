@@ -115,6 +115,9 @@ void gfire_server_query_add_server(gfire_server_query *p_query, guint32 p_ip, gu
 gboolean gfire_server_query_start(gfire_server_query *p_query, const gchar *p_type, gboolean p_full,
 								  gfire_server_query_callback p_callback, gpointer p_data);
 
+// Capabilities
+gboolean gfire_server_query_supports(const gchar *p_type);
+
 #endif // HAVE_GTK
 
 #endif // _GF_SERVER_QUERY_H

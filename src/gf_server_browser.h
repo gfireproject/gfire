@@ -87,6 +87,7 @@ void gfire_server_browser_add_server(gfire_server_browser *p_browser, gfire_serv
 
 // GUI functions (displayal)
 void gfire_server_browser_show(gfire_server_browser *p_browser);
+gboolean gfire_server_browser_show_single(guint32 p_gameid, guint32 p_ip, guint16 p_port);
 
 #endif // HAVE_GTK
 

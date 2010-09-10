@@ -240,8 +240,14 @@ static void gfire_server_browser_show_details_cb(gfire_server_browser *p_browser
 			if(!content)
 				content = g_strdup(_("No detailed information available!"));
 
-			purple_notify_formatted(p_browser->gc, _("Server Details"), _("Server Details"), NULL, content, NULL, NULL);
+			gchar *title = g_strdup_printf(_("Server Details for %u.%u.%u.%u:%u"),
+										   (server->ip & 0xff000000) >> 24,
+										   (server->ip & 0xff0000) >> 16,
+										   (server->ip & 0xff00) >> 8,
+										   server->ip & 0xff, server->port);
+			purple_notify_formatted(p_browser->gc, _("Server Details"), title, NULL, content, NULL, NULL);
 			g_free(content);
+			g_free(title);
 		}
 	}
 }
@@ -817,4 +823,54 @@ void gfire_server_browser_show(gfire_server_browser *p_browser)
 	// Show window
 	gtk_widget_show_all(server_browser_window);
 }
+
+static gboolean gfire_server_browser_delete_query(gpointer p_data)
+{
+	gfire_server_query_free((gfire_server_query*)p_data);
+	return FALSE;
+}
+
+static void gfire_server_browser_single_queried(gfire_game_server *p_server, gpointer p_server_data, gpointer p_data)
+{
+	if(p_server->data)
+	{
+		gchar *content = gfire_game_server_details(p_server);
+		if(!content)
+			content = g_strdup(_("No detailed information available!"));
+
+		gchar *title = g_strdup_printf(_("Server Details for %u.%u.%u.%u:%u"),
+									   (p_server->ip & 0xff000000) >> 24,
+									   (p_server->ip & 0xff0000) >> 16,
+									   (p_server->ip & 0xff00) >> 8,
+									   p_server->ip & 0xff, p_server->port);
+		purple_notify_formatted(NULL, _("Server Details"), title, NULL, content, NULL, NULL);
+		g_free(content);
+		g_free(title);
+	}
+	else
+		purple_notify_error(NULL, _("Server Query: Error"), _("Could not query the server"),
+							_("Unfortunately Gfire wasn't able to query the server. Maybe another try shows a better result..."));
+
+	// Deferred delete of the query manager
+	g_idle_add(gfire_server_browser_delete_query, p_data);
+}
+
+gboolean gfire_server_browser_show_single(guint32 p_gameid, guint32 p_ip, guint16 p_port)
+{
+	if(!p_gameid || !p_ip)
+		return FALSE;
+
+	gfire_server_query *query = gfire_server_query_create();
+	if(!gfire_server_query_start(query, gfire_game_server_query_type(p_gameid), TRUE,
+								 gfire_server_browser_single_queried, query))
+	{
+		gfire_server_query_free(query);
+		return FALSE;
+	}
+
+	gfire_server_query_add_server(query, p_ip, p_port, NULL);
+
+	return TRUE;
+}
+
 #endif // HAVE_GTK

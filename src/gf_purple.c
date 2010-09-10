@@ -31,6 +31,7 @@
 #include "gf_purple.h"
 #include "gf_chat_proto.h"
 #include "gf_game_detection.h"
+#include "gf_server_query.h"
 
 static PurplePlugin *_gfire_plugin = NULL;
 
@@ -662,6 +663,19 @@ static GList *gfire_purple_node_menu(PurpleBlistNode *p_node)
 
 				ret = g_list_append(ret, me);
 			}
+
+#ifdef HAVE_GTK
+			if(game_data->ip.value && gfire_server_query_supports(gfire_game_server_query_type(game_data->id)))
+			{
+				me = purple_menu_action_new(_("Display Server Details"),
+											PURPLE_CALLBACK(gfire_buddy_menu_server_details_cb), NULL, NULL);
+
+				if(!me)
+					return NULL;
+
+				ret = g_list_append(ret, me);
+			}
+#endif // HAVE_GTK
 		}
 
 		if(gfire_buddy_is_talking(gf_buddy) && !gfire_game_detector_is_voiping())
