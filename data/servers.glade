@@ -2,30 +2,26 @@
 <interface>
   <!-- interface-requires gtk+ 2.12 -->
   <!-- interface-naming-policy project-wide -->
-  <object class="GtkListStore" id="game_list_store">
-    <columns>
-      <!-- column-name game_name -->
-      <column type="gchararray"/>
-    </columns>
-  </object>
   <object class="GtkTreeStore" id="servers_list_tree_store">
     <columns>
       <!-- column-name server_name -->
       <column type="gchararray"/>
-      <!-- column-name server_ping_str -->
+      <!-- column-name server_ping -->
       <column type="gchararray"/>
-      <!-- column-name server_players_str -->
+      <!-- column-name server_players -->
       <column type="gchararray"/>
       <!-- column-name server_map -->
       <column type="gchararray"/>
-      <!-- column-name server_address -->
+      <!-- column-name server_data -->
+      <column type="gpointer"/>
+    </columns>
+  </object>
+  <object class="GtkListStore" id="game_list_store">
+    <columns>
+      <!-- column-name game_name -->
       <column type="gchararray"/>
-      <!-- column-name server_raw_info -->
-      <column type="gchararray"/>
-      <!-- column-name server_ping -->
-      <column type="gint"/>
-      <!-- column-name server_players -->
-      <column type="gint"/>
+      <!-- column-name game_id -->
+      <column type="guint"/>
     </columns>
   </object>
   <object class="GtkWindow" id="server_browser_window">
@@ -45,6 +41,9 @@
             <child>
               <object class="GtkToolButton" id="refresh_button">
                 <property name="visible">True</property>
+                <property name="sensitive">False</property>
+                <property name="has_tooltip">True</property>
+                <property name="tooltip_text" translatable="yes">Refresh the server list</property>
                 <property name="use_underline">True</property>
                 <property name="stock_id">gtk-refresh</property>
               </object>
@@ -54,8 +53,11 @@
               </packing>
             </child>
             <child>
-              <object class="GtkToolButton" id="properties_button">
+              <object class="GtkToolButton" id="details_button">
                 <property name="visible">True</property>
+                <property name="sensitive">False</property>
+                <property name="has_tooltip">True</property>
+                <property name="tooltip_text" translatable="yes">Display further information about this server</property>
                 <property name="use_underline">True</property>
                 <property name="stock_id">gtk-info</property>
               </object>
@@ -67,6 +69,9 @@
             <child>
               <object class="GtkToolButton" id="connect_button">
                 <property name="visible">True</property>
+                <property name="sensitive">False</property>
+                <property name="has_tooltip">True</property>
+                <property name="tooltip_text" translatable="yes">Join this server</property>
                 <property name="use_underline">True</property>
                 <property name="stock_id">gtk-connect</property>
               </object>
@@ -87,6 +92,9 @@
             <child>
               <object class="GtkToolButton" id="add_favorite_button">
                 <property name="visible">True</property>
+                <property name="sensitive">False</property>
+                <property name="has_tooltip">True</property>
+                <property name="tooltip_text" translatable="yes">Add a new favourite server</property>
                 <property name="label" translatable="yes">gtk-add</property>
                 <property name="use_underline">True</property>
                 <property name="stock_id">gtk-add</property>
@@ -99,6 +107,9 @@
             <child>
               <object class="GtkToolButton" id="remove_favorite_button">
                 <property name="visible">True</property>
+                <property name="sensitive">False</property>
+                <property name="has_tooltip">True</property>
+                <property name="tooltip_text" translatable="yes">Remove this favourite server</property>
                 <property name="use_underline">True</property>
                 <property name="stock_id">gtk-remove</property>
               </object>
@@ -119,6 +130,8 @@
             <child>
               <object class="GtkToolButton" id="quit_button">
                 <property name="visible">True</property>
+                <property name="has_tooltip">True</property>
+                <property name="tooltip_text" translatable="yes">Close the server browser</property>
                 <property name="use_underline">True</property>
                 <property name="stock_id">gtk-quit</property>
               </object>
@@ -133,6 +146,8 @@
                 <child>
                   <object class="GtkComboBox" id="game_combo">
                     <property name="visible">True</property>
+                    <property name="has_tooltip">True</property>
+                    <property name="tooltip_text" translatable="yes">Select the game you want to query servers for...</property>
                     <property name="model">game_list_store</property>
                     <child>
                       <object class="GtkCellRendererText" id="game_combo_renderer"/>
@@ -166,6 +181,7 @@
                 <property name="model">servers_list_tree_store</property>
                 <property name="headers_clickable">False</property>
                 <property name="reorderable">True</property>
+                <property name="rules_hint">True</property>
                 <property name="search_column">0</property>
                 <child>
                   <object class="GtkTreeViewColumn" id="name_column">
@@ -194,7 +210,7 @@
                     <property name="clickable">True</property>
                     <property name="reorderable">True</property>
                     <property name="sort_indicator">True</property>
-                    <property name="sort_column_id">6</property>
+                    <property name="sort_column_id">1</property>
                     <child>
                       <object class="GtkCellRendererText" id="ping_cell_renderer"/>
                       <attributes>
@@ -207,12 +223,12 @@
                   <object class="GtkTreeViewColumn" id="players_column">
                     <property name="resizable">True</property>
                     <property name="sizing">fixed</property>
-                    <property name="min_width">65</property>
+                    <property name="min_width">75</property>
                     <property name="title">Players</property>
                     <property name="clickable">True</property>
                     <property name="reorderable">True</property>
                     <property name="sort_indicator">True</property>
-                    <property name="sort_column_id">7</property>
+                    <property name="sort_column_id">2</property>
                     <child>
                       <object class="GtkCellRendererText" id="players_cell_renderer"/>
                       <attributes>
@@ -251,6 +267,7 @@
   </object>
   <object class="GtkDialog" id="add_favorite_dialog">
     <property name="border_width">5</property>
+    <property name="title" translatable="yes">Add Favourite Server</property>
     <property name="resizable">False</property>
     <property name="window_position">center</property>
     <property name="type_hint">normal</property>
@@ -282,6 +299,7 @@
                 <property name="width_request">45</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
+                <property name="max_length">5</property>
                 <property name="invisible_char">&#x25CF;</property>
               </object>
               <packing>
