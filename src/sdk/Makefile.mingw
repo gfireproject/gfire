@@ -8,7 +8,7 @@ GFIRE_SDK_TOUCAN_LIB_SOURCES = \
 
 GFIRE_SDK_TOUCAN_LIB_OBJECTS = ${GFIRE_SDK_TOUCAN_LIB_SOURCES:%.c=%.o}
 
-GFIRE_SDK_TOUCAN_LIB_LDFLAGS = -shared --dll -lws2_32
+GFIRE_SDK_TOUCAN_LIB_LDFLAGS = -shared --dll -Wl,--add-stdcall-alias -lws2_32
 
 GFIRE_SDK_INJECT_EXE_SOURCES = \
 	gfire_sdk_inject.c
@@ -26,12 +26,12 @@ clean:
 	rm -f *.dll *.exe
 
 .c.o:
-	${WIN32_COMPILER} ${CFLAGS} -o $@ -c $^
+	@echo "  CC       " $@;${WIN32_COMPILER} ${CFLAGS} -o $@ -c $^
 
 xfire_toucan_gfire_0.1.dll: ${GFIRE_SDK_TOUCAN_LIB_OBJECTS}
-	${WIN32_COMPILER} $^ -o $@ ${GFIRE_SDK_TOUCAN_LIB_LDFLAGS}
+	@echo "  CCLD     " $@;${WIN32_COMPILER} $^ -o $@ ${GFIRE_SDK_TOUCAN_LIB_LDFLAGS}
 
 gfire_sdk_inject.exe: ${GFIRE_SDK_INJECT_EXE_OBJECTS}
-	${WIN32_COMPILER} $^ -o $@
+	@echo "  CCLD     " $@;${WIN32_COMPILER} $^ -o $@
 
 install: all

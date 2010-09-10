@@ -77,29 +77,29 @@ GFIRE_OBJECTS = ${GFIRE_SOURCES:%.c=%.o} ${GFIRE_RESOURCES:%.rc=%.o}
 .SUFFIXES: .rc
 
 all: libxfire.dll
-	list='${SUBDIRS}'; for subdir in $$list; do \
-		(make -C $$subdir -f Makefile.mingw all) || exit 1; \
+	@list='${SUBDIRS}'; for subdir in $$list; do \
+		(cd $$subdir && $(MAKE) -f Makefile.mingw all) || exit 1; \
 	done;
 
 clean:
 	rm -f libxfire.dll
 	rm -f ${GFIRE_OBJECTS}
-	list='${SUBDIRS}'; for subdir in $$list; do \
-		(make -C $$subdir -f Makefile.mingw clean) || exit 1; \
+	@list='${SUBDIRS}'; for subdir in $$list; do \
+		(cd $$subdir && $(MAKE) -f Makefile.mingw clean) || exit 1; \
 	done;
 
 install: all
 	mkdir -p ${WIN32_INSTALL_DIR}/plugins
 	cp libxfire.dll ${WIN32_INSTALL_DIR}/plugins
-		list='${SUBDIRS}'; for subdir in $$list; do \
-		(make -C $$subdir -f Makefile.mingw install) || exit 1; \
+	@list='${SUBDIRS}'; for subdir in $$list; do \
+		(cd $$subdir && $(MAKE) -f Makefile.mingw install) || exit 1; \
 	done;
 
 .c.o:
-	${WIN32_COMPILER} ${CFLAGS} -o $@ -c $^
+	@echo "  CC       " $@;${WIN32_COMPILER} ${CFLAGS} -o $@ -c $^
 
 .rc.o:
-	${WIN32_WINDRES} -i $^ -o $@
+	@echo "  WINDRES  " $@;${WIN32_WINDRES} -i $^ -o $@
 
 libxfire.dll: ${GFIRE_OBJECTS}
-	${WIN32_COMPILER} $^ ${WIN32_LIBS} ${LDFLAGS} -o libxfire.dll
+	@echo "  CCLD     " $@;${WIN32_COMPILER} $^ ${WIN32_LIBS} ${LDFLAGS} -o libxfire.dll

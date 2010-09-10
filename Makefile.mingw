@@ -12,13 +12,13 @@ SUBDIRS = src po data pixmaps
 .PHONY: all clean installer
 
 all: gfire_config_win.h
-	list='${SUBDIRS}'; for subdir in $$list; do \
-		(make -C $$subdir -f Makefile.mingw all) || exit 1; \
+	@list='${SUBDIRS}'; for subdir in $$list; do \
+		(cd $$subdir && $(MAKE) -f Makefile.mingw all) || exit 1; \
 	done;
 
 clean:
-	list='${SUBDIRS}'; for subdir in $$list; do \
-		(make -C $$subdir -f Makefile.mingw clean) || exit 1; \
+	@list='${SUBDIRS}'; for subdir in $$list; do \
+		(cd $$subdir && $(MAKE) -f Makefile.mingw clean) || exit 1; \
 	done;
 
 distclean: clean
@@ -27,8 +27,8 @@ distclean: clean
 	rm -f pidgin-gfire-$(GFIRE_VERSION_STRING).zip
 
 install: all
-	list='${SUBDIRS}'; for subdir in $$list; do \
-		(make -C $$subdir -f Makefile.mingw install) || exit 1; \
+	@list='${SUBDIRS}'; for subdir in $$list; do \
+		(cd $$subdir && $(MAKE) -f Makefile.mingw install) || exit 1; \
 	done;
 
 installer: installer-gui installer-zip
