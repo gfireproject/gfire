@@ -28,10 +28,12 @@
 
 // Available server query drivers
 extern gfire_server_query_driver gf_sq_quake_driver;
+extern gfire_server_query_driver gf_sq_source_driver;
 
 static const struct { const gchar *proto; const gfire_server_query_driver *driver; } registeredDrivers[] =
 {
 	{ "WOLFET", &gf_sq_quake_driver },
+	{ "SOURCE", &gf_sq_source_driver },
 	{ NULL, NULL }
 };
 
@@ -154,7 +156,7 @@ static void gfire_server_query_read(gpointer p_data, gint p_fd, PurpleInputCondi
 	while(cur)
 	{
 		gfire_game_query_server *scur = cur->data;
-		if(scur->server->ip == GUINT32_FROM_BE(addr.sin_addr.s_addr) && scur->server->port == ntohs(addr.sin_port))
+		if(scur->server->ip == g_ntohl(addr.sin_addr.s_addr) && scur->server->port == g_ntohs(addr.sin_port))
 		{
 			server = scur;
 			break;
@@ -184,7 +186,7 @@ static void gfire_server_query_read(gpointer p_data, gint p_fd, PurpleInputCondi
 		g_free(server);
 
 		// Fill the list with new ones
-		while(!g_queue_is_empty(query->servers) && g_list_length(query->cur_servers) != 10)
+		while(!g_queue_is_empty(query->servers) && g_list_length(query->cur_servers) != GFSQ_MAX_QUERIES)
 		{
 			server = g_queue_pop_tail(query->servers);
 			query->cur_servers = g_list_append(query->cur_servers, server);
@@ -207,7 +209,7 @@ static gboolean gfire_server_query_check_timeout(gpointer p_data)
 	{
 		gfire_game_query_server *server = cur->data;
 
-		if((gtv.tv_sec - (server->timeout / 1000)) > GFSQ_TIMEOUT)
+		if((gtv.tv_sec - (server->timeout / 1000)) > query->driver->timeout)
 		{
 			query->callback(server->server, server->p_data, query->callback_data);
 			g_free(server);
@@ -244,7 +246,7 @@ static void gfire_server_query_listen(int p_socket, gpointer p_data)
 
 	// Populate the current server list and query them
 	int i = 0;
-	for(; (i < 10) && !g_queue_is_empty(query->servers); i++)
+	for(; (i < GFSQ_MAX_QUERIES) && !g_queue_is_empty(query->servers); i++)
 	{
 		gfire_game_query_server *server = g_queue_pop_tail(query->servers);
 		query->cur_servers = g_list_append(query->cur_servers, server);

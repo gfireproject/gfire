@@ -65,7 +65,8 @@ gfire_server_query_driver gf_sq_quake_driver =
 	gfire_sq_quake_query,
 	gfire_sq_quake_parse,
 	gfire_sq_quake_details,
-	gfire_sq_quake_free_server
+	gfire_sq_quake_free_server,
+	3
 };
 
 static void gfire_sq_quake_query(gfire_game_server *p_server, gboolean p_full, int p_socket)
@@ -78,8 +79,8 @@ static void gfire_sq_quake_query(gfire_game_server *p_server, gboolean p_full, i
 
 	struct sockaddr_in addr;
 	addr.sin_family = AF_INET;
-	addr.sin_addr.s_addr = GUINT32_TO_BE(p_server->ip);
-	addr.sin_port = htons(p_server->port);
+	addr.sin_addr.s_addr = g_htonl(p_server->ip);
+	addr.sin_port = g_htons(p_server->port);
 
 	sendto(p_socket, query, 14, 0, (struct sockaddr*)&addr, sizeof(addr));
 }
@@ -384,7 +385,7 @@ static gchar *gfire_sq_quake_details(gfire_game_server *p_server)
 	gfire_sq_quake_data *data = (gfire_sq_quake_data*)p_server->data->proto_data;
 
 	// General server infos
-	g_string_append(str, _("<b><font size=\"5\">General Server Infos:</font></b><br>"));
+	g_string_append(str, _("<b><font size=\"5\">General Server Details:</font></b><br>"));
 	//	Server Name
 	if(g_datalist_get_data(&data->info, "sv_hostname"))
 	{
@@ -398,7 +399,11 @@ static gchar *gfire_sq_quake_details(gfire_game_server *p_server)
 	g_string_append_printf(str, _("<b>Players:</b> %u/%u<br>"), p_server->data->players, p_server->data->max_players);
 	//	Map
 	if(g_datalist_get_data(&data->info, "mapname"))
-		g_string_append_printf(str, _("<b>Map:</b> %s<br>"), (gchar*)g_datalist_get_data(&data->info, "mapname"));
+	{
+		gchar *escaped = gfire_escape_html(g_datalist_get_data(&data->info, "mapname"));
+		g_string_append_printf(str, _("<b>Map:</b> %s<br>"), escaped);
+		g_free(escaped);
+	}
 	//	Password secured
 	g_string_append_printf(str, _("<b>Password secured:</b> %s<br>"),
 						   g_datalist_get_data(&data->info, "g_needpass") ?

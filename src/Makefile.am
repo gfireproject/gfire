@@ -66,6 +66,7 @@ libxfire_la_SOURCES = \
 	gf_server_browser_proto.c \
 	gf_server_query.c \
 	gf_server_query_quake.c \
+	gf_server_query_source.c \
 	gf_menus.c \
 	gf_util.c \
 	gf_server_detection_linux.c \

@@ -29,7 +29,7 @@
 
 #ifdef HAVE_GTK
 
-#define GFSQ_TIMEOUT 3
+#define GFSQ_MAX_QUERIES 20
 
 typedef struct _gfire_server_query_driver gfire_server_query_driver;
 
@@ -76,6 +76,7 @@ struct _gfire_server_query_driver
 	gfire_sq_driver_parse parse;
 	gfire_sq_driver_server_details details;
 	gfire_sq_driver_free_server free_server;
+	guint16 timeout;
 };
 
 typedef void (*gfire_server_query_callback)(gfire_game_server *p_server, gpointer p_server_data, gpointer p_data);

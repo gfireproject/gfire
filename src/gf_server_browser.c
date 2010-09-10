@@ -490,6 +490,9 @@ static void gfire_server_browser_request_serverlist_cb(gfire_server_browser *p_b
 		if(!gfire_server_query_start(p_browser->query, gfire_game_server_query_type(game_id), TRUE,
 									 gfire_server_browser_add_queried_server, p_browser))
 		{
+			purple_notify_error(p_browser->gc, _("Game Server Type not supported"),
+								_("Game Server Type not supported"),
+								_("Sorry, but the server query protocol for this game is not yet supported by Gfire!"));
 			gfire_server_query_free(p_browser->query);
 			p_browser->query = NULL;
 			return;

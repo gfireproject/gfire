@@ -106,6 +106,9 @@ void gfire_server_browser_proto_friends_fav_serverlist(gfire_data *p_gfire, guin
 
 	offset = gfire_proto_read_attr_int32_ss(p_gfire->buff_in, &gameid, "gameid", offset);
 
+	if(gameid != p_gfire->server_browser->query_game)
+		return;
+
 	offset = gfire_proto_read_attr_list_ss(p_gfire->buff_in, &ips, "gip", offset);
 	if(offset == -1)
 	{
@@ -246,6 +249,9 @@ void gfire_server_browser_proto_serverlist(gfire_data *p_gfire, guint16 p_packet
 
 	offset = gfire_proto_read_attr_int32_bs(p_gfire->buff_in, &gameid, 0x21, offset);
 	if(offset == -1)
+		return;
+
+	if(gameid != p_gfire->server_browser->query_game)
 		return;
 
 	offset = gfire_proto_read_attr_list_bs(p_gfire->buff_in, &ips, 0x22, offset);
