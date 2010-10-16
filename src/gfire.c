@@ -467,7 +467,6 @@ void gfire_authenticate(gfire_data *p_gfire, const gchar *p_salt)
 	// Generate password hash
 	gchar *username = g_utf8_strdown(purple_account_get_username(account), -1);
 	gchar *tmp_str = g_strdup_printf("%s%sUltimateArena", username, purple_account_get_password(account));
-	g_free(username);
 
 	gchar pw_hash[41];
 	hashSha1(tmp_str, pw_hash);
@@ -478,8 +477,9 @@ void gfire_authenticate(gfire_data *p_gfire, const gchar *p_salt)
 	g_free(tmp_str);
 
 	// Send the packet
-	guint16 len = gfire_proto_create_auth(purple_account_get_username(account), pw_hash);
+	guint16 len = gfire_proto_create_auth(username, pw_hash);
 	if(len > 0) gfire_send(gfire_get_connection(p_gfire), len);
+	g_free(username);
 
 	purple_connection_update_progress(gfire_get_connection(p_gfire), _("Login sent"), 2, XFIRE_CONNECT_STEPS);
 }
