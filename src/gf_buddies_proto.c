@@ -137,11 +137,13 @@ guint16 gfire_buddy_proto_create_p2p(const guint8 *p_sid, guint32 p_ip, guint16 
 	offset = gfire_proto_write_attr_ss("peermsg", 0x05, NULL, 7, offset);
 	offset = gfire_proto_write_attr_ss("msgtype", 0x02, &msgtype, sizeof(msgtype), offset);
 
+	p_ip = GUINT32_TO_LE(p_ip);
 	offset = gfire_proto_write_attr_ss("ip", 0x02, &p_ip, sizeof(p_ip), offset);
 
 	guint32 port = GUINT32_TO_LE(p_port);
 	offset = gfire_proto_write_attr_ss("port", 0x02, &port, sizeof(port), offset);
 
+	p_local_ip = GUINT32_TO_LE(p_local_ip);
 	offset = gfire_proto_write_attr_ss("localip", 0x02, &p_local_ip, sizeof(p_local_ip), offset);
 
 	guint32 local_port = GUINT32_TO_LE(p_local_port);
