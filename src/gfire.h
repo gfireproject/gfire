@@ -98,8 +98,10 @@ struct _gfire_data
 
 	GList *chats;				/* glist of _gfire_chat structs */
 
+#ifdef HAVE_GTK
 	// Server browser
 	gfire_server_browser *server_browser;
+#endif // HAVE_GTK
 
 	// Client preferences
 	gfire_preferences *prefs;
