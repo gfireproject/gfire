@@ -1550,7 +1550,7 @@ static void gfire_clan_download_avatar(gfire_clan *p_clan)
 	if(!p_clan || !p_clan->prpl_group || !p_clan->short_name)
 		return;
 
-	gchar *avatar_url = g_strdup_printf(XFIRE_COMMUNITY_AVATAR_URL, p_clan->short_name);
+	gchar *avatar_url = g_strdup_printf(XFIRE_COMMUNITY_AVATAR_URL, p_clan->short_name, rand());
 	purple_debug(PURPLE_DEBUG_MISC, "gfire", "trying to download community avatar from: %s\n", NN(avatar_url));
 	purple_util_fetch_url(avatar_url, TRUE, "Purple-xfire", TRUE, gfire_clan_avatar_download_cb, (void*)p_clan);
 	g_free(avatar_url);
