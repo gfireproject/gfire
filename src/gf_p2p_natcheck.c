@@ -131,9 +131,6 @@ static void gfire_p2p_natcheck_udpread(gpointer p_data, gint p_fd, PurpleInputCo
 	guint16 port = *(guint16*)(buffer + 8);
 
 	if(nat->ips[server] != 0 && (nat->ips[server] != ip || nat->ports[server] != port))
-	{
-		nat->ips[server] = ip;
-		nat->ports[server] = port;
 		purple_debug_warning("gfire", "P2P: NAT Check: Server %d reports my IP:Port INCONSISTENTLY as %u.%u.%u.%u:%u\n",
 						  server + 1,
 						  (g_ntohl(ip) & 0xff000000) >> 24,
@@ -141,11 +138,7 @@ static void gfire_p2p_natcheck_udpread(gpointer p_data, gint p_fd, PurpleInputCo
 						  (g_ntohl(ip) & 0xff00) >> 8,
 						  g_ntohl(ip) & 0xff,
 						  g_ntohs(port));
-	}
 	else
-	{
-		nat->ips[server] = ip;
-		nat->ports[server] = port;
 		purple_debug_misc("gfire", "P2P: NAT Check: Server %d reports my IP:Port as %u.%u.%u.%u:%u\n",
 						  server + 1,
 						  (g_ntohl(ip) & 0xff000000) >> 24,
@@ -153,7 +146,9 @@ static void gfire_p2p_natcheck_udpread(gpointer p_data, gint p_fd, PurpleInputCo
 						  (g_ntohl(ip) & 0xff00) >> 8,
 						  g_ntohl(ip) & 0xff,
 						  g_ntohs(port));
-	}
+
+	nat->ips[server] = ip;
+	nat->ports[server] = port;
 
 	// Some packet we do not need? (delay etc.)
 	if(server != nat->server)
