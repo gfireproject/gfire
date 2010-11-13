@@ -574,6 +574,7 @@ static void gfire_game_detector_web_http_input_cb(gpointer p_con, gint p_fd, Pur
 	// VERY BASIC HTTP request parsing
 	gint result = 200;
 	gchar *url = NULL;
+	gboolean persistent = TRUE;
 
 	// Request not finished yet, wait for more...
 	if(!strstr(connection->buffer, "\r\n\r\n"))
@@ -599,8 +600,22 @@ static void gfire_game_detector_web_http_input_cb(gpointer p_con, gint p_fd, Pur
 				else
 					url = g_strdup(parts[1]);
 
+				if(strcmp(parts[2], "HTTP/1.1"))
+					persistent = FALSE;
+
 				g_strfreev(parts);
 			}
+		}
+
+		gchar **cur = lines + 1;
+		while(*cur)
+		{
+			if(!strcasecmp(*cur, "Connection: keep-alive"))
+			{
+				persistent = TRUE;
+				break;
+			}
+			cur++;
 		}
 
 		g_strfreev(lines);
@@ -708,7 +723,7 @@ static void gfire_game_detector_web_http_input_cb(gpointer p_con, gint p_fd, Pur
 
 	// Response header
 	GString *response = g_string_new(NULL);
-	g_string_append_printf(response, "HTTP/1.0 %d %s\r\n", result, response_text);
+	g_string_append_printf(response, "HTTP/1.1 %d %s\r\n", result, response_text);
 
 	// Location
 	if(url)
@@ -722,6 +737,12 @@ static void gfire_game_detector_web_http_input_cb(gpointer p_con, gint p_fd, Pur
 
 	// Content-Length
 	g_string_append_printf(response, "Content-Length: %u\r\n", (unsigned int)strlen(content));
+
+	// Keep-Alive
+	if(result == 200 && persistent)
+		g_string_append(response, "Connection: keep-alive\r\n");
+	else
+		g_string_append(response, "Connection: close\r\n");
 
 	if(strlen(content) > 0)
 	{
