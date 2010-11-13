@@ -488,6 +488,21 @@ void gfire_authenticate(gfire_data *p_gfire, const gchar *p_salt)
 	purple_connection_update_progress(gfire_get_connection(p_gfire), _("Login sent"), 2, XFIRE_CONNECT_STEPS);
 }
 
+void gfire_login_successful(gfire_data *p_gfire)
+{
+	// Send collective statistics
+	guint16 len = gfire_proto_create_collective_statistics(getenv("LANG") ? getenv("LANG") : "en_GB",
+														   "Gfire", GFIRE_VERSION_STRING, "");
+	if(len > 0) gfire_send(gfire_get_connection(p_gfire), len);
+
+	// Update current status
+	gfire_set_current_status(p_gfire);
+
+	// Send detection data
+	gfire_set_game_status(p_gfire, gfire_game_detector_current_game());
+	gfire_set_voip_status(p_gfire, gfire_game_detector_current_voip());
+}
+
 void gfire_set_status(gfire_data *p_gfire, const PurpleStatus *p_status)
 {
 	if(!p_gfire || !p_status)

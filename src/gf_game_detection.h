@@ -55,6 +55,8 @@ typedef struct
 {
 	int socket;
 	guint input;
+	gchar buffer[8193]; // 8 KiB + 1B for 0
+	guint reclen;
 } gfire_game_detection_http_connection;
 
 typedef struct _gfire_game_detector
@@ -83,6 +85,7 @@ typedef struct _gfire_game_detector
 
 	// Webgame detection
 	int socket;
+	guint bind_timeout;
 	guint accept_input;
 	GList *connections;
 	guint timeout_check;
@@ -105,8 +108,10 @@ void gfire_game_detector_set_external_game(guint32 p_gameid);
 gboolean gfire_game_detector_is_playing();
 gboolean gfire_game_detector_is_voiping();
 
-guint32 gfire_game_detector_current_game();
-guint32 gfire_game_detector_current_voip();
+guint32 gfire_game_detector_current_gameid();
+const gfire_game_data *gfire_game_detector_current_game();
+guint32 gfire_game_detector_current_voipid();
+const gfire_game_data *gfire_game_detector_current_voip();
 
 // Gfire Process List
 gfire_process_list *gfire_process_list_new();

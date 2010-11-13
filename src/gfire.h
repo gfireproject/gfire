@@ -130,6 +130,7 @@ PurpleConnection *gfire_get_connection(const gfire_data *p_gfire);
 void gfire_login(gfire_data *p_gfire);
 void gfire_close(gfire_data *p_gfire);
 void gfire_authenticate(gfire_data *p_gfire, const gchar *p_salt);
+void gfire_login_successful(gfire_data *p_gfire);
 void gfire_keep_alive(gfire_data *p_gfire);
 void gfire_keep_alive_response(gfire_data *p_gfire);
 

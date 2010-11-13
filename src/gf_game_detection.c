@@ -31,6 +31,7 @@
 	#include <winsock2.h>
 #else
 	#include <netinet/in.h>
+	#include <fcntl.h>
 #endif // _WIN32
 
 #if defined(USE_DBUS_STATUS_CHANGE) && !defined(_WIN32)
@@ -548,8 +549,7 @@ static void gfire_game_detector_web_http_input_cb(gpointer p_con, gint p_fd, Pur
 	if(connection->socket != p_fd)
 		return;
 
-	static gchar buffer[8193]; // 8 KiB + 1B for 0
-	int bytes = recv(connection->socket, buffer, 8192, 0);
+	int bytes = recv(connection->socket, connection->buffer + connection->reclen, 8192 - connection->reclen, 0);
 	// Connection closed
 	if(bytes <= 0)
 	{
@@ -568,46 +568,45 @@ static void gfire_game_detector_web_http_input_cb(gpointer p_con, gint p_fd, Pur
 
 		return;
 	}
-	buffer[bytes] = 0;
+	connection->reclen += bytes;
+	connection->buffer[connection->reclen] = 0;
 
 	// VERY BASIC HTTP request parsing
 	gint result = 200;
 	gchar *url = NULL;
 
-	if(!strstr(buffer, "\r\n\r\n"))
-		result = 400;
+	// Request not finished yet, wait for more...
+	if(!strstr(connection->buffer, "\r\n\r\n"))
+		return;
 
-	if(result == 200)
+	gchar **lines = g_strsplit(connection->buffer, "\r\n", -1);
+	if(lines)
 	{
-		gchar **lines = g_strsplit(buffer, "\r\n", -1);
-		if(lines)
-		{
-			// Check first line "GET <URI> HTTP/<major>.<minor>"
-			if(strncmp(lines[0], "GET ", 4))
-				result = 501;
-			else
-			{
-				gchar **parts = g_strsplit(lines[0], " ", 3);
-				if(parts)
-				{
-					if(g_strv_length(parts) != 3)
-						result = 400;
-					else if(strcmp(parts[0], "GET"))
-						result = 501;
-					else if(strncmp(parts[2], "HTTP/", 5))
-						result = 400;
-					else
-						url = g_strdup(parts[1]);
-
-					g_strfreev(parts);
-				}
-			}
-
-			g_strfreev(lines);
-		}
+		// Check first line "GET <URI> HTTP/<major>.<minor>"
+		if(strncmp(lines[0], "GET ", 4))
+			result = 501;
 		else
-			result = 400;
+		{
+			gchar **parts = g_strsplit(lines[0], " ", 3);
+			if(parts)
+			{
+				if(g_strv_length(parts) != 3)
+					result = 400;
+				else if(strcmp(parts[0], "GET"))
+					result = 501;
+				else if(strncmp(parts[2], "HTTP/", 5))
+					result = 400;
+				else
+					url = g_strdup(parts[1]);
+
+				g_strfreev(parts);
+			}
+		}
+
+		g_strfreev(lines);
 	}
+	else
+		result = 400;
 
 	static gchar content[8192];
 	content[0] = 0;
@@ -745,6 +744,9 @@ static void gfire_game_detector_web_http_input_cb(gpointer p_con, gint p_fd, Pur
 	// Send response
 	send(connection->socket, response->str, strlen(response->str), 0);
 	g_string_free(response, TRUE);
+
+	// Be ready for another request
+	connection->reclen = 0;
 }
 
 static void gfire_game_detector_web_http_accept_cb(gpointer p_unused, gint p_fd, PurpleInputCondition p_condition)
@@ -777,12 +779,8 @@ static void gfire_game_detector_web_http_accept_cb(gpointer p_unused, gint p_fd,
 	gfire_detector->connections = g_list_append(gfire_detector->connections, connection);
 }
 
-static void gfire_game_detector_start_web_http()
+static gboolean gfire_game_detector_bind_http(gpointer p_unused)
 {
-	gfire_detector->socket = socket(PF_INET, SOCK_STREAM, 0);
-	if(gfire_detector->socket < 0)
-		return;
-
 	struct sockaddr_in addr;
 	memset(&addr, 0, sizeof(struct sockaddr_in));
 
@@ -790,36 +788,69 @@ static void gfire_game_detector_start_web_http()
 	addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 	addr.sin_port = htons(39123); // Xfire WebGame port
 
-	int on = 1;
-	setsockopt(gfire_detector->socket, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(int));
-
-	if(bind(gfire_detector->socket, (struct sockaddr*)&addr, sizeof(struct sockaddr_in)) != 0)
+	if(bind(gfire_detector->socket, (struct sockaddr*)&addr, sizeof(struct sockaddr_in)) == -1)
 	{
-		purple_debug_error("gfire", "detection: http: could not bind to 127.0.0.1:39123: %s\n", strerror(errno));
-		close(gfire_detector->socket);
-		gfire_detector->socket = -1;
-		return;
+		purple_debug_warning("gfire", "detection: http: could not bind to 127.0.0.1:39123: %s\n", g_strerror(errno));
+		return TRUE;
 	}
 
-	if(listen(gfire_detector->socket, 5) != 0)
+	if(listen(gfire_detector->socket, 5) == -1)
 	{
-		purple_debug_error("gfire", "detection: http: could not listen on 127.0.0.1:39123: %s\n", strerror(errno));
+		purple_debug_error("gfire", "detection: http: could not listen on 127.0.0.1:39123: %s\n", g_strerror(errno));
 		close(gfire_detector->socket);
 		gfire_detector->socket = -1;
-		return;
+		gfire_detector->bind_timeout = 0;
+		return FALSE;
 	}
+
+	int flags = fcntl(gfire_detector->socket, F_GETFL);
+	fcntl(gfire_detector->socket, F_SETFL, flags | O_NONBLOCK);
+#ifndef _WIN32
+	fcntl(gfire_detector->socket, F_SETFD, FD_CLOEXEC);
+#endif
 
 	gfire_detector->accept_input = purple_input_add(gfire_detector->socket, PURPLE_INPUT_READ,
 													gfire_game_detector_web_http_accept_cb, NULL);
 
 	purple_debug_info("gfire", "detection: http: started listening on 127.0.0.1:39123\n");
+
+	gfire_detector->bind_timeout = 0;
+	return FALSE;
+}
+
+static void gfire_game_detector_start_web_http()
+{
+	gfire_detector->socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if(gfire_detector->socket < 0)
+		return;
+
+	int on = 1;
+	if(setsockopt(gfire_detector->socket, SOL_SOCKET, SO_REUSEADDR, (char*)&on, sizeof(on)) == -1)
+		purple_debug_warning("gfire", "detection: http: SO_REUSEADDR: %s\n", g_strerror(errno));
+
+	if(gfire_game_detector_bind_http(NULL))
+		gfire_detector->bind_timeout = g_timeout_add_seconds(5, gfire_game_detector_bind_http, NULL);
 }
 
 static void gfire_game_detector_stop_web_http()
 {
 	if(gfire_detector->socket >= 0)
 	{
-		// Close all client connection
+		// Abort all binding retries
+		if(gfire_detector->bind_timeout)
+		{
+			g_source_remove(gfire_detector->bind_timeout);
+			gfire_detector->bind_timeout = 0;
+		}
+
+		// Close the listening socket
+		if(gfire_detector->accept_input)
+			purple_input_remove(gfire_detector->accept_input);
+
+		close(gfire_detector->socket);
+		gfire_detector->socket = -1;
+
+		// Close all client connections
 		while(gfire_detector->connections)
 		{
 			gfire_game_detection_http_connection *connection = gfire_detector->connections->data;
@@ -830,12 +861,6 @@ static void gfire_game_detector_stop_web_http()
 
 			gfire_detector->connections = g_list_delete_link(gfire_detector->connections, gfire_detector->connections);
 		}
-
-		// Close the listening connection
-		purple_input_remove(gfire_detector->accept_input);
-
-		close(gfire_detector->socket);
-		gfire_detector->socket = -1;
 
 		purple_debug_info("gfire", "detection: http: stopped listening\n");
 	}
@@ -967,7 +992,7 @@ gboolean gfire_game_detector_is_voiping()
 	return (gfire_detector && gfire_detector->voip_data.id != 0);
 }
 
-guint32 gfire_game_detector_current_game()
+guint32 gfire_game_detector_current_gameid()
 {
 	if(gfire_detector)
 		return gfire_detector->game_data.id;
@@ -975,12 +1000,28 @@ guint32 gfire_game_detector_current_game()
 		return 0;
 }
 
-guint32 gfire_game_detector_current_voip()
+const gfire_game_data *gfire_game_detector_current_game()
+{
+	if(gfire_detector)
+		return &gfire_detector->game_data;
+	else
+		return NULL;
+}
+
+guint32 gfire_game_detector_current_voipid()
 {
 	if(gfire_detector)
 		return gfire_detector->voip_data.id;
 	else
 		return 0;
+}
+
+const gfire_game_data *gfire_game_detector_current_voip()
+{
+	if(gfire_detector)
+		return &gfire_detector->voip_data;
+	else
+		return NULL;
 }
 
 gfire_process_list *gfire_process_list_new()

@@ -194,7 +194,6 @@ void gfire_input_cb(gpointer p_data, gint p_source, PurpleInputCondition p_condi
 
 void gfire_parse_packet(gfire_data *p_gfire, guint16 p_packet_len, guint16 p_packet_id)
 {
-	guint16 ob_len = 0;
 	guint32 newver = 0;
 	gchar *tmp = NULL;
 	PurpleAccount *account = NULL;
@@ -218,12 +217,8 @@ void gfire_parse_packet(gfire_data *p_gfire, guint16 p_packet_len, guint16 p_pac
 			// Parse session information
 			gfire_proto_session_info(p_gfire, p_packet_len);
 
-			// Send collective statistics
-			ob_len = gfire_proto_create_collective_statistics(getenv("LANG") ? getenv("LANG") : "en_GB", "Gfire", GFIRE_VERSION_STRING, "");
-			if(ob_len > 0) gfire_send(gfire_get_connection(p_gfire), ob_len);
-
-			// Update current status
-			gfire_set_current_status(p_gfire);
+			// Handle all after-login actions
+			gfire_login_successful(p_gfire);
 		break;
 
 		case 131:
