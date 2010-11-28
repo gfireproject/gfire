@@ -108,7 +108,7 @@ static void gfire_p2p_natcheck_udpread(gpointer p_data, gint p_fd, PurpleInputCo
 
 	if(server == 3)
 	{
-		guint32 ip = g_ntohl(addr.sin_addr.s_addr);
+		guint32 ip = addr.sin_addr.s_addr;
 		purple_debug_error("gfire", "P2P: NAT Check: Received response from unknown server (%u.%u.%u.%u:%u)\n",
 						   (ip & 0xff000000) >> 24,
 						   (ip & 0xff0000) >> 16,
@@ -133,18 +133,18 @@ static void gfire_p2p_natcheck_udpread(gpointer p_data, gint p_fd, PurpleInputCo
 	if(nat->ips[server] != 0 && (nat->ips[server] != ip || nat->ports[server] != port))
 		purple_debug_warning("gfire", "P2P: NAT Check: Server %d reports my IP:Port INCONSISTENTLY as %u.%u.%u.%u:%u\n",
 						  server + 1,
-						  (g_ntohl(ip) & 0xff000000) >> 24,
-						  (g_ntohl(ip) & 0xff0000) >> 16,
-						  (g_ntohl(ip) & 0xff00) >> 8,
-						  g_ntohl(ip) & 0xff,
+						  (ip & 0xff000000) >> 24,
+						  (ip & 0xff0000) >> 16,
+						  (ip & 0xff00) >> 8,
+						  ip & 0xff,
 						  g_ntohs(port));
 	else
 		purple_debug_misc("gfire", "P2P: NAT Check: Server %d reports my IP:Port as %u.%u.%u.%u:%u\n",
 						  server + 1,
-						  (g_ntohl(ip) & 0xff000000) >> 24,
-						  (g_ntohl(ip) & 0xff0000) >> 16,
-						  (g_ntohl(ip) & 0xff00) >> 8,
-						  g_ntohl(ip) & 0xff,
+						  (ip & 0xff000000) >> 24,
+						  (ip & 0xff0000) >> 16,
+						  (ip & 0xff00) >> 8,
+						  ip & 0xff,
 						  g_ntohs(port));
 
 	nat->ips[server] = ip;
@@ -199,7 +199,7 @@ static void gfire_p2p_natcheck_udpread(gpointer p_data, gint p_fd, PurpleInputCo
 				g_source_remove(nat->timeout);
 				nat->timeout = 0;
 				nat->state = GF_NATCHECK_DONE;
-				if(nat->callback) nat->callback(nat->type, g_ntohl(nat->ips[0]), g_ntohs(nat->ports[0]), nat->callback_data);
+				if(nat->callback) nat->callback(nat->type, nat->ips[0], g_ntohs(nat->ports[0]), nat->callback_data);
 				return;
 			}
 		}
