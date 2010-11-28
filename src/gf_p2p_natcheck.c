@@ -114,7 +114,7 @@ static void gfire_p2p_natcheck_udpread(gpointer p_data, gint p_fd, PurpleInputCo
 						   (ip & 0xff0000) >> 16,
 						   (ip & 0xff00) >> 8,
 						   ip & 0xff,
-						   g_ntohs(addr.sin_port));
+						   addr.sin_port);
 		return;
 	}
 
@@ -137,7 +137,7 @@ static void gfire_p2p_natcheck_udpread(gpointer p_data, gint p_fd, PurpleInputCo
 						  (ip & 0xff0000) >> 16,
 						  (ip & 0xff00) >> 8,
 						  ip & 0xff,
-						  g_ntohs(port));
+						  port);
 	else
 		purple_debug_misc("gfire", "P2P: NAT Check: Server %d reports my IP:Port as %u.%u.%u.%u:%u\n",
 						  server + 1,
@@ -145,7 +145,7 @@ static void gfire_p2p_natcheck_udpread(gpointer p_data, gint p_fd, PurpleInputCo
 						  (ip & 0xff0000) >> 16,
 						  (ip & 0xff00) >> 8,
 						  ip & 0xff,
-						  g_ntohs(port));
+						  port);
 
 	nat->ips[server] = ip;
 	nat->ports[server] = port;
@@ -199,7 +199,7 @@ static void gfire_p2p_natcheck_udpread(gpointer p_data, gint p_fd, PurpleInputCo
 				g_source_remove(nat->timeout);
 				nat->timeout = 0;
 				nat->state = GF_NATCHECK_DONE;
-				if(nat->callback) nat->callback(nat->type, nat->ips[0], g_ntohs(nat->ports[0]), nat->callback_data);
+				if(nat->callback) nat->callback(nat->type, nat->ips[0], nat->ports[0], nat->callback_data);
 				return;
 			}
 		}
