@@ -905,12 +905,7 @@ static int gfire_purple_chat_send(PurpleConnection *p_gc, int p_id, const gchar 
 	if(!chat)
 		return -1;
 
-	gchar *unescaped = purple_unescape_html(p_message);
-
-	gfire_chat_send(chat, unescaped);
-
-	g_free(unescaped);
-
+	gfire_chat_send(chat, p_message);
 	return 0;
 }
 
