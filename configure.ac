@@ -11,7 +11,7 @@ m4_define(gfire_version_major, regexp(gfire_version, [\([0-9]+\).\([0-9]+\).\([0
 m4_define(gfire_version_suffix, regexp(gfire_version, [\([0-9]+\).\([0-9]+\).\([0-9]+\)-?\([a-zA-Z0-9]+\)], [\4]))
 
 AC_PREREQ(2.50)
-AC_INIT([Gfire], [gfire_version], [gfireteam@gmail.com])
+AC_INIT([Gfire], [gfire_version], [support@gfireproject.org])
 AC_CONFIG_SRCDIR([src/gfire.c])
 
 
