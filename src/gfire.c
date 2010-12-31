@@ -506,6 +506,9 @@ void gfire_login_successful(gfire_data *p_gfire)
 	// Send detection data
 	gfire_set_game_status(p_gfire, gfire_game_detector_current_game());
 	gfire_set_voip_status(p_gfire, gfire_game_detector_current_voip());
+
+	// Tell libpurple that we're ready now
+	purple_connection_set_state(gfire_get_connection(p_gfire), PURPLE_CONNECTED);
 }
 
 void gfire_set_status(gfire_data *p_gfire, const PurpleStatus *p_status)

@@ -212,7 +212,6 @@ void gfire_parse_packet(gfire_data *p_gfire, guint16 p_packet_len, guint16 p_pac
 
 		case 130:
 			purple_debug(PURPLE_DEBUG_MISC, "gfire", "Log in was successful\n");
-			purple_connection_set_state(gfire_get_connection(p_gfire), PURPLE_CONNECTED);
 
 			// Parse session information
 			gfire_proto_session_info(p_gfire, p_packet_len);
