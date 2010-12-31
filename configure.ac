@@ -167,6 +167,7 @@ echo "Debugging enabled.............: $enable_debug"
 echo "GTK enabled...................: $enable_gtk"
 echo "libnotify enabled.............: $enable_libnotify"
 echo "DBus status change enabled....: $enable_dbus_status"
+echo "Notify on new version.........: $enable_update_notify"
 echo "NLS enabled...................: $enable_nls"
 
 echo;
