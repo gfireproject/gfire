@@ -162,11 +162,16 @@ gchar *gfire_strip_character_range(gchar *p_string, gchar p_start, gchar p_end)
 	return p_string;
 }
 
-void gfire_strip_invalid_utf8(gchar *p_utf8)
+gchar *gfire_strip_invalid_utf8(gchar *p_utf8)
 {
+	if(!p_utf8)
+		return NULL;
+
 	const gchar *end = NULL;
 	while(!g_utf8_validate(p_utf8, -1, &end))
 		memmove((gchar*)end, end + 1, strlen(end));
+
+	return p_utf8;
 }
 
 void hashSha1(const gchar *p_input, gchar *p_digest)
