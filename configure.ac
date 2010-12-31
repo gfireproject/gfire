@@ -124,6 +124,14 @@ AC_SUBST(GLIB_CFLAGS)
 AC_SUBST(GLIB_LIBS)
 
 #
+# Update notifications wanted?
+#
+AC_ARG_ENABLE(update-notify, AS_HELP_STRING([--disable-update-notify], [Disable notifications on new available versions of Gfire. Use this if you intend to build Gfire for a package.]),, enable_update_notify=yes)
+if test $enable_update_notify = "yes"; then
+	AC_DEFINE([UPDATE_NOTIFY], [1], [Show notifications about newer versions])
+fi
+
+#
 # Check if plugins are enabled
 #
 want_plugins=yes

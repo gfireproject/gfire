@@ -104,4 +104,7 @@
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
 
+/* Show notifications about newer versions */
+#define UPDATE_NOTIFY 1
+
 #endif

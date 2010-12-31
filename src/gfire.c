@@ -170,6 +170,7 @@ static void gfire_update_cb(PurpleUtilFetchUrlData *p_url_data, gpointer p_data,
 				sscanf(xmlnode_get_attrib(version_node, "games_list_version"), "%u", &games_list_version);
 
 			// Notify user if Gfire can be updated
+#ifdef UPDATE_NOTIFY
 				// Higher version number
 			if ((GFIRE_VERSION < gfire_latest_version) ||
 				// Same version, current one is not SVN
@@ -203,6 +204,7 @@ static void gfire_update_cb(PurpleUtilFetchUrlData *p_url_data, gpointer p_data,
 
 				g_free(msg);
 			}
+#endif // UPDATE_NOTIFY
 
 			// Update games list if needed
 			gboolean update_games_list = FALSE;
