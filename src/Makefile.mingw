@@ -44,6 +44,9 @@ GFIRE_SOURCES = \
 	${GFIRE_SRC_DIR}/gf_server_query.c \
 	${GFIRE_SRC_DIR}/gf_server_query_quake.c \
 	${GFIRE_SRC_DIR}/gf_server_query_source.c \
+	${GFIRE_SRC_DIR}/gf_server_query_gamespy.c \
+	${GFIRE_SRC_DIR}/gf_server_query_gamespy2.c \
+	${GFIRE_SRC_DIR}/gf_server_query_ase.c \
 	${GFIRE_SRC_DIR}/gf_server_detection.c \
 	${GFIRE_SRC_DIR}/gf_server_detection_win.c \
 	${GFIRE_SRC_DIR}/gf_util.c \

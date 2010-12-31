@@ -54,6 +54,7 @@ typedef struct _gfire_game_server
 
 	guint32 ip;
 	guint16 port;
+	guint16 query_port;
 
 	gfire_game_server_data *data;
 } gfire_game_server;
@@ -96,6 +97,8 @@ typedef struct _gfire_server_query
 
 	// Driver
 	const gfire_server_query_driver *driver;
+	guint16 query_port;
+	guint16 port_offset;
 
 	// Callback
 	gfire_server_query_callback callback;

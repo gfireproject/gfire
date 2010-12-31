@@ -67,6 +67,9 @@ libxfire_la_SOURCES = \
 	gf_server_query.c \
 	gf_server_query_quake.c \
 	gf_server_query_source.c \
+	gf_server_query_gamespy.c \
+	gf_server_query_gamespy2.c \
+	gf_server_query_ase.c \
 	gf_menus.c \
 	gf_util.c \
 	gf_server_detection_linux.c \

@@ -29,12 +29,59 @@
 // Available server query drivers
 extern gfire_server_query_driver gf_sq_quake_driver;
 extern gfire_server_query_driver gf_sq_source_driver;
+extern gfire_server_query_driver gf_sq_gamespy_driver;
+extern gfire_server_query_driver gf_sq_gamespy2_driver;
+extern gfire_server_query_driver gf_sq_ase_driver;
 
-static const struct { const gchar *proto; const gfire_server_query_driver *driver; } registeredDrivers[] =
+static const struct
 {
-	{ "WOLFET", &gf_sq_quake_driver },
-	{ "SOURCE", &gf_sq_source_driver },
-	{ NULL, NULL }
+	const gchar *proto;
+	const gfire_server_query_driver *driver;
+	const guint16 query_port;
+	const gint16 port_offset;
+} registeredDrivers[] =
+{
+	{ "WOLFET",	&gf_sq_quake_driver,	0,	0 },
+	{ "HALO",	&gf_sq_quake_driver,	0,	0 },
+	{ "Q2",		&gf_sq_quake_driver,	0,	0 },
+	{ "Q3A",	&gf_sq_quake_driver,	0,	0 },
+	{ "COD",	&gf_sq_quake_driver,	0,	0 },
+	{ "CODUO",	&gf_sq_quake_driver,	0,	0 },
+	{ "COD2",	&gf_sq_quake_driver,	0,	0 },
+	{ "COD4MW",	&gf_sq_quake_driver,	0,	0 },
+	{ "COD5",	&gf_sq_quake_driver,	0,	0 },
+	{ "SOF",	&gf_sq_quake_driver,	0,	0 },
+
+	{ "SOURCE",	&gf_sq_source_driver,	0,	0 },
+
+	{ "GS",		&gf_sq_gamespy_driver,	0,	1 },
+	{ "VCG",	&gf_sq_gamespy_driver,	0,	10000 },
+	{ "IL2",	&gf_sq_gamespy_driver,	21000,	0 },
+	{ "THPS3",	&gf_sq_gamespy_driver,	6500,	0 },
+	{ "GORE",	&gf_sq_gamespy_driver,	27778,	0 },
+	{ "RNG",	&gf_sq_gamespy_driver,	25300,	0 },
+	{ "MOHAA",	&gf_sq_gamespy_driver,	12300,	0 },
+	{ "UT",		&gf_sq_gamespy_driver,	0,	1 },
+	{ "UT2K3",	&gf_sq_gamespy_driver,	0,	10 },
+	{ "SWRC",	&gf_sq_gamespy_driver,	11138,	0 },
+	{ "NWN",	&gf_sq_gamespy_driver,	5121,	0 },
+	{ "OPFLASH",&gf_sq_gamespy_driver,	0,	1 },
+	{ "SWAT4",	&gf_sq_gamespy_driver,	10481,	0 },
+	{ "JBNF",	&gf_sq_gamespy_driver,	6550,	0 },
+
+	{ "GS2",	&gf_sq_gamespy2_driver,	3658,	0 }, // PORT (maybe 29900?)
+	{ "AA",		&gf_sq_gamespy2_driver, 1717,	0 },
+	{ "DEUSEX",	&gf_sq_gamespy2_driver,	7791,	0 },
+	{ "PAINKILLER",	&gf_sq_gamespy2_driver,	3455,	0 },
+	{ "BF2",	&gf_sq_gamespy2_driver,	29900,	0 },
+	{ "BF2142",	&gf_sq_gamespy2_driver,	29900,	0 },
+
+	{ "ASE",	&gf_sq_ase_driver,		0,	123 },
+	{ "FARCRY",	&gf_sq_ase_driver,		0,	123 },
+	{ "BF1942",	&gf_sq_ase_driver,		0,	123 },
+	{ "BFVIETNAM",	&gf_sq_ase_driver,	0,	123 },
+
+	{ NULL,		NULL,					0,	0 }
 };
 
 gfire_server_query *gfire_server_query_create()
@@ -81,6 +128,13 @@ void gfire_server_query_free(gfire_server_query *p_query)
 	g_free(p_query);
 }
 
+static gfire_game_server *gfire_game_server_apply_query_port(const gfire_server_query *p_query,
+															 gfire_game_server *p_server)
+{
+	p_server->query_port = p_query->query_port ? p_query->query_port : (p_server->port + p_query->port_offset);
+	return p_server;
+}
+
 gchar *gfire_game_server_details(gfire_game_server *p_server)
 {
 	if(!p_server || !p_server->data || !p_server->data->driver)
@@ -122,7 +176,8 @@ void gfire_server_query_add_server(gfire_server_query *p_query, guint32 p_ip, gu
 	if(p_query->socket >= 0 && g_list_length(p_query->cur_servers) < 10)
 	{
 		p_query->cur_servers = g_list_append(p_query->cur_servers, server);
-		p_query->driver->query(server->server, p_query->full_query, p_query->socket);
+		p_query->driver->query(gfire_game_server_apply_query_port(p_query, server->server), p_query->full_query,
+							   p_query->socket);
 
 		// Timeout value
 		GTimeVal gtv;
@@ -146,10 +201,11 @@ static void gfire_server_query_read(gpointer p_data, gint p_fd, PurpleInputCondi
 
 	struct sockaddr_in addr;
 	guint addr_len = sizeof(addr);
-	guint len = recvfrom(p_fd, buffer, 65535, 0, (struct sockaddr*)&addr, &addr_len);
+	guint len = recvfrom(p_fd, buffer, 65534, 0, (struct sockaddr*)&addr, &addr_len);
 
 	if(len <= 0)
 		return;
+	buffer[len] = 0;
 
 	// Get the responding server
 	GList *cur = query->cur_servers;
@@ -157,7 +213,7 @@ static void gfire_server_query_read(gpointer p_data, gint p_fd, PurpleInputCondi
 	while(cur)
 	{
 		gfire_game_query_server *scur = cur->data;
-		if(scur->server->ip == g_ntohl(addr.sin_addr.s_addr) && scur->server->port == g_ntohs(addr.sin_port))
+		if(scur->server->ip == g_ntohl(addr.sin_addr.s_addr) && scur->server->query_port == g_ntohs(addr.sin_port))
 		{
 			server = scur;
 			break;
@@ -191,7 +247,7 @@ static void gfire_server_query_read(gpointer p_data, gint p_fd, PurpleInputCondi
 		{
 			server = g_queue_pop_tail(query->servers);
 			query->cur_servers = g_list_append(query->cur_servers, server);
-			query->driver->query(server->server, query->full_query, p_fd);
+			query->driver->query(gfire_game_server_apply_query_port(query, server->server), query->full_query, p_fd);
 
 			server->timeout = (gtv.tv_sec * 1000) + (gtv.tv_usec / 1000);
 		}
@@ -219,7 +275,8 @@ static gboolean gfire_server_query_check_timeout(gpointer p_data)
 			if(server)
 			{
 				cur->data = server;
-				query->driver->query(server->server, query->full_query, query->socket);
+				query->driver->query(gfire_game_server_apply_query_port(query, server->server), query->full_query,
+									 query->socket);
 				server->timeout = (gtv.tv_sec * 1000) + (gtv.tv_usec / 1000);
 			}
 			else
@@ -251,7 +308,7 @@ static void gfire_server_query_listen(int p_socket, gpointer p_data)
 	{
 		gfire_game_query_server *server = g_queue_pop_tail(query->servers);
 		query->cur_servers = g_list_append(query->cur_servers, server);
-		query->driver->query(server->server, query->full_query, p_socket);
+		query->driver->query(gfire_game_server_apply_query_port(query, server->server), query->full_query, p_socket);
 
 		// Timeout value
 		GTimeVal gtv;
@@ -275,6 +332,8 @@ gboolean gfire_server_query_start(gfire_server_query *p_query, const gchar *p_ty
 		if(g_strcmp0(registeredDrivers[i].proto, p_type) == 0)
 		{
 			p_query->driver = registeredDrivers[i].driver;
+			p_query->query_port = registeredDrivers[i].query_port;
+			p_query->port_offset = registeredDrivers[i].port_offset;
 			break;
 		}
 	}
