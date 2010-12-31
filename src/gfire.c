@@ -306,25 +306,6 @@ static void gfire_login_cb(gpointer p_data, gint p_source, const gchar *p_error_
 	gfire_get_connection(gfire)->inpa = purple_input_add(gfire->fd, PURPLE_INPUT_READ, gfire_input_cb, gfire);
 
 	gfire->clans = gfire_clan_get_existing();
-
-#ifdef HAVE_GTK
-	// Setup server browser
-	gfire->server_browser = gfire_server_browser_create(gfire_get_connection(gfire));
-#endif // HAVE_GTK
-
-	// Register this Gfire session with the IPC server
-	gfire_ipc_server_register(gfire);
-
-	// Register this Gfire session with the game detection
-	if(purple_account_get_bool(purple_connection_get_account(gfire_get_connection(gfire)), "ingamedetectionnorm", TRUE))
-		gfire_game_detector_register(gfire);
-
-	// Setup P2P connection
-	if(purple_account_get_bool(purple_connection_get_account(gfire_get_connection(gfire)), "p2p_option", TRUE))
-		gfire->p2p = gfire_p2p_connection_create();
-
-	// Update Gfire if needed
-	gfire_update(gfire);
 }
 
 void gfire_login(gfire_data *p_gfire)
@@ -358,9 +339,12 @@ void gfire_close(gfire_data *p_gfire)
 	PurpleConnection *gc = gfire_get_connection(p_gfire);
 
 	// Save client preferences
-	if(gfire_preferences_get(p_gfire->prefs, 0x08) != purple_account_get_bool(purple_connection_get_account(gc), "show_fofs", TRUE))
+	if(p_gfire->userid)
+	{
+		if(gfire_preferences_get(p_gfire->prefs, 0x08) != purple_account_get_bool(purple_connection_get_account(gc), "show_fofs", TRUE))
 		gfire_preferences_set(p_gfire->prefs, 0x08, purple_account_get_bool(purple_connection_get_account(gc), "show_fofs", TRUE));
-	gfire_preferences_send(p_gfire->prefs, gc);
+			gfire_preferences_send(p_gfire->prefs, gc);
+	}
 
 	purple_debug(PURPLE_DEBUG_MISC, "gfire", "CONNECTION: close requested.\n");
 
@@ -494,6 +478,25 @@ void gfire_login_successful(gfire_data *p_gfire)
 	guint16 len = gfire_proto_create_collective_statistics(getenv("LANG") ? getenv("LANG") : "en_GB",
 														   "Gfire", GFIRE_VERSION_STRING, "");
 	if(len > 0) gfire_send(gfire_get_connection(p_gfire), len);
+
+#ifdef HAVE_GTK
+	// Setup server browser
+	p_gfire->server_browser = gfire_server_browser_create(gfire_get_connection(p_gfire));
+#endif // HAVE_GTK
+
+	// Register this Gfire session with the IPC server
+	gfire_ipc_server_register(p_gfire);
+
+	// Register this Gfire session with the game detection
+	if(purple_account_get_bool(purple_connection_get_account(gfire_get_connection(p_gfire)), "ingamedetectionnorm", TRUE))
+		gfire_game_detector_register(p_gfire);
+
+	// Setup P2P connection
+	if(purple_account_get_bool(purple_connection_get_account(gfire_get_connection(p_gfire)), "p2p_option", TRUE))
+		p_gfire->p2p = gfire_p2p_connection_create();
+
+	// Update Gfire if needed
+	gfire_update(p_gfire);
 
 	// Update current status
 	gfire_set_current_status(p_gfire);
