@@ -138,10 +138,7 @@ static gboolean gfire_sq_gamespy_parse_chunk(gfire_sq_gamespy_data *p_sq_data, G
 	{
 		gchar *key = *cur++;
 		if(g_strcmp0(key, "final") == 0)
-		{
 			final = TRUE;
-			break;
-		}
 		else if(!strlen(key))
 			break;
 
@@ -245,6 +242,8 @@ static gboolean gfire_sq_gamespy_parse(gfire_game_server *p_server, guint16 p_pi
 		if(done)
 		{
 			g_datalist_set_data_full(&data->rules, "queryid", NULL, NULL);
+			g_datalist_set_data_full(&data->rules, "final", NULL, NULL);
+
 			data->query_stage = GFSQ_GAMESPY_STAGE_PLAYERS;
 			data->query_id = 0;
 			data->cur_fragments = 0;
