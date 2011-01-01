@@ -55,7 +55,7 @@ static const struct
 	{ "SOURCE",	&gf_sq_source_driver,	0,	0 },
 
 	{ "GS",		&gf_sq_gamespy_driver,	0,	1 },
-	{ "VCG",	&gf_sq_gamespy_driver,	0,	10000 },
+	{ "VCG",	&gf_sq_gamespy_driver,	15425,	0 },
 	{ "IL2",	&gf_sq_gamespy_driver,	21000,	0 },
 	{ "THPS3",	&gf_sq_gamespy_driver,	6500,	0 },
 	{ "GORE",	&gf_sq_gamespy_driver,	27778,	0 },
