@@ -1276,8 +1276,15 @@ static void gfire_game_manager_add_cb(GtkBuilder *p_builder, GtkWidget *p_button
 
 		if(!gfire_game_config_by_id(game_id))
 		{
-			gfire_game_configuration *gconf = gfire_game_configuration_create(game_id, game_detect,
-																			  game_launch_use_detect ? game_detect :
+#ifndef _WIN32
+			gchar real_game_detect[PATH_MAX];
+			realpath(game_detect, real_game_detect);
+#else
+			gchar *real_game_detect = game_detect;
+#endif // _WIN32
+
+			gfire_game_configuration *gconf = gfire_game_configuration_create(game_id, real_game_detect,
+																			  game_launch_use_detect ? real_game_detect :
 																			  game_launch, game_prefix);
 
 			gfire_games_config = g_list_append(gfire_games_config, gconf);
@@ -1343,15 +1350,22 @@ static void gfire_game_manager_edit_cb(GtkBuilder *p_builder, GtkWidget *p_butto
 
 		if (gconf)
 		{
+#ifndef _WIN32
+			gchar real_game_detect[PATH_MAX];
+			realpath(game_detect, real_game_detect);
+#else
+			gchar *real_game_detect = game_detect;
+#endif // _WIN32
+
 			if(gconf->detect_file)
 				g_free(gconf->detect_file);
 
-			gconf->detect_file = g_strdup(game_detect);
+			gconf->detect_file = g_strdup(real_game_detect);
 
 			if(gconf->launch_file)
 				g_free(gconf->launch_file);
 
-			gconf->launch_file = g_strdup(game_launch_use_detect ? game_detect : game_launch);
+			gconf->launch_file = g_strdup(game_launch_use_detect ? real_game_detect : game_launch);
 
 			if(gconf->launch_prefix)
 				g_free(gconf->launch_prefix);
