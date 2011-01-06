@@ -179,7 +179,8 @@ void gfire_p2p_session_free(gfire_p2p_session *p_session, gboolean p_local_reaso
 	if(!p_session)
 		return;
 
-	g_source_remove(p_session->check_timer);
+	if(p_session->check_timer > 0)
+		g_source_remove(p_session->check_timer);
 
 	while(p_session->transfers)
 	{

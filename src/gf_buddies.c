@@ -1437,7 +1437,8 @@ void gfire_buddy_got_p2p_data(gfire_buddy *p_buddy, guint32 p_ip, guint16 p_port
 			}
 			p_buddy->hasP2P = GFP2P_YES;
 
-			gfire_p2p_session_set_addr(p_buddy->p2p, p_ip, p_port, (p_natType != 1 || gfire_p2p_connection_natType(p2p_con) != 1));
+			if(!gfire_p2p_session_get_peer_ip(p_buddy->p2p))
+				gfire_p2p_session_set_addr(p_buddy->p2p, p_ip, p_port, (p_natType != 1 || gfire_p2p_connection_natType(p2p_con) != 1));
 
 			g_string_append(debug_str, "compatible buddy");
 		}
