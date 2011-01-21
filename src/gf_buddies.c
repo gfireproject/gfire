@@ -771,8 +771,9 @@ void gfire_buddy_set_session_id(gfire_buddy *p_buddy, const guint8 *p_sessionid)
 			gfire_p2p_connection_remove_session(gfire_get_p2p(p_buddy->gc->proto_data), p_buddy->p2p);
 			gfire_p2p_session_free(p_buddy->p2p, TRUE);
 			p_buddy->p2p = NULL;
-			p_buddy->hasP2P = GFP2P_UNKNOWN;
 		}
+		p_buddy->p2p_requested = FALSE;
+		p_buddy->hasP2P = GFP2P_UNKNOWN;
 
 		// Reset IM state
 		p_buddy->highest_im = 0;
