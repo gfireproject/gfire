@@ -574,54 +574,62 @@ static void gfire_game_detector_web_http_input_cb(gpointer p_con, gint p_fd, Pur
 	// VERY BASIC HTTP request parsing
 	gint result = 200;
 	gchar *url = NULL;
+	gchar *end = NULL;
 	gboolean persistent = TRUE;
 
 	// Request not finished yet, wait for more...
-	if(!strstr(connection->buffer, "\r\n\r\n"))
+	if(!(end = strstr(connection->buffer, "\r\n\r\n")) && connection->reclen < 8192)
 		return;
 
-	gchar **lines = g_strsplit(connection->buffer, "\r\n", -1);
-	if(lines)
-	{
-		// Check first line "GET <URI> HTTP/<major>.<minor>"
-		if(strncmp(lines[0], "GET ", 4))
-			result = 501;
-		else
-		{
-			gchar **parts = g_strsplit(lines[0], " ", 3);
-			if(parts)
-			{
-				if(g_strv_length(parts) != 3)
-					result = 400;
-				else if(strcmp(parts[0], "GET"))
-					result = 501;
-				else if(strncmp(parts[2], "HTTP/", 5))
-					result = 400;
-				else
-					url = g_strdup(parts[1]);
+	end += 4;
 
-				if(strcmp(parts[2], "HTTP/1.1"))
-					persistent = FALSE;
-
-				g_strfreev(parts);
-			}
-		}
-
-		gchar **cur = lines + 1;
-		while(*cur)
-		{
-			if(!strcasecmp(*cur, "Connection: keep-alive"))
-			{
-				persistent = TRUE;
-				break;
-			}
-			cur++;
-		}
-
-		g_strfreev(lines);
-	}
+	if(connection->reclen == 8192)
+		result = 413;
 	else
-		result = 400;
+	{
+		gchar **lines = g_strsplit(connection->buffer, "\r\n", -1);
+		if(lines)
+		{
+			// Check first line "GET <URI> HTTP/<major>.<minor>"
+			if(strncmp(lines[0], "GET ", 4))
+				result = 501;
+			else
+			{
+				gchar **parts = g_strsplit(lines[0], " ", 3);
+				if(parts)
+				{
+					if(g_strv_length(parts) != 3)
+						result = 400;
+					else if(strcmp(parts[0], "GET"))
+						result = 501;
+					else if(strncmp(parts[2], "HTTP/", 5))
+						result = 400;
+					else
+						url = g_strdup(parts[1]);
+
+					if(strcmp(parts[2], "HTTP/1.1"))
+						persistent = FALSE;
+
+					g_strfreev(parts);
+				}
+			}
+
+			gchar **cur = lines + 1;
+			while(*cur)
+			{
+				if(!strcasecmp(*cur, "Connection: keep-alive"))
+				{
+					persistent = TRUE;
+					break;
+				}
+				cur++;
+			}
+
+			g_strfreev(lines);
+		}
+		else
+			result = 400;
+	}
 
 	static gchar content[8192];
 	content[0] = 0;
@@ -713,6 +721,9 @@ static void gfire_game_detector_web_http_input_cb(gpointer p_con, gint p_fd, Pur
 	case 404:
 		response_text = "Not Found";
 		break;
+	case 413:
+		response_text = "Request Entity Too Large";
+		break;
 	case 501:
 		response_text = "Not Implemented";
 		break;
@@ -766,8 +777,29 @@ static void gfire_game_detector_web_http_input_cb(gpointer p_con, gint p_fd, Pur
 	send(connection->socket, response->str, strlen(response->str), 0);
 	g_string_free(response, TRUE);
 
+	if(result == 413)
+	{
+		purple_input_remove(connection->input);
+		close(connection->socket);
+
+		g_free(connection);
+
+		GList *node = g_list_find(gfire_detector->connections, connection);
+		if(node)
+			gfire_detector->connections = g_list_delete_link(gfire_detector->connections, node);
+
+#ifdef DEBUG
+		purple_debug_warning("gfire", "detection: http: client connection closed because of error\n");
+#endif // DEBUG
+
+		return;
+	}
+
 	// Be ready for another request
-	connection->reclen = 0;
+	guint extralen = connection->reclen - (end - connection->buffer);
+	memmove(connection->buffer, end, extralen);
+	connection->buffer[extralen] = 0;
+	connection->reclen = extralen;
 }
 
 static void gfire_game_detector_web_http_accept_cb(gpointer p_unused, gint p_fd, PurpleInputCondition p_condition)
