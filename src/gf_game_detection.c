@@ -542,7 +542,7 @@ static gboolean gfire_game_detector_web_timeout_cb(void *p_unused)
 
 static void gfire_game_detector_web_http_input_cb(gpointer p_con, gint p_fd, PurpleInputCondition p_condition)
 {
-	if(!p_con  || (p_condition != PURPLE_INPUT_READ))
+	if(!p_con  || !(p_condition & PURPLE_INPUT_READ))
 		return;
 
 	gfire_game_detection_http_connection *connection = p_con;
@@ -804,6 +804,8 @@ static void gfire_game_detector_web_http_input_cb(gpointer p_con, gint p_fd, Pur
 
 static void gfire_game_detector_web_http_accept_cb(gpointer p_unused, gint p_fd, PurpleInputCondition p_condition)
 {
+	purple_debug_info("gfire", "%s %d\n", __FUNCTION__, __LINE__);
+
 	if(!gfire_detector || (gfire_detector->socket != p_fd) || (p_condition != PURPLE_INPUT_READ))
 		return;
 

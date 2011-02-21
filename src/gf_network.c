@@ -113,7 +113,7 @@ void gfire_input_cb(gpointer p_data, gint p_source, PurpleInputCondition p_condi
 	guint16 pkt_id = 0;
 	gfire_data *gfire = (gfire_data*)p_data;
 
-	if(p_condition != PURPLE_INPUT_READ)
+	if(!(p_condition & PURPLE_INPUT_READ))
 		return;
 
 	if(gfire->bytes_read < 2)

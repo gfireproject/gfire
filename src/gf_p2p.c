@@ -403,7 +403,7 @@ static gboolean gfire_p2p_connection_resend(gfire_p2p_connection *p_p2p)
 
 static void gfire_p2p_connection_input_cb(gpointer p_data, gint p_fd, PurpleInputCondition p_condition)
 {
-	if(!p_data || p_condition != PURPLE_INPUT_READ)
+	if(!p_data || !(p_condition & PURPLE_INPUT_READ))
 		return;
 
 	gfire_p2p_connection *p2p = p_data;
