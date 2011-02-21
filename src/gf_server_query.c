@@ -31,7 +31,9 @@ extern gfire_server_query_driver gf_sq_quake_driver;
 extern gfire_server_query_driver gf_sq_source_driver;
 extern gfire_server_query_driver gf_sq_gamespy_driver;
 extern gfire_server_query_driver gf_sq_gamespy2_driver;
+extern gfire_server_query_driver gf_sq_gamespy3_driver;
 extern gfire_server_query_driver gf_sq_ase_driver;
+extern gfire_server_query_driver gf_sq_savage_driver;
 
 static const struct
 {
@@ -73,13 +75,16 @@ static const struct
 	{ "AA",		&gf_sq_gamespy2_driver, 1717,	0 },
 	{ "DEUSEX",	&gf_sq_gamespy2_driver,	7791,	0 },
 	{ "PAINKILLER",	&gf_sq_gamespy2_driver,	3455,	0 },
-	{ "BF2",	&gf_sq_gamespy2_driver,	29900,	0 },
-	{ "BF2142",	&gf_sq_gamespy2_driver,	29900,	0 },
+
+	{ "BF2",	&gf_sq_gamespy3_driver,	29900,	0 },
+	{ "BF2142",	&gf_sq_gamespy3_driver,	29900,	0 },
 
 	{ "ASE",	&gf_sq_ase_driver,		0,	123 },
 	{ "FARCRY",	&gf_sq_ase_driver,		0,	123 },
 	{ "BF1942",	&gf_sq_ase_driver,		0,	123 },
 	{ "BFVIETNAM",	&gf_sq_ase_driver,	0,	123 },
+
+	{ "SAVAGE",	&gf_sq_savage_driver,	0,	0 },
 
 	{ NULL,		NULL,					0,	0 }
 };
