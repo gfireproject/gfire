@@ -804,9 +804,7 @@ static void gfire_game_detector_web_http_input_cb(gpointer p_con, gint p_fd, Pur
 
 static void gfire_game_detector_web_http_accept_cb(gpointer p_unused, gint p_fd, PurpleInputCondition p_condition)
 {
-	purple_debug_info("gfire", "%s %d\n", __FUNCTION__, __LINE__);
-
-	if(!gfire_detector || (gfire_detector->socket != p_fd) || (p_condition != PURPLE_INPUT_READ))
+	if(!gfire_detector || (gfire_detector->socket != p_fd) || !(p_condition & PURPLE_INPUT_READ))
 		return;
 
 	struct sockaddr_in client_addr;
