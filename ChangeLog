@@ -1,9 +1,18 @@
 # Changelog for Gfire
-# Copyright 2006-2010 Wolf Beat, Keith Geffert, Laurent De Marez, Warren Dumortier, Oliver Ney
+# Copyright 2006-2011 Wolf Beat, Keith Geffert, Laurent De Marez, Warren Dumortier, Oliver Ney
 # Distributed under the GPLv3
-# $Id: CHANGELOG, v0.9.2
+# $Id: CHANGELOG, v0.9.3
 
 Gfire:
+
+0.9.3
+- Fixed further, if not almost all, P2P issues
+- Fixed infinite loop on web detection usage
+- Fixed possible crashes on web detection code
+- Fixed bug in preferences code
+- Added support for keep-alive connections on the web detection (less CPU usage)
+- Added missing lower case conversion of usernames for login
+- Added server browser with drivers for ASE, GameSpy, GameSpy2, Source and Savage query protocols
 
 0.9.2
 - Fixed file transfer completion issues
