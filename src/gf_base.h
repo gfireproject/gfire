@@ -133,7 +133,7 @@
 #define XFIRE_CHATID_LEN 21
 #define XFIRE_SERVER "cs.xfire.com"
 #define XFIRE_PORT 25999
-#define XFIRE_PROTO_VERSION 127
+#define XFIRE_PROTO_VERSION 132
 #define XFIRE_CONNECT_STEPS 3
 #define XFIRE_TIMEOUT_TIME 240  // See gfire_keep_alive for more info
 #define XFIRE_PROFILE_URL "http://www.xfire.com/profile/"
