@@ -129,7 +129,7 @@ static void gfire_sq_source_query(gfire_game_server *p_server, gboolean p_full, 
 	struct sockaddr_in addr;
 	addr.sin_family = AF_INET;
 	addr.sin_addr.s_addr = g_htonl(p_server->ip);
-	addr.sin_port = g_htons(p_server->port);
+	addr.sin_port = g_htons(p_server->query_port);
 
 	sendto(p_socket, query, len, 0, (struct sockaddr*)&addr, sizeof(addr));
 }
@@ -483,7 +483,7 @@ static gchar *gfire_sq_source_details(gfire_game_server *p_server)
 
 static void gfire_sq_source_free_server(gfire_game_server *p_server)
 {
-	if(p_server->data->proto_data)
+	if(p_server->data && p_server->data->proto_data)
 	{
 		gfire_sq_source_data *data = (gfire_sq_source_data*)p_server->data->proto_data;
 
