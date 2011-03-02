@@ -175,12 +175,12 @@ void gfire_buddy_proto_on_off(gfire_data *p_gfire, guint16 p_packet_len)
 
 	offset = XFIRE_HEADER_LEN;
 
-	offset = gfire_proto_read_attr_list_ss(p_gfire->buff_in, &userids, "userid", offset);
+	offset = gfire_proto_read_attr_list_bs(p_gfire->buff_in, &userids, 0x01, offset);
 	// Parsing error or empty list -> skip further parsing
 	if(offset == -1 || !userids)
 		return;
 
-	offset = gfire_proto_read_attr_list_ss(p_gfire->buff_in, &sids, "sid", offset);
+	offset = gfire_proto_read_attr_list_bs(p_gfire->buff_in, &sids, 0x03, offset);
 	if(offset == -1 || !sids)
 	{
 		gfire_list_clear(userids);
@@ -657,6 +657,7 @@ void gfire_buddy_proto_im(gfire_data *p_gfire, guint16 p_packet_len)
 	{
 		purple_debug(PURPLE_DEBUG_ERROR, "gfire", "gfire_buddy_proto_im: Unknown session ID for IM packet.\n");
 		g_free(sid);
+		return;
 	}
 
 	g_free(sid);
