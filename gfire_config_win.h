@@ -5,7 +5,7 @@
  * Copyright (C) 2006,      Keith Geffert <keith@penguingurus.com>
  * Copyright (C) 2008-2009	Laurent De Marez <laurentdemarez@gmail.com>
  * Copyright (C) 2009-2010  Warren Dumortier <nwarrenfl@gmail.com>
- * Copyright (C) 2009-2010  Oliver Ney <oliver@dryder.de>
+ * Copyright (C) 2009-2011  Oliver Ney <oliver@dryder.de>
  *
  * This file is part of Gfire.
  *
@@ -87,7 +87,7 @@
 #define HAVE_STRING_H 1
 
 /* Define to the address where bug reports for this package should be sent. */
-#define PACKAGE_BUGREPORT "gfireteam@gmail.com"
+#define PACKAGE_BUGREPORT "support@gfireproject.org"
 
 /* Define to the full name of this package. */
 #define PACKAGE_NAME "Gfire"
