@@ -129,6 +129,14 @@ static void gfire_filetransfer_request_accepted(PurpleXfer *p_xfer)
 		return;
 	}
 
+	// Grow file to the full size
+#ifdef _WIN32
+	if(_chsize_s(ft->file, ft->size) != 0)
+#else
+	if(ftruncate64(ft->file, ft->size) != 0)
+#endif // _WIN32
+		purple_debug_warning("gfire", "P2P: setting the files size failed\n");
+
 	// Chunk size is set by receiver, so we can precalculate everything
 	ft->chunk_size = XFIRE_P2P_FT_CHUNK_SIZE;
 	ft->size = purple_xfer_get_size(p_xfer);
