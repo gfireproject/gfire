@@ -131,7 +131,7 @@ static void gfire_filetransfer_request_accepted(PurpleXfer *p_xfer)
 
 	// Grow file to the full size
 #ifdef _WIN32
-	if(_chsize_s(ft->file, ft->size) != 0)
+	if(_chsize(ft->file, ft->size) != 0)
 #else
 	if(ftruncate64(ft->file, ft->size) != 0)
 #endif // _WIN32

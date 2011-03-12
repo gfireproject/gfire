@@ -2,7 +2,7 @@ GFIRE_DIR = ..
 # All personal changes usually go into this file
 include ../mingw.mak
 
-SUBDIRS = sdk
+SUBDIRS = 
 
 LIBPURPLE_CFLAGS = -I${WIN32_PIDGIN_DIR}/libpurple -I${WIN32_PIDGIN_DIR}/libpurple/win32 -DPURPLE_PLUGINS -DNO_ZLIB
 WIN32_CFLAGS = \
