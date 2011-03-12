@@ -228,6 +228,7 @@ void gfire_buddy_free(gfire_buddy *p_buddy)
 		gfire_p2p_session_free(p_buddy->p2p, TRUE);
 	}
 
+	purple_timeout_remove(p_buddy->p2p_request_timeout);
 	g_source_remove(p_buddy->lost_ims_timer);
 	g_source_remove(p_buddy->lost_p2p_ims_timer);
 
@@ -1375,6 +1376,19 @@ gboolean gfire_buddy_uses_p2p(const gfire_buddy *p_buddy)
 	return (p_buddy && p_buddy->p2p && gfire_p2p_session_connected(p_buddy->p2p));
 }
 
+static gboolean gfire_buddy_p2p_request_timed_out(gpointer p_data) {
+	gfire_buddy *buddy = (gfire_buddy*)p_data;
+
+	purple_debug_misc("gfire", "P2P request timed out\n");
+
+	gfire_p2p_connection_remove_session(gfire_get_p2p(buddy->gc->proto_data), buddy->p2p);
+	gfire_p2p_session_free(buddy->p2p, FALSE);
+	buddy->p2p = NULL;
+	buddy->p2p_request_timeout = 0;
+
+	return FALSE;
+}
+
 void gfire_buddy_request_p2p(gfire_buddy *p_buddy, gboolean p_notify)
 {
 	if(!p_buddy || p_buddy->p2p)
@@ -1405,6 +1419,9 @@ void gfire_buddy_request_p2p(gfire_buddy *p_buddy, gboolean p_notify)
 
 		p_buddy->p2p = gfire_p2p_session_create(p_buddy, salt);
 		gfire_p2p_connection_add_session(p2p_con, p_buddy->p2p);
+
+		p_buddy->p2p_request_timeout = purple_timeout_add_seconds(15, (GSourceFunc)gfire_buddy_p2p_request_timed_out,
+																  p_buddy);
 	}
 
 	if(p_buddy->hasP2P == GFP2P_UNKNOWN)
@@ -1414,7 +1431,7 @@ void gfire_buddy_request_p2p(gfire_buddy *p_buddy, gboolean p_notify)
 	g_free(random_str);
 }
 
-void gfire_buddy_got_p2p_data(gfire_buddy *p_buddy, guint32 p_ip, guint16 p_port, guint32 p_natType, const gchar *p_salt)
+void gfire_buddy_got_p2p_data(gfire_buddy *p_buddy, guint32 p_ip, guint16 p_port, guint32 p_localip, guint16 p_localport, guint32 p_natType, const gchar *p_salt)
 {
 	if(!p_buddy || !p_salt)
 		return;
@@ -1438,10 +1455,12 @@ void gfire_buddy_got_p2p_data(gfire_buddy *p_buddy, guint32 p_ip, guint16 p_port
 			}
 			p_buddy->hasP2P = GFP2P_YES;
 
-			if(!gfire_p2p_session_get_peer_ip(p_buddy->p2p))
-				gfire_p2p_session_set_addr(p_buddy->p2p, p_ip, p_port, (p_natType != 1 || gfire_p2p_connection_natType(p2p_con) != 1));
+			gfire_p2p_session_set_addr(p_buddy->p2p, GF_P2P_ADDR_TYPE_LOCAL, p_localip, p_localport);
+			gfire_p2p_session_set_addr(p_buddy->p2p, GF_P2P_ADDR_TYPE_EXTERN, p_ip, p_port);
 
 			g_string_append(debug_str, "compatible buddy");
+
+			gfire_p2p_session_start(p_buddy->p2p, p_natType);
 		}
 		else
 		{
@@ -1449,7 +1468,7 @@ void gfire_buddy_got_p2p_data(gfire_buddy *p_buddy, guint32 p_ip, guint16 p_port
 			{
 				gfire_p2p_connection_remove_session(p2p_con, p_buddy->p2p);
 				gfire_p2p_session_free(p_buddy->p2p, FALSE);
-				p_buddy->p2p = FALSE;
+				p_buddy->p2p = NULL;
 			}
 			p_buddy->hasP2P = GFP2P_NO;
 
@@ -1459,6 +1478,8 @@ void gfire_buddy_got_p2p_data(gfire_buddy *p_buddy, guint32 p_ip, guint16 p_port
 		if(p_buddy->p2p_requested)
 		{
 			p_buddy->p2p_requested = FALSE;
+			purple_timeout_remove(p_buddy->p2p_request_timeout);
+			p_buddy->p2p_request_timeout = 0;
 		}
 		else
 		{

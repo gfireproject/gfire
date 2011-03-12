@@ -27,7 +27,7 @@
 #include "gf_p2p.h"
 #include "gf_p2p_im_handler.h"
 
-static void gfire_p2p_session_send_ping(gfire_p2p_session *p_session)
+static void gfire_p2p_session_send_ping(gfire_p2p_session *p_session, gfire_p2p_session_addr_type p_addrType)
 {
 	if(!p_session || !p_session->con)
 		return;
@@ -39,7 +39,8 @@ static void gfire_p2p_session_send_ping(gfire_p2p_session *p_session)
 	g_get_current_time(&gtv);
 	p_session->last_ping = gtv.tv_sec;
 
-	p_session->sessid = gfire_p2p_connection_send_ping(p_session->con, p_session->moniker_self, p_session->sessid, &(p_session->peer_addr));
+	p_session->sessid = gfire_p2p_connection_send_ping(p_session->con, p_session->moniker_self, p_session->sessid,
+													   gfire_p2p_session_get_peer_addr(p_session, p_addrType));
 }
 
 static void gfire_p2p_session_send_pong(gfire_p2p_session *p_session)
@@ -51,7 +52,8 @@ static void gfire_p2p_session_send_pong(gfire_p2p_session *p_session)
 	p_session->seqid = 0;
 
 	// Send the pong
-	p_session->sessid = gfire_p2p_connection_send_pong(p_session->con, p_session->moniker_self, p_session->sessid, &(p_session->peer_addr));
+	p_session->sessid = gfire_p2p_connection_send_pong(p_session->con, p_session->moniker_self, p_session->sessid,
+													   gfire_p2p_session_get_peer_addr(p_session, GF_P2P_ADDR_TYPE_USE));
 }
 
 static void gfire_p2p_session_send_keep_alive(gfire_p2p_session *p_session)
@@ -64,7 +66,8 @@ static void gfire_p2p_session_send_keep_alive(gfire_p2p_session *p_session)
 	g_get_current_time(&gtv);
 	p_session->last_keep_alive = gtv.tv_sec;
 
-	gfire_p2p_connection_send_keep_alive(p_session->con, p_session->moniker_self, p_session->sessid, &(p_session->peer_addr));
+	gfire_p2p_connection_send_keep_alive(p_session->con, p_session->moniker_self, p_session->sessid,
+										 gfire_p2p_session_get_peer_addr(p_session, GF_P2P_ADDR_TYPE_USE));
 }
 
 void gfire_p2p_session_send_data16_packet(gfire_p2p_session *p_session, const guint8 *p_data, guint16 p_len, const gchar *p_category)
@@ -73,7 +76,9 @@ void gfire_p2p_session_send_data16_packet(gfire_p2p_session *p_session, const gu
 		return;
 
 	p_session->seqid++;
-	gfire_p2p_connection_send_data16(p_session->con, p_session, 0, p_session->moniker_self, p_session->seqid, p_data, p_len, p_category, &(p_session->peer_addr));
+	gfire_p2p_connection_send_data16(p_session->con, p_session, 0, p_session->moniker_self, p_session->seqid,
+									 p_data, p_len, p_category,
+									 gfire_p2p_session_get_peer_addr(p_session, GF_P2P_ADDR_TYPE_USE));
 }
 
 void gfire_p2p_session_send_data32_packet(gfire_p2p_session *p_session, const guint8 *p_data, guint32 p_len, const gchar *p_category)
@@ -82,7 +87,9 @@ void gfire_p2p_session_send_data32_packet(gfire_p2p_session *p_session, const gu
 		return;
 
 	p_session->seqid++;
-	gfire_p2p_connection_send_data32(p_session->con, p_session, 0, p_session->moniker_self, p_session->seqid, p_data, p_len, p_category, &(p_session->peer_addr));
+	gfire_p2p_connection_send_data32(p_session->con, p_session, 0, p_session->moniker_self, p_session->seqid,
+									 p_data, p_len, p_category,
+									 gfire_p2p_session_get_peer_addr(p_session, GF_P2P_ADDR_TYPE_USE));
 }
 
 static gboolean gfire_p2p_session_check_cb(gfire_p2p_session *p_session)
@@ -106,7 +113,13 @@ static gboolean gfire_p2p_session_check_cb(gfire_p2p_session *p_session)
 
 		p_session->ping_retries++;
 		purple_debug_misc("gfire", "P2P: Resending ping packet (try %d of %u)\n", p_session->ping_retries + 1, GFIRE_P2P_MAX_RETRIES + 1);
-		gfire_p2p_session_send_ping(p_session);
+		if(!gfire_p2p_session_get_peer_ip(p_session, GF_P2P_ADDR_TYPE_USE))
+		{
+			gfire_p2p_session_send_ping(p_session, GF_P2P_ADDR_TYPE_LOCAL);
+			gfire_p2p_session_send_ping(p_session, GF_P2P_ADDR_TYPE_EXTERN);
+		}
+		else
+			gfire_p2p_session_send_ping(p_session, GF_P2P_ADDR_TYPE_USE);
 	}
 
 	// Keep-alive timeout check
@@ -144,6 +157,10 @@ gfire_p2p_session *gfire_p2p_session_create(gfire_buddy *p_buddy, const gchar *p
 	if(!ret)
 		return NULL;
 
+	ret->peer_addr[0].sin_family = AF_INET;
+	ret->peer_addr[1].sin_family = AF_INET;
+	ret->peer_addr[2].sin_family = AF_INET;
+
 	ret->moniker_self = g_malloc0(20);
 	ret->moniker_peer = g_malloc0(20);
 
@@ -154,7 +171,7 @@ gfire_p2p_session *gfire_p2p_session_create(gfire_buddy *p_buddy, const gchar *p
 	g_get_current_time(&gtv);
 	ret->last_keep_alive = gtv.tv_sec;
 
-	ret->rec_msgids = gfire_bitlist_new();
+	ret->rec_seqids = gfire_bitlist_new();
 
 	ret->buddy = p_buddy;
 
@@ -188,7 +205,7 @@ void gfire_p2p_session_free(gfire_p2p_session *p_session, gboolean p_local_reaso
 		p_session->transfers = g_list_delete_link(p_session->transfers, p_session->transfers);
 	}
 
-	gfire_bitlist_free(p_session->rec_msgids);
+	gfire_bitlist_free(p_session->rec_seqids);
 
 	g_free(p_session->moniker_self);
 	g_free(p_session->moniker_peer);
@@ -202,46 +219,42 @@ void gfire_p2p_session_bind(gfire_p2p_session *p_session, gfire_p2p_connection *
 		p_session->con = p_p2p;
 }
 
-void gfire_p2p_session_set_addr(gfire_p2p_session *p_session, guint32 p_ip, guint16 p_port, gboolean p_need_handshake)
+void gfire_p2p_session_set_addr(gfire_p2p_session *p_session, gfire_p2p_session_addr_type p_type, guint32 p_ip, guint16 p_port) {
+	if(!p_session || !p_ip || !p_port)
+		return;
+
+	if(!p_session->peer_addr[(int)p_type].sin_addr.s_addr) {
+		p_session->peer_addr[(int)p_type].sin_addr.s_addr = g_htonl(p_ip);
+		p_session->peer_addr[(int)p_type].sin_port = g_htons(p_port);
+
+		// Send a handshake for NAT Type 2 and 3 buddies now as we have their address
+		if((p_session->peer_natType == 2 || p_session->peer_natType == 3) && p_type == GF_P2P_ADDR_TYPE_USE)
+		{
+			gfire_p2p_session_send_ping(p_session, GF_P2P_ADDR_TYPE_USE);
+			purple_debug_misc("gfire", "P2P: Handshake sent\n");
+		}
+	}
+}
+
+void gfire_p2p_session_start(gfire_p2p_session *p_session, guint32 p_natType)
 {
 	if(!p_session)
 		return;
 
-	p_session->peer_ip = p_ip;
-	p_session->peer_port = p_port;
+	p_session->peer_natType = p_natType;
 
-	// Build address
-	p_session->peer_addr.sin_family = AF_INET;
-	p_session->peer_addr.sin_addr.s_addr = htonl(p_ip);
-	p_session->peer_addr.sin_port = htons(p_port);
-
-	// Send handshake response if we have already received a handshake
-	if(p_session->need_pong)
+	// Send ping/handshake if we can actually send any data
+	if(p_natType != 2 && p_natType != 3)
 	{
-		gfire_p2p_session_send_pong(p_session);
-		purple_debug_misc("gfire", "P2P: Handshake response sent\n");
-	}
-
-	// Send our own handshake
-	if(p_need_handshake)
-	{
-		gfire_p2p_session_send_ping(p_session);
-		purple_debug_misc("gfire", "P2P: Handshake sent\n");
-	}
-	else
-	{
-		if(!p_session->connected)
+		if(!gfire_p2p_session_get_peer_ip(p_session, GF_P2P_ADDR_TYPE_USE))
 		{
-			// Start queued filetransfers now
-			GList *cur = p_session->transfers;
-			while(cur)
-			{
-				gfire_filetransfer_start(cur->data);
-				cur = g_list_next(cur);
-			}
+			gfire_p2p_session_send_ping(p_session, GF_P2P_ADDR_TYPE_LOCAL);
+			gfire_p2p_session_send_ping(p_session, GF_P2P_ADDR_TYPE_EXTERN);
 		}
+		else
+			gfire_p2p_session_send_ping(p_session, GF_P2P_ADDR_TYPE_USE);
 
-		p_session->connected = TRUE;
+		purple_debug_misc("gfire", "P2P: Handshake sent\n");
 	}
 
 	p_session->check_timer = g_timeout_add_seconds(1, (GSourceFunc)gfire_p2p_session_check_cb, p_session);
@@ -263,28 +276,28 @@ const guint8 *gfire_p2p_session_get_moniker_self(const gfire_p2p_session *p_sess
 	return p_session->moniker_self;
 }
 
-guint32 gfire_p2p_session_get_peer_ip(const gfire_p2p_session *p_session)
+guint32 gfire_p2p_session_get_peer_ip(const gfire_p2p_session *p_session, gfire_p2p_session_addr_type p_type)
 {
 	if(!p_session)
 		return 0;
 
-	return p_session->peer_ip;
+	return g_ntohl(p_session->peer_addr[(int)p_type].sin_addr.s_addr);
 }
 
-guint16 gfire_p2p_session_get_peer_port(const gfire_p2p_session *p_session)
+guint16 gfire_p2p_session_get_peer_port(const gfire_p2p_session *p_session, gfire_p2p_session_addr_type p_type)
 {
 	if(!p_session)
 		return 0;
 
-	return p_session->peer_port;
+	return g_ntohs(p_session->peer_addr[(int)p_type].sin_port);
 }
 
-const struct sockaddr_in *gfire_p2p_session_get_peer_addr(const gfire_p2p_session *p_session)
+const struct sockaddr_in *gfire_p2p_session_get_peer_addr(const gfire_p2p_session *p_session, gfire_p2p_session_addr_type p_type)
 {
 	if(!p_session)
-		return 0;
+		return NULL;
 
-	return &(p_session->peer_addr);
+	return &(p_session->peer_addr[(int)p_type]);
 }
 
 gfire_buddy *gfire_p2p_session_get_buddy(const gfire_p2p_session *p_session)
@@ -316,16 +329,8 @@ void gfire_p2p_session_ping(gfire_p2p_session *p_session, guint32 p_msgid)
 	if(!p_session)
 		return;
 
-	if(p_session->peer_ip)
-	{
-		gfire_p2p_session_send_pong(p_session);
-		gfire_bitlist_clear(p_session->rec_msgids);
-	}
-	else
-	{
-		p_session->need_pong = TRUE;
-		//p_session->connected = TRUE;
-	}
+	gfire_p2p_session_send_pong(p_session);
+	gfire_bitlist_clear(p_session->rec_seqids);
 }
 
 void gfire_p2p_session_pong(gfire_p2p_session *p_session, guint32 p_msgid)
@@ -351,7 +356,8 @@ void gfire_p2p_session_pong(gfire_p2p_session *p_session, guint32 p_msgid)
 void gfire_p2p_session_keep_alive_request(gfire_p2p_session *p_session, guint32 p_msgid)
 {
 	if(p_session && p_session->con)
-		gfire_p2p_connection_send_keep_alive_reply(p_session->con, p_session->moniker_self, p_session->sessid, &(p_session->peer_addr));
+		gfire_p2p_connection_send_keep_alive_reply(p_session->con, p_session->moniker_self, p_session->sessid,
+												   gfire_p2p_session_get_peer_addr(p_session, GF_P2P_ADDR_TYPE_USE));
 }
 
 void gfire_p2p_session_keep_alive_response(gfire_p2p_session *p_session, guint32 p_msgid)
@@ -366,7 +372,7 @@ gboolean gfire_p2p_session_handle_data(gfire_p2p_session *p_session, guint32 p_t
 		return FALSE;
 
 	// Check for duplicate messages
-	if(gfire_bitlist_get(p_session->rec_msgids, p_msgid))
+	if(gfire_bitlist_get(p_session->rec_seqids, p_seqid))
 	{
 		purple_debug_misc("gfire", "P2P: Received duplicate message, ignoring it\n");
 		return TRUE;
@@ -411,7 +417,7 @@ gboolean gfire_p2p_session_handle_data(gfire_p2p_session *p_session, guint32 p_t
 
 	// Add this packet to the received ones
 	if(result)
-		gfire_bitlist_set(p_session->rec_msgids, p_msgid, TRUE);
+		gfire_bitlist_set(p_session->rec_seqids, p_seqid, TRUE);
 
 	return result;
 }

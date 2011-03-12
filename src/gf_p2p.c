@@ -193,7 +193,8 @@ static void gfire_p2p_packet_resend_send(gfire_p2p_packet_resend *p_packet, gfir
 		if(offset == 0)
 			return;
 
-		gfire_p2p_connection_send(p_p2p, gfire_p2p_session_get_peer_addr(p_packet->session), offset);
+		gfire_p2p_connection_send(p_p2p, gfire_p2p_session_get_peer_addr(p_packet->session, GF_P2P_ADDR_TYPE_USE),
+								  offset);
 		break;
 	default:
 		purple_debug_warning("gfire", "P2P: gfire_p2p_packet_resend_send: unknown packet type!");
@@ -408,7 +409,10 @@ static void gfire_p2p_connection_input_cb(gpointer p_data, gint p_fd, PurpleInpu
 
 	gfire_p2p_connection *p2p = p_data;
 
-	int length = recv(p2p->socket, p2p->buff_in, GFIRE_P2P_BUFFER_LEN, 0);
+	struct sockaddr_in addr;
+	memset(&addr, 0, sizeof(addr));
+	socklen_t addrlen = sizeof(addr);
+	int length = recvfrom(p2p->socket, p2p->buff_in, GFIRE_P2P_BUFFER_LEN, 0, (struct sockaddr*)&addr, &addrlen);
 #ifdef DEBUG
 	purple_debug_misc("gfire", "P2P: %u bytes received\n", length);
 #endif // DEBUG
@@ -436,6 +440,10 @@ static void gfire_p2p_connection_input_cb(gpointer p_data, gint p_fd, PurpleInpu
 		purple_debug_warning("gfire", "P2P: packet for unknown session\n");
 		return;
 	}
+
+	guint32 ip = g_ntohl(addr.sin_addr.s_addr);
+	guint16 port = g_ntohs(addr.sin_port);
+	gfire_p2p_session_set_addr(session->data, GF_P2P_ADDR_TYPE_USE, ip, port);
 
 	offset += 20;
 
@@ -564,14 +572,16 @@ static void gfire_p2p_connection_input_cb(gpointer p_data, gint p_fd, PurpleInpu
 			{
 				purple_debug_warning("gfire", "P2P: Received data packet with incorrect CRC-32\n");
 				gfire_p2p_connection_send_bad_crc32(p2p, gfire_p2p_session_get_moniker_self(session->data),
-													msgid, seqid, gfire_p2p_session_get_peer_addr(session->data));
+													msgid, seqid,
+													gfire_p2p_session_get_peer_addr(session->data,
+																					GF_P2P_ADDR_TYPE_USE));
 				return;
 			}
 
 			gfire_p2p_session_handle_data(session->data, type, msgid, seqid, data, size, category);
 
 			gfire_p2p_connection_send_ack(p2p, gfire_p2p_session_get_moniker_self(session->data), msgid, seqid,
-										  gfire_p2p_session_get_peer_addr(session->data));
+										  gfire_p2p_session_get_peer_addr(session->data, GF_P2P_ADDR_TYPE_USE));
 			break;
 		}
 	default:

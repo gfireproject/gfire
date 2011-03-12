@@ -733,8 +733,7 @@ void gfire_buddy_proto_im(gfire_data *p_gfire, guint16 p_packet_len)
 			if(offset == -1)
 				return;
 
-			if(status > 0)
-				gfire_buddy_got_p2p_data(gf_buddy, GUINT32_FROM_LE(ip), (guint16)GUINT32_FROM_LE(port), status, salt);
+			gfire_buddy_got_p2p_data(gf_buddy, GUINT32_FROM_LE(ip), (guint16)GUINT32_FROM_LE(port), GUINT32_FROM_LE(localip), (guint16)GUINT32_FROM_LE(localport), status, salt);
 
 			g_free(salt);
 		break;

@@ -120,6 +120,7 @@ struct _gfire_buddy
 	// P2P
 	can_handle_p2p hasP2P;
 	gboolean p2p_requested;
+	guint p2p_request_timeout;
 	gboolean p2p_notify;
 	gfire_p2p_session *p2p;
 
@@ -231,7 +232,7 @@ void gfire_buddy_download_avatar(gfire_buddy *p_buddy, guint32 p_type, guint32 p
 gboolean gfire_buddy_has_p2p(const gfire_buddy *p_buddy);
 gboolean gfire_buddy_uses_p2p(const gfire_buddy *p_buddy);
 void gfire_buddy_request_p2p(gfire_buddy *p_buddy, gboolean p_notify);
-void gfire_buddy_got_p2p_data(gfire_buddy *p_buddy, guint32 p_ip, guint16 p_port, guint32 p_natType, const gchar *p_salt);
+void gfire_buddy_got_p2p_data(gfire_buddy *p_buddy, guint32 p_ip, guint16 p_port, guint32 p_localip, guint16 p_localport, guint32 p_natType, const gchar *p_salt);
 void gfire_buddy_p2p_timedout(gfire_buddy *p_buddy);
 void gfire_buddy_p2p_uncapable(gfire_buddy *p_buddy);
 void gfire_buddy_p2p_ft_init(PurpleXfer *p_xfer);

@@ -33,14 +33,19 @@ typedef struct _gfire_p2p_session gfire_p2p_session;
 #include "gf_p2p_dl_handler.h"
 #include "gf_filetransfer.h"
 
+typedef enum _gfire_p2p_session_addr_type {
+	GF_P2P_ADDR_TYPE_LOCAL = 0,
+	GF_P2P_ADDR_TYPE_EXTERN = 1,
+	GF_P2P_ADDR_TYPE_USE = 2
+} gfire_p2p_session_addr_type;
+
 struct _gfire_p2p_session
 {
 	guint8 *moniker_self;
 	guint8 *moniker_peer;
 
-	guint32 peer_ip;
-	guint16 peer_port;
-	struct sockaddr_in peer_addr;
+	struct sockaddr_in peer_addr[3];
+	guint32 peer_natType;
 
 	gfire_p2p_connection *con;
 
@@ -58,8 +63,8 @@ struct _gfire_p2p_session
 	gboolean need_keep_alive;
 	guint8 keep_alive_retries;
 
-	// Received msgIDs
-	gfire_bitlist *rec_msgids;
+	// Received seqIDs
+	gfire_bitlist *rec_seqids;
 
 	gboolean init;
 
@@ -77,15 +82,16 @@ gfire_p2p_session *gfire_p2p_session_create(gfire_buddy *p_buddy, const gchar *p
 void gfire_p2p_session_free(gfire_p2p_session *p_session, gboolean p_local_reason);
 
 void gfire_p2p_session_bind(gfire_p2p_session *p_session, gfire_p2p_connection *p_p2p);
-void gfire_p2p_session_set_addr(gfire_p2p_session *p_session, guint32 p_ip, guint16 p_port, gboolean p_need_handshake);
+void gfire_p2p_session_set_addr(gfire_p2p_session *p_session, gfire_p2p_session_addr_type p_type, guint32 p_ip, guint16 p_port);
+void gfire_p2p_session_start(gfire_p2p_session *p_session, guint32 p_natType);
 
 // Getting information
 const guint8 *gfire_p2p_session_get_moniker_peer(const gfire_p2p_session *p_session);
 const guint8 *gfire_p2p_session_get_moniker_self(const gfire_p2p_session *p_session);
 
-guint32 gfire_p2p_session_get_peer_ip(const gfire_p2p_session *p_session);
-guint16 gfire_p2p_session_get_peer_port(const gfire_p2p_session *p_session);
-const struct sockaddr_in *gfire_p2p_session_get_peer_addr(const gfire_p2p_session *p_session);
+guint32 gfire_p2p_session_get_peer_ip(const gfire_p2p_session *p_session, gfire_p2p_session_addr_type p_type);
+guint16 gfire_p2p_session_get_peer_port(const gfire_p2p_session *p_session, gfire_p2p_session_addr_type p_type);
+const struct sockaddr_in *gfire_p2p_session_get_peer_addr(const gfire_p2p_session *p_session, gfire_p2p_session_addr_type p_type);
 
 gfire_buddy *gfire_p2p_session_get_buddy(const gfire_p2p_session *p_session);
 
