@@ -101,7 +101,11 @@ static gchar *gfire_filetype_get(const gchar *p_path)
 	if(!fp)
 		return NULL;
 
-	fgets(output, sizeof(output), fp);
+	if(!fgets(output, sizeof(output), fp) && !feof(fp))
+	{
+		pclose(fp);
+		return NULL;
+	}
 	pclose(fp);
 
 	return g_strdup(output);
