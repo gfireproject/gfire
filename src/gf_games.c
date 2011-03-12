@@ -1278,7 +1278,8 @@ static void gfire_game_manager_add_cb(GtkBuilder *p_builder, GtkWidget *p_button
 		{
 #ifndef _WIN32
 			gchar real_game_detect[PATH_MAX];
-			realpath(game_detect, real_game_detect);
+			if(!realpath(game_detect, real_game_detect))
+				strncpy(real_game_detect, game_detect, PATH_MAX);
 #else
 			gchar *real_game_detect = game_detect;
 #endif // _WIN32
@@ -1352,7 +1353,8 @@ static void gfire_game_manager_edit_cb(GtkBuilder *p_builder, GtkWidget *p_butto
 		{
 #ifndef _WIN32
 			gchar real_game_detect[PATH_MAX];
-			realpath(game_detect, real_game_detect);
+			if(!realpath(game_detect, real_game_detect))
+				strncpy(real_game_detect, game_detect, PATH_MAX);
 #else
 			gchar *real_game_detect = game_detect;
 #endif // _WIN32

@@ -111,7 +111,20 @@ void gfire_file_chunk_finalize(gfire_file_chunk *p_chunk)
 	if(p_chunk->type == GF_FILE_CHUNK_RECV)
 	{
 		lseek64(gfire_filetransfer_get_file(p_chunk->ft), p_chunk->offset, SEEK_SET);
-		write(gfire_filetransfer_get_file(p_chunk->ft), p_chunk->data, p_chunk->size);
+		if(write(gfire_filetransfer_get_file(p_chunk->ft), p_chunk->data, p_chunk->size) < 0)
+		{
+			PurpleXfer *xfer = gfire_filetransfer_get_xfer(p_chunk->ft);
+			purple_xfer_error(PURPLE_XFER_RECEIVE, purple_xfer_get_account(xfer), purple_xfer_get_remote_user(xfer),
+							  _("Writing a chunk failed! Make sure you have enough drive space "
+								"and appropriate permissions!"));
+
+			// Free the data so we don't execute this code another time during ft cleanup
+			g_free(p_chunk->data);
+			p_chunk->data = NULL;
+
+			// Abort the transfer
+			gfire_p2p_session_remove_file_transfer(gfire_filetransfer_get_session(p_chunk->ft), p_chunk->ft, TRUE);
+		}
 	}
 
 	g_free(p_chunk->data);

@@ -272,7 +272,7 @@ guint32 gfire_p2p_dl_proto_send_file_complete(gfire_p2p_session *p_session, guin
 	p_fileid = GUINT32_TO_LE(p_fileid);
 	offset = gfire_proto_write_attr_ss("fileid", 0x02, &p_fileid, 4, offset);
 
-	gfire_proto_write_header32(offset, 0x3E8D, 4, 0);
+	gfire_proto_write_header32(offset, 0x3E8D, 1, 0);
 
 	guint8 *tmp_buf = g_malloc0(offset);
 	gfire_network_buffout_copy(tmp_buf, offset);
