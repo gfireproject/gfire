@@ -738,6 +738,10 @@ void gfire_set_sid(gfire_data *p_gfire, guint8 *p_sid)
 		return;
 
 	memcpy(p_gfire->sid, p_sid, XFIRE_SID_LEN);
+
+	gchar *sid = gfire_hex_bin_to_str(p_sid, XFIRE_SID_LEN);
+	purple_debug_info("gfire", "SessionID: %s\n", sid);
+	g_free(sid);
 }
 
 void gfire_set_alias(gfire_data *p_gfire, const gchar* p_alias)
