@@ -50,6 +50,7 @@ static void gfire_p2p_session_send_pong(gfire_p2p_session *p_session)
 
 	// Reset the sequence
 	p_session->seqid = 0;
+	gfire_bitlist_clear(p_session->rec_seqids);
 
 	// Send the pong
 	p_session->sessid = gfire_p2p_connection_send_pong(p_session->con, p_session->moniker_self, p_session->sessid,
@@ -75,8 +76,7 @@ void gfire_p2p_session_send_data16_packet(gfire_p2p_session *p_session, const gu
 	if(!p_session || !p_session->con || !p_data || !p_len || !p_category)
 		return;
 
-	p_session->seqid++;
-	gfire_p2p_connection_send_data16(p_session->con, p_session, 0, p_session->moniker_self, p_session->seqid,
+	gfire_p2p_connection_send_data16(p_session->con, p_session, 0, p_session->moniker_self, p_session->seqid++,
 									 p_data, p_len, p_category,
 									 gfire_p2p_session_get_peer_addr(p_session, GF_P2P_ADDR_TYPE_USE));
 }
@@ -86,8 +86,7 @@ void gfire_p2p_session_send_data32_packet(gfire_p2p_session *p_session, const gu
 	if(!p_session || !p_session->con || !p_data || !p_len || !p_category)
 		return;
 
-	p_session->seqid++;
-	gfire_p2p_connection_send_data32(p_session->con, p_session, 0, p_session->moniker_self, p_session->seqid,
+	gfire_p2p_connection_send_data32(p_session->con, p_session, 0, p_session->moniker_self, p_session->seqid++,
 									 p_data, p_len, p_category,
 									 gfire_p2p_session_get_peer_addr(p_session, GF_P2P_ADDR_TYPE_USE));
 }
@@ -244,7 +243,7 @@ void gfire_p2p_session_start(gfire_p2p_session *p_session, guint32 p_natType)
 	p_session->peer_natType = p_natType;
 
 	// Send ping/handshake if we can actually send any data
-	if(p_natType != 2 && p_natType != 3)
+	if(!p_session->connected && p_natType != 2 && p_natType != 3)
 	{
 		if(!gfire_p2p_session_get_peer_ip(p_session, GF_P2P_ADDR_TYPE_USE))
 		{
@@ -324,49 +323,53 @@ gboolean gfire_p2p_session_is_by_moniker_self(const gfire_p2p_session *p_session
 	return (memcmp(p_session->moniker_self, p_moniker, 20) == 0);
 }
 
-void gfire_p2p_session_ping(gfire_p2p_session *p_session, guint32 p_msgid)
+void gfire_p2p_session_ping(gfire_p2p_session *p_session)
 {
 	if(!p_session)
 		return;
 
 	gfire_p2p_session_send_pong(p_session);
 	gfire_bitlist_clear(p_session->rec_seqids);
+
+	if(!p_session->connected)
+		gfire_p2p_session_send_ping(p_session, GF_P2P_ADDR_TYPE_USE);
 }
 
-void gfire_p2p_session_pong(gfire_p2p_session *p_session, guint32 p_msgid)
+void gfire_p2p_session_pong(gfire_p2p_session *p_session)
 {
-	if(p_session)
-	{
-		if(!p_session->connected)
-		{
-			// Start requested file transfers as soon as we are connected
-			GList *cur = p_session->transfers;
-			while(cur)
-			{
-				gfire_filetransfer_start(cur->data);
-				cur = g_list_next(cur);
-			}
+	if(!p_session)
+		return;
 
-			p_session->connected = TRUE;
+	if(!p_session->connected)
+	{
+		// Start requested file transfers as soon as we are connected
+		GList *cur = p_session->transfers;
+		while(cur)
+		{
+			gfire_filetransfer_start(cur->data);
+			cur = g_list_next(cur);
 		}
-		p_session->need_pong = FALSE;
+
+		p_session->connected = TRUE;
+		gfire_buddy_p2p_connected(p_session->buddy);
 	}
+	p_session->need_pong = FALSE;
 }
 
-void gfire_p2p_session_keep_alive_request(gfire_p2p_session *p_session, guint32 p_msgid)
+void gfire_p2p_session_keep_alive_request(gfire_p2p_session *p_session)
 {
 	if(p_session && p_session->con)
 		gfire_p2p_connection_send_keep_alive_reply(p_session->con, p_session->moniker_self, p_session->sessid,
 												   gfire_p2p_session_get_peer_addr(p_session, GF_P2P_ADDR_TYPE_USE));
 }
 
-void gfire_p2p_session_keep_alive_response(gfire_p2p_session *p_session, guint32 p_msgid)
+void gfire_p2p_session_keep_alive_response(gfire_p2p_session *p_session)
 {
 	if(p_session)
 		p_session->need_keep_alive = FALSE;
 }
 
-gboolean gfire_p2p_session_handle_data(gfire_p2p_session *p_session, guint32 p_type, guint32 p_msgid, guint32 p_seqid, void *p_data, guint32 p_len, const gchar *p_category)
+gboolean gfire_p2p_session_handle_data(gfire_p2p_session *p_session, guint32 p_type, guint32 p_seqid, void *p_data, guint32 p_len, const gchar *p_category)
 {
 	if(!p_session || !p_data || !p_category)
 		return FALSE;

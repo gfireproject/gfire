@@ -108,7 +108,7 @@ static void gfire_p2p_natcheck_udpread(gpointer p_data, gint p_fd, PurpleInputCo
 
 	if(server == 3)
 	{
-		guint32 ip = addr.sin_addr.s_addr;
+		guint32 ip = g_ntohl(addr.sin_addr.s_addr);
 		purple_debug_error("gfire", "P2P: NAT Check: Received response from unknown server (%u.%u.%u.%u:%u)\n",
 						   (ip & 0xff000000) >> 24,
 						   (ip & 0xff0000) >> 16,

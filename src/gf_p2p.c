@@ -469,10 +469,10 @@ static void gfire_p2p_connection_input_cb(gpointer p_data, gint p_fd, PurpleInpu
 	switch(type)
 	{
 	case GFIRE_P2P_TYPE_PING:
-		gfire_p2p_session_ping(session->data, msgid);
+		gfire_p2p_session_ping(session->data);
 		break;
 	case GFIRE_P2P_TYPE_PONG:
-		gfire_p2p_session_pong(session->data, msgid);
+		gfire_p2p_session_pong(session->data);
 		break;
 	case GFIRE_P2P_TYPE_ACK:
 		{
@@ -515,10 +515,10 @@ static void gfire_p2p_connection_input_cb(gpointer p_data, gint p_fd, PurpleInpu
 			break;
 		}
 	case GFIRE_P2P_TYPE_KEEP_ALIVE_REQ:
-		gfire_p2p_session_keep_alive_request(session->data, msgid);
+		gfire_p2p_session_keep_alive_request(session->data);
 		break;
 	case GFIRE_P2P_TYPE_KEEP_ALIVE_REP:
-		gfire_p2p_session_keep_alive_response(session->data, msgid);
+		gfire_p2p_session_keep_alive_response(session->data);
 		break;
 	case GFIRE_P2P_TYPE_DATA16:
 	case GFIRE_P2P_TYPE_DATA32:
@@ -578,7 +578,7 @@ static void gfire_p2p_connection_input_cb(gpointer p_data, gint p_fd, PurpleInpu
 				return;
 			}
 
-			gfire_p2p_session_handle_data(session->data, type, msgid, seqid, data, size, category);
+			gfire_p2p_session_handle_data(session->data, type, seqid, data, size, category);
 
 			gfire_p2p_connection_send_ack(p2p, gfire_p2p_session_get_moniker_self(session->data), msgid, seqid,
 										  gfire_p2p_session_get_peer_addr(session->data, GF_P2P_ADDR_TYPE_USE));
@@ -735,7 +735,7 @@ guint32 gfire_p2p_connection_local_ip(const gfire_p2p_connection *p_p2p)
 
 	guint32 ip = 0;
 	memcpy(&ip, purple_network_ip_atoi(ip_str), 4);
-	return ip;
+	return g_ntohl(ip);
 }
 
 guint16 gfire_p2p_connection_local_port(const gfire_p2p_connection *p_p2p)

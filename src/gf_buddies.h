@@ -235,6 +235,7 @@ void gfire_buddy_request_p2p(gfire_buddy *p_buddy, gboolean p_notify);
 void gfire_buddy_got_p2p_data(gfire_buddy *p_buddy, guint32 p_ip, guint16 p_port, guint32 p_localip, guint16 p_localport, guint32 p_natType, const gchar *p_salt);
 void gfire_buddy_p2p_timedout(gfire_buddy *p_buddy);
 void gfire_buddy_p2p_uncapable(gfire_buddy *p_buddy);
+void gfire_buddy_p2p_connected(gfire_buddy *p_buddy);
 void gfire_buddy_p2p_ft_init(PurpleXfer *p_xfer);
 
 

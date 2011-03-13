@@ -107,11 +107,11 @@ gboolean gfire_p2p_session_is_by_moniker_peer(const gfire_p2p_session *p_session
 gboolean gfire_p2p_session_is_by_moniker_self(const gfire_p2p_session *p_session, const guint8 *p_moniker);
 
 // Data handling
-void gfire_p2p_session_ping(gfire_p2p_session *p_session, guint32 p_msgid);
-void gfire_p2p_session_pong(gfire_p2p_session *p_session, guint32 p_msgid);
-void gfire_p2p_session_keep_alive_request(gfire_p2p_session *p_session, guint32 p_msgid);
-void gfire_p2p_session_keep_alive_response(gfire_p2p_session *p_session, guint32 p_msgid);
-gboolean gfire_p2p_session_handle_data(gfire_p2p_session *p_session, guint32 p_type, guint32 p_msgid, guint32 p_seqid, void *p_data, guint32 p_len, const gchar *p_category);
+void gfire_p2p_session_ping(gfire_p2p_session *p_session);
+void gfire_p2p_session_pong(gfire_p2p_session *p_session);
+void gfire_p2p_session_keep_alive_request(gfire_p2p_session *p_session);
+void gfire_p2p_session_keep_alive_response(gfire_p2p_session *p_session);
+gboolean gfire_p2p_session_handle_data(gfire_p2p_session *p_session, guint32 p_type, guint32 p_seqid, void *p_data, guint32 p_len, const gchar *p_category);
 
 // File Transfers
 void gfire_p2p_session_add_file_transfer(gfire_p2p_session *p_session, PurpleXfer *p_xfer);

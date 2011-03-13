@@ -412,7 +412,9 @@ gboolean gfire_p2p_dl_proto_file_transfer_info(gfire_p2p_session *p_session, con
 		return FALSE;
 	}
 
+#ifdef DEBUG
 	purple_debug_misc("gfire", "P2P: Received file transfer info: offset=%lu size=%u chunkcnt=%u\n", foffset, size, chunk_count);
+#endif // DEBUG
 
 	gfire_filetransfer_transfer_info(ft, foffset, size, chunk_count, msgid);
 

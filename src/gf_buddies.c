@@ -228,7 +228,8 @@ void gfire_buddy_free(gfire_buddy *p_buddy)
 		gfire_p2p_session_free(p_buddy->p2p, TRUE);
 	}
 
-	purple_timeout_remove(p_buddy->p2p_request_timeout);
+	if(p_buddy->p2p_request_timeout)
+		purple_timeout_remove(p_buddy->p2p_request_timeout);
 	g_source_remove(p_buddy->lost_ims_timer);
 	g_source_remove(p_buddy->lost_p2p_ims_timer);
 
@@ -775,6 +776,11 @@ void gfire_buddy_set_session_id(gfire_buddy *p_buddy, const guint8 *p_sessionid)
 		}
 		p_buddy->p2p_requested = FALSE;
 		p_buddy->hasP2P = GFP2P_UNKNOWN;
+		if(p_buddy->p2p_request_timeout)
+		{
+			purple_input_remove(p_buddy->p2p_request_timeout);
+			p_buddy->p2p_request_timeout = 0;
+		}
 
 		// Reset IM state
 		p_buddy->highest_im = 0;
@@ -1436,6 +1442,12 @@ void gfire_buddy_got_p2p_data(gfire_buddy *p_buddy, guint32 p_ip, guint16 p_port
 	if(!p_buddy || !p_salt)
 		return;
 
+	if(p_buddy->p2p && gfire_p2p_session_connected(p_buddy->p2p))
+	{
+		purple_debug_misc("gfire", "Received P2P information, but we're already connected\n");
+		return;
+	}
+
 	GString *debug_str = g_string_new("Received P2P information, ");
 
 	p_buddy->p2p_notify = FALSE;
@@ -1533,6 +1545,24 @@ void gfire_buddy_p2p_uncapable(gfire_buddy *p_buddy)
 	{
 		p_buddy->p2p_notify = FALSE;
 		purple_notify_message(p_buddy->gc, PURPLE_NOTIFY_MSG_ERROR, _("P2P Connection not possible"), _("P2P Connection not possible"), _("We're not able to establish a connection to your buddy. File transfer and P2P messaging will not be possible."), NULL, NULL);
+	}
+}
+
+void gfire_buddy_p2p_connected(gfire_buddy *p_buddy)
+{
+	if(!p_buddy)
+		return;
+
+	purple_debug_info("gfire", "P2P connected with buddy %s\n", gfire_buddy_get_name(p_buddy));
+
+	p_buddy->hasP2P = GFP2P_YES;
+	p_buddy->p2p_notify = FALSE;
+
+	p_buddy->p2p_requested = FALSE;
+	if(p_buddy->p2p_request_timeout)
+	{
+		purple_timeout_remove(p_buddy->p2p_request_timeout);
+		p_buddy->p2p_request_timeout = 0;
 	}
 }
 
