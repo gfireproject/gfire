@@ -1,13 +1,10 @@
 /*
  * purple - Xfire Protocol Plugin
  *
- * Copyright (C) 2005-2006, Beat Wolf <asraniel@fryx.ch>
- * Copyright (C) 2006,      Keith Geffert <keith@penguingurus.com>
- * Copyright (C) 2008-2009	Laurent De Marez <laurentdemarez@gmail.com>
- * Copyright (C) 2009-2010  Warren Dumortier <nwarrenfl@gmail.com>
- * Copyright (C) 2009-2011  Oliver Ney <oliver@dryder.de>
- *
  * This file is part of Gfire.
+ *
+ * See the AUTHORS file distributed with Gfire for a full list of
+ * all contributors and this files copyright holders.
  *
  * Gfire is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
