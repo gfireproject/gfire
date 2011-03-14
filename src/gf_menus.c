@@ -171,17 +171,45 @@ static void gfire_menu_action_wiki_cb(PurpleConnection *p_gc)
 void gfire_menu_action_about_cb(PurplePluginAction *p_action)
 {
 	PurpleConnection *gc = (PurpleConnection *)p_action->context;
+	gfire_data *gfire = NULL;
 	char *msg = NULL;
+
+	if(!(gfire = (gfire_data*)gc->proto_data)) return;
+
+	const gchar *natTypeString = NULL;
+	int natType = 0;
+
+	gfire_p2p_connection *p2p = gfire_get_p2p(gfire);
+	if(p2p)
+		natType = gfire_p2p_connection_natType(p2p);
+
+	switch(natType) {
+	case 1:
+		natTypeString = _("Full Cone NAT");
+		break;
+	case 2:
+	case 3:
+		natTypeString = _("Symmetric NAT");
+		break;
+	case 4:
+		natTypeString = _("Restricted Cone NAT");
+		break;
+	default:
+		natTypeString = _("No P2P available");
+		break;
+	}
 
 	if(gfire_game_have_list())
 	{
 		gchar *version_str = gfire_game_get_version_str();
-		msg = g_strdup_printf(_("Gfire Version: %s\nGame List Version: %s"), GFIRE_VERSION_STRING, version_str);
+		msg = g_strdup_printf(_("Gfire Version: %s\nGame List Version: %s\nNAT Type: %d (%s)"), GFIRE_VERSION_STRING,
+							  version_str, natType, natTypeString);
 		g_free(version_str);
 	}
 	else
 	{
-		msg = g_strdup_printf(_("Gfire Version: %s"), GFIRE_VERSION_STRING);
+		msg = g_strdup_printf(_("Gfire Version: %s\nNAT Type: %d (%s)"), GFIRE_VERSION_STRING, natType,
+							  natTypeString);
 	}
 
 	purple_request_action(gc, _("About Gfire"), _("Xfire Plugin for Pidgin"), msg, PURPLE_DEFAULT_ACTION_NONE,
