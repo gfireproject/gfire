@@ -24,8 +24,6 @@
 
 #include "gf_server_query.h"
 
-#ifdef HAVE_GTK
-
 // Available server query drivers
 extern gfire_server_query_driver gf_sq_quake_driver;
 extern gfire_server_query_driver gf_sq_source_driver;
@@ -367,5 +365,3 @@ gboolean gfire_server_query_supports(const gchar *p_type)
 	}
 	return FALSE;
 }
-
-#endif // HAVE_GTK

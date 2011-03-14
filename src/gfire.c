@@ -25,10 +25,12 @@
 #include "gfire_proto.h"
 #include "gf_network.h"
 #include "gf_games.h"
-#include "gf_server_detection.h"
-#include "gf_game_detection.h"
-#include "gf_ipc_server.h"
 #include "gfire.h"
+
+#ifdef USE_GAME_DETECTION
+#	include "gf_server_detection.h"
+#	include "gf_game_detection.h"
+#endif // USE_GAME_DETECTION
 
 static guint gfire_update_count = 0;
 static PurpleUtilFetchUrlData *gfire_update_data = NULL;
@@ -105,11 +107,10 @@ void gfire_free(gfire_data *p_gfire)
 	if(p_gfire->p2p)
 		gfire_p2p_connection_close(p_gfire->p2p);
 
+#ifdef USE_GAME_DETECTION
 	// Unregister this Gfire session with game detection
 	gfire_game_detector_unregister(p_gfire);
-
-	// Unregister this Gfire session with the IPC server
-	gfire_ipc_server_unregister(p_gfire);
+#endif // USE_GAME_DETECTION
 
 	// Free client preferences
 	gfire_preferences_free(p_gfire->prefs);
@@ -163,7 +164,6 @@ static void gfire_update_cb(PurpleUtilFetchUrlData *p_url_data, gpointer p_data,
 			guint32 gfire_latest_version = 0;
 			if(xmlnode_get_attrib(version_node, "version"))
 				sscanf(xmlnode_get_attrib(version_node, "version"), "%u", &gfire_latest_version);
-			const gchar *gfire_latest_suffix = xmlnode_get_attrib(version_node, "suffix");
 
 			guint32 games_list_version = 0;
 			if(xmlnode_get_attrib(version_node, "games_list_version"))
@@ -171,6 +171,8 @@ static void gfire_update_cb(PurpleUtilFetchUrlData *p_url_data, gpointer p_data,
 
 			// Notify user if Gfire can be updated
 #ifdef UPDATE_NOTIFY
+			const gchar *gfire_latest_suffix = xmlnode_get_attrib(version_node, "suffix");
+
 				// Higher version number
 			if ((GFIRE_VERSION < gfire_latest_version) ||
 				// Same version, current one is not SVN
@@ -486,13 +488,6 @@ void gfire_login_successful(gfire_data *p_gfire)
 	p_gfire->server_browser = gfire_server_browser_create(gfire_get_connection(p_gfire));
 #endif // HAVE_GTK
 
-	// Register this Gfire session with the IPC server
-	gfire_ipc_server_register(p_gfire);
-
-	// Register this Gfire session with the game detection
-	if(purple_account_get_bool(purple_connection_get_account(gfire_get_connection(p_gfire)), "ingamedetectionnorm", TRUE))
-		gfire_game_detector_register(p_gfire);
-
 	// Setup P2P connection
 	if(purple_account_get_bool(purple_connection_get_account(gfire_get_connection(p_gfire)), "p2p_option", TRUE))
 		p_gfire->p2p = gfire_p2p_connection_create();
@@ -503,11 +498,17 @@ void gfire_login_successful(gfire_data *p_gfire)
 	// Update current status
 	gfire_set_current_status(p_gfire);
 
+#ifdef USE_GAME_DETECTION
+	// Register this Gfire session with the game detection
+	if(purple_account_get_bool(purple_connection_get_account(gfire_get_connection(p_gfire)), "ingamedetectionnorm", TRUE))
+		gfire_game_detector_register(p_gfire);
+
 	// Send detection data
 	if(gfire_game_detector_current_gameid())
 		gfire_set_game_status(p_gfire, gfire_game_detector_current_game());
 	if(gfire_game_detector_current_voipid())
 		gfire_set_voip_status(p_gfire, gfire_game_detector_current_voip());
+#endif // USE_GAME_DETECTION
 
 	// Tell libpurple that we're ready now
 	purple_connection_set_state(gfire_get_connection(p_gfire), PURPLE_CONNECTED);

@@ -23,7 +23,10 @@
 */
 
 #include "gf_menus.h"
-#include "gf_server_browser.h"
+
+#ifdef HAVE_GTK
+#	include "gf_server_browser.h"
+#endif // HAVE_GTK
 
 void gfire_clan_menu_site_cb(PurpleBlistNode *p_node, gpointer *p_data)
 {

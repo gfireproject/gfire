@@ -25,8 +25,6 @@
 #include "gf_server_browser_proto.h"
 #include "gf_server_browser.h"
 
-#ifdef HAVE_GTK
-
 // Serverlist requests
 guint16 gfire_server_browser_proto_create_friends_fav_serverlist_request(guint32 p_gameid)
 {
@@ -287,5 +285,3 @@ void gfire_server_browser_proto_serverlist(gfire_data *p_gfire, guint16 p_packet
 	g_list_free(ips);
 	g_list_free(ports);
 }
-
-#endif // HAVE_GTK

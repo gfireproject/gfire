@@ -665,6 +665,8 @@ static gfire_game_configuration *gfire_game_configuration_create_from_xml(xmlnod
 	return ret;
 }
 
+// Only used by game manager
+#ifdef HAVE_GTK
 static gfire_game_configuration *gfire_game_configuration_create(guint32 p_gameid, const gchar *p_detect_file,
 																 const gchar *p_launch_file, const gchar *p_prefix)
 {
@@ -680,6 +682,7 @@ static gfire_game_configuration *gfire_game_configuration_create(guint32 p_gamei
 
 	return ret;
 }
+#endif // HAVE_GTK
 
 static void gfire_game_configuration_free(gfire_game_configuration *p_gconf)
 {
@@ -693,36 +696,6 @@ static void gfire_game_configuration_free(gfire_game_configuration *p_gconf)
 		g_free(p_gconf->launch_prefix);
 
 	g_free(p_gconf);
-}
-
-static xmlnode *gfire_game_configuration_to_xmlnode(const gfire_game_configuration *p_gconf)
-{
-	xmlnode *ret = xmlnode_new("game");
-	gchar *id_str = g_strdup_printf("%u", p_gconf->game_id);
-	xmlnode_set_attrib(ret, "id", id_str);
-	g_free(id_str);
-
-	xmlnode *command_node = xmlnode_new_child(ret, "command");
-
-	if(p_gconf->detect_file)
-	{
-		xmlnode *detect_node = xmlnode_new_child(command_node, "detect");
-		xmlnode_insert_data(detect_node, p_gconf->detect_file, -1);
-	}
-
-	if(p_gconf->launch_file)
-	{
-		xmlnode *launch_node = xmlnode_new_child(command_node, "launch");
-		xmlnode_insert_data(launch_node, p_gconf->launch_file, -1);
-	}
-
-	if(p_gconf->launch_prefix)
-	{
-		xmlnode *prefix_node = xmlnode_new_child(command_node, "prefix");
-		xmlnode_insert_data(prefix_node, p_gconf->launch_prefix, -1);
-	}
-
-	return ret;
 }
 
 static gint gfire_game_configuration_compare(const gfire_game_configuration *p_a, const gfire_game_configuration *p_b)
@@ -802,6 +775,38 @@ gboolean gfire_game_load_config_xml(gboolean p_force)
 	return TRUE;
 }
 
+// Only used by game manager
+#ifdef HAVE_GTK
+static xmlnode *gfire_game_configuration_to_xmlnode(const gfire_game_configuration *p_gconf)
+{
+	xmlnode *ret = xmlnode_new("game");
+	gchar *id_str = g_strdup_printf("%u", p_gconf->game_id);
+	xmlnode_set_attrib(ret, "id", id_str);
+	g_free(id_str);
+
+	xmlnode *command_node = xmlnode_new_child(ret, "command");
+
+	if(p_gconf->detect_file)
+	{
+		xmlnode *detect_node = xmlnode_new_child(command_node, "detect");
+		xmlnode_insert_data(detect_node, p_gconf->detect_file, -1);
+	}
+
+	if(p_gconf->launch_file)
+	{
+		xmlnode *launch_node = xmlnode_new_child(command_node, "launch");
+		xmlnode_insert_data(launch_node, p_gconf->launch_file, -1);
+	}
+
+	if(p_gconf->launch_prefix)
+	{
+		xmlnode *prefix_node = xmlnode_new_child(command_node, "prefix");
+		xmlnode_insert_data(prefix_node, p_gconf->launch_prefix, -1);
+	}
+
+	return ret;
+}
+
 static void gfire_game_save_config_xml()
 {
 	xmlnode *game_config = xmlnode_new("game_config");
@@ -822,6 +827,7 @@ static void gfire_game_save_config_xml()
 
 	xmlnode_free(game_config);
 }
+#endif // HAVE_GTK
 
 void gfire_game_config_cleanup()
 {

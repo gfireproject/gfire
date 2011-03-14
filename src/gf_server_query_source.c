@@ -24,8 +24,6 @@
 
 #include "gf_server_query.h"
 
-#ifdef HAVE_GTK
-
 typedef struct _gfire_sq_source_player
 {
 	gchar *name;
@@ -505,5 +503,3 @@ static void gfire_sq_source_free_server(gfire_game_server *p_server)
 		g_free(data);
 	}
 }
-
-#endif // HAVE_GTK

@@ -23,9 +23,6 @@ EXTRA_DIST = \
 	gf_server_query.h \
 	gf_buddies.h \
 	gf_buddies_proto.h \
-	gf_ipc_server.h \
-	gfire_ipc.h \
-	gf_ipc_proto.h \
 	gf_p2p.h \
 	gf_p2p_natcheck.h \
 	gf_p2p_session.h \
@@ -62,24 +59,8 @@ libxfire_la_SOURCES = \
 	gf_purple.c \
 	gfire.c \
 	gfire_proto.c \
-	gf_server_browser.c \
-	gf_server_browser_proto.c \
-	gf_server_query.c \
-	gf_server_query_quake.c \
-	gf_server_query_source.c \
-	gf_server_query_gamespy.c \
-	gf_server_query_gamespy2.c \
-	gf_server_query_gamespy3.c \
-	gf_server_query_ase.c \
-	gf_server_query_savage.c \
 	gf_menus.c \
 	gf_util.c \
-	gf_server_detection_linux.c \
-	gf_game_detection.c \
-	gf_server_detection.c \
-	gf_game_detection_linux.c \
-	gf_ipc_server.c \
-	gf_ipc_proto.c \
 	gf_p2p.c \
 	gf_p2p_natcheck.c \
 	gf_p2p_session.c \
@@ -92,6 +73,32 @@ libxfire_la_SOURCES = \
 	gf_groups_proto.c \
 	gf_preferences.c \
 	gf_preferences_proto.c
+
+if GTK
+
+libxfire_la_SOURCES += \
+	gf_server_browser.c \
+	gf_server_browser_proto.c \
+	gf_server_query.c \
+	gf_server_query_quake.c \
+	gf_server_query_source.c \
+	gf_server_query_gamespy.c \
+	gf_server_query_gamespy2.c \
+	gf_server_query_gamespy3.c \
+	gf_server_query_ase.c \
+	gf_server_query_savage.c
+
+endif
+
+if GAME_DETECTION
+
+libxfire_la_SOURCES += \
+	gf_server_detection_linux.c \
+	gf_game_detection.c \
+	gf_server_detection.c \
+	gf_game_detection_linux.c
+
+endif
 
 libxfire_la_LIBADD = \
 	$(PURPLE_LIBS) $(GLIB_LIBS) $(GTK_LIBS) $(LIBNOTIFY_LIBS) $(DBUS_GLIB_LIBS)

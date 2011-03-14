@@ -707,6 +707,7 @@ void gfire_proto_system_broadcast(gfire_data *p_gfire, guint16 p_packet_len)
 
 void gfire_proto_external_game(gfire_data *p_gfire, guint16 p_packet_len)
 {
+#ifdef USE_GAME_DETECTION
 	if(!p_gfire)
 		return;
 
@@ -718,4 +719,5 @@ void gfire_proto_external_game(gfire_data *p_gfire, guint16 p_packet_len)
 		return;
 
 	gfire_game_detector_set_external_game(gameid);
+#endif // USE_GAME_DETECTION
 }

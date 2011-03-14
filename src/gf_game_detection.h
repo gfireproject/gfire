@@ -25,6 +25,7 @@
 #ifndef _GF_GAME_DETECTION_H
 
 #include "gf_base.h"
+
 #include "gfire.h"
 #include "gf_server_detection.h"
 

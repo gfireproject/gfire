@@ -23,9 +23,7 @@
 */
 
 #include "gf_server_browser.h"
-
-#ifdef HAVE_GTK
-
+#include "gf_server_browser_proto.h"
 #include "gf_games.h"
 #include "gfire.h"
 
@@ -872,5 +870,3 @@ gboolean gfire_server_browser_show_single(guint32 p_gameid, guint32 p_ip, guint1
 
 	return TRUE;
 }
-
-#endif // HAVE_GTK

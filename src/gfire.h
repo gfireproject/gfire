@@ -35,8 +35,11 @@ typedef struct _gfire_data gfire_data;
 #include "gf_games.h"
 #include "gf_p2p.h"
 #include "gf_groups.h"
-#include "gf_server_browser_proto.h"
 #include "gf_preferences.h"
+
+#ifdef HAVE_GTK
+#	include "gf_server_browser.h"
+#endif // HAVE_GTK
 
 // gfire_find_buddy modes
 typedef enum _gfire_find_buddy_mode
@@ -163,8 +166,10 @@ void gfire_add_chat(gfire_data *p_gfire, gfire_chat *p_chat);
 void gfire_leave_chat(gfire_data *p_gfire, gfire_chat *p_chat);
 
 // Gaming status
+#ifdef USE_GAME_DETECTION
 void gfire_set_game_status(gfire_data *p_gfire, const gfire_game_data *p_data);
 void gfire_set_voip_status(gfire_data *p_gfire, const gfire_game_data *p_data);
+#endif // USE_GAME_DETECTION
 
 // Appearance
 const gchar *gfire_get_name(const gfire_data *p_gfire);
@@ -184,7 +189,9 @@ gboolean gfire_has_p2p(const gfire_data *p_gfire);
 gfire_p2p_connection *gfire_get_p2p(const gfire_data *p_gfire);
 
 // Servers
+#ifdef HAVE_GTK
 void gfire_show_server_browser(PurplePluginAction *p_action);
+#endif // HAVE_GTK
 
 // Account settings
 void gfire_got_preferences(gfire_data *p_gfire);

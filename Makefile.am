@@ -6,11 +6,11 @@ EXTRA_DIST = config.rpath  config.rpath  COPYING \
 			 VERSION \
 			 gfire.spec
 
-if INSTALL_NLS
-PO_DIR = po
-endif
+SUBDIRS = data pixmaps src
 
-SUBDIRS = data pixmaps $(PO_DIR) src
+if INSTALL_NLS
+SUBDIRS += po
+endif
 
 AM_CFLAGS = -DDATADIR=\"$(datadir)\" -DLOCALEDIR=\"$(localedir)\"
 

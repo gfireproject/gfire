@@ -27,8 +27,6 @@
 
 #include "gf_base.h"
 
-#ifdef HAVE_GTK
-
 #define GFSQ_MAX_QUERIES 20
 
 typedef struct _gfire_server_query_driver gfire_server_query_driver;
@@ -120,7 +118,5 @@ gboolean gfire_server_query_start(gfire_server_query *p_query, const gchar *p_ty
 
 // Capabilities
 gboolean gfire_server_query_supports(const gchar *p_type);
-
-#endif // HAVE_GTK
 
 #endif // _GF_SERVER_QUERY_H

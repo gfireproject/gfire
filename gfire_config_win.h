@@ -107,4 +107,7 @@
 /* Show notifications about newer versions */
 #define UPDATE_NOTIFY 1
 
+/* Support game detection */
+#define USE_GAME_DETECTION 1
+
 #endif

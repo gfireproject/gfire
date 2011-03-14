@@ -28,9 +28,12 @@
 #include "gf_buddies_proto.h"
 #include "gf_chat_proto.h"
 #include "gf_friend_search_proto.h"
-#include "gf_server_browser_proto.h"
 #include "gf_groups_proto.h"
 #include "gf_games.h"
+
+#ifdef HAVE_GTK
+#	include "gf_server_browser_proto.h"
+#endif // HAVE_GTK
 
 static guint8 *gfire_buffout = NULL;
 static guint32 gfire_buffout_refcount = 0;

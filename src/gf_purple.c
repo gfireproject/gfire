@@ -30,8 +30,14 @@
 #include "gf_friend_search.h"
 #include "gf_purple.h"
 #include "gf_chat_proto.h"
-#include "gf_game_detection.h"
-#include "gf_server_query.h"
+
+#ifdef USE_GAME_DETECTION
+#	include "gf_game_detection.h"
+#endif // USE_GAME_DETECTION
+
+#ifdef HAVE_GTK
+#	include "gf_server_query.h"
+#endif // HAVE_GTK
 
 static PurplePlugin *_gfire_plugin = NULL;
 
@@ -649,7 +655,11 @@ static GList *gfire_purple_node_menu(PurpleBlistNode *p_node)
 			ret = g_list_append(ret, me);
 		}
 
+#ifdef USE_GAME_DETECTION
 		if(gfire_buddy_is_playing(gf_buddy) && !gfire_game_detector_is_playing())
+#else
+		if(gfire_buddy_is_playing(gf_buddy))
+#endif // USE_GAME_DETECTION
 		{
 			const gfire_game_data *game_data = gfire_buddy_get_game_data(gf_buddy);
 
@@ -678,7 +688,11 @@ static GList *gfire_purple_node_menu(PurpleBlistNode *p_node)
 #endif // HAVE_GTK
 		}
 
+#ifdef USE_GAME_DETECTION
 		if(gfire_buddy_is_talking(gf_buddy) && !gfire_game_detector_is_voiping())
+#else
+		if(gfire_buddy_is_talking(gf_buddy))
+#endif // USE_GAME_DETECTION
 		{
 			const gfire_game_data *voip_data = gfire_buddy_get_voip_data(gf_buddy);
 
@@ -1254,6 +1268,7 @@ static void _init_plugin(PurplePlugin *p_plugin)
 	option = purple_account_option_bool_new(_("Buddies can see if I'm typing"), "typenorm", TRUE);
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options,option);
 
+#ifdef USE_GAME_DETECTION
 	option = purple_account_option_bool_new(_("Auto detect for ingame status"), "ingamedetectionnorm", TRUE);
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options,option);
 
@@ -1265,6 +1280,7 @@ static void _init_plugin(PurplePlugin *p_plugin)
 
 	option = purple_account_option_bool_new(_("Enable server detection"), "server_detection_option", FALSE);
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
+#endif // USE_GAME_DETECTION
 
 	option = purple_account_option_bool_new(_("Use Xfires P2P features"), "p2p_option", TRUE);
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);

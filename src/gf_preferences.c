@@ -24,6 +24,7 @@
 
 #include "gf_preferences.h"
 #include "gf_preferences_proto.h"
+#include "gf_network.h"
 
 static gboolean gfire_preferences_get_default(guint8 p_id)
 {

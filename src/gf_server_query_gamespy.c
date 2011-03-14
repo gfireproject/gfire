@@ -24,8 +24,6 @@
 
 #include "gf_server_query.h"
 
-#ifdef HAVE_GTK
-
 #define GFSQ_GAMESPY_STAGE_INFO		1
 #define GFSQ_GAMESPY_STAGE_RULES	2
 #define GFSQ_GAMESPY_STAGE_PLAYERS	3
@@ -410,5 +408,3 @@ static void gfire_sq_gamespy_free_server(gfire_game_server *p_server)
 	if(p_server->data && p_server->data->proto_data)
 		gfire_sq_gamespy_data_free((gfire_sq_gamespy_data*)p_server->data->proto_data);
 }
-
-#endif // HAVE_GTK

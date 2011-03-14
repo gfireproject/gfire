@@ -24,8 +24,6 @@
 
 #include "gf_server_query.h"
 
-#ifdef HAVE_GTK
-
 typedef struct _gfire_sq_quake_player
 {
 	gint score, ping;
@@ -462,5 +460,3 @@ static void gfire_sq_quake_free_server(gfire_game_server *p_server)
 		g_free(data);
 	}
 }
-
-#endif // HAVE_GTK

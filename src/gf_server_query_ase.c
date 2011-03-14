@@ -24,8 +24,6 @@
 
 #include "gf_server_query.h"
 
-#ifdef HAVE_GTK
-
 typedef struct _gfire_sq_ase_player
 {
 	gchar *name;
@@ -473,5 +471,3 @@ static void gfire_sq_ase_free_server(gfire_game_server *p_server)
 	if(p_server->data && p_server->data->proto_data)
 		free_ase_data((gfire_sq_ase_data*)p_server->data->proto_data);
 }
-
-#endif // HAVE_GTK
