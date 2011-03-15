@@ -45,7 +45,7 @@ gboolean gfire_p2p_dl_handler_handle(gfire_p2p_session *p_session, const guint8 
 		case 0x3E88:
 			return gfire_p2p_dl_proto_file_request_reply(p_session, p_data + offset, p_len);
 		case 0x3E89:
-			return gfire_p2p_dl_proto_file_transfer_info(p_session, p_data + offset, p_len);
+			return gfire_p2p_dl_proto_file_chunk_info_request(p_session, p_data + offset, p_len);
 		case 0x3E8A:
 			return gfire_p2p_dl_proto_file_chunk_info(p_session, p_data + offset, p_len);
 		case 0x3E8B:

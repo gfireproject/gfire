@@ -31,7 +31,7 @@ guint32 gfire_p2p_dl_proto_send_file_request(gfire_p2p_session *p_session, guint
 guint32 gfire_p2p_dl_proto_send_file_request_reply(gfire_p2p_session *p_session, guint32 p_fileid, gboolean p_reply);
 guint32 gfire_p2p_dl_proto_send_file_event(gfire_p2p_session *p_session, guint32 p_fileid,
 										   guint32 p_event, guint32 p_type);
-guint32 gfire_p2p_dl_proto_send_file_transfer_info(gfire_p2p_session *p_session, guint32 p_fileid,
+guint32 gfire_p2p_dl_proto_send_file_chunk_info_request(gfire_p2p_session *p_session, guint32 p_fileid,
 												   guint64 p_offset, guint32 p_chunk_size,
 												   guint32 p_chunk_count, guint32 p_msgid);
 guint32 gfire_p2p_dl_proto_send_file_chunk_info(gfire_p2p_session *p_session, guint32 p_fileid, guint64 p_offset,
@@ -46,7 +46,7 @@ guint32 gfire_p2p_dl_proto_send_file_complete(gfire_p2p_session *p_session, guin
 gboolean gfire_p2p_dl_proto_file_request(gfire_p2p_session *p_session, const guint8 *p_data, guint32 p_len);
 gboolean gfire_p2p_dl_proto_file_request_reply(gfire_p2p_session *p_session, const guint8 *p_data, guint32 p_len);
 gboolean gfire_p2p_dl_proto_file_event(gfire_p2p_session *p_session, const guint8 *p_data, guint32 p_len);
-gboolean gfire_p2p_dl_proto_file_transfer_info(gfire_p2p_session *p_session, const guint8 *p_data, guint32 p_len);
+gboolean gfire_p2p_dl_proto_file_chunk_info_request(gfire_p2p_session *p_session, const guint8 *p_data, guint32 p_len);
 gboolean gfire_p2p_dl_proto_file_chunk_info(gfire_p2p_session *p_session, const guint8 *p_data, guint32 p_len);
 gboolean gfire_p2p_dl_proto_file_data_packet_request(gfire_p2p_session *p_session, const guint8 *p_data, guint32 p_len);
 gboolean gfire_p2p_dl_proto_file_data_packet(gfire_p2p_session *p_session, const guint8 *p_data, guint32 p_len);

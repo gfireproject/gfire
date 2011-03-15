@@ -108,7 +108,7 @@ guint32 gfire_p2p_dl_proto_send_file_event(gfire_p2p_session *p_session, guint32
 	return offset;
 }
 
-guint32 gfire_p2p_dl_proto_send_file_transfer_info(gfire_p2p_session *p_session, guint32 p_fileid,
+guint32 gfire_p2p_dl_proto_send_file_chunk_info_request(gfire_p2p_session *p_session, guint32 p_fileid,
 												   guint64 p_offset, guint32 p_chunk_size,
 												   guint32 p_chunk_count, guint32 p_msgid)
 {
@@ -387,7 +387,7 @@ gboolean gfire_p2p_dl_proto_file_event(gfire_p2p_session *p_session, const guint
 	return TRUE;
 }
 
-gboolean gfire_p2p_dl_proto_file_transfer_info(gfire_p2p_session *p_session, const guint8 *p_data, guint32 p_len)
+gboolean gfire_p2p_dl_proto_file_chunk_info_request(gfire_p2p_session *p_session, const guint8 *p_data, guint32 p_len)
 {
 	if(!p_session || !p_data || !p_len)
 		return FALSE;
@@ -410,10 +410,10 @@ gboolean gfire_p2p_dl_proto_file_transfer_info(gfire_p2p_session *p_session, con
 	}
 
 #ifdef DEBUG
-	purple_debug_misc("gfire", "P2P: Received file transfer info: offset=%lu size=%u chunkcnt=%u\n", foffset, size, chunk_count);
+	purple_debug_misc("gfire", "P2P: Received file chunk info request: offset=%lu size=%u chunkcnt=%u\n", foffset, size, chunk_count);
 #endif // DEBUG
 
-	gfire_filetransfer_transfer_info(ft, foffset, size, chunk_count, msgid);
+	gfire_filetransfer_chunk_info_request(ft, foffset, size, chunk_count, msgid);
 
 	return TRUE;
 }

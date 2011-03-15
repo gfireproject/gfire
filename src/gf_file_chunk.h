@@ -24,64 +24,57 @@
 
 typedef struct _gfire_file_chunk gfire_file_chunk;
 
-#include "gf_base.h"
 #include "gf_util.h"
-#include "gf_filetransfer.h"
+#include "gf_p2p_session.h"
 
 #define XFIRE_P2P_FT_DATA_PACKET_SIZE 0x0400 // 1024 Byte
 #define XFIRE_P2P_FT_MAX_REQUESTS 10
-#define XFIRE_P2P_FT_DATA_PACKET_TIMEOUT 20
 
-typedef struct _gfire_file_requested_data
-{
-	guint32 data_packet;
-	glong last_try;
-	guint32 msgid;
-} gfire_file_requested_data;
-
-typedef enum
-{
-	GF_FILE_CHUNK_SEND = 0,
-	GF_FILE_CHUNK_RECV
-} gfire_file_chunk_type;
+typedef void (*gfire_ft_callback)(gpointer*);
 
 struct _gfire_file_chunk
 {
-	gfire_file_chunk_type type;
+	// Connection
+	gfire_p2p_session *session;
+	guint32 fileid;
+	guint32 msgid;
+
+	// Xfer
+	PurpleXfer *xfer;
+
+	// Chunk "geometry"
 	guint64 offset;
 	guint32 size;
-	guint32 data_packet_count;
-	guint32 data_packets_processed;
-	gfire_bitlist *data_packets;
-	guint32 last_requested;
-	gfire_file_requested_data *requested;
-	gchar *checksum;
-	gboolean informed;
-	gboolean finished;
 
-	guint timeout;
+	// Data packets
+	guint32 data_packet_count;
+	guint32 last_requested;
+	guint32 requested[XFIRE_P2P_FT_MAX_REQUESTS];
+
+	// Chunk data
+	gchar *checksum;
 	guint8 *data;
 
-	gfire_filetransfer *ft;
+	// Callbacks
+	gfire_ft_callback done_func;
+	gfire_ft_callback error_func;
+	gpointer user_data;
 };
 
 // Initialization and cleanup
-void gfire_file_chunk_init(gfire_file_chunk *p_chunk, gfire_filetransfer *p_transfer, gfire_file_chunk_type p_type,
-						   guint64 p_offset, guint32 p_size);
-void gfire_file_chunk_clear(gfire_file_chunk *p_chunk);
+gfire_file_chunk *gfire_file_chunk_create(gfire_p2p_session *p_session, guint32 p_fileid, guint32 p_msgid,
+										  PurpleXfer *p_xfer, gfire_ft_callback p_done_func,
+										  gfire_ft_callback p_error_func, gpointer p_data);
+void gfire_file_chunk_free(gfire_file_chunk *p_chunk);
+void gfire_file_chunk_init(gfire_file_chunk *p_chunk, guint64 p_offset, guint32 p_size);
 
 // Setting data
-void gfire_file_chunk_make_current(gfire_file_chunk *p_chunk);
 void gfire_file_chunk_set_checksum(gfire_file_chunk *p_chunk, const gchar *p_checksum);
-void gfire_file_chunk_finalize(gfire_file_chunk *p_chunk);
 
-// Identification
-gboolean gfire_file_chunk_contains(const gfire_file_chunk *p_chunk, guint64 p_offset, guint32 p_size);
-gboolean gfire_file_chunk_is(const gfire_file_chunk *p_chunk, guint64 p_offset, guint32 p_size);
-
-// Sending
-void gfire_file_chunk_send_info(gfire_file_chunk *p_chunk, guint32 p_msgid);
-void gfire_file_chunk_send_data(gfire_file_chunk *p_chunk, guint64 p_offset, guint32 p_size, guint32 p_msgid);
+// Getting data
+guint64 gfire_file_chunk_get_offset(const gfire_file_chunk *p_chunk);
+guint32 gfire_file_chunk_get_size(const gfire_file_chunk *p_chunk);
+const guint8 *gfire_file_chunk_get_data(const gfire_file_chunk *p_chunk);
 
 // Receiving
 void gfire_file_chunk_start_transfer(gfire_file_chunk *p_chunk);

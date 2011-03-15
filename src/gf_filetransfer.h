@@ -25,8 +25,8 @@
 typedef struct _gfire_filetransfer gfire_filetransfer;
 
 #include "gf_base.h"
-#include "gf_p2p_session.h"
 #include "gf_file_chunk.h"
+#include "gf_p2p_session.h"
 
 #define XFIRE_P2P_FT_PRIVATE_FILEID_START 0x80000000
 #define XFIRE_P2P_FT_CHUNK_SIZE 0xC800 // 50 * 1024 Byte: 51200 Byte
@@ -44,11 +44,9 @@ struct _gfire_filetransfer
 
 	// Chunks
 	guint64 chunk_count;
-	guint32 chunk_size;
+	guint64 current_chunk;
+	gfire_file_chunk *chunk;
 	guint64 bytes_transferred;
-	gfire_file_chunk *chunks;
-	gfire_file_chunk *current_chunk;
-	guint64 chunks_received;
 
 	// The file itself
 	int file;
@@ -62,7 +60,7 @@ void gfire_filetransfer_free(gfire_filetransfer *p_transfer, gboolean p_local_re
 // Handler functions
 void gfire_filetransfer_request_reply(gfire_filetransfer *p_transfer, gboolean p_reply);
 void gfire_filetransfer_event(gfire_filetransfer *p_transfer, guint32 p_event, guint32 p_type);
-void gfire_filetransfer_transfer_info(gfire_filetransfer *p_transfer, guint64 p_offset, guint32 p_chunk_size,
+void gfire_filetransfer_chunk_info_request(gfire_filetransfer *p_transfer, guint64 p_offset, guint32 p_chunk_size,
 									  guint32 p_chunk_count, guint32 p_msgid);
 void gfire_filetransfer_chunk_info(gfire_filetransfer *p_transfer, guint64 p_offset, guint32 p_size,
 								   const gchar *p_checksum);
@@ -71,9 +69,6 @@ void gfire_filetransfer_data_packet_request(gfire_filetransfer *p_transfer, guin
 void gfire_filetransfer_data_packet(gfire_filetransfer *p_transfer, guint64 p_offset, guint32 p_size,
 									const GList *p_data);
 void gfire_filetransfer_complete(gfire_filetransfer *p_transfer);
-
-// Chunk processing
-void gfire_filetransfer_next_chunk(gfire_filetransfer *p_transfer);
 
 // Getting data
 gfire_p2p_session *gfire_filetransfer_get_session(const gfire_filetransfer *p_transfer);

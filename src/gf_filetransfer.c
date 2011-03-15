@@ -32,56 +32,12 @@
 #include "gf_filetransfer.h"
 #include "gf_p2p_dl_proto.h"
 
+// BSD offers no 64bit functions, so just alias it
+#ifdef GF_OS_BSD
+#	define lseek64 lseek
+#endif // GF_OS_BSD
+
 static guint32 gfire_transfer_count = 0;
-
-static void gfire_filetransfer_create_chunks(gfire_filetransfer *p_transfer, guint64 p_offset)
-{
-	if(!p_transfer || p_transfer->chunks)
-		return;
-
-	p_transfer->chunk_count = ((p_transfer->size - p_offset) / p_transfer->chunk_size) +
-							  ((((p_transfer->size - p_offset) % p_transfer->chunk_size) > 0) ? 1 : 0);
-
-	p_transfer->chunks = g_malloc0(p_transfer->chunk_count * sizeof(gfire_file_chunk));
-	guint32 i = 0;
-	for(; i < p_transfer->chunk_count; i++)
-	{
-		if((p_transfer->size - p_offset) < p_transfer->chunk_size)
-			gfire_file_chunk_init(p_transfer->chunks + i, p_transfer, GF_FILE_CHUNK_RECV, p_offset,
-								  p_transfer->size % p_transfer->chunk_size);
-		else
-			gfire_file_chunk_init(p_transfer->chunks + i, p_transfer, GF_FILE_CHUNK_RECV, p_offset,
-								  p_transfer->chunk_size);
-		p_offset += p_transfer->chunk_size;
-	}
-
-	p_transfer->current_chunk = NULL;
-}
-
-static void gfire_filetransfer_delete_chunks(gfire_filetransfer *p_transfer)
-{
-	if(!p_transfer)
-		return;
-
-	if(purple_xfer_get_type(p_transfer->xfer) == PURPLE_XFER_SEND && p_transfer->current_chunk)
-	{
-		gfire_file_chunk_clear(p_transfer->current_chunk);
-		g_free(p_transfer->current_chunk);
-	}
-	else if(purple_xfer_get_type(p_transfer->xfer) == PURPLE_XFER_RECEIVE && p_transfer->chunks)
-	{
-		guint32 i = 0;
-		for(; i < p_transfer->chunk_count; i++)
-			gfire_file_chunk_clear(p_transfer->chunks + i);
-
-		g_free(p_transfer->chunks);
-	}
-
-	p_transfer->chunks = NULL;
-	p_transfer->current_chunk = NULL;
-	p_transfer->chunk_count = 0;
-	p_transfer->chunks_received = 0;
-}
 
 static void gfire_filetransfer_cancel(PurpleXfer *p_xfer)
 {
@@ -98,6 +54,42 @@ static void gfire_filetransfer_cancel(PurpleXfer *p_xfer)
 			gfire_p2p_session_remove_file_transfer(ft->session, ft, TRUE);
 		}
 	}
+}
+
+static void gfire_filetransfer_chunk_done(gfire_filetransfer *p_transfer)
+{
+	// Write the data to disk
+	const guint8 *chunk_data = gfire_file_chunk_get_data(p_transfer->chunk);
+
+	lseek64(p_transfer->file, gfire_file_chunk_get_offset(p_transfer->chunk), SEEK_SET);
+	if(write(p_transfer->file, chunk_data, gfire_file_chunk_get_size(p_transfer->chunk)) < 0)
+	{
+		purple_xfer_error(PURPLE_XFER_RECEIVE, purple_xfer_get_account(p_transfer->xfer),
+						  purple_xfer_get_remote_user(p_transfer->xfer),
+						  _("Writing a chunk failed! Make sure you have enough drive space "
+							"and appropriate permissions!"));
+
+		// Abort the transfer
+		gfire_p2p_session_remove_file_transfer(p_transfer->session, p_transfer, TRUE);
+		return;
+	}
+
+	// Check if we're done
+	if(++p_transfer->current_chunk == p_transfer->chunk_count)
+	{
+		gfire_p2p_dl_proto_send_file_complete(p_transfer->session, p_transfer->fileid);
+		purple_xfer_set_completed(p_transfer->xfer, TRUE);
+		gfire_p2p_session_remove_file_transfer(p_transfer->session, p_transfer, TRUE);
+		return;
+	}
+
+	// Request the next chunk
+	guint64 offset = p_transfer->current_chunk * XFIRE_P2P_FT_CHUNK_SIZE;
+	guint32 size = (p_transfer->current_chunk == p_transfer->chunk_count - 1) ?
+				p_transfer->size % XFIRE_P2P_FT_CHUNK_SIZE : XFIRE_P2P_FT_CHUNK_SIZE;
+
+	gfire_file_chunk_init(p_transfer->chunk, offset, size);
+	gfire_file_chunk_start_transfer(p_transfer->chunk);
 }
 
 static void gfire_filetransfer_request_accepted(PurpleXfer *p_xfer)
@@ -134,20 +126,22 @@ static void gfire_filetransfer_request_accepted(PurpleXfer *p_xfer)
 #endif // _WIN32
 		purple_debug_warning("gfire", "P2P: setting the files size failed\n");
 
-	// Chunk size is set by receiver, so we can precalculate everything
-	ft->chunk_size = XFIRE_P2P_FT_CHUNK_SIZE;
 	ft->size = purple_xfer_get_size(p_xfer);
+	ft->current_chunk = 0;
+	ft->chunk_count = ft->size / XFIRE_P2P_FT_CHUNK_SIZE;
+	if((ft->size % XFIRE_P2P_FT_CHUNK_SIZE) != 0)
+		ft->chunk_count++;
 
 	purple_xfer_start(p_xfer, -1, NULL, 0);
 
 	gfire_p2p_dl_proto_send_file_request_reply(ft->session, ft->fileid, TRUE);
-	gfire_p2p_dl_proto_send_file_transfer_info(ft->session, ft->fileid, 0, XFIRE_P2P_FT_CHUNK_SIZE,
-											   0, gfire_filetransfer_next_msgid(ft));
 
 	// Request first chunk
-	gfire_filetransfer_create_chunks(ft, 0);
-	ft->current_chunk = ft->chunks;
-	gfire_file_chunk_start_transfer(ft->current_chunk);
+	ft->chunk = gfire_file_chunk_create(ft->session, ft->fileid, ft->msgid, p_xfer,
+										(gfire_ft_callback)gfire_filetransfer_chunk_done, NULL, ft);
+
+	gfire_file_chunk_init(ft->chunk, 0, (ft->chunk_count == 1) ? ft->size : XFIRE_P2P_FT_CHUNK_SIZE);
+	gfire_file_chunk_start_transfer(ft->chunk);
 }
 
 static void gfire_filetransfer_request_denied(PurpleXfer *p_xfer)
@@ -174,7 +168,7 @@ gfire_filetransfer *gfire_filetransfer_create(gfire_p2p_session *p_session, Purp
 	if(!p_session || !p_xfer)
 		return NULL;
 
-	gfire_filetransfer *ret = g_malloc0(sizeof(gfire_filetransfer));
+	gfire_filetransfer *ret = g_new0(gfire_filetransfer, 1);
 	if(!ret)
 	{
 		purple_xfer_cancel_local(p_xfer);
@@ -247,7 +241,8 @@ void gfire_filetransfer_free(gfire_filetransfer *p_transfer, gboolean p_local_re
 	if(!p_transfer)
 		return;
 
-	gfire_filetransfer_delete_chunks(p_transfer);
+	if(p_transfer->chunk)
+		gfire_file_chunk_free(p_transfer->chunk);
 
 	if(p_transfer->file >= 0)
 #ifdef _WIN32
@@ -308,84 +303,103 @@ void gfire_filetransfer_event(gfire_filetransfer *p_transfer, guint32 p_event, g
 	}
 }
 
-void gfire_filetransfer_transfer_info(gfire_filetransfer *p_transfer, guint64 p_offset, guint32 p_chunk_size,
+void gfire_filetransfer_chunk_info_request(gfire_filetransfer *p_transfer, guint64 p_offset, guint32 p_chunk_size,
 									  guint32 p_chunk_count, guint32 p_msgid)
 {
-	if(!p_transfer)
+	if(!p_transfer || purple_xfer_get_type(p_transfer->xfer) != PURPLE_XFER_SEND ||
+			p_offset >= p_transfer->size || p_chunk_size > 0x01E00000 /* 30 MB */)
 		return;
 
-	if(!p_transfer->current_chunk)
-		p_transfer->current_chunk = g_malloc0(sizeof(gfire_file_chunk));
+	guint8 *chunk = g_malloc(p_chunk_size);
+	lseek64(p_transfer->file, p_offset, SEEK_SET);
+	int size = read(p_transfer->file, chunk, p_chunk_size);
+	if(size <= 0)
+	{
+		g_free(chunk);
 
-	// Set new current chunk
-	gfire_file_chunk_clear(p_transfer->current_chunk);
-	gfire_file_chunk_init(p_transfer->current_chunk, p_transfer, GF_FILE_CHUNK_SEND, p_offset, p_chunk_size);
-	gfire_file_chunk_send_info(p_transfer->current_chunk, p_msgid);
+		purple_xfer_error(PURPLE_XFER_SEND, purple_xfer_get_account(p_transfer->xfer),
+						  purple_xfer_get_remote_user(p_transfer->xfer),
+						  _("Reading a chunk failed! Make sure you have appropriate permissions!"));
+
+		// Abort the transfer
+		gfire_p2p_session_remove_file_transfer(p_transfer->session, p_transfer, TRUE);
+		return;
+	}
+
+	gchar hash[41];
+	hashSha1_bin_to_str(chunk, size, hash);
+	hash[40] = 0;
+
+	g_free(chunk);
+
+	gfire_p2p_dl_proto_send_file_chunk_info(p_transfer->session, p_transfer->fileid, p_offset, size, hash,
+											p_msgid);
 }
 
 void gfire_filetransfer_chunk_info(gfire_filetransfer *p_transfer, guint64 p_offset, guint32 p_size,
 								   const gchar *p_checksum)
 {
-	if(!p_transfer || !p_checksum)
+	if(!p_transfer || !p_checksum || !p_transfer->chunk)
 		return;
 
-	guint32 i = 0;
-	for(; i < p_transfer->chunk_count; i++)
-	{
-		if(gfire_file_chunk_is(p_transfer->chunks + i, p_offset, p_size))
-		{
-			gfire_file_chunk_set_checksum(p_transfer->chunks + i, p_checksum);
-			return;
-		}
-	}
-
-	if(i == p_transfer->chunk_count)
-		purple_debug_error("gfire", "gfire_filetransfer_chunk_info: unknown chunk!\n");
+	if(p_offset == gfire_file_chunk_get_offset(p_transfer->chunk))
+		gfire_file_chunk_set_checksum(p_transfer->chunk, p_checksum);
+	else
+		purple_debug_warning("gfire", "P2P: Got chunk information for unknown chunk!\n");
 }
 
 void gfire_filetransfer_data_packet_request(gfire_filetransfer *p_transfer, guint64 p_offset,
 											guint32 p_size, guint32 p_msgid)
 {
-	if(!p_transfer)
+	if(!p_transfer || purple_xfer_get_type(p_transfer->xfer) != PURPLE_XFER_SEND ||
+			p_offset >= p_transfer->size || p_size > 0x01E00000 /* 30 MB */)
 		return;
 
-	gfire_file_chunk_send_data(p_transfer->current_chunk, p_offset, p_size, p_msgid);
+	guint8 *data = g_malloc(p_size);
+	lseek64(p_transfer->file, p_offset, SEEK_SET);
+	int size = read(p_transfer->file, data, p_size);
+	if(size <= 0)
+	{
+		g_free(data);
+
+		purple_xfer_error(PURPLE_XFER_SEND, purple_xfer_get_account(p_transfer->xfer),
+						  purple_xfer_get_remote_user(p_transfer->xfer),
+						  _("Reading a data segment failed! Make sure you have appropriate permissions!"));
+
+		// Abort the transfer
+		gfire_p2p_session_remove_file_transfer(p_transfer->session, p_transfer, TRUE);
+		return;
+	}
+
+	gfire_p2p_dl_proto_send_file_data_packet(p_transfer->session, p_transfer->fileid, p_offset,
+											 size, data, p_msgid);
+
+	g_free(data);
+
+	// Update GUI
+	if((purple_xfer_get_bytes_sent(p_transfer->xfer) + size) > purple_xfer_get_size(p_transfer->xfer))
+		purple_xfer_set_size(p_transfer->xfer, purple_xfer_get_bytes_sent(p_transfer->xfer) + size);
+
+	purple_xfer_set_bytes_sent(p_transfer->xfer, purple_xfer_get_bytes_sent(p_transfer->xfer) + size);
+	purple_xfer_update_progress(p_transfer->xfer);
 }
 
 void gfire_filetransfer_data_packet(gfire_filetransfer *p_transfer, guint64 p_offset, guint32 p_size,
 									const GList *p_data)
 {
-	if(!p_transfer || !p_data)
+	if(!p_transfer || !p_data || !p_transfer->chunk)
 		return;
 
-	gfire_file_chunk_got_data(p_transfer->current_chunk, p_offset, p_size, p_data);
+	gfire_file_chunk_got_data(p_transfer->chunk, p_offset, p_size, p_data);
 }
 
 void gfire_filetransfer_complete(gfire_filetransfer *p_transfer)
 {
-	if(!p_transfer)
+	if(!p_transfer || purple_xfer_get_type(p_transfer->xfer) != PURPLE_XFER_SEND)
 		return;
 
 	purple_xfer_set_completed(p_transfer->xfer, TRUE);
 	gfire_p2p_session_remove_file_transfer(p_transfer->session, p_transfer, TRUE);
-}
-
-void gfire_filetransfer_next_chunk(gfire_filetransfer *p_transfer)
-{
-	if(!p_transfer || !p_transfer->chunks)
-		return;
-
-	// Check if file is complete
-	if(p_transfer->current_chunk == p_transfer->chunks + (p_transfer->chunk_count - 1))
-	{
-		gfire_p2p_dl_proto_send_file_complete(p_transfer->session, p_transfer->fileid);
-		purple_xfer_set_completed(p_transfer->xfer, TRUE);
-		gfire_p2p_session_remove_file_transfer(p_transfer->session, p_transfer, TRUE);
-		return;
-	}
-
-	p_transfer->current_chunk++;
-	gfire_file_chunk_start_transfer(p_transfer->current_chunk);
 }
 
 gfire_p2p_session *gfire_filetransfer_get_session(const gfire_filetransfer *p_transfer)
@@ -406,9 +420,4 @@ guint32 gfire_filetransfer_get_fileid(const gfire_filetransfer *p_transfer)
 int gfire_filetransfer_get_file(const gfire_filetransfer *p_transfer)
 {
 	return p_transfer ? p_transfer->file : -1;
-}
-
-guint32 gfire_filetransfer_next_msgid(gfire_filetransfer *p_transfer)
-{
-	return p_transfer ? p_transfer->msgid++ : 0;
 }
