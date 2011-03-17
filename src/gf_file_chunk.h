@@ -48,6 +48,7 @@ struct _gfire_file_chunk
 
 	// Data packets
 	guint32 data_packet_count;
+	guint32 data_packets_received;
 	guint32 last_requested;
 	guint32 requested[XFIRE_P2P_FT_MAX_REQUESTS];
 

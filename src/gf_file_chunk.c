@@ -61,8 +61,9 @@ void gfire_file_chunk_init(gfire_file_chunk *p_chunk, guint64 p_offset, guint32 
 		return;
 
 	p_chunk->offset = p_offset;
-	p_chunk->size = (p_size >= XFIRE_P2P_FT_DATA_PACKET_SIZE) ? p_size : XFIRE_P2P_FT_CHUNK_SIZE;
+	p_chunk->size = p_size;
 
+	p_chunk->data_packets_received = 0;
 	p_chunk->data_packet_count = p_size / XFIRE_P2P_FT_DATA_PACKET_SIZE;
 	if((p_size % XFIRE_P2P_FT_DATA_PACKET_SIZE) != 0)
 		p_chunk->data_packet_count++;
@@ -79,6 +80,22 @@ void gfire_file_chunk_init(gfire_file_chunk *p_chunk, guint64 p_offset, guint32 
 	}
 }
 
+static gboolean gfire_file_chunk_check_checksum(gfire_file_chunk *p_chunk)
+{
+	if(!p_chunk)
+		return FALSE;
+
+	// If we don't have a checksum yet, ignore the check for now
+	if(!p_chunk->checksum)
+		return TRUE;
+
+	gchar hash[41];
+	hashSha1_bin_to_str(p_chunk->data, p_chunk->size, hash);
+	hash[40] = 0;
+
+	return (!strcmp(hash, p_chunk->checksum));
+}
+
 void gfire_file_chunk_set_checksum(gfire_file_chunk *p_chunk, const gchar *p_checksum)
 {
 	if(!p_chunk || !p_checksum)
@@ -88,6 +105,21 @@ void gfire_file_chunk_set_checksum(gfire_file_chunk *p_chunk, const gchar *p_che
 		g_free(p_chunk->checksum);
 
 	p_chunk->checksum = g_strdup(p_checksum);
+
+	if(p_chunk->data_packets_received == p_chunk->data_packet_count)
+	{
+		// Check checksum and restart chunk if failed
+		if(!gfire_file_chunk_check_checksum(p_chunk))
+		{
+			purple_debug_warning("gfire", "P2P: bad checksum for chunk at offset %lu\n", p_chunk->offset);
+			gfire_file_chunk_init(p_chunk, p_chunk->offset, p_chunk->size);
+			gfire_file_chunk_start_transfer(p_chunk);
+			return;
+		}
+
+		if(p_chunk->done_func)
+			(*p_chunk->done_func)(p_chunk->user_data);
+	}
 }
 
 guint64 gfire_file_chunk_get_offset(const gfire_file_chunk *p_chunk)
@@ -124,7 +156,8 @@ void gfire_file_chunk_start_transfer(gfire_file_chunk *p_chunk)
 		p_chunk->last_requested = p_chunk->requested[i];
 
 		guint64 offset = p_chunk->offset + p_chunk->requested[i] * XFIRE_P2P_FT_DATA_PACKET_SIZE;
-		guint32 size = (p_chunk->last_requested == p_chunk->data_packet_count - 1) ?
+		guint32 size = ((p_chunk->last_requested == p_chunk->data_packet_count - 1) &&
+						((p_chunk->size % XFIRE_P2P_FT_DATA_PACKET_SIZE) != 0)) ?
 					p_chunk->size % XFIRE_P2P_FT_DATA_PACKET_SIZE : XFIRE_P2P_FT_DATA_PACKET_SIZE;
 
 		gfire_p2p_dl_proto_send_file_data_packet_request(p_chunk->session,
@@ -132,22 +165,6 @@ void gfire_file_chunk_start_transfer(gfire_file_chunk *p_chunk)
 														 offset, size,
 														 p_chunk->msgid++);
 	}
-}
-
-static gboolean gfire_file_chunk_check_checksum(gfire_file_chunk *p_chunk)
-{
-	if(!p_chunk)
-		return FALSE;
-
-	// If we don't have a checksum yet, ignore the check for now
-	if(!p_chunk->checksum)
-		return TRUE;
-
-	gchar hash[41];
-	hashSha1_bin_to_str(p_chunk->data, p_chunk->size, hash);
-	hash[40] = 0;
-
-	return (!strcmp(hash, p_chunk->checksum));
 }
 
 void gfire_file_chunk_got_data(gfire_file_chunk *p_chunk, guint64 p_offset, guint32 p_size, const GList *p_data)
@@ -185,19 +202,23 @@ void gfire_file_chunk_got_data(gfire_file_chunk *p_chunk, guint64 p_offset, guin
 			purple_xfer_update_progress(p_chunk->xfer);
 
 			// Is this chunk done? If so process the next one
-			if(p_chunk->last_requested == p_chunk->data_packet_count - 1)
+			p_chunk->data_packets_received++;
+			if(p_chunk->data_packets_received == p_chunk->data_packet_count)
 			{
 				// Check checksum and restart chunk if failed
-				if(!gfire_file_chunk_check_checksum(p_chunk))
+				if(p_chunk->checksum)
 				{
-					purple_debug_warning("gfire", "P2P: bad checksum for chunk at offset %lu\n", p_chunk->offset);
-					gfire_file_chunk_init(p_chunk, p_chunk->offset, p_chunk->size);
-					gfire_file_chunk_start_transfer(p_chunk);
-					return;
-				}
+					if(!gfire_file_chunk_check_checksum(p_chunk))
+					{
+						purple_debug_warning("gfire", "P2P: bad checksum for chunk at offset %lu\n", p_chunk->offset);
+						gfire_file_chunk_init(p_chunk, p_chunk->offset, p_chunk->size);
+						gfire_file_chunk_start_transfer(p_chunk);
+						return;
+					}
 
-				if(p_chunk->done_func)
-					(*p_chunk->done_func)(p_chunk->user_data);
+					if(p_chunk->done_func)
+						(*p_chunk->done_func)(p_chunk->user_data);
+				}
 
 				return;
 			}
@@ -207,7 +228,8 @@ void gfire_file_chunk_got_data(gfire_file_chunk *p_chunk, guint64 p_offset, guin
 				p_chunk->requested[i] = ++p_chunk->last_requested;
 
 				guint64 offset = p_chunk->offset + p_chunk->requested[i] * XFIRE_P2P_FT_DATA_PACKET_SIZE;
-				guint32 size = (p_chunk->last_requested == p_chunk->data_packet_count - 1) ?
+				guint32 size = ((p_chunk->requested[i] == p_chunk->data_packet_count - 1) &&
+								((p_chunk->size % XFIRE_P2P_FT_DATA_PACKET_SIZE) != 0)) ?
 							p_chunk->size % XFIRE_P2P_FT_DATA_PACKET_SIZE : XFIRE_P2P_FT_DATA_PACKET_SIZE;
 
 				gfire_p2p_dl_proto_send_file_data_packet_request(p_chunk->session,

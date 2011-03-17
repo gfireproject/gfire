@@ -138,7 +138,8 @@ guint32 gfire_p2p_dl_proto_send_file_chunk_info_request(gfire_p2p_session *p_ses
 	gfire_network_buffout_copy(tmp_buf, offset);
 
 #ifdef DEBUG
-	purple_debug_misc("gfire", "P2P: Sending information on previous transfer (stub)\n");
+	purple_debug_misc("gfire", "P2P: Sending chunk info request for bytes %lu - %lu\n",
+					  p_offset, p_offset + p_chunk_size);
 #endif // DEBUG
 	gfire_p2p_session_send_data32_packet(p_session, tmp_buf, offset, "DL");
 	g_free(tmp_buf);
