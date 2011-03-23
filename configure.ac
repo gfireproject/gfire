@@ -4,7 +4,7 @@
 #
 
 # Get Gfire version
-m4_define(gfire_version, m4_include(VERSION))
+m4_define(gfire_version, regexp(m4_include(VERSION), [\([0-9a-zA-Z.-]+\)], [\1]))
 m4_define(gfire_version_patch, regexp(gfire_version, [\([0-9]+\).\([0-9]+\).\([0-9]+\)], [\3]))
 m4_define(gfire_version_minor, regexp(gfire_version, [\([0-9]+\).\([0-9]+\).\([0-9]+\)], [\2]))
 m4_define(gfire_version_major, regexp(gfire_version, [\([0-9]+\).\([0-9]+\).\([0-9]+\)], [\1]))
