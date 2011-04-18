@@ -612,7 +612,7 @@ void gfire_notify_system(const gchar *p_title, const gchar *p_msg)
 	if(!gfire_notify_init() || !p_title)
 		return;
 
-	NotifyNotification *notification = notify_notification_new(p_title, p_msg, NULL, NULL);
+        NotifyNotification *notification = notify_notification_new(p_title, p_msg, NULL);
 	notify_notification_set_urgency(notification, NOTIFY_URGENCY_NORMAL);
 	notify_notification_set_timeout(notification, NOTIFY_EXPIRES_DEFAULT);
 	g_signal_connect(notification, "closed", G_CALLBACK(gfire_notify_closed_cb), NULL);
@@ -637,7 +637,7 @@ void gfire_notify_buddy(PurpleBuddy *p_buddy, const gchar *p_title, const gchar 
 		return;
 	}
 
-	notification = notify_notification_new(p_title, p_msg, NULL, NULL);
+        notification = notify_notification_new(p_title, p_msg, NULL);
 
 	// Get Buddy Icon
 	PurpleBuddyIcon *icon = purple_buddy_get_icon(p_buddy);
