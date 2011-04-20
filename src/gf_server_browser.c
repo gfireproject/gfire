@@ -772,7 +772,9 @@ void gfire_server_browser_show(gfire_server_browser *p_browser)
 		return;
 	}
 
+#ifdef ENABLE_NLS
 	gtk_builder_set_translation_domain(p_browser->builder, GETTEXT_PACKAGE);
+#endif // ENABLE_NLS
 
 	gchar *builder_file = g_build_filename(DATADIR, "purple", "gfire", "servers.glade", NULL);
 	gtk_builder_add_from_file(p_browser->builder, builder_file, NULL);

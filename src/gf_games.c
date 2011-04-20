@@ -1530,7 +1530,9 @@ void gfire_game_manager_show(PurplePluginAction *p_action)
 		return;
 	}
 
+#ifdef ENABLE_NLS
 	gtk_builder_set_translation_domain(gfire_gtk_builder, GETTEXT_PACKAGE);
+#endif // ENABLE_NLS
 
 	gchar *builder_file = g_build_filename(DATADIR, "purple", "gfire", "games.glade", NULL);
 	gtk_builder_add_from_file(gfire_gtk_builder, builder_file, NULL);
