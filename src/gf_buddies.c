@@ -838,7 +838,7 @@ void gfire_buddy_set_game_status(gfire_buddy *p_buddy, guint32 p_gameid, guint32
         if(p_gameid != 0)
         {
             gchar *game_name = gfire_game_name(p_gameid, TRUE);
-            gchar *message = g_strdup_printf(_("%s is playing %s now!"), alias ? alias : p_buddy->name, game_name);
+            gchar *message = g_strdup_printf(_("%s is now playing %s!"), alias ? alias : p_buddy->name, game_name);
             purple_conversation_write(conv, NULL, message, PURPLE_MESSAGE_SYSTEM | PURPLE_MESSAGE_NOTIFY, time(NULL));
             g_free(message);
             g_free(game_name);
