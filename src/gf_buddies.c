@@ -830,26 +830,29 @@ void gfire_buddy_set_game_status(gfire_buddy *p_buddy, guint32 p_gameid, guint32
 #endif // USE_NOTIFICATIONS
 
     // Chat notification
-    PurpleConversation *conv = purple_find_conversation_with_account(PURPLE_CONV_TYPE_IM, p_buddy->name,
-                                                                     purple_connection_get_account(p_buddy->gc));
-    if(conv)
+    if(p_buddy->game_data.id != p_gameid)
     {
-        const gchar *alias = purple_buddy_get_alias(p_buddy->prpl_buddy);
-        if(p_gameid != 0)
+        PurpleConversation *conv = purple_find_conversation_with_account(PURPLE_CONV_TYPE_IM, p_buddy->name,
+                                                                         purple_connection_get_account(p_buddy->gc));
+        if(conv)
         {
-            gchar *game_name = gfire_game_name(p_gameid, TRUE);
-            gchar *message = g_strdup_printf(_("%s is now playing %s!"), alias ? alias : p_buddy->name, game_name);
-            purple_conversation_write(conv, NULL, message, PURPLE_MESSAGE_SYSTEM | PURPLE_MESSAGE_NOTIFY, time(NULL));
-            g_free(message);
-            g_free(game_name);
-        }
-        else
-        {
-            gchar *game_name = gfire_game_name(p_buddy->game_data.id, TRUE);
-            gchar *message = g_strdup_printf(_("%s stopped playing %s!"), alias ? alias : p_buddy->name, game_name);
-            purple_conversation_write(conv, NULL, message, PURPLE_MESSAGE_SYSTEM | PURPLE_MESSAGE_NOTIFY, time(NULL));
-            g_free(message);
-            g_free(game_name);
+            const gchar *alias = purple_buddy_get_alias(p_buddy->prpl_buddy);
+            if(p_gameid != 0)
+            {
+                gchar *game_name = gfire_game_name(p_gameid, TRUE);
+                gchar *message = g_strdup_printf(_("%s is now playing %s!"), alias ? alias : p_buddy->name, game_name);
+                purple_conversation_write(conv, NULL, message, PURPLE_MESSAGE_SYSTEM | PURPLE_MESSAGE_NOTIFY, time(NULL));
+                g_free(message);
+                g_free(game_name);
+            }
+            else
+            {
+                gchar *game_name = gfire_game_name(p_buddy->game_data.id, TRUE);
+                gchar *message = g_strdup_printf(_("%s stopped playing %s!"), alias ? alias : p_buddy->name, game_name);
+                purple_conversation_write(conv, NULL, message, PURPLE_MESSAGE_SYSTEM | PURPLE_MESSAGE_NOTIFY, time(NULL));
+                g_free(message);
+                g_free(game_name);
+            }
         }
     }
 
