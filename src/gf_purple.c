@@ -739,6 +739,7 @@ static gboolean gfire_purple_actions_game_cb(const gfire_game_configuration *p_g
 		{
 			gchar *label = g_strdup_printf(_("Launch %s"), game->name);
 			PurplePluginAction *act = purple_plugin_action_new(label, gfire_menu_action_launch_game_cb);
+            g_free(label);
 			if(act)
 			{
 				act->user_data = GUINT_TO_POINTER(p_gconf->game_id);

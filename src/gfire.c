@@ -71,6 +71,7 @@ void gfire_free(gfire_data *p_gfire)
 		return;
 
 	if(p_gfire->sid) g_free(p_gfire->sid);
+    if(p_gfire->alias) g_free(p_gfire->alias);
 	if(p_gfire->buff_in) g_free(p_gfire->buff_in);
 
 	// Free all buddies

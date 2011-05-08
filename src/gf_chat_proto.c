@@ -438,7 +438,7 @@ void gfire_chat_proto_persistent_chat_infos(gfire_data *p_gfire, guint16 p_packe
 			gfire_chat *chat = gfire_find_chat(p_gfire, chat_id->data, GFFC_CID);
 			if(!chat)
 			{
-				gfire_chat_create(p_gfire, chat_id->data, chat_name->data, NULL, TRUE);
+                chat = gfire_chat_create(p_gfire, chat_id->data, chat_name->data, NULL, TRUE);
 				gfire_add_chat(p_gfire, chat);
 			}
 			else

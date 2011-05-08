@@ -684,6 +684,8 @@ void gfire_buddy_proto_im(gfire_data *p_gfire, guint16 p_packet_len)
 				return;
 
 			gfire_buddy_got_im(gf_buddy, imindex, im, FALSE);
+
+            g_free(im);
 		break;
 		// ACK packet
 		case 1:
