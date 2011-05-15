@@ -4,6 +4,7 @@ EXTRA_DIST = config.rpath  config.rpath  COPYING \
 			 NEWS \
 			 README \
 			 VERSION \
+			 REV \
 			 gfire.spec
 
 SUBDIRS = data pixmaps src

@@ -199,14 +199,14 @@ void gfire_menu_action_about_cb(PurplePluginAction *p_action)
 	if(gfire_game_have_list())
 	{
 		gchar *version_str = gfire_game_get_version_str();
-		msg = g_strdup_printf(_("Gfire Version: %s\nGame List Version: %s\nNAT Type: %d (%s)"), GFIRE_VERSION_STRING,
-							  version_str, natType, natTypeString);
+        msg = g_strdup_printf(_("Gfire Version: %s (rev%d)\nGame List Version: %s\nNAT Type: %d (%s)"),
+                              GFIRE_VERSION_STRING, GFIRE_REVISION, version_str, natType, natTypeString);
 		g_free(version_str);
 	}
 	else
 	{
-		msg = g_strdup_printf(_("Gfire Version: %s\nNAT Type: %d (%s)"), GFIRE_VERSION_STRING, natType,
-							  natTypeString);
+        msg = g_strdup_printf(_("Gfire Version: %s (rev%d)\nNAT Type: %d (%s)"), GFIRE_VERSION_STRING, GFIRE_REVISION,
+                              natType, natTypeString);
 	}
 
 	purple_request_action(gc, _("About Gfire"), _("Xfire Plugin for Pidgin"), msg, PURPLE_DEFAULT_ACTION_NONE,
