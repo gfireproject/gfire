@@ -4,7 +4,7 @@ echo;
 
 # Write SVN revision to REV
 if builtin type -p svnversion &> /dev/null; then
-	svnversion | sed 's/[0-9]*:\?\([0-9]\+\)P\?M\?S\?/\1/' > REV
+	svnversion | sed 's/\([0-9]\+:\)\?\([0-9]\+\)P\?M\?S\?/\2/' > REV
 elif [ ! -e REV ]; then
 	echo "0" > REV
 fi
