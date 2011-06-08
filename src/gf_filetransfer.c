@@ -24,18 +24,12 @@
 #	include <share.h>
 #	include <sys/stat.h>
 #else
-#	define _LARGEFILE64_SOURCE
 #	include <fcntl.h>
 #	include <sys/stat.h>
 #endif // _WIN32
 
 #include "gf_filetransfer.h"
 #include "gf_p2p_dl_proto.h"
-
-// BSD offers no 64bit functions, so just alias it
-#ifdef GF_OS_BSD
-#	define lseek64 lseek
-#endif // GF_OS_BSD
 
 static guint32 gfire_transfer_count = 0;
 
@@ -61,7 +55,7 @@ static void gfire_filetransfer_chunk_done(gfire_filetransfer *p_transfer)
 	// Write the data to disk
 	const guint8 *chunk_data = gfire_file_chunk_get_data(p_transfer->chunk);
 
-	lseek64(p_transfer->file, gfire_file_chunk_get_offset(p_transfer->chunk), SEEK_SET);
+    lseek(p_transfer->file, gfire_file_chunk_get_offset(p_transfer->chunk), SEEK_SET);
 	if(write(p_transfer->file, chunk_data, gfire_file_chunk_get_size(p_transfer->chunk)) < 0)
 	{
 		purple_xfer_error(PURPLE_XFER_RECEIVE, purple_xfer_get_account(p_transfer->xfer),
@@ -104,10 +98,8 @@ static void gfire_filetransfer_request_accepted(PurpleXfer *p_xfer)
 #ifdef _WIN32
 	if((ft->file = _sopen(purple_xfer_get_local_filename(p_xfer), _O_CREAT | _O_WRONLY | _O_TRUNC | _O_BINARY,
 						  _SH_DENYNO, _S_IREAD | _S_IWRITE)) == -1)
-#elif defined(GF_OS_BSD)
-	if((ft->file = open(purple_xfer_get_local_filename(p_xfer), O_CREAT | O_WRONLY | O_TRUNC, S_IREAD | S_IWRITE)) == -1)
 #else
-	if((ft->file = open64(purple_xfer_get_local_filename(p_xfer), O_CREAT | O_WRONLY | O_TRUNC, S_IREAD | S_IWRITE)) == -1)
+	if((ft->file = open(purple_xfer_get_local_filename(p_xfer), O_CREAT | O_WRONLY | O_TRUNC, S_IREAD | S_IWRITE)) == -1)
 #endif // _WIN32
 	{
 		purple_debug_error("gfire", "gfire_filetransfer_request_accepted: Couldn't open file for writing\n");
@@ -122,7 +114,7 @@ static void gfire_filetransfer_request_accepted(PurpleXfer *p_xfer)
 #ifdef _WIN32
 	if(_chsize(ft->file, ft->size) != 0)
 #else
-	if(ftruncate64(ft->file, ft->size) != 0)
+    if(ftruncate(ft->file, ft->size) != 0)
 #endif // _WIN32
 		purple_debug_warning("gfire", "P2P: setting the files size failed\n");
 
@@ -187,10 +179,8 @@ gfire_filetransfer *gfire_filetransfer_create(gfire_p2p_session *p_session, Purp
 #ifdef _WIN32
 		if((ret->file = _sopen(purple_xfer_get_local_filename(p_xfer), _O_RDONLY | _O_BINARY,
 							   _SH_DENYNO, _S_IREAD | _S_IWRITE)) == -1)
-#elif defined(GF_OS_BSD)
-		if((ret->file = open(purple_xfer_get_local_filename(p_xfer), O_RDONLY)) == -1)
 #else
-		if((ret->file = open64(purple_xfer_get_local_filename(p_xfer), O_RDONLY)) == -1)
+		if((ret->file = open(purple_xfer_get_local_filename(p_xfer), O_RDONLY)) == -1)
 #endif // _WIN32
 		{
 			purple_debug_error("gfire", "gfire_filetransfer_init: Couldn't open file for reading\n");
@@ -311,7 +301,7 @@ void gfire_filetransfer_chunk_info_request(gfire_filetransfer *p_transfer, guint
 		return;
 
 	guint8 *chunk = g_malloc(p_chunk_size);
-	lseek64(p_transfer->file, p_offset, SEEK_SET);
+    lseek(p_transfer->file, p_offset, SEEK_SET);
 	int size = read(p_transfer->file, chunk, p_chunk_size);
 	if(size <= 0)
 	{
@@ -356,7 +346,7 @@ void gfire_filetransfer_data_packet_request(gfire_filetransfer *p_transfer, guin
 		return;
 
 	guint8 *data = g_malloc(p_size);
-	lseek64(p_transfer->file, p_offset, SEEK_SET);
+    lseek(p_transfer->file, p_offset, SEEK_SET);
 	int size = read(p_transfer->file, data, p_size);
 	if(size <= 0)
 	{

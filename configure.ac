@@ -65,7 +65,7 @@ fi
 AC_SUBST(DEBUG_CFLAGS)
  
 if test "x$GCC"="xyes"; then
-	CFLAGS="$CFLAGS -Wall"
+	CFLAGS="$CFLAGS -Wall -D_FILE_OFFSET_BITS=64"
 fi
 AC_SUBST(CFLAGS)
 
