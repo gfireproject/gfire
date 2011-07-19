@@ -55,7 +55,7 @@ LIBTOOL="$LIBTOOL --silent"
 AC_ARG_ENABLE(debug, AS_HELP_STRING([--enable-debug], [Compile with debugging support.]), enable_debug="$enableval", enable_debug=no)
 
 if test x$enable_debug != xno; then
-	DEBUG_CFLAGS="$DEBUG_CFLAGS -g -DG_DISABLE_DEPRECATED -DGDK_DISABLE_DEPRECATED -DGDK_PIXBUF_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED"
+	DEBUG_CFLAGS="$DEBUG_CFLAGS -g -DG_DISABLE_DEPRECATED -DGDK_DISABLE_DEPRECATED -DGDK_PIXBUF_DISABLE_DEPRECATED"
 	AC_DEFINE(DEBUG, 1, [Define if debugging is enabled.])
 	if test x$enable_debug = xverbose; then
 		AC_DEFINE(DEBUG_VERBOSE, 1, [Define if verbose debugging is enabled.])
