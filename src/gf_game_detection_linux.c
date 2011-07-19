@@ -29,15 +29,15 @@
 
 #include "gf_game_detection.h"
 
-static const gchar *get_winepath(const gchar *p_wine_prefix, const gchar *p_command)
+static const gchar *get_winepath(const gchar *p_wine_path, const gchar *p_wine_prefix, const gchar *p_command)
 {
 	static gchar cmd_out[PATH_MAX];
 
 	gchar *cmd = NULL;
 	if(!p_wine_prefix)
-		cmd = g_strdup_printf("winepath -u '%s'", p_command);
+		cmd = g_strdup_printf("%s/wine winepath.exe -u '%s'", p_wine_path, p_command);
 	else
-		cmd = g_strdup_printf("WINEPREFIX='%s' winepath -u '%s'", p_wine_prefix, p_command);
+		cmd = g_strdup_printf("WINEPREFIX='%s' %s/wine winepath.exe -u '%s'", p_wine_prefix, p_wine_path, p_command);
 
 #ifdef DEBUG_VERBOSE
 	purple_debug_misc("gfire", "get_winepath: Executing \"%s\"\n", cmd);
@@ -307,6 +307,13 @@ void gfire_process_list_update(gfire_process_list *p_list)
 			purple_debug_misc("gfire", "gfire_process_list_update: WINE game! Starting WINE based detection...\n");
 #endif // DEBUG_VERBOSE
 
+			// Get path to wine executable
+			gchar *wine_path = g_path_get_dirname(process_exe);
+
+#ifdef DEBUG_VERBOSE
+			purple_debug_misc("gfire", "gfire_process_list_update: Path to WINE executable: %s\n", wine_path);
+#endif // DEBUG_VERBOSE
+
 			// Get Wine prefix for winepath
 			GHashTable *environ = get_environ(proc_path);
 			const gchar *prefix = NULL;
@@ -321,12 +328,13 @@ void gfire_process_list_update(gfire_process_list *p_list)
 #endif // DEBUG_VERBOSE
 
 			// Get process name using winepath
-			const gchar *real_path = get_winepath(prefix, process_cmd);
+			const gchar *real_path = get_winepath(wine_path, prefix, process_cmd);
 
 			// Some error occured
 			if(!real_path)
 			{
 				g_hash_table_destroy(environ);
+				g_free(wine_path);
 				g_free(process_cmd);
 				g_free(process_args);
 				g_free(proc_path);
@@ -356,6 +364,7 @@ void gfire_process_list_update(gfire_process_list *p_list)
 				if(!cwd)
 				{
 					g_hash_table_destroy(environ);
+					g_free(wine_path);
 					g_free(process_cmd);
 					g_free(process_args);
 					g_free(proc_path);
@@ -369,9 +378,10 @@ void gfire_process_list_update(gfire_process_list *p_list)
 				purple_debug_misc("gfire", "gfire_process_list_update: Trying the following path: \"%s\"\n", full_cmd);
 #endif // DEBUG_VERBOSE
 
-				real_path = get_winepath(prefix, full_cmd);
+				real_path = get_winepath(wine_path, prefix, full_cmd);
 				g_free(full_cmd);
 				g_hash_table_destroy(environ);
+				g_free(wine_path);
 
 				// Again some error :'(
 				if(!real_path)
@@ -406,6 +416,7 @@ void gfire_process_list_update(gfire_process_list *p_list)
 			else
 			{
 				g_hash_table_destroy(environ);
+				g_free(wine_path);
 				g_free(process_cmd);
 			}
 
