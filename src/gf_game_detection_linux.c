@@ -29,49 +29,81 @@
 
 #include "gf_game_detection.h"
 
-static const gchar *get_winepath(const gchar *p_wine_path, const gchar *p_wine_prefix, const gchar *p_command)
+static gchar *get_winepath(const gchar *p_wine_path, const gchar *p_cwd, GHashTable *p_environ, const gchar *p_command)
 {
-	static gchar cmd_out[PATH_MAX];
+	// Build argument vector
+	static gchar *argv[] = { NULL, "winepath.exe", "-u", NULL, NULL };
 
-	gchar *cmd = NULL;
-	if(!p_wine_prefix)
-		cmd = g_strdup_printf("%s/wine winepath.exe -u '%s'", p_wine_path, p_command);
-	else
-		cmd = g_strdup_printf("WINEPREFIX='%s' %s/wine winepath.exe -u '%s'", p_wine_prefix, p_wine_path, p_command);
+	gchar *wine_cmd = g_strdup_printf("%s/wine", p_wine_path);
+	argv[0] = wine_cmd;
+
+	gchar *winpath = g_strdup_printf("%s", p_command);
+	argv[3] = winpath;
 
 #ifdef DEBUG_VERBOSE
-	purple_debug_misc("gfire", "get_winepath: Executing \"%s\"\n", cmd);
+	purple_debug_misc("gfire", "get_winepath: argv: \"%s %s %s '%s'\"\n", argv[0], argv[1], argv[2], argv[3]);
 #endif // DEBUG_VERBOSE
 
-	FILE *winepath = popen(cmd, "r");
-	g_free(cmd);
+	// Build environment vector
+	gchar **env = (gchar**)g_malloc(sizeof(gchar*) * (g_hash_table_size(p_environ) + 1));
 
-	if(!winepath)
+	GHashTableIter iter;
+	g_hash_table_iter_init(&iter, p_environ);
+
+	gchar *key, *value;
+	gint pos = 0;
+	while(g_hash_table_iter_next(&iter, (gpointer*)&key, (gpointer*)&value))
 	{
-#ifdef DEBUG
-		purple_debug_error("gfire", "get_winepath: popen() failed\n");
-#endif // DEBUG
-		return NULL;
+		if(g_strcmp0(key, "WINESERVERSOCKET") != 0)
+		{
+			env[pos] = g_strdup_printf("%s=%s", key, value);
+			pos++;
+		}
 	}
-
-	if(!fgets(cmd_out, PATH_MAX, winepath))
-	{
-#ifdef DEBUG
-		purple_debug_error("gfire", "get_winepath: fgets() failed\n");
-#endif // DEBUG
-		pclose(winepath);
-		return NULL;
-	}
-
-
-	pclose(winepath);
+	env[pos] = NULL;
 
 #ifdef DEBUG_VERBOSE
-	purple_debug_misc("gfire", "get_winepath: Result \"%s\"\n", cmd_out);
+	gchar **cur = env;
+	while(*cur != NULL)
+	{
+		purple_debug_misc("gfire", "get_winepath: env: %s\n", *cur);
+		cur++;
+	}
+#endif // DEBUG_VERBOSE
+
+	gchar *result = NULL;
+
+#ifdef DEBUG_VERBOSE
+	gchar *error = NULL;
+	if(!g_spawn_sync(p_cwd, argv, env, 0, NULL, NULL, &result, &error, NULL, NULL))
+#else
+	if(!g_spawn_sync(p_cwd, argv, env, G_SPAWN_STDERR_TO_DEV_NULL, NULL, NULL, &result, NULL, NULL, NULL))
+#endif // DEBUG_VERBOSE
+	{
+#ifdef DEBUG
+		purple_debug_error("gfire", "get_winepath: g_spawn_sync() failed\n");
+#endif // DEBUG
+		g_strfreev(env);
+		g_free(winpath);
+		g_free(wine_cmd);
+		return NULL;
+	}
+
+	g_strfreev(env);
+	g_free(winpath);
+	g_free(wine_cmd);
+
+#ifdef DEBUG_VERBOSE
+	purple_debug_misc("gfire", "get_winepath: Error: \"%s\"\n", error ? error : "NULL");
+	purple_debug_misc("gfire", "get_winepath: Result: \"%s\"\n", result ? result : "NULL");
+	g_free(error);
 #endif // DEBUG_VERBOSE
 
 	// Remove trailing spaces and return
-	return g_strstrip(cmd_out);
+	if(!result)
+		return NULL;
+	else
+		return g_strstrip(result);
 }
 
 static const gchar *get_proc_exe(const gchar *p_proc_path)
@@ -314,13 +346,15 @@ void gfire_process_list_update(gfire_process_list *p_list)
 			purple_debug_misc("gfire", "gfire_process_list_update: Path to WINE executable: %s\n", wine_path);
 #endif // DEBUG_VERBOSE
 
-			// Get Wine prefix for winepath
+			// Get process environment for winepath
 			GHashTable *environ = get_environ(proc_path);
+			const gchar *cwd = get_proc_cwd(environ, proc_path);
+
+#ifdef DEBUG_VERBOSE
 			const gchar *prefix = NULL;
 			if(environ)
 				prefix = g_hash_table_lookup(environ, "WINEPREFIX");
 
-#ifdef DEBUG_VERBOSE
 			if(prefix)
 				purple_debug_misc("gfire", "gfire_process_list_update: WINEPREFIX=\"%s\"\n", prefix);
 			else
@@ -328,7 +362,7 @@ void gfire_process_list_update(gfire_process_list *p_list)
 #endif // DEBUG_VERBOSE
 
 			// Get process name using winepath
-			const gchar *real_path = get_winepath(wine_path, prefix, process_cmd);
+			gchar *real_path = get_winepath(wine_path, cwd, environ, process_cmd);
 
 			// Some error occured
 			if(!real_path)
@@ -352,6 +386,7 @@ void gfire_process_list_update(gfire_process_list *p_list)
 #else
 			gchar *phys_path = canonicalize_file_name(real_path);
 #endif // GF_OS_BSD
+			g_free(real_path);
 
 			// We might have only the executables name, try with adding the CWD
 			if(!phys_path)
@@ -359,7 +394,7 @@ void gfire_process_list_update(gfire_process_list *p_list)
 #ifdef DEBUG_VERBOSE
 				purple_debug_misc("gfire", "gfire_process_list_update: No such file :'( Trying to prepend the CWD...\n");
 #endif // DEBUG_VERBOSE
-				const gchar *cwd = get_proc_cwd(environ, proc_path);
+
 				// Okay, we really can't do anything about it
 				if(!cwd)
 				{
@@ -378,7 +413,7 @@ void gfire_process_list_update(gfire_process_list *p_list)
 				purple_debug_misc("gfire", "gfire_process_list_update: Trying the following path: \"%s\"\n", full_cmd);
 #endif // DEBUG_VERBOSE
 
-				real_path = get_winepath(wine_path, prefix, full_cmd);
+				real_path = get_winepath(wine_path, cwd, environ, full_cmd);
 				g_free(full_cmd);
 				g_hash_table_destroy(environ);
 				g_free(wine_path);
@@ -401,6 +436,7 @@ void gfire_process_list_update(gfire_process_list *p_list)
 #else
 				phys_path = canonicalize_file_name(real_path);
 #endif // GF_OS_BSD
+				g_free(real_path);
 
 				// Okay...we lost
 				if(!phys_path)
