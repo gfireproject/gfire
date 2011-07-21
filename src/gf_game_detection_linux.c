@@ -36,9 +36,7 @@ static gchar *get_winepath(const gchar *p_wine_path, const gchar *p_cwd, GHashTa
 
 	gchar *wine_cmd = g_strdup_printf("%s/wine", p_wine_path);
 	argv[0] = wine_cmd;
-
-	gchar *winpath = g_strdup_printf("%s", p_command);
-	argv[3] = winpath;
+	argv[3] = p_command;
 
 #ifdef DEBUG_VERBOSE
 	purple_debug_misc("gfire", "get_winepath: argv: \"%s %s %s '%s'\"\n", argv[0], argv[1], argv[2], argv[3]);
@@ -84,13 +82,11 @@ static gchar *get_winepath(const gchar *p_wine_path, const gchar *p_cwd, GHashTa
 		purple_debug_error("gfire", "get_winepath: g_spawn_sync() failed\n");
 #endif // DEBUG
 		g_strfreev(env);
-		g_free(winpath);
 		g_free(wine_cmd);
 		return NULL;
 	}
 
 	g_strfreev(env);
-	g_free(winpath);
 	g_free(wine_cmd);
 
 #ifdef DEBUG_VERBOSE
