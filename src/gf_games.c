@@ -1168,35 +1168,36 @@ static void gfire_game_manager_reload_ui()
 	if(!gfire_gtk_builder)
 		return;
 
-	GtkWidget *add_game_entry = GTK_WIDGET(gtk_builder_get_object(gfire_gtk_builder, "add_game_entry"));
-	GtkWidget *add_detection_button = GTK_WIDGET(gtk_builder_get_object(gfire_gtk_builder, "add_detection_button"));
-	GtkWidget *add_executable_check_button = GTK_WIDGET(gtk_builder_get_object(gfire_gtk_builder, "add_executable_check_button"));
-	GtkWidget *add_launch_button = GTK_WIDGET(gtk_builder_get_object(gfire_gtk_builder, "add_launch_button"));
-	GtkWidget *add_advanced_expander = GTK_WIDGET(gtk_builder_get_object(gfire_gtk_builder, "add_advanced_expander"));
-	GtkWidget *add_prefix_entry = GTK_WIDGET(gtk_builder_get_object(gfire_gtk_builder, "add_prefix_entry"));
-	GtkWidget *edit_game_combo = GTK_WIDGET(gtk_builder_get_object(gfire_gtk_builder, "edit_game_combo"));
-	GtkListStore *edit_game_list_store = GTK_LIST_STORE(gtk_builder_get_object(gfire_gtk_builder, "edit_game_list_store"));
-	GtkWidget *edit_detection_button = GTK_WIDGET(gtk_builder_get_object(gfire_gtk_builder, "edit_detection_button"));
-	GtkWidget *edit_executable_check_button = GTK_WIDGET(gtk_builder_get_object(gfire_gtk_builder, "edit_executable_check_button"));
-	GtkWidget *edit_launch_button = GTK_WIDGET(gtk_builder_get_object(gfire_gtk_builder, "edit_launch_button"));
-	GtkWidget *edit_prefix_entry = GTK_WIDGET(gtk_builder_get_object(gfire_gtk_builder, "edit_prefix_entry"));
+	GtkEntry *add_game_entry = GTK_ENTRY(gtk_builder_get_object(gfire_gtk_builder, "add_game_entry"));
+	GtkFileChooser *add_detection_button = GTK_FILE_CHOOSER(gtk_builder_get_object(gfire_gtk_builder, "add_detection_button"));
+	GtkToggleButton *add_executable_check_button = GTK_TOGGLE_BUTTON(gtk_builder_get_object(gfire_gtk_builder, "add_executable_check_button"));
+	GtkFileChooser *add_launch_button = GTK_FILE_CHOOSER(gtk_builder_get_object(gfire_gtk_builder, "add_launch_button"));
+	GtkExpander *add_advanced_expander = GTK_EXPANDER(gtk_builder_get_object(gfire_gtk_builder, "add_advanced_expander"));
+	GtkEntry *add_prefix_entry = GTK_ENTRY(gtk_builder_get_object(gfire_gtk_builder, "add_prefix_entry"));
+	GtkComboBoxText *edit_game_combo = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(gfire_gtk_builder, "edit_game_combo"));
+	GtkFileChooser *edit_detection_button = GTK_FILE_CHOOSER(gtk_builder_get_object(gfire_gtk_builder, "edit_detection_button"));
+	GtkToggleButton *edit_executable_check_button = GTK_TOGGLE_BUTTON(gtk_builder_get_object(gfire_gtk_builder, "edit_executable_check_button"));
+	GtkFileChooser *edit_launch_button = GTK_FILE_CHOOSER(gtk_builder_get_object(gfire_gtk_builder, "edit_launch_button"));
+	GtkEntry *edit_prefix_entry = GTK_ENTRY(gtk_builder_get_object(gfire_gtk_builder, "edit_prefix_entry"));
 
 	// Reset widgets on "add" tab
-	gtk_entry_set_text(GTK_ENTRY(add_game_entry), "");
-	gtk_file_chooser_unselect_all(GTK_FILE_CHOOSER(add_detection_button));
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(add_executable_check_button), TRUE);
-	gtk_file_chooser_unselect_all(GTK_FILE_CHOOSER(add_launch_button));
-	gtk_expander_set_expanded(GTK_EXPANDER(add_advanced_expander), FALSE);
-	gtk_entry_set_text(GTK_ENTRY(add_prefix_entry), "");
+	gtk_entry_set_text(add_game_entry, "");
+	gtk_file_chooser_unselect_all(add_detection_button);
+	gtk_toggle_button_set_active(add_executable_check_button, TRUE);
+	gtk_file_chooser_unselect_all(add_launch_button);
+	gtk_expander_set_expanded(add_advanced_expander, FALSE);
+	gtk_entry_set_text(add_prefix_entry, "");
 
 	// Reset widgets on "edit" tab
-	gtk_file_chooser_unselect_all(GTK_FILE_CHOOSER(edit_detection_button));
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(edit_executable_check_button), TRUE);
-	gtk_file_chooser_unselect_all(GTK_FILE_CHOOSER(edit_launch_button));
-	gtk_entry_set_text(GTK_ENTRY(edit_prefix_entry), "");
+	gtk_file_chooser_unselect_all(edit_detection_button);
+	gtk_toggle_button_set_active(edit_executable_check_button, TRUE);
+	gtk_file_chooser_unselect_all(edit_launch_button);
+	gtk_entry_set_text(edit_prefix_entry, "");
 
 	// Clear games list combo box
-	gtk_list_store_clear(edit_game_list_store);
+	int i = 0;
+	for(; i <= g_list_length(gfire_games_config); i++)
+		gtk_combo_box_text_remove(edit_game_combo, 0);
 
 	// Add all new configured games
 	GList *cur = gfire_games_config;
@@ -1204,9 +1205,7 @@ static void gfire_game_manager_reload_ui()
 	{
 		const gfire_game *game = gfire_game_by_id(((gfire_game_configuration*)cur->data)->game_id);
 		if(game)
-		{
-			gtk_combo_box_append_text(GTK_COMBO_BOX(edit_game_combo), game->name);
-		}
+			gtk_combo_box_text_append_text(edit_game_combo, game->name);
 		cur = g_list_next(cur);
 	}
 }
@@ -1219,25 +1218,25 @@ static void gfire_game_manager_update_executable_toggled_cb(GtkBuilder *p_builde
 		return;
 	}
 
-	GtkWidget *add_executable_check_button = GTK_WIDGET(gtk_builder_get_object(p_builder, "add_executable_check_button"));
-	GtkWidget *add_launch_button = GTK_WIDGET(gtk_builder_get_object(p_builder, "add_launch_button"));
-	GtkWidget *edit_executable_check_button = GTK_WIDGET(gtk_builder_get_object(p_builder, "edit_executable_check_button"));
-	GtkWidget *edit_launch_button = GTK_WIDGET(gtk_builder_get_object(p_builder, "edit_launch_button"));
+	GtkToggleButton *add_executable_check_button = GTK_TOGGLE_BUTTON(gtk_builder_get_object(p_builder, "add_executable_check_button"));
+	GtkFileChooser *add_launch_button = GTK_FILE_CHOOSER(gtk_builder_get_object(p_builder, "add_launch_button"));
+	GtkToggleButton *edit_executable_check_button = GTK_TOGGLE_BUTTON(gtk_builder_get_object(p_builder, "edit_executable_check_button"));
+	GtkFileChooser *edit_launch_button = GTK_FILE_CHOOSER(gtk_builder_get_object(p_builder, "edit_launch_button"));
 
 	gboolean check_button_state;
-	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(add_executable_check_button)))
+	if (gtk_toggle_button_get_active(add_executable_check_button))
 		check_button_state = FALSE;
 	else
 		check_button_state = TRUE;
 
-	gtk_widget_set_sensitive(add_launch_button, check_button_state);
+	gtk_widget_set_sensitive(GTK_WIDGET(add_launch_button), check_button_state);
 
-	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(edit_executable_check_button)))
+	if (gtk_toggle_button_get_active(edit_executable_check_button))
 		check_button_state = FALSE;
 	else
 		check_button_state = TRUE;
 
-	gtk_widget_set_sensitive(edit_launch_button, check_button_state);
+	gtk_widget_set_sensitive(GTK_WIDGET(edit_launch_button), check_button_state);
 }
 
 static void gfire_game_manager_add_cb(GtkBuilder *p_builder, GtkWidget *p_button)
@@ -1248,19 +1247,19 @@ static void gfire_game_manager_add_cb(GtkBuilder *p_builder, GtkWidget *p_button
 		return;
 	}
 
-	GtkWidget *add_game_entry = GTK_WIDGET(gtk_builder_get_object(p_builder, "add_game_entry"));
-	GtkWidget *add_detection_button = GTK_WIDGET(gtk_builder_get_object(p_builder, "add_detection_button"));
-	GtkWidget *add_executable_check_button = GTK_WIDGET(gtk_builder_get_object(p_builder, "add_executable_check_button"));
-	GtkWidget *add_launch_button = GTK_WIDGET(gtk_builder_get_object(p_builder, "add_launch_button"));
+	GtkEntry *add_game_entry = GTK_ENTRY(gtk_builder_get_object(p_builder, "add_game_entry"));
+	GtkFileChooser *add_detection_button = GTK_FILE_CHOOSER(gtk_builder_get_object(p_builder, "add_detection_button"));
+	GtkToggleButton *add_executable_check_button = GTK_TOGGLE_BUTTON(gtk_builder_get_object(p_builder, "add_executable_check_button"));
+	GtkFileChooser *add_launch_button = GTK_FILE_CHOOSER(gtk_builder_get_object(p_builder, "add_launch_button"));
 
-	GtkWidget *add_prefix_entry = GTK_WIDGET(gtk_builder_get_object(p_builder, "add_prefix_entry"));
+	GtkEntry *add_prefix_entry = GTK_ENTRY(gtk_builder_get_object(p_builder, "add_prefix_entry"));
 
-	const gchar *game_name = gtk_entry_get_text(GTK_ENTRY(add_game_entry));
-	gchar *game_detect = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(add_detection_button));
-	gboolean game_launch_use_detect = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(add_executable_check_button));
-	gchar *game_launch = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(add_launch_button));
+	const gchar *game_name = gtk_entry_get_text(add_game_entry);
+	gchar *game_detect = gtk_file_chooser_get_filename(add_detection_button);
+	gboolean game_launch_use_detect = gtk_toggle_button_get_active(add_executable_check_button);
+	gchar *game_launch = gtk_file_chooser_get_filename(add_launch_button);
 
-	const gchar *game_prefix = gtk_entry_get_text(GTK_ENTRY(add_prefix_entry));
+	const gchar *game_prefix = gtk_entry_get_text(add_prefix_entry);
 
 	if (game_name && game_detect && ((!game_launch_use_detect && game_launch) || game_launch_use_detect))
 	{
@@ -1331,18 +1330,18 @@ static void gfire_game_manager_edit_cb(GtkBuilder *p_builder, GtkWidget *p_butto
 		return;
 	}
 
-	GtkWidget *edit_game_combo = GTK_WIDGET(gtk_builder_get_object(p_builder, "edit_game_combo"));
-	GtkWidget *edit_detection_button = GTK_WIDGET(gtk_builder_get_object(p_builder, "edit_detection_button"));
-	GtkWidget *edit_executable_check_button = GTK_WIDGET(gtk_builder_get_object(p_builder, "edit_executable_check_button"));
-	GtkWidget *edit_launch_button = GTK_WIDGET(gtk_builder_get_object(p_builder, "edit_launch_button"));
-	GtkWidget *edit_prefix_entry = GTK_WIDGET(gtk_builder_get_object(p_builder, "edit_prefix_entry"));
+	GtkComboBoxText *edit_game_combo = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(p_builder, "edit_game_combo"));
+	GtkFileChooser *edit_detection_button = GTK_FILE_CHOOSER(gtk_builder_get_object(p_builder, "edit_detection_button"));
+	GtkToggleButton *edit_executable_check_button = GTK_TOGGLE_BUTTON(gtk_builder_get_object(p_builder, "edit_executable_check_button"));
+	GtkFileChooser *edit_launch_button = GTK_FILE_CHOOSER(gtk_builder_get_object(p_builder, "edit_launch_button"));
+	GtkEntry *edit_prefix_entry = GTK_ENTRY(gtk_builder_get_object(p_builder, "edit_prefix_entry"));
 
-	gchar *game_name = gtk_combo_box_get_active_text(GTK_COMBO_BOX(edit_game_combo));
-	gchar *game_detect = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(edit_detection_button));
-	gboolean game_launch_use_detect = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(edit_executable_check_button));
-	gchar *game_launch = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(edit_launch_button));
+	gchar *game_name = gtk_combo_box_text_get_active_text(edit_game_combo);
+	gchar *game_detect = gtk_file_chooser_get_filename(edit_detection_button);
+	gboolean game_launch_use_detect = gtk_toggle_button_get_active(edit_executable_check_button);
+	gchar *game_launch = gtk_file_chooser_get_filename(edit_launch_button);
 
-	const gchar *game_prefix = gtk_entry_get_text(GTK_ENTRY(edit_prefix_entry));
+	const gchar *game_prefix = gtk_entry_get_text(edit_prefix_entry);
 
 	if (game_name && game_detect && ((!game_launch_use_detect && game_launch) || game_launch_use_detect))
 	{
@@ -1414,9 +1413,9 @@ static void gfire_game_manager_remove_cb(GtkBuilder *p_builder, GtkWidget *p_but
 		return;
 	}
 
-	GtkWidget *edit_game_combo = GTK_WIDGET(gtk_builder_get_object(p_builder, "edit_game_combo"));
+	GtkComboBoxText *edit_game_combo = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(p_builder, "edit_game_combo"));
 
-	gchar *selected_game = gtk_combo_box_get_active_text(GTK_COMBO_BOX(edit_game_combo));
+	gchar *selected_game = gtk_combo_box_text_get_active_text(edit_game_combo);
 	if (selected_game)
 	{
 		guint32 game_id = gfire_game_id(selected_game);
@@ -1467,14 +1466,14 @@ static void gfire_game_manager_edit_update_fields_cb(GtkBuilder *p_builder, GtkW
 		return;
 	}
 
-	GtkWidget *edit_detection_button = GTK_WIDGET(gtk_builder_get_object(p_builder, "edit_detection_button"));
-	GtkWidget *edit_executable_check_button = GTK_WIDGET(gtk_builder_get_object(p_builder, "edit_executable_check_button"));
-	GtkWidget *edit_launch_button = GTK_WIDGET(gtk_builder_get_object(p_builder, "edit_launch_button"));
+	GtkFileChooser *edit_detection_button = GTK_FILE_CHOOSER(gtk_builder_get_object(p_builder, "edit_detection_button"));
+	GtkToggleButton *edit_executable_check_button = GTK_TOGGLE_BUTTON(gtk_builder_get_object(p_builder, "edit_executable_check_button"));
+	GtkFileChooser *edit_launch_button = GTK_FILE_CHOOSER(gtk_builder_get_object(p_builder, "edit_launch_button"));
 
-	GtkWidget *edit_prefix_entry = GTK_WIDGET(gtk_builder_get_object(p_builder, "edit_prefix_entry"));
-	GtkWidget *edit_game_combo = GTK_WIDGET(gtk_builder_get_object(p_builder, "edit_game_combo"));
+	GtkEntry *edit_prefix_entry = GTK_ENTRY(gtk_builder_get_object(p_builder, "edit_prefix_entry"));
+	GtkComboBoxText *edit_game_combo = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(p_builder, "edit_game_combo"));
 
-	gchar *selected_game = gtk_combo_box_get_active_text(GTK_COMBO_BOX(edit_game_combo));
+	gchar *selected_game = gtk_combo_box_text_get_active_text(edit_game_combo);
 
 	guint32 game_id = gfire_game_id(selected_game);
 	g_free(selected_game);
@@ -1493,13 +1492,13 @@ static void gfire_game_manager_edit_update_fields_cb(GtkBuilder *p_builder, GtkW
 	}
 
 	if (!g_utf8_collate(gconf->detect_file ? gconf->detect_file : "", gconf->launch_file ? gconf->launch_file : ""))
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(edit_executable_check_button), TRUE);
+		gtk_toggle_button_set_active(edit_executable_check_button, TRUE);
 	else
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(edit_executable_check_button), FALSE);
+		gtk_toggle_button_set_active(edit_executable_check_button, FALSE);
 
-	gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(edit_detection_button), gconf->detect_file ? gconf->detect_file : "");
-	gtk_entry_set_text(GTK_ENTRY(edit_prefix_entry), gconf->launch_prefix ? gconf->launch_prefix : "");
-	gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(edit_launch_button), gconf->launch_file ? gconf->launch_file : "");
+	gtk_file_chooser_set_filename(edit_detection_button, gconf->detect_file ? gconf->detect_file : "");
+	gtk_entry_set_text(edit_prefix_entry, gconf->launch_prefix ? gconf->launch_prefix : "");
+	gtk_file_chooser_set_filename(edit_launch_button, gconf->launch_file ? gconf->launch_file : "");
 }
 
 static void gfire_game_manager_update_executable_cb(GtkWidget *p_launch_button, GtkWidget *p_detect_button)
@@ -1539,16 +1538,16 @@ void gfire_game_manager_show(PurplePluginAction *p_action)
 	g_free(builder_file);
 
 	GtkWidget *manage_games_window = GTK_WIDGET(gtk_builder_get_object(gfire_gtk_builder, "manage_games_window"));
-	GtkWidget *add_game_entry = GTK_WIDGET(gtk_builder_get_object(gfire_gtk_builder, "add_game_entry"));
-	GtkWidget *add_detection_button = GTK_WIDGET(gtk_builder_get_object(gfire_gtk_builder, "add_detection_button"));
-	GtkWidget *add_executable_check_button = GTK_WIDGET(gtk_builder_get_object(gfire_gtk_builder, "add_executable_check_button"));
-	GtkWidget *add_launch_button = GTK_WIDGET(gtk_builder_get_object(gfire_gtk_builder, "add_launch_button"));
+	GtkEntry *add_game_entry = GTK_ENTRY(gtk_builder_get_object(gfire_gtk_builder, "add_game_entry"));
+	GtkFileChooser *add_detection_button = GTK_FILE_CHOOSER(gtk_builder_get_object(gfire_gtk_builder, "add_detection_button"));
+	GtkToggleButton *add_executable_check_button = GTK_TOGGLE_BUTTON(gtk_builder_get_object(gfire_gtk_builder, "add_executable_check_button"));
+	GtkFileChooser *add_launch_button = GTK_FILE_CHOOSER(gtk_builder_get_object(gfire_gtk_builder, "add_launch_button"));
 	GtkWidget *add_close_button = GTK_WIDGET(gtk_builder_get_object(gfire_gtk_builder, "add_close_button"));
 	GtkWidget *add_add_button = GTK_WIDGET(gtk_builder_get_object(gfire_gtk_builder, "add_add_button"));
-	GtkWidget *edit_game_combo = GTK_WIDGET(gtk_builder_get_object(gfire_gtk_builder, "edit_game_combo"));
-	GtkWidget *edit_detection_button = GTK_WIDGET(gtk_builder_get_object(gfire_gtk_builder, "edit_detection_button"));
-	GtkWidget *edit_executable_check_button = GTK_WIDGET(gtk_builder_get_object(gfire_gtk_builder, "edit_executable_check_button"));
-	GtkWidget *edit_launch_button = GTK_WIDGET(gtk_builder_get_object(gfire_gtk_builder, "edit_launch_button"));
+	GtkComboBoxText *edit_game_combo = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(gfire_gtk_builder, "edit_game_combo"));
+	GtkFileChooser *edit_detection_button = GTK_FILE_CHOOSER(gtk_builder_get_object(gfire_gtk_builder, "edit_detection_button"));
+	GtkToggleButton *edit_executable_check_button = GTK_TOGGLE_BUTTON(gtk_builder_get_object(gfire_gtk_builder, "edit_executable_check_button"));
+	GtkFileChooser *edit_launch_button = GTK_FILE_CHOOSER(gtk_builder_get_object(gfire_gtk_builder, "edit_launch_button"));
 	GtkWidget *edit_close_button = GTK_WIDGET(gtk_builder_get_object(gfire_gtk_builder, "edit_close_button"));
 	GtkWidget *edit_apply_button = GTK_WIDGET(gtk_builder_get_object(gfire_gtk_builder, "edit_apply_button"));
 	GtkWidget *edit_remove_button = GTK_WIDGET(gtk_builder_get_object(gfire_gtk_builder, "edit_remove_button"));
@@ -1572,22 +1571,22 @@ void gfire_game_manager_show(PurplePluginAction *p_action)
 	gtk_file_filter_add_mime_type(filter, "application/x-executable");
 	gtk_file_filter_add_mime_type(filter, "application/x-msdownload");
 
-	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(add_detection_button), filter);
-	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(add_launch_button), filter);
+	gtk_file_chooser_add_filter(add_detection_button, filter);
+	gtk_file_chooser_add_filter(add_launch_button, filter);
 
-	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(edit_detection_button), filter);
-	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(edit_launch_button), filter);
+	gtk_file_chooser_add_filter(edit_detection_button, filter);
+	gtk_file_chooser_add_filter(edit_launch_button, filter);
 
 	GtkFileFilter *filter_all = gtk_file_filter_new();
 	gtk_file_filter_set_name(filter_all, "All files");
 
 	gtk_file_filter_add_pattern (filter_all, "*");
 
-	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(add_detection_button), filter_all);
-	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(add_launch_button), filter_all);
+	gtk_file_chooser_add_filter(add_detection_button, filter_all);
+	gtk_file_chooser_add_filter(add_launch_button, filter_all);
 
-	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(edit_detection_button), filter_all);
-	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(edit_launch_button), filter_all);
+	gtk_file_chooser_add_filter(edit_detection_button, filter_all);
+	gtk_file_chooser_add_filter(edit_launch_button, filter_all);
 
 	// Add all games to the combo box
 	GtkListStore *add_list_store = gtk_list_store_new(1, G_TYPE_STRING);
@@ -1605,7 +1604,7 @@ void gfire_game_manager_show(PurplePluginAction *p_action)
 	GtkEntryCompletion *add_completion = gtk_entry_completion_new();
 	gtk_entry_completion_set_model(add_completion, GTK_TREE_MODEL(add_list_store));
 	gtk_entry_completion_set_text_column(add_completion, 0);
-	gtk_entry_set_completion(GTK_ENTRY(add_game_entry), add_completion);
+	gtk_entry_set_completion(add_game_entry, add_completion);
 
 	gfire_game_manager_reload_ui();
 
