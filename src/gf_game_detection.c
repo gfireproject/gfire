@@ -95,6 +95,32 @@ static void setKMessStatus(const gchar *p_message)
 		g_strfreev(names);
 	}
 }
+
+static void setGajimStatus(const gchar *p_message)
+{
+	if(!p_message)
+		return;
+
+	GError *error = NULL;
+
+	DBusGConnection *connection = dbus_g_bus_get(DBUS_BUS_SESSION, &error);
+	if(!connection)
+	{
+		purple_debug_error("gfire", "gajim status: dbus_g_bus_get: %s\n", error->message);
+		g_error_free(error);
+		return;
+	}
+
+	DBusGProxy *proxy = dbus_g_proxy_new_for_name(connection, "org.gajim.dbus", "/org/gajim/dbus/RemoteObject", "org.gajim.dbus.RemoteInterface");
+	if(!proxy)
+		return;
+
+	dbus_g_proxy_call_no_reply(proxy, "change_status", G_TYPE_STRING, "online", G_TYPE_STRING, p_message, G_TYPE_STRING, "", G_TYPE_INVALID);
+
+	purple_debug_info("gfire", "gajim status: changed to \"%s\"\n", p_message);
+
+	g_object_unref(proxy);
+}
 #endif // USE_DBUS_STATUS_CHANGE && !_WIN32
 
 static gfire_game_detector *gfire_detector = NULL;
@@ -216,11 +242,17 @@ static void gfire_game_detector_inform_instances_game()
 			gchar *msg = g_strdup_printf(_("Playing %s"), game_name);
 			// KMess
 			setKMessStatus(msg);
+			// Gajim
+			setGajimStatus(msg);
 			g_free(msg);
 		}
 		else
+		{
 			// KMess
 			setKMessStatus("");
+			// Gajim
+			setGajimStatus("");
+		}
 #endif // USE_DBUS_STATUS_CHANGE && !_WIN32
 	}
 
