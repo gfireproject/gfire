@@ -60,7 +60,7 @@ typedef struct _gfire_game_detection_set
 	GList *invalid_args;
 
 	gboolean external;
-	gchar *detect_url;
+	gchar **detect_urls;
 
 	// Server info
 	gchar *server_game_name;

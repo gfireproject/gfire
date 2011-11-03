@@ -167,12 +167,17 @@ guint32 gfire_game_id_by_url(const gchar *p_url)
 			if(!dset->external)
 				continue;
 
-			if(dset->detect_url)
+			if(dset->detect_urls)
 			{
-				if(strstr(url_down, dset->detect_url))
+				gchar **url = dset->detect_urls;
+				while(*url)
 				{
-					g_free(url_down);
-					return ((gfire_game*)cur->data)->id;
+					if(strstr(url_down, *url))
+					{
+						g_free(url_down);
+						return ((gfire_game*)cur->data)->id;
+					}
+					url++;
 				}
 			}
 
@@ -468,7 +473,7 @@ static gfire_game_detection_set *gfire_game_detection_set_create_from_xml(xmlnod
 		// Detection URL
 		if(xmlnode_get_attrib(cur_node, "url"))
 		{
-			ret->detect_url = g_strdup(xmlnode_get_attrib(cur_node, "url"));
+			ret->detect_urls = g_strsplit(xmlnode_get_attrib(cur_node, "url"), ";", -1);
 		}
 
 		// Launch URL
@@ -504,8 +509,8 @@ static void gfire_game_detection_set_free(gfire_game_detection_set *p_dset)
 	gfire_list_clear(p_dset->invalid_args);
 	gfire_list_clear(p_dset->required_args);
 
-	if(p_dset->detect_url)
-		g_free(p_dset->detect_url);
+	if(p_dset->detect_urls)
+		g_strfreev(p_dset->detect_urls);
 
 	if(p_dset->launch_url)
 		g_free(p_dset->launch_url);
