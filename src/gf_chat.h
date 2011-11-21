@@ -56,6 +56,7 @@ struct _gfire_chat
 	gchar *motd;			// motd
 	PurpleConversation *c;	// purple conv instance
 	PurpleChat *purple_chat;// purple buddy list chat
+	gboolean joined;
 	guint32 own_permission;
 	guint32 def_permission;
 	guint32 accessibility;
@@ -91,7 +92,9 @@ void gfire_chat_set_motd(gfire_chat *p_chat, const gchar *p_motd, gboolean p_not
 void gfire_chat_change_motd(gfire_chat *p_chat, const gchar *p_motd);
 
 // Flags
+gboolean gfire_chat_joined(gfire_chat *p_chat);
 //	Internal
+void gfire_chat_set_joined(gfire_chat *p_chat, gboolean p_joined);
 void gfire_chat_set_default_permission(gfire_chat *p_chat, guint32 p_permission, gboolean p_notify);
 void gfire_chat_set_accessibility(gfire_chat *p_chat, guint32 p_accessibility, gboolean p_notify);
 void gfire_chat_set_secure(gfire_chat *p_chat, gboolean p_secure, gboolean p_notify);

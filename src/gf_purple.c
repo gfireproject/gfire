@@ -819,7 +819,9 @@ static void gfire_purple_join_chat(PurpleConnection *p_gc, GHashTable *p_table)
 		cid = purple_base64_decode(cid_base64, NULL);
 	}
 
-	gfire_chat_join(cid, room, pass, p_gc);
+	gfire_chat *chat = gfire_find_chat(gfire, room, GFFC_TOPIC);
+	if(!chat || !gfire_chat_joined(chat))
+		gfire_chat_join(cid, room, pass, p_gc);
 
 	g_free(cid);
 }

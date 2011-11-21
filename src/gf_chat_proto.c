@@ -616,6 +616,7 @@ void gfire_chat_proto_join_info(gfire_data *p_gfire, guint16 p_packet_len)
 	}
 	g_free(chat_id); g_free(topic); g_free(motd);
 
+	gfire_chat_set_joined(chat, TRUE);
 	gfire_chat_set_accessibility(chat, access, FALSE);
 	gfire_chat_set_secure(chat, secure, FALSE);
 	gfire_chat_set_silenced(chat, silenced, FALSE);

@@ -341,6 +341,8 @@ void gfire_chat_leave(gfire_chat *p_chat)
 	purple_debug(PURPLE_DEBUG_MISC, "gfire", "(group chat): leaving room: %s\n", NN(p_chat->topic));
 	guint16 len = gfire_chat_proto_create_leave(p_chat->chat_id);
 	if(len > 0) gfire_send(gfire_get_connection(p_chat->owner), len);
+
+	p_chat->joined = FALSE;
 }
 
 void gfire_chat_set_topic(gfire_chat *p_chat, const gchar *p_topic, gboolean p_notify)
@@ -538,6 +540,19 @@ void gfire_chat_change_motd(gfire_chat *p_chat, const gchar *p_motd)
 
 	guint16 len = gfire_chat_proto_create_change_motd(p_chat->chat_id, p_motd);
 	if(len > 0) gfire_send(gfire_get_connection(p_chat->owner), len);
+}
+
+gboolean gfire_chat_joined(gfire_chat *p_chat)
+{
+	return (p_chat && p_chat->joined);
+}
+
+void gfire_chat_set_joined(gfire_chat *p_chat, gboolean p_joined)
+{
+	if(!p_chat)
+		return;
+
+	p_chat->joined = p_joined;
 }
 
 void gfire_chat_set_default_permission(gfire_chat *p_chat, guint32 p_permission, gboolean p_notify)
