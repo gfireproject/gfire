@@ -143,7 +143,7 @@ void gfire_menu_action_nick_change_cb(PurplePluginAction *p_action)
 	PurpleConnection *gc = (PurpleConnection *)p_action->context;
 	PurpleAccount *account = purple_connection_get_account(gc);
 
-	purple_request_input(gc, NULL, _("Change Xfire nickname"), _("Leaving empty will clear your current nickname."), purple_connection_get_display_name(gc),
+        purple_request_input(gc, NULL, _("Change Xfire nickname"), _("Leaving empty will clear your current nickname.\nMaximum length is 25 characters."), purple_connection_get_display_name(gc),
 		FALSE, FALSE, NULL, _("OK"), G_CALLBACK(gfire_purple_nick_change_cb), _("Cancel"), NULL, account, NULL, NULL, gc);
 }
 

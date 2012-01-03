@@ -725,6 +725,13 @@ void gfire_purple_nick_change_cb(PurpleConnection *p_gc, const gchar *p_entry)
 
 	if (!p_gc || !(gfire = (gfire_data *)p_gc->proto_data) || !p_entry) return;
 
+        if(g_utf8_strlen(p_entry, -1) > 25)
+        {
+            purple_notify_message(NULL, PURPLE_NOTIFY_MSG_ERROR, _("Nickname is too long"), _("Nickname is too long"),
+                                  _("The nickname you entered was longer than 25 characters! Please try again with a shorter one."),
+                                  NULL, NULL);
+            return;
+        }
 	gfire_set_nick(gfire, p_entry);
 
 	purple_connection_set_display_name(p_gc, p_entry);
