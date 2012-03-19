@@ -34,5 +34,13 @@ src/gf_file_chunk.c
 src/gf_filetransfer.c
 src/gf_groups.c
 src/gf_groups_proto.c
-src/gf_ipc_proto.c
-src/gf_ipc_server.c
+src/gf_preferences.c
+src/gf_preferences_proto.c
+src/gf_server_query.c
+src/gf_server_query_ase.c
+src/gf_server_query_gamespy.c
+src/gf_server_query_gamespy2.c
+src/gf_server_query_gamespy3.c
+src/gf_server_query_quake.c
+src/gf_server_query_savage.c
+src/gf_server_query_source.c

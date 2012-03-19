@@ -1,7 +1,7 @@
 GFIRE_DIR = .
 include mingw.mak
 
-GFIRE_VERSION_STRING = `cat VERSION`
+GFIRE_VERSION_STRING = `cat ./VERSION`
 GFIRE_VERSION_SUFFIX = `awk '{split($$1,array,"\\\.|-"); print array[4];}' VERSION`
 GFIRE_VERSION_PATCH = `awk '{split($$1,array,"\\\.|-"); print array[3];}' VERSION`
 GFIRE_VERSION_MINOR = `awk '{split($$1,array,"\\\.|-"); print array[2];}' VERSION`
@@ -28,6 +28,7 @@ clean:
 
 distclean: clean
 	rm -rf ${WIN32_INSTALL_DIR}
+	rm -f pidgin-gfire-$(GFIRE_VERSION_STRING)-dbgsym.zip
 	rm -f pidgin-gfire-$(GFIRE_VERSION_STRING).exe
 	rm -f pidgin-gfire-$(GFIRE_VERSION_STRING).zip
 
@@ -35,6 +36,7 @@ install: all
 	@list='${SUBDIRS}'; for subdir in $$list; do \
 		(cd $$subdir && $(MAKE) -f Makefile.mingw install) || exit 1; \
 	done;
+	cd ${WIN32_INSTALL_DIR_DEBUG} && zip -ru ../pidgin-gfire-`cat ../VERSION`-dbgsym.zip *
 
 installer: installer-gui installer-zip
 
@@ -43,4 +45,4 @@ installer-gui: install VERSION
 	#${MAKENSIS} ${GFIRE_DIR}/nsis/gfire-installer.nsi
 
 installer-zip: install VERSION
-	cd ${WIN32_INSTALL_DIR} && /usr/bin/zip -ru ../pidgin-gfire-`cat ../VERSION`.zip *
+	cd ${WIN32_INSTALL_DIR} && zip -ru ../pidgin-gfire-`cat ../VERSION`.zip *
