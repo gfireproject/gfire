@@ -25,8 +25,8 @@ WIN32_LIBS = -L${WIN32_GTK_DIR}/lib -L${WIN32_PIDGIN_DIR}/libpurple -lgobject-2.
 GFIRE_SRC_DIR = .
 
 REV = `cat ${GFIRE_DIR}/REV`
-CFLAGS = -O2 -pipe -mno-cygwin -Wall -g -I. -I${GFIRE_DIR} -I${GFIRE_SRC_DIR} ${WIN32_CFLAGS} ${LIBPURPLE_CFLAGS} -DGFIRE_REVISION=${REV} ${USER_CFLAGS}
-LDFLAGS = -mno-cygwin -shared -Wl,--dll,--enable-auto-image-base ${USER_LDFLAGS}
+CFLAGS = -O2 -pipe -Wall -g -I. -I${GFIRE_DIR} -I${GFIRE_SRC_DIR} ${WIN32_CFLAGS} ${LIBPURPLE_CFLAGS} -DGFIRE_REVISION=${REV} ${USER_CFLAGS}
+LDFLAGS = -shared -Wl,--dll,--enable-auto-image-base ${USER_LDFLAGS}
 
 GFIRE_SOURCES = \
 	${GFIRE_SRC_DIR}/gfire.c \

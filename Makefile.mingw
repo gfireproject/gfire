@@ -28,6 +28,7 @@ clean:
 
 distclean: clean
 	rm -rf ${WIN32_INSTALL_DIR}
+	rm -rf ${WIN32_INSTALL_DIR_DEBUG}
 	rm -f pidgin-gfire-$(GFIRE_VERSION_STRING)-dbgsym.zip
 	rm -f pidgin-gfire-$(GFIRE_VERSION_STRING).exe
 	rm -f pidgin-gfire-$(GFIRE_VERSION_STRING).zip
