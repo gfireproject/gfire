@@ -1198,8 +1198,11 @@ guint32 gfire_process_list_contains(const gfire_process_list *p_list, const gcha
 			gboolean process_invalid_args = FALSE;
 
 			const GList *cur_arg = p_invalid_args;
-			while(cur_arg)
+			while(cur_arg && info->args)
 			{
+#ifdef DEBUG_VERBOSE
+		purple_debug_info("gfire", "gfire_process_list_contains: looking for invalid arg \"%s\" in \"%s\"\n", (const char*)cur_arg->data, info->args);
+#endif // DEBUG_VERBOSE
 				if (strstr(info->args, cur_arg->data) != NULL)
 				{
 					process_invalid_args = TRUE;
@@ -1216,6 +1219,14 @@ guint32 gfire_process_list_contains(const gfire_process_list *p_list, const gcha
 				cur_arg = p_required_args;
 				while(cur_arg)
 				{
+					if(!info->args)
+					{
+						process_required_args = FALSE;
+						break;
+					}
+#ifdef DEBUG_VERBOSE
+		purple_debug_info("gfire", "gfire_process_list_contains: looking for required arg \"%s\" in \"%s\"\n", (const char*)cur_arg->data, info->args);
+#endif // DEBUG_VERBOSE
 					if (strstr(info->args, cur_arg->data) == NULL)
 					{
 						process_required_args = FALSE;

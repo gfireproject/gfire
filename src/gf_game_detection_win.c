@@ -127,6 +127,8 @@ static gboolean get_process_cmdline(gint p_pid, gchar **p_exe, gchar **p_cmd_lin
 	UNICODE_STRING cmdline;
 	WCHAR *cmdline_buff;
 
+	*p_exe = *p_cmd_line = NULL;
+
 	if((process = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, p_pid)) == 0)
 	{
 		// Don't handle missing permissions as an error
@@ -287,6 +289,11 @@ void gfire_process_list_update(gfire_process_list *p_list)
 			if(!get_process_cmdline(pe.th32ProcessID, &executable_file, &cmdline))
 				continue;
 
+#ifdef DEBUG
+			purple_debug_info("gfire", "executable file: %s\n", executable_file);
+			purple_debug_info("gfire", "cmdline: %s\n", cmdline);
+#endif // DEBUG
+
 			// Extract the args from the command line
 			gchar *args = strstr(g_strstrip(cmdline), pe.szExeFile);
 			if(args)
@@ -302,10 +309,7 @@ void gfire_process_list_update(gfire_process_list *p_list)
 						args = NULL;
 				}
 			}
-#ifdef DEBUG
-			purple_debug_info("gfire", "executable file: %s\n", executable_file);
-			purple_debug_info("gfire", "cmdline: %s\n", cmdline);
-#endif // DEBUG
+
 			if(args)
 			{
 				g_strstrip(args);
