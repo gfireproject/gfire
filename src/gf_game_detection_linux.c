@@ -36,7 +36,7 @@ static gchar *get_winepath(const gchar *p_wine_path, const gchar *p_cwd, GHashTa
 
 	gchar *wine_cmd = g_strdup_printf("%s/wine", p_wine_path);
 	argv[0] = wine_cmd;
-	argv[3] = p_command;
+    argv[3] = (gchar*)p_command;
 
 #ifdef DEBUG_VERBOSE
 	purple_debug_misc("gfire", "get_winepath: argv: \"%s %s %s '%s'\"\n", argv[0], argv[1], argv[2], argv[3]);
@@ -104,14 +104,14 @@ static gchar *get_winepath(const gchar *p_wine_path, const gchar *p_cwd, GHashTa
 
 static const gchar *get_proc_exe(const gchar *p_proc_path)
 {
-	static gchar exe[PATH_MAX];
+    static gchar exe[PATH_MAX + 1];
 
 	gchar *proc_exe = g_strdup_printf("%s/exe", p_proc_path);
 #ifdef DEBUG_VERBOSE
 	purple_debug_misc("gfire", "get_proc_exe: Resolving symlink \"%s\"\n", proc_exe);
 #endif // DEBUG_VERBOSE
 
-	int len = readlink(proc_exe, exe, PATH_MAX - 1);
+    ssize_t len = readlink(proc_exe, exe, PATH_MAX);
 	if(len == -1)
 	{
 #ifdef DEBUG
@@ -120,8 +120,8 @@ static const gchar *get_proc_exe(const gchar *p_proc_path)
 		g_free(proc_exe);
 		return NULL;
 	}
-
 	exe[len] = 0;
+
 #ifdef DEBUG_VERBOSE
 	purple_debug_misc("gfire", "get_proc_exe: \"%s\" -> \"%s\"\n", proc_exe, exe);
 #endif // DEBUG_VERBOSE
@@ -217,14 +217,15 @@ static GHashTable *get_environ(const gchar *p_proc_path)
 
 static const gchar *get_proc_cwd(GHashTable *p_environ, const gchar *p_proc_path)
 {
-	static gchar cwd[PATH_MAX];
+    static gchar cwd[PATH_MAX + 1];
 
 	gchar *proc_cwd = g_strdup_printf("%s/cwd", p_proc_path);
 #ifdef DEBUG_VERBOSE
 	purple_debug_misc("gfire", "get_proc_cwd: No match, resolving symlink \"%s\"\n", proc_cwd);
 #endif // DEBUG_VERBOSE
 
-	if(readlink(proc_cwd, cwd, PATH_MAX) == -1)
+    ssize_t len = readlink(proc_cwd, cwd, PATH_MAX);
+    if(len == -1)
 	{
 #ifdef DEBUG
 		purple_debug_error("gfire", "get_proc_cwd: readlink() failed\n");
@@ -232,6 +233,7 @@ static const gchar *get_proc_cwd(GHashTable *p_environ, const gchar *p_proc_path
 		g_free(proc_cwd);
 		return NULL;
 	}
+    cwd[len] = 0;
 
 #ifdef DEBUG_VERBOSE
 	purple_debug_misc("gfire", "get_proc_cwd: \"%s\" -> \"%s\"\n", proc_cwd, cwd);
