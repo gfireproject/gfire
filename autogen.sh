@@ -2,9 +2,9 @@
 echo "Generating configuration files for Gfire, please wait..."
 echo;
 
-# Write SVN revision to REV
-if builtin type -p svnversion &> /dev/null; then
-	svnversion | sed 's/\([0-9]\+:\)\?\([0-9]\+\)P\?M\?S\?/\2/' > REV
+# Write git revision to REV
+if [ -d .git -o -f .git ]; then
+	git show-ref refs/heads/master | cut -d " " -f 1 > REV
 elif [ ! -e REV ]; then
 	echo "0" > REV
 fi

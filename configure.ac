@@ -9,7 +9,7 @@ m4_define(gfire_version_patch, regexp(gfire_version, [\([0-9]+\).\([0-9]+\).\([0
 m4_define(gfire_version_minor, regexp(gfire_version, [\([0-9]+\).\([0-9]+\).\([0-9]+\)], [\2]))
 m4_define(gfire_version_major, regexp(gfire_version, [\([0-9]+\).\([0-9]+\).\([0-9]+\)], [\1]))
 m4_define(gfire_version_suffix, regexp(gfire_version, [\([0-9]+\).\([0-9]+\).\([0-9]+\)-?\([a-zA-Z0-9]+\)], [\4]))
-m4_define(gfire_revision, m4_include(REV))
+m4_define(gfire_revision, regexp(m4_include(REV), [\([0-9a-zA-Z.-]+\)], [\1]))
 
 AC_PREREQ(2.50)
 AC_INIT([Gfire], [gfire_version], [support@gfireproject.org])
@@ -36,7 +36,7 @@ AC_DEFINE([GFIRE_VERSION_PATCH], [gfire_version_patch], [Gfire patch version])
 AC_DEFINE([GFIRE_VERSION_MINOR], [gfire_version_minor], [Gfire minor version])
 AC_DEFINE([GFIRE_VERSION_MAJOR], [gfire_version_major], [Gfire major version])
 AC_DEFINE_UNQUOTED([GFIRE_VERSION_STRING], ["gfire_version"], [Gfire version string])
-AC_DEFINE([GFIRE_REVISION], [gfire_revision], [Gfire revision version])
+AC_DEFINE([GFIRE_REVISION], ["gfire_revision"], [Gfire revision version])
 
 #
 # Check C compiler
