@@ -1,0 +1,34 @@
+# Autotools files
+config.*
+configure
+depcomp
+*.in
+Makefile
+install-sh
+ltmain.sh
+missing
+libtool
+autom4te.cache
+
+# Intermediate files
+*.o
+*.deps
+stamp-*
+REV
+*.m4
+POTFILES
+
+# Resulting files
+gfire_config.h
+*.gmo
+win32-install
+win32-install-dbgsym
+*.zip
+*.exe
+*.dll
+*.dll.dbgsym
+*.tar.gz
+*.tar.bz2
+
+# Qt Creator Project Files
+Gfire.*
