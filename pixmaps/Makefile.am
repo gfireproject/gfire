@@ -2,7 +2,8 @@ EXTRA_DIST = 	16/gfire.png \
 		22/gfire.png \
 		48/gfire.png \
 		emblems/voip.png \
-		emblems/game-voip.png
+		emblems/game-voip.png \
+		Makefile.mingw
 
 pidgin_protocol_pix16dir = $(datadir)/pixmaps/pidgin/protocols/16
 pidgin_protocol_pix22dir = $(datadir)/pixmaps/pidgin/protocols/22

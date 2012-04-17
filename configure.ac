@@ -36,7 +36,7 @@ AC_DEFINE([GFIRE_VERSION_PATCH], [gfire_version_patch], [Gfire patch version])
 AC_DEFINE([GFIRE_VERSION_MINOR], [gfire_version_minor], [Gfire minor version])
 AC_DEFINE([GFIRE_VERSION_MAJOR], [gfire_version_major], [Gfire major version])
 AC_DEFINE_UNQUOTED([GFIRE_VERSION_STRING], ["gfire_version"], [Gfire version string])
-AC_DEFINE([GFIRE_REVISION], ["gfire_revision"], [Gfire revision version])
+AC_DEFINE_UNQUOTED([GFIRE_REVISION], ["gfire_revision"], [Gfire revision version])
 
 #
 # Check C compiler

@@ -34,7 +34,8 @@ EXTRA_DIST = \
 	gf_groups.h \
 	gf_groups_proto.h \
 	gf_preferences.h \
-	gf_preferences_proto.h
+	gf_preferences_proto.h \
+	Makefile.mingw
 
 INCLUDES = \
 	-I$(top_srcdir) \

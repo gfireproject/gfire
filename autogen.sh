@@ -4,7 +4,7 @@ echo;
 
 # Write git revision to REV
 if [ -d .git -o -f .git ]; then
-	git show-ref refs/heads/master | cut -d " " -f 1 > REV
+	git show-ref refs/heads/master | cut -c 1-10 > REV
 elif [ ! -e REV ]; then
 	echo "0" > REV
 fi

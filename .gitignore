@@ -9,6 +9,8 @@ ltmain.sh
 missing
 libtool
 autom4te.cache
+!gfire_config_win.h.in
+mingw.mak
 
 # Intermediate files
 *.o

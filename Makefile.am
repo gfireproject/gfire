@@ -5,7 +5,14 @@ EXTRA_DIST = config.rpath  config.rpath  COPYING \
 			 README \
 			 VERSION \
 			 REV \
-			 gfire.spec
+			 gfire_config_win.h.in \
+			 Makefile.mingw \
+			 po/Makefile.mingw \
+			 doc/README \
+			 nsis/gfire-installer.nsi \
+			 nsis/gfx/gfire-icon.ico \
+			 nsis/gfx/gfire-header.bmp \
+			 nsis/gfx/gfire-intro.bmp
 
 SUBDIRS = data pixmaps src
 

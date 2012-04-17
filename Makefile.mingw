@@ -11,12 +11,24 @@ SUBDIRS = src po data pixmaps
 
 .PHONY: all clean installer
 
-all: gfire_config_win.h
+
+REV:
 	@if [ -d .git -o -f .git ]; then \
-		git show-ref refs/heads/master | cut -d " " -f 1 > REV ; \
+		git show-ref refs/heads/master | cut -c 1-10 > REV ; \
 	elif [ ! -e REV ]; then \
 		echo "0" > REV ; \
 	fi
+
+gfire_config_win.h: gfire_config_win.h.in VERSION REV
+	@sed -e 's/@GFIRE_VERSION_MAJOR@/'${GFIRE_VERSION_MAJOR}'/g' \
+	    -e 's/@GFIRE_VERSION_MINOR@/'${GFIRE_VERSION_MINOR}'/g' \
+	    -e 's/@GFIRE_VERSION_MINOR@/'${GFIRE_VERSION_PATCH}'/g' \
+	    -e 's/@GFIRE_VERSION_SUFFIX@/'${GFIRE_VERSION_SUFFIX}'/g' \
+	    -e 's/@GFIRE_VERSION_STRING@/'${GFIRE_VERSION_STRING}'/g' \
+		-e 's/@GFIRE_REVISION@/'`cat ./REV`'/g' \
+	    gfire_config_win.h.in > $@
+
+all: gfire_config_win.h
 	@list='${SUBDIRS}'; for subdir in $$list; do \
 		(cd $$subdir && $(MAKE) -f Makefile.mingw all) || exit 1; \
 	done;
@@ -25,6 +37,7 @@ clean:
 	@list='${SUBDIRS}'; for subdir in $$list; do \
 		(cd $$subdir && $(MAKE) -f Makefile.mingw clean) || exit 1; \
 	done;
+	rm -f gfire_config_win.h
 
 distclean: clean
 	rm -rf ${WIN32_INSTALL_DIR}
