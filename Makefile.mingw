@@ -9,8 +9,9 @@ GFIRE_VERSION_MAJOR = `awk '{split($$1,array,"\\\.|-"); print array[1];}' VERSIO
 
 SUBDIRS = src po data pixmaps
 
-.PHONY: all clean installer
+.PHONY: all subdirs clean installer
 
+all: gfire_config_win.h subdirs
 
 REV:
 	@if [ -d .git -o -f .git ]; then \
@@ -28,7 +29,7 @@ gfire_config_win.h: gfire_config_win.h.in VERSION REV
 		-e 's/@GFIRE_REVISION@/'`cat ./REV`'/g' \
 	    gfire_config_win.h.in > $@
 
-all: gfire_config_win.h
+subdirs:
 	@list='${SUBDIRS}'; for subdir in $$list; do \
 		(cd $$subdir && $(MAKE) -f Makefile.mingw all) || exit 1; \
 	done;
