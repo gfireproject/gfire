@@ -39,10 +39,10 @@
 #define GFIRE_VERSION_PATCH 0
 
 /* Gfire version string */
-#define GFIRE_VERSION_STRING "1.0.0-svn"
+#define GFIRE_VERSION_STRING "1.0.0-git"
 
 /* Gfire version suffix */
-#define GFIRE_VERSION_SUFFIX "svn"
+#define GFIRE_VERSION_SUFFIX "git"
 
 /* Define to 1 if you have the `bind_textdomain_codeset' function. */
 #define HAVE_BIND_TEXTDOMAIN_CODESET 1
@@ -90,13 +90,13 @@
 #define PACKAGE_NAME "Gfire"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "Gfire 1.0.0-svn"
+#define PACKAGE_STRING "Gfire 1.0.0-git"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "gfire"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "1.0.0-svn"
+#define PACKAGE_VERSION "1.0.0-git"
 
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
