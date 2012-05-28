@@ -59,7 +59,6 @@
 #include <glib-object.h>
 #include <glib.h>
 #include <glib/gprintf.h>
-#include <glib/gthread.h>
 
 #ifdef HAVE_GTK
 	#include <gtk/gtk.h>
