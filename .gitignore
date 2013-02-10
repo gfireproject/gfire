@@ -14,11 +14,17 @@ mingw.mak
 
 # Intermediate files
 *.o
+*.lo
 *.deps
 stamp-*
 REV
 *.m4
 POTFILES
+
+# Libtool
+*.la
+*.lo
+.libs
 
 # Resulting files
 gfire_config.h
