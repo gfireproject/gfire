@@ -61,7 +61,7 @@ static const struct
 	{ "UT",		&gf_sq_gamespy_driver,	0,	1 },
 	{ "UT2K3",	&gf_sq_gamespy_driver,	0,	10 },
 	{ "SWRC",	&gf_sq_gamespy_driver,	11138,	0 },
-	{ "NWN",	&gf_sq_gamespy_driver,	5121,	0 },
+	{ "NWN",	&gf_sq_gamespy2_driver,	5121,	0 },
 	{ "OPFLASH",&gf_sq_gamespy_driver,	0,	1 },
 	{ "SWAT4",	&gf_sq_gamespy_driver,	10481,	0 },
 	{ "JBNF",	&gf_sq_gamespy_driver,	6550,	0 },
