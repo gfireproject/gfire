@@ -161,7 +161,7 @@ AM_CONDITIONAL(PLUGINS, test "x$want_plugins" = "xyes")
 #
 # Finish up
 #
-AM_CONFIG_HEADER(gfire_config.h)
+AC_CONFIG_HEADER([gfire_config.h])
 
 AC_CONFIG_FILES([
 	Makefile
