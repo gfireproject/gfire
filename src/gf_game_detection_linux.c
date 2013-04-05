@@ -331,7 +331,7 @@ void gfire_process_list_update(gfire_process_list *p_list)
 
 		gchar *process_real_exe = NULL;
 		// Different behaviour for Wine processes
-		if(strstr(process_exe, "wine-preloader"))
+		if(strstr(process_exe, "wine-preloader") || strstr(process_exe, "wine64-preloader"))
 		{
 #ifdef DEBUG_VERBOSE
 			purple_debug_misc("gfire", "gfire_process_list_update: WINE game! Starting WINE based detection...\n");
