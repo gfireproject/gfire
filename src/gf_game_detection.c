@@ -139,7 +139,7 @@ static void gfire_game_detector_inform_instances_game()
 		purple_debug_misc("gfire", "Game is not running anymore, sending out-of-game status.\n");
 
 	GList *cur = gfire_detector->instances;
-	gboolean do_global_status = FALSE;
+	gboolean do_global_status = (!cur && gfire_detector->has_global_status);
 	while(cur)
 	{
 		gfire_set_game_status((gfire_data*)cur->data, &gfire_detector->game_data);
@@ -254,6 +254,9 @@ static void gfire_game_detector_inform_instances_game()
 			setGajimStatus("");
 		}
 #endif // USE_DBUS_STATUS_CHANGE && !_WIN32
+
+		// Remember to clean up
+		gfire_detector->has_global_status = (gfire_detector->game_data.id != 0);
 	}
 
 	g_free(game_name);
@@ -973,6 +976,14 @@ static void gfire_game_detector_free()
 {
 	if(!gfire_detector)
 		return;
+
+	// Set not gaming status
+	memset(&gfire_detector->game_data, 0, sizeof(gfire_detector->game_data));
+	gfire_game_detector_inform_instances_game();
+
+	// Set not voiping status
+	memset(&gfire_detector->voip_data, 0, sizeof(gfire_detector->voip_data));
+	gfire_game_detector_inform_instances_voip();
 
 	// Stop server detection
 	gfire_server_detector_stop(gfire_detector->g_server_detector);

@@ -66,6 +66,7 @@ typedef struct _gfire_game_detector
 	gfire_game_data game_data;
 	gfire_game_data voip_data;
 	gfire_game_detection_type game_type;
+	gboolean has_global_status;
 
 	// Server detection
 	guint8 server_detection_ref;
