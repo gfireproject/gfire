@@ -1156,7 +1156,10 @@ void gfire_buddy_set_avatar(gfire_buddy *p_buddy, guchar *p_data, guint32 p_len)
 
 	PurpleBuddyIcon *icon = purple_buddy_get_icon(p_buddy->prpl_buddy);
 	if(!icon)
-		purple_buddy_icon_new(p_buddy->prpl_buddy->account, p_buddy->name, p_data, p_len, NULL);
+	{
+		icon = purple_buddy_icon_new(p_buddy->prpl_buddy->account, p_buddy->name, p_data, p_len, NULL);
+		purple_buddy_icon_unref(icon);
+	}
 	else
 		purple_buddy_icon_set_data(icon, p_data, p_len, NULL);
 }
@@ -1187,7 +1190,8 @@ void gfire_buddy_download_avatar(gfire_buddy *p_buddy, guint32 p_type, guint32 p
 	gchar *avatar_url = NULL;
 	PurpleBuddyIcon *buddy_icon = NULL;
 
-	if(p_type == p_buddy->avatartype && p_avatarNum == p_buddy->avatarnumber)
+	if(purple_buddy_get_icon(p_buddy->prpl_buddy) && p_type == p_buddy->avatartype &&
+			p_avatarNum == p_buddy->avatarnumber)
 	{
 		purple_debug(PURPLE_DEBUG_MISC, "gfire", "gfire_buddy_proto_changed_avatar: avatar did not change. skipping download.\n");
 		return;
