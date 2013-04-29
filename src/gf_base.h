@@ -56,9 +56,7 @@
 #include <errno.h>
 
 // Glib
-#include <glib-object.h>
 #include <glib.h>
-#include <glib/gprintf.h>
 
 #ifdef HAVE_GTK
 	#include <gtk/gtk.h>
