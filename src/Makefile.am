@@ -1,7 +1,8 @@
 EXTRA_DIST = \
+    gf_base.h \
+    gf_debug.h \
 	gfire.h \
 	gfire_proto.h \
-	debug.h \
 	gf_network.h \
 	gf_games.h \
 	gf_chat.h \
@@ -15,8 +16,6 @@ EXTRA_DIST = \
 	gf_server_detection.h \
 	gf_server_detection_win.c \
 	gf_game_detection.h \
-	gf_game_detection_linux.h \
-	gf_game_detection_win.h \
 	gf_game_detection_win.c \
 	gf_server_browser.h \
 	gf_server_browser_proto.h \

@@ -1,4 +1,4 @@
-EXTRA_DIST = config.rpath  config.rpath  COPYING \
+EXTRA_DIST = COPYING \
 			 ChangeLog \
 			 INSTALL \
 			 NEWS \
@@ -10,7 +10,7 @@ EXTRA_DIST = config.rpath  config.rpath  COPYING \
 			 po/Makefile.mingw \
 			 doc/README \
 			 nsis/gfire-installer.nsi \
-			 nsis/gfx/gfire-icon.ico \
+			 nsis/gfx/gfire.ico \
 			 nsis/gfx/gfire-header.bmp \
 			 nsis/gfx/gfire-intro.bmp
 
