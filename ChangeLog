@@ -1,9 +1,22 @@
 # Changelog for Gfire
-# Copyright 2006-2011 Wolf Beat, Keith Geffert, Laurent De Marez, Warren Dumortier, Oliver Ney
+# Copyright 2006-2014 Wolf Beat, Keith Geffert, Laurent De Marez, Warren Dumortier, Oliver Ney
 # Distributed under the GPLv3
-# $Id: CHANGELOG, v0.9.3
 
 Gfire:
+
+0.9.5:
+- Many fixes on game detection (detection issues, memleak, ...)
+- Compilation and build fixes by LookTJ, svenstaro and cookiekiller from Github
+- Fix for API changes by libpurple >=2.10.8
+
+0.9.4
+- Fixed rather critical crash on startup if game detection was disabled
+- Rewrote file transfer code partially
+- Changed P2P handshaking
+- Added stuff
+- Added ability to create P2P connection with local network nodes
+- NAT Type can now be looked up in the about window
+- Added --disable-game-detection flag to configure for embedded systems or servers
 
 0.9.3
 - Fixed further, if not almost all, P2P issues
