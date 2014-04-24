@@ -3,7 +3,7 @@ Gfire:
 
 About
 =====
-Gfire 1.0.0 will need Pidgin 2.5.0 or higher. To compile it from source, it will be
+Gfire 0.9.5 will need Pidgin 2.5.0 or higher. To compile it from source, it will be
 for most users easy as running:
 
 ./configure --prefix=/usr
