@@ -1218,9 +1218,9 @@ void gfire_buddy_download_avatar(gfire_buddy *p_buddy, guint32 p_type, guint32 p
             avatar_url = g_strdup_printf(XFIRE_AVATAR_URL, p_buddy->name, p_avatarNum);
             purple_debug(PURPLE_DEBUG_MISC, "gfire", "trying to download avatar from: %s\n", NN(avatar_url));
 #if PURPLE_VERSION_CHECK(3, 0, 0) /* purple_util_fetch_url_len will be removed with 3.0.0 */
-            purple_util_fetch_url(avatar_url, TRUE, "Purple-xfire", TRUE, -1, gfire_buddy_avatar_download_cb, (void*)p_buddy);
+            purple_util_fetch_url(avatar_url, TRUE, "Purple-xfire", TRUE, 5 * 1024 * 1024, gfire_buddy_avatar_download_cb, (void*)p_buddy);
 #elif PURPLE_VERSION_CHECK(2, 10, 8) /* 2.10.8 introduced size restrictions in responses */
-            purple_util_fetch_url_len(avatar_url, TRUE, "Purple-xfire", TRUE, -1, gfire_buddy_avatar_download_cb, (void*)p_buddy);
+            purple_util_fetch_url_len(avatar_url, TRUE, "Purple-xfire", TRUE, 5 * 1024 * 1024, gfire_buddy_avatar_download_cb, (void*)p_buddy);
 #else
             purple_util_fetch_url(avatar_url, TRUE, "Purple-xfire", TRUE, gfire_buddy_avatar_download_cb, (void*)p_buddy);
 #endif
@@ -1646,9 +1646,9 @@ static void gfire_clan_download_avatar(gfire_clan *p_clan)
     gchar *avatar_url = g_strdup_printf(XFIRE_COMMUNITY_AVATAR_URL, p_clan->short_name, rand());
     purple_debug(PURPLE_DEBUG_MISC, "gfire", "trying to download community avatar from: %s\n", NN(avatar_url));
 #if PURPLE_VERSION_CHECK(3, 0, 0) /* purple_util_fetch_url_len will be removed with 3.0.0 */
-    purple_util_fetch_url(avatar_url, TRUE, "Purple-xfire", TRUE, -1, gfire_clan_avatar_download_cb, (void*)p_clan);
+    purple_util_fetch_url(avatar_url, TRUE, "Purple-xfire", TRUE, 5 * 1024 * 1024, gfire_clan_avatar_download_cb, (void*)p_clan);
 #elif PURPLE_VERSION_CHECK(2, 10, 8) /* 2.10.8 introduced size restrictions in responses */
-    purple_util_fetch_url_len(avatar_url, TRUE, "Purple-xfire", TRUE, -1, gfire_clan_avatar_download_cb, (void*)p_clan);
+    purple_util_fetch_url_len(avatar_url, TRUE, "Purple-xfire", TRUE, 5 * 1024 * 1024, gfire_clan_avatar_download_cb, (void*)p_clan);
 #else
     purple_util_fetch_url(avatar_url, TRUE, "Purple-xfire", TRUE, gfire_clan_avatar_download_cb, (void*)p_clan);
 #endif

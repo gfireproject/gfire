@@ -222,10 +222,10 @@ static void gfire_update_cb(PurpleUtilFetchUrlData *p_url_data, gpointer p_data,
             {
                 purple_debug_info("gfire", "Updating games list to version %u\n", games_list_version);
 #if PURPLE_VERSION_CHECK(3, 0, 0) /* purple_util_fetch_url_len will be removed with 3.0.0 */
-                gfire_update_data = purple_util_fetch_url(GFIRE_GAMES_XML_URL, TRUE, "purple-xfire", TRUE, -1,
+                gfire_update_data = purple_util_fetch_url(GFIRE_GAMES_XML_URL, TRUE, "purple-xfire", TRUE, 5 * 1024 * 1024,
                                                           gfire_update_games_list_cb, p_data);
 #elif PURPLE_VERSION_CHECK(2, 10, 8) /* 2.10.8 introduced size restrictions in responses */
-                gfire_update_data = purple_util_fetch_url_len(GFIRE_GAMES_XML_URL, TRUE, "purple-xfire", TRUE, -1,
+                gfire_update_data = purple_util_fetch_url_len(GFIRE_GAMES_XML_URL, TRUE, "purple-xfire", TRUE, 5 * 1024 * 1024,
                                                               gfire_update_games_list_cb, p_data);
 #else
                 gfire_update_data = purple_util_fetch_url(GFIRE_GAMES_XML_URL, TRUE, "purple-xfire", TRUE,
