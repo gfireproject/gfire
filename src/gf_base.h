@@ -59,8 +59,8 @@
 #include <glib.h>
 
 #ifdef HAVE_GTK
-	#include <gtk/gtk.h>
-	#include <gio/gio.h>
+    #include <gtk/gtk.h>
+    #include <gio/gio.h>
 #endif // HAVE_GTK
 
 // Libpurple
@@ -94,7 +94,7 @@
 
 // Internationalization /////////////////////////////////////////////
 #ifdef ENABLE_NLS
-	#include <glib/gi18n-lib.h>
+    #include <glib/gi18n-lib.h>
 #else
 #	define _(string) (const char*)(string)
 #	define N_(string) _(string)
@@ -111,7 +111,7 @@
 // Global definitions ////////////////////////////////////////////////
 #define GFIRE_PRPL_ID "prpl-xfire"
 #define GFIRE_WEBSITE "http://gfireproject.org"
-#define GFIRE_WIKI "http://my-trac.assembla.com/gfire/wiki"
+#define GFIRE_WIKI "http://github.com/gfireproject/gfire/wiki"
 #define GFIRE_DEFAULT_GROUP_NAME "Xfire"
 #define GFIRE_FRIENDS_OF_FRIENDS_GROUP_NAME _("Xfire - Friends of Friends playing games")
 #define GFIRE_CLAN_GROUP_FORMATTING "%s [%s]" // long name, short name
