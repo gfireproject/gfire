@@ -29,29 +29,6 @@
 #define RCVALL_IPLEVEL 3
 
 // Declare some required data types
-#ifndef UDP_TABLE_CLASS
-typedef enum  {
-  UDP_TABLE_BASIC,
-  UDP_TABLE_OWNER_PID,
-  UDP_TABLE_OWNER_MODULE
-} UDP_TABLE_CLASS, *PUDP_TABLE_CLASS;
-#endif // UDP_TABLE_CLASS
-
-#ifndef MIB_UDPROW_OWNER_PID
-typedef struct _MIB_UDPROW_OWNER_PID {
-  DWORD dwLocalAddr;
-  DWORD dwLocalPort;
-  DWORD dwOwningPid;
-} MIB_UDPROW_OWNER_PID, *PMIB_UDPROW_OWNER_PID;
-#endif // MIB_UDPROW_OWNER_PID
-
-#ifndef MIB_UDPTABLE_OWNER_PID
-typedef struct _MIB_UDPTABLE_OWNER_PID {
-  DWORD                dwNumEntries;
-  MIB_UDPROW_OWNER_PID table[ANY_SIZE];
-} MIB_UDPTABLE_OWNER_PID, *PMIB_UDPTABLE_OWNER_PID;
-#endif // MIB_UDPTABLE_OWNER_PID
-
 typedef struct _gfire_server_detection_windows
 {
     SOCKET sock;
