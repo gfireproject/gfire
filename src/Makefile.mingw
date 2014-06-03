@@ -7,20 +7,20 @@ SUBDIRS =
 LIBPURPLE_CFLAGS = -I${WIN32_PIDGIN_DIR}/libpurple -I${WIN32_PIDGIN_DIR}/libpurple/win32 -DPURPLE_PLUGINS -DNO_ZLIB
 WIN32_CFLAGS = \
 	-DPSAPI_VERSION=1 \
-	-I${WIN32_GTK_DIR}/include/glib-2.0 \
+	-I${WIN32_DEV_DIR}/include \
+	-I${WIN32_DEV_DIR}/include/glib-2.0 \
 	-I${WIN32_PIDGIN_DIR}/libpurple/win32 \
-	-I${WIN32_DEV_DIR}/gtk_2_0/include \
-	-I${WIN32_DEV_DIR}/gtk_2_0/include/glib-2.0 \
-	-I${WIN32_GTK_DIR}/lib/glib-2.0/include \
-	-I${WIN32_DEV_DIR}/gtk_2_0/include/gtk-2.0 \
-	-I${WIN32_DEV_DIR}/gtk_2_0/include/pango-1.0 \
-	-I${WIN32_DEV_DIR}/gtk_2_0/include/libpng13 \
-	-I${WIN32_DEV_DIR}/gtk_2_0/include/fontconfig \
-	-I${WIN32_DEV_DIR}/gtk_2_0/include/freetype2 \
-	-I${WIN32_DEV_DIR}/gtk_2_0/lib/gtk-2.0/include \
-	-I${WIN32_DEV_DIR}/gtk_2_0/lib/glib-2.0/include \
-	-I${WIN32_DEV_DIR}/gtk_2_0/include/atk-1.0 \
-	-I${WIN32_DEV_DIR}/gtk_2_0/include/cairo
+	-I${WIN32_DEV_DIR}/include/gdk-pixbuf-2.0 \
+	-I${WIN32_DEV_DIR}/lib/glib-2.0/include \
+	-I${WIN32_DEV_DIR}/include/gtk-2.0 \
+	-I${WIN32_DEV_DIR}/include/pango-1.0 \
+	-I${WIN32_DEV_DIR}/include/libpng13 \
+	-I${WIN32_DEV_DIR}/include/fontconfig \
+	-I${WIN32_DEV_DIR}/include/freetype2 \
+	-I${WIN32_DEV_DIR}/lib/gtk-2.0/include \
+	-I${WIN32_DEV_DIR}/lib/glib-2.0/include \
+	-I${WIN32_DEV_DIR}/include/atk-1.0 \
+	-I${WIN32_DEV_DIR}/include/cairo
 WIN32_LIBS = -L${WIN32_GTK_DIR}/lib -L${WIN32_PIDGIN_DIR}/libpurple -lgobject-2.0 -lglib-2.0 -lgthread-2.0 -lws2_32 -lintl -lgdk-win32-2.0 -lgtk-win32-2.0 -lpurple -lpsapi
 GFIRE_SRC_DIR = .
 
