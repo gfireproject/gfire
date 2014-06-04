@@ -2,10 +2,10 @@ GFIRE_DIR = .
 include mingw.mak
 
 GFIRE_VERSION_STRING = `cat ./VERSION`
-GFIRE_VERSION_SUFFIX = `awk '{split($$1,array,"\\\.|-"); print array[4];}' VERSION`
-GFIRE_VERSION_PATCH = `awk '{split($$1,array,"\\\.|-"); print array[3];}' VERSION`
-GFIRE_VERSION_MINOR = `awk '{split($$1,array,"\\\.|-"); print array[2];}' VERSION`
-GFIRE_VERSION_MAJOR = `awk '{split($$1,array,"\\\.|-"); print array[1];}' VERSION`
+GFIRE_VERSION_SUFFIX = `cut -d '-' -s -f2 VERSION`
+GFIRE_VERSION_PATCH = `cut -d '.' -f3 VERSION | cut -d '-' -f1`
+GFIRE_VERSION_MINOR = `cut -d '.' -f2 VERSION`
+GFIRE_VERSION_MAJOR = `cut -d '.' -f1 VERSION`
 
 SUBDIRS = src po data pixmaps
 
@@ -23,7 +23,7 @@ REV:
 gfire_config_win.h: gfire_config_win.h.in VERSION REV
 	@sed -e 's/@GFIRE_VERSION_MAJOR@/'${GFIRE_VERSION_MAJOR}'/g' \
 	    -e 's/@GFIRE_VERSION_MINOR@/'${GFIRE_VERSION_MINOR}'/g' \
-	    -e 's/@GFIRE_VERSION_MINOR@/'${GFIRE_VERSION_PATCH}'/g' \
+	    -e 's/@GFIRE_VERSION_PATCH@/'${GFIRE_VERSION_PATCH}'/g' \
 	    -e 's/@GFIRE_VERSION_SUFFIX@/'${GFIRE_VERSION_SUFFIX}'/g' \
 	    -e 's/@GFIRE_VERSION_STRING@/'${GFIRE_VERSION_STRING}'/g' \
 		-e 's/@GFIRE_REVISION@/'`cat ./REV`'/g' \
