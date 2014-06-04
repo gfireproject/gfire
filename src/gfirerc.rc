@@ -1,8 +1,8 @@
 #include <winver.h>
 
 VS_VERSION_INFO VERSIONINFO
-  FILEVERSION 1,0,0,0
-  PRODUCTVERSION 1,0,0,0
+  FILEVERSION 0,9,6,0
+  PRODUCTVERSION 0,9,6,0
   FILEFLAGSMASK 0
   FILEFLAGS 0
   FILEOS VOS__WINDOWS32
@@ -15,12 +15,12 @@ VS_VERSION_INFO VERSIONINFO
       BEGIN
         VALUE "CompanyName", "The Gfire Team"
         VALUE "FileDescription", "Gfire - Xfire libpurple Plugin"
-        VALUE "FileVersion", "1.0.0"
+        VALUE "FileVersion", "0.9.6"
         VALUE "InternalName", "Gfire"
-        VALUE "LegalCopyright", "Copyright (C) 2005-2010 The Gfire Team (See the COPYING file in the source distribution)."
+        VALUE "LegalCopyright", "Copyright (C) 2005-2014 The Gfire Team (See the COPYING file in the source distribution)."
         VALUE "OriginalFilename", "libxfire.dll"
         VALUE "ProductName", "Gfire"
-        VALUE "ProductVersion", "1.0.0"
+        VALUE "ProductVersion", "0.9.6"
       END
     END
     BLOCK "VarFileInfo"

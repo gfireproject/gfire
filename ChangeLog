@@ -4,6 +4,10 @@
 
 Gfire:
 
+0.9.6:
+- Fix update notification bug
+- Make update notifications optional within Pidgin
+
 0.9.5:
 - Many fixes on game detection (detection issues, memleak, ...)
 - Compilation and build fixes by LookTJ, svenstaro and cookiekiller from Github
