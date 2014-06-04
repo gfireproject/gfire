@@ -172,11 +172,7 @@ static void gfire_update_cb(PurpleUtilFetchUrlData *p_url_data, gpointer p_data,
             const gchar *gfire_latest_suffix = xmlnode_get_attrib(version_node, "suffix");
 
                 // Higher version number
-            if ((GFIRE_VERSION < gfire_latest_version) ||
-                // Same version, current one is not SVN
-                ((GFIRE_VERSION == gfire_latest_version) && (g_strcmp0(GFIRE_VERSION_SUFFIX, "svn") != 0) &&
-                 // Released suffix is higher than the current
-                 strlen(GFIRE_VERSION_SUFFIX) && (g_strcmp0(gfire_latest_suffix, GFIRE_VERSION_SUFFIX) > 0)))
+            if ((GFIRE_VERSION < gfire_latest_version) && (strlen(GFIRE_VERSION_SUFFIX) == 0))
             {
                 gchar *msg = NULL;
 #ifdef USE_NOTIFICATIONS
@@ -188,11 +184,11 @@ static void gfire_update_cb(PurpleUtilFetchUrlData *p_url_data, gpointer p_data,
                                           (gfire_latest_suffix && strlen(gfire_latest_suffix)) ? "-" : "",
                                           gfire_latest_suffix ? gfire_latest_suffix : "");
                     gfire_notify_system(_("New Gfire Version"), msg);
+                    g_free(msg);
                 }
-                else
+                else if(purple_account_get_bool(purple_connection_get_account(p_data), "show_update_dialogs", TRUE))
 #endif // USE_NOTIFICATIONS
                 {
-                // FIXME: implement a way to disable this notification
                     msg = g_strdup_printf(_("Gfire %u.%u.%u%s%s is now available.\nVisit the Gfire website for more "
                                             "information!"), (gfire_latest_version & (0xFF << 16)) >> 16,
                                           (gfire_latest_version & (0xFF << 8)) >> 8, gfire_latest_version & 0xFF,
@@ -200,9 +196,8 @@ static void gfire_update_cb(PurpleUtilFetchUrlData *p_url_data, gpointer p_data,
                                           gfire_latest_suffix ? gfire_latest_suffix : "");
                     purple_notify_message(p_data, PURPLE_NOTIFY_MSG_WARNING, _("New Gfire Version"), _("New Gfire Version"),
                                           msg, NULL, NULL);
+                    g_free(msg);
                 }
-
-                g_free(msg);
             }
 #endif // UPDATE_NOTIFY
 
