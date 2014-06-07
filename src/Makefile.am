@@ -36,9 +36,6 @@ EXTRA_DIST = \
 	gf_preferences_proto.h \
 	Makefile.mingw
 
-INCLUDES = \
-	-I$(top_srcdir) \
-    -DLOCALEDIR=\""$(localedir)"\"
 
 plugindir = $(libdir)/purple-2
 libxfire_la_LDFLAGS = -module -avoid-version
@@ -105,6 +102,8 @@ libxfire_la_LIBADD = \
 endif
 
 AM_CPPFLAGS = \
+	-I$(top_srcdir) \
+    -DLOCALEDIR=\""$(localedir)"\" \
 	-DLIBDIR=\"$(libdir)/purple-2/\" \
 	-DDATADIR=\"$(datadir)\" \
 	$(GLIB_CFLAGS) \

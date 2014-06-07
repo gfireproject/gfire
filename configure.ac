@@ -16,7 +16,7 @@ AC_INIT([Gfire], [gfire_version], [support@gfireproject.org])
 AC_CONFIG_SRCDIR([src/gfire.c])
 
 
-AM_INIT_AUTOMAKE([gfire], [gfire_version], "")
+AM_INIT_AUTOMAKE
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 AC_PATH_PROG(sedpath, sed)
